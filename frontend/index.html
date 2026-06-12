@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InterfaceScout — Protein Surface Feature Mapping</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/logo.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.1.0/3Dmol-min.js"
+  onerror="loadFallback3Dmol()"></script>
+<script>
+function loadFallback3Dmol(){
+  var urls=['https://unpkg.com/3dmol@2.1.0/build/3Dmol-min.js',
+            'https://cdn.jsdelivr.net/npm/3dmol@2.1.0/build/3Dmol-min.js'];
+  var i=0;function next(){
+    if(i>=urls.length)return;
+    var s=document.createElement('script');s.src=urls[i++];s.onerror=next;document.head.appendChild(s);
+  }next();
+}
+</script>
+<style>
+:root{
+  --bg:#ffffff;        /* page background */
+  --pa:#f4f6fa;        /* panels */
+  --p2:#eef1f7;        /* nested panels / metric tiles */
+  --bd:#d2d9e4;        /* borders */
+  --ac:#0077b6;        /* accent (cyan -> deeper blue for white bg) */
+  --gr:#0a8f5b;        /* green (darker for contrast) */
+  --pu:#6d28d9;        /* purple */
+  --or:#c2680a;        /* orange/amber (darker) */
+  --rd:#d12b2b;        /* red */
+  --tx:#1a2230;        /* main text (near-black) */
+  --mu:#5a6b82;        /* muted text */
+  --mo:'Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;font-size:15px}
+#vc{background:#eef1f7}
+#mv{background:#eef1f7}
+
+/* ─ AGENT BANNER ─ */
+.banner-inner{padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.banner-icon{font-size:28px;flex-shrink:0}
+.banner-text h3{font-size:14px;font-weight:700;margin-bottom:3px}
+.banner-text p{font-size:14px;color:var(--mu);line-height:1.5}
+.banner-actions{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.dl-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:7px;font-size:14px;font-weight:700;font-family:var(--mo);cursor:pointer;border:none;text-decoration:none;transition:opacity .2s}
+.dl-btn:hover{opacity:.85}
+.dl-win{background:linear-gradient(135deg,#0078d4,#005a9e);color:#fff}
+.dl-mac{background:linear-gradient(135deg,#555,#333);color:#fff}
+.dl-lin{background:linear-gradient(135deg,#e95420,#c7401a);color:#fff}
+.dl-btn-primary{background:linear-gradient(135deg,var(--ac),var(--pu));color:#fff;font-size:13px;padding:10px 20px}
+.dismiss-btn{background:transparent;border:1px solid var(--bd);color:var(--mu);padding:6px 12px;border-radius:5px;font-size:13px;font-family:var(--mo);cursor:pointer}
+.dismiss-btn:hover{border-color:var(--mu)}
+
+/* ─ STATUS BAR ─ */
+.hdr{background:var(--pa);border-bottom:1px solid var(--bd);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ht{font-size:15px;font-weight:800;background:linear-gradient(90deg,var(--ac),var(--pu));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap}
+.hs{font-size:11px;color:var(--mu);font-family:var(--mo);letter-spacing:1px;margin-top:2px}
+.agent-status{display:flex;align-items:center;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:background .3s}
+.dot.ok{background:var(--gr);box-shadow:0 0 6px var(--gr)}
+.dot.err{background:var(--rd)}
+.dot.checking{background:var(--or);animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.agent-label{font-size:12px;font-family:var(--mo);color:var(--mu)}
+.reconnect-btn{font-size:11px;font-family:var(--mo);background:transparent;border:1px solid var(--bd);color:var(--mu);padding:3px 8px;border-radius:3px;cursor:pointer}
+.reconnect-btn:hover{border-color:var(--ac);color:var(--ac)}
+
+/* ─ MAIN LAYOUT ─ */
+.main{display:grid;grid-template-columns:295px 1fr;height:calc(100vh - var(--hdr-h,100px))}
+.sb{background:var(--pa);border-right:1px solid var(--bd);overflow-y:auto;padding:12px}
+.cont{display:flex;flex-direction:column;overflow:hidden}
+#vc{position:relative;flex:1;min-height:0;background:#eef1f7}
+#mv{width:100%;height:100%}
+.vov{position:absolute;top:8px;right:8px;display:flex;flex-direction:column;gap:4px;z-index:10}
+.vb{background:rgba(255,255,255,.92);border:1px solid var(--bd);color:var(--tx);padding:4px 8px;border-radius:4px;cursor:pointer;font-size:12px;font-family:var(--mo)}
+.vb:hover,.vb.on{border-color:var(--ac);color:var(--ac)}
+.bpn{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--bd);height:300px}
+.bp{padding:10px 14px;overflow-y:auto}
+.bp+.bp{border-left:1px solid var(--bd)}
+.stb{background:#eef1f7;border-top:1px solid var(--bd);padding:3px 12px;display:flex;gap:12px;font-size:11px;font-family:var(--mo);color:var(--mu);flex-shrink:0}
+.sv{color:var(--ac)}
+
+/* ─ SIDEBAR ELEMENTS ─ */
+.st{font-size:12px;color:var(--ac);font-family:var(--mo);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.st.pu{color:var(--pu)}.st.gr{color:var(--gr)}.st.or{color:var(--or)}
+.tabs{display:flex;gap:3px;margin-bottom:7px}
+.tab{flex:1;padding:4px;text-align:center;border-radius:3px;cursor:pointer;font-size:12px;font-family:var(--mo);border:1px solid var(--bd);color:var(--mu)}
+.tab.on{background:var(--p2);border-color:var(--ac);color:var(--ac)}
+.ig{margin-bottom:6px}
+.il{font-size:11px;color:var(--mu);font-family:var(--mo);margin-bottom:2px;display:block}
+.inp{width:100%;background:#ffffff;border:1px solid var(--bd);border-radius:4px;padding:5px 7px;color:var(--tx);font-size:14px;outline:none}
+.inp:focus{border-color:var(--ac)}
+.inp2{font-size:13px;padding:4px 6px}
+.ir{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.btn{width:100%;padding:7px;border:none;border-radius:5px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--mo);letter-spacing:1px}
+#report-btn:disabled{background:#cbd5e1 !important;color:#94a3b8 !important;cursor:not-allowed}
+.xb{background:#eef2f7;color:#334155;border:1px solid var(--bd);font-size:11px;padding:5px;font-weight:600}
+.xb:hover{background:#e2e8f0}
+#sg-btn:disabled{background:#cbd5e1 !important;color:#94a3b8 !important;cursor:not-allowed}
+.btn-p{background:linear-gradient(135deg,var(--ac),var(--pu));color:#fff}
+.btn-p:hover{opacity:.85}
+.btn-p:disabled{background:var(--bd);color:var(--mu);cursor:not-allowed}
+.dz{border:1px dashed var(--bd);border-radius:4px;padding:10px;text-align:center;cursor:pointer;margin-bottom:6px}
+.dz:hover,.dz.drag{border-color:var(--ac)}
+.dz span{font-size:12px;color:var(--mu);font-family:var(--mo)}
+.mo{display:flex;gap:3px;margin-bottom:7px}
+.mo-o{flex:1;padding:4px;text-align:center;border-radius:3px;cursor:pointer;font-size:11px;font-family:var(--mo);border:1px solid var(--bd);color:var(--mu)}
+.mo-o.on{border-color:var(--pu);color:var(--pu);background:rgba(139,92,246,.07)}
+hr.d{border:none;border-top:1px solid var(--bd);margin:8px 0}
+.ib{background:rgba(0,200,255,.05);border:1px solid rgba(0,200,255,.15);border-radius:4px;padding:5px 8px;font-size:12px;color:#78b8d0;line-height:1.6;margin-bottom:6px}
+.eb{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.25);border-radius:4px;padding:5px 8px;font-size:12px;color:#f87171;margin-bottom:6px}
+.qt{display:flex;gap:3px;flex-wrap:wrap;margin-top:3px}
+.q{font-size:11px;color:var(--mu);cursor:pointer;font-family:var(--mo);border:1px solid var(--bd);border-radius:2px;padding:2px 4px}
+.q:hover{border-color:var(--ac);color:var(--ac)}
+.q.on-filter{border-color:var(--ac);color:var(--ac);background:rgba(0,200,255,.08)}
+
+/* ─ LOADING ─ */
+.spin{width:22px;height:22px;border:2px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 7px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.lt{font-family:var(--mo);font-size:12px;color:var(--mu)}
+.es{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:150px;color:var(--mu);gap:6px}
+.ei{font-size:24px;opacity:.2}
+.et{font-size:12px;font-family:var(--mo);text-align:center;line-height:1.7}
+
+/* ─ PATCH CARDS ─ */
+.pl{display:flex;flex-direction:column;gap:5px}
+.pc{background:var(--p2);border:1px solid var(--bd);border-radius:5px;padding:8px 9px;cursor:pointer}
+.pc:hover,.pc.sel{border-color:var(--ac)}
+.pc.sel{background:#e3ecf7}
+.ph2{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.pn{font-size:13px;font-weight:700;font-family:var(--mo)}
+.ps{font-size:12px;font-family:var(--mo);padding:2px 5px;border-radius:3px}
+.shi{background:rgba(16,217,138,.15);color:var(--gr)}
+.smd{background:rgba(245,158,11,.15);color:var(--or)}
+.slo{background:rgba(239,68,68,.15);color:var(--rd)}
+.pm2{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:4px}
+.mm{text-align:center;background:#ffffff;border-radius:2px;padding:2px}
+.mv{font-size:12px;font-weight:700;font-family:var(--mo)}
+.ml{font-size:10px;color:var(--mu)}
+.pt{display:flex;gap:2px;flex-wrap:wrap}
+.ptag{font-size:10px;padding:1px 4px;border-radius:2px;font-family:var(--mo)}
+.t-ch{background:rgba(0,200,255,.1);color:var(--ac);border:1px solid rgba(0,200,255,.2)}
+.t-hb{background:rgba(245,158,11,.1);color:var(--or);border:1px solid rgba(245,158,11,.2)}
+.t-pp{background:rgba(139,92,246,.1);color:var(--pu);border:1px solid rgba(139,92,246,.2)}
+.t-ar{background:rgba(16,217,138,.1);color:var(--gr);border:1px solid rgba(16,217,138,.2)}
+.t-pl{background:rgba(109,40,217,.08);color:#6d28d9;border:1px solid rgba(109,40,217,.2)}
+.pb-b{font-size:10px;font-family:var(--mo);background:rgba(16,217,138,.12);color:var(--gr);border:1px solid rgba(16,217,138,.2);border-radius:2px;padding:1px 4px}
+.dh-b{font-size:10px;font-family:var(--mo);background:rgba(245,158,11,.12);color:var(--or);border:1px solid rgba(245,158,11,.2);border-radius:2px;padding:1px 4px}
+
+/* ─ DETAIL PANEL ─ */
+.br{display:flex;align-items:center;gap:4px;margin-bottom:4px}
+.bl{font-size:11px;font-family:var(--mo);color:var(--mu);width:88px;flex-shrink:0}
+.bt{flex:1;height:6px;background:#dde3ec;border-radius:2px;overflow:hidden}
+.bf{height:100%;border-radius:2px}
+.bv{font-size:11px;font-family:var(--mo);width:58px;text-align:right;flex-shrink:0}
+.lr{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--bd);font-size:12px}
+.lr:last-child{border-bottom:none}
+.lt2{font-family:var(--mo);font-weight:700}
+.lv{font-family:var(--mo)}
+.rl{display:flex;flex-wrap:wrap;gap:3px}
+.rt{font-size:11px;font-family:var(--mo);padding:2px 4px;border-radius:2px;border:1px solid var(--bd);cursor:pointer}
+.rt:hover{border-color:var(--ac)}
+.r-cp{color:#1d4ed8}.r-cn{color:#b91c1c}.r-hb{color:var(--or)}.r-pl{color:#6d28d9}.r-ar{color:var(--gr)}.r-ot{color:var(--mu)}
+.dGd{text-align:center;padding:6px 0 9px;border-bottom:1px solid var(--bd);margin-bottom:7px}
+.dGv{font-size:18px;font-weight:800;font-family:var(--mo)}
+.dGl{font-size:11px;color:var(--mu);font-family:var(--mo);letter-spacing:1px}
+.tip{background:#fff7e6;border-left:3px solid var(--or);padding:6px 9px;border-radius:0 4px 4px 0;font-size:12px;color:#92600a;font-style:italic;margin-top:6px}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ══════════════════════════════════════════════════════════ -->
+
+<!-- ══ HEADER ════════════════════════════════════════════════════════════ -->
+<div class="hdr" id="hdr">
+  <div style="display:flex;align-items:center;gap:11px">
+    <img src="/logo.png" alt="InterfaceScout" width="38" height="38"
+      style="border-radius:9px;flex-shrink:0"/>
+    <div>
+      <div class="ht">InterfaceScout</div>
+      <div class="hs">APBS · pdb2pqr · Shrake-Rupley · DSSP · Feature Affinity Mapping</div>
+    </div>
+  </div>
+  <div class="agent-status">
+    <div class="dot checking" id="agent-dot"></div>
+    <span class="agent-label" id="agent-label">Connecting…</span>
+    <button class="reconnect-btn" onclick="startPolling()">↺</button>
+  </div>
+</div>
+
+<!-- ══ MAIN ═══════════════════════════════════════════════════════════════ -->
+<div class="main" id="main-grid">
+<div class="sb">
+
+  <div style="margin-bottom:8px">
+    <div class="st">① Protein</div>
+    <div class="tabs">
+      <div class="tab on" onclick="swT('id')">PDB ID</div>
+      <div class="tab" onclick="swT('file')">File</div>
+    </div>
+    <div id="t-id">
+      <div class="ig">
+        <span class="il">RCSB PDB ID</span>
+        <div style="display:flex;gap:4px">
+          <input class="inp" id="pid" placeholder="1HHO" maxlength="6" style="text-transform:uppercase"
+            onkeydown="if(event.key==='Enter')setPDB()">
+          <button class="btn btn-p" style="width:auto;padding:0 10px;white-space:nowrap;font-size:12px"
+            onclick="setPDB()">Fetch</button>
+        </div>
+      </div>
+      <div class="qt">
+        <span class="q" onclick="setID('1HHO')">1HHO</span>
+        <span class="q" onclick="setID('1UBQ')">1UBQ</span>
+        <span class="q" onclick="setID('2BEG')">2BEG</span>
+        <span class="q" onclick="setID('1MBN')">1MBN</span>
+        <span class="q" onclick="setID('3HHR')">3HHR</span>
+        <span class="q" onclick="setID('1AON')">1AON</span>
+        <span class="q" onclick="setID('4HHB')">4HHB</span>
+      </div>
+    </div>
+    <div id="t-file" style="display:none">
+      <div class="dz" id="dz" onclick="document.getElementById('fi').click()">
+        <div style="font-size:16px;margin-bottom:2px">⬆</div>
+        <span id="fl">Drag &amp; drop PDB file or click</span>
+        <input type="file" id="fi" accept=".pdb" style="display:none" onchange="loadFile(event)">
+      </div>
+    </div>
+  </div>
+
+  <hr class="d">
+
+  <div style="margin-bottom:8px">
+    <div class="st pu">② Analysis Mode</div>
+    <div class="ib">
+      InterfaceScout maps chemically relevant surface features and estimates
+      residue-level compatibility with generic surface functional groups —
+      no material selection needed.
+      <a href="#" onclick="openTheory();return false;"
+        style="color:#0d9488;font-weight:700">▸ Read the theory</a>
+    </div>
+  </div>
+
+  <hr class="d">
+
+  <div style="margin-bottom:8px">
+    <div class="st gr">③ Environment</div>
+    <div class="ir">
+      <div class="ig"><span class="il">pH</span>
+        <input class="inp inp2" id="eph" type="number" step="0.1" min="1" max="14" value="7.4" onchange="onEnvChange()"></div>
+      <div class="ig"><span class="il">IONIC (mM)</span>
+        <input class="inp inp2" id="eI" type="number" value="150" onchange="onEnvChange()"></div>
+    </div>
+    <div class="ig"><span class="il">TEMPERATURE (K)</span>
+      <input class="inp inp2" id="eT" type="number" value="310" onchange="onEnvChange()"></div>
+    <div class="ig" style="margin-top:6px"><span class="il">PATCH RADIUS (Å) — for patch-density map</span>
+      <input class="inp inp2" id="eR" type="number" step="0.5" min="4" max="25" value="12" onchange="onEnvChange()"></div>
+  </div>
+
+  <button class="btn btn-p" id="analyze-btn" onclick="runAnalyzeSurface()" disabled>
+    🔬 Analyze Surface
+  </button>
+  <button class="btn" id="report-btn" onclick="downloadReport()" disabled
+    style="margin-top:6px;background:#0d9488;color:#fff">
+    ⬇ Download Report (PDF)
+  </button>
+  <div id="export-row" style="display:none;margin-top:6px">
+    <div style="font-size:10px;color:var(--mu);font-family:var(--mo);letter-spacing:1px;margin-bottom:3px">EXPORT DATA</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+      <button class="btn xb" onclick="exportCSV()">CSV</button>
+      <button class="btn xb" onclick="exportPDB()">PDB</button>
+    </div>
+  </div>
+  <div id="errd" style="margin-top:6px"></div>
+
+</div><!-- /sidebar -->
+
+<div class="cont">
+  <div id="vc">
+    <div id="mv"></div>
+    <div class="vov">
+      <button class="vb on" onclick="setSt('cartoon')">Cartoon</button>
+      <button class="vb" onclick="setSt('surface')">Surface</button>
+      <button class="vb" onclick="setSt('stick')">Stick</button>
+    </div>
+    <div id="heat-legend" style="display:none;position:absolute;bottom:10px;left:10px;background:rgba(255,255,255,.95);border:1px solid var(--bd);border-radius:6px;padding:8px 10px;width:180px;z-index:10"></div>
+    <div class="es" id="est">
+      <div class="ei">🧬</div>
+      <div class="et" id="est-txt">Load a PDB file to begin</div>
+    </div>
+    <div id="lov" style="display:none;position:absolute;inset:0;background:rgba(255,255,255,.88);align-items:center;justify-content:center">
+      <div style="text-align:center;padding:28px">
+        <div class="spin"></div>
+        <div class="lt" id="ltxt">Running analysis…</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bpn">
+    <div class="bp">
+      <div class="st">Surface Patches</div>
+      <div id="filter-bar"></div>
+      <div id="plist">
+        <div class="es" style="min-height:140px">
+          <div class="ei" style="font-size:20px">◈</div>
+          <div class="et">Shown after analysis</div>
+        </div>
+      </div>
+    </div>
+    <div class="bp">
+      <div class="st or">Patch Feature Profile</div>
+      <div id="pdet">
+        <div class="es" style="min-height:140px">
+          <div class="ei" style="font-size:20px">📊</div>
+          <div class="et">Select a patch</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stb">
+    <span>ATOM:<span class="sv" id="sa">—</span></span>
+    <span>RES:<span class="sv" id="sr">—</span></span>
+    <span>SURFACE:<span class="sv" id="ss2">—</span></span>
+    <span>PATCH:<span class="sv" id="sp">—</span></span>
+    <span>ELECTROSTATIC:<span class="sv" id="sel">—</span></span>
+    <span>AGENT:<span class="sv" id="sa2">—</span></span>
+  </div>
+</div>
+</div><!-- /main -->
+
+<script>
+// ════════════════════════════════════════════════════════════
+// CONFIG
+// ════════════════════════════════════════════════════════════
+// API base: when the page is served by the backend (http://localhost:8000),
+// use that same origin. When opened as a bare file://, fall back to localhost:8000.
+const API = () => (location.protocol.startsWith("http")
+                    ? location.origin
+                    : "http://localhost:8000");
+
+// ════════════════════════════════════════════════════════════
+// AGENT CONNECTION
+// ════════════════════════════════════════════════════════════
+let agentOk = false;
+let pollTimer = null;
+let pollInterval = 3000;
+
+function updateMainHeight(){
+  const banner = document.getElementById('agent-banner');
+  const hdrH = document.getElementById('hdr').offsetHeight +
+               (banner ? banner.offsetHeight : 0);
+  document.getElementById('main-grid').style.height = `calc(100vh - ${hdrH}px)`;
+}
+
+async function checkAgent(){
+  try{
+    const r = await fetch(API()+'/health', {signal: AbortSignal.timeout(2500)});
+    if(!r.ok) throw new Error();
+    const d = await r.json();
+    setAgentStatus(true, d);
+  }catch{
+    setAgentStatus(false, null);
+  }
+}
+
+function setAgentStatus(ok, data){
+  agentOk = ok;
+  const dot   = document.getElementById('agent-dot');
+  const label = document.getElementById('agent-label');
+  const sa2   = document.getElementById('sa2');
+  const banner = document.getElementById('agent-banner');   // may be absent
+  const estTxt = document.getElementById('est-txt');
+
+  if(ok){
+    dot.className   = 'dot ok';
+    const apbs = data?.apbs    ? '✓APBS'    : '✗APBS(DH fallback)';
+    const pqr  = data?.pdb2pqr ? '✓pdb2pqr' : '✗pdb2pqr';
+    label.textContent = `Connected · ${apbs} · ${pqr}`;
+    sa2.textContent   = `v${data?.version||'?'}`;
+    if(banner) banner.classList.add('hidden');
+    updateMainHeight();
+    const en = !pdbTxt;
+    ['analyze-btn'].forEach(id=>{
+      const b=document.getElementById(id); if(b)b.disabled=en;
+    });
+    estTxt.textContent = 'Load PDB → Run analysis';
+    // slow down polling once connected
+    if(pollInterval < 10000){ pollInterval=10000; restartPolling(); }
+  } else {
+    dot.className   = 'dot err';
+    label.textContent = 'Backend not responding';
+    sa2.textContent   = '—';
+    ['analyze-btn'].forEach(id=>{
+      const b=document.getElementById(id); if(b)b.disabled=true;
+    });
+    if(banner) banner.classList.remove('hidden');
+    updateMainHeight();
+    estTxt.textContent = 'Backend starting… please wait';
+    if(pollInterval > 3000){ pollInterval=3000; restartPolling(); }
+  }
+}
+
+function restartPolling(){
+  if(pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(checkAgent, pollInterval);
+}
+
+function startPolling(){
+  pollInterval = 2000;
+  checkAgent();
+  restartPolling();
+}
+
+// ════════════════════════════════════════════════════════════
+// UI HELPERS
+// ════════════════════════════════════════════════════════════
+function swT(t){
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('on',['id','file'][i]===t));
+  document.getElementById('t-id').style.display=t==='id'?'block':'none';
+  document.getElementById('t-file').style.display=t==='file'?'block':'none';
+}
+function setID(id){document.getElementById('pid').value=id;}
+function showLd(t){document.getElementById('lov').style.display='flex';document.getElementById('ltxt').textContent=t;}
+function hideLd(){document.getElementById('lov').style.display='none';}
+function showErr(m){document.getElementById('errd').innerHTML=m?`<div class="eb">${m}</div>`:''}
+
+function getEnv(){
+  return{pH:+document.getElementById('eph').value||7.4,
+    ionic:+document.getElementById('eI').value||150,
+    temp:+document.getElementById('eT').value||310,
+    patch_radius:+document.getElementById('eR').value||12};
+}
+
+// ════════════════════════════════════════════════════════════
+// PDB LOADING
+// ════════════════════════════════════════════════════════════
+// When pH / ionic / temperature change, cached results are stale → clear them
+// so the next button press recomputes with the new environment.
+function onEnvChange(){
+  if(surfData){
+    clearAllResults();
+    if(viewer){clearSurfaces();viewer.setStyle({},{cartoon:{color:'spectrum'}});viewer.render();}
+    showErr('Environment changed — re-run the analyses to update results.');
+  }
+}
+
+// Mark a button as "computed" with a checkmark so the user knows results
+// are cached and pressing again just re-displays them.
+function markComputed(btnId, baseLabel){
+  const b=document.getElementById(btnId);
+  if(b) b.innerHTML = baseLabel + ' ✓';
+}
+function clearComputedMark(btnId, baseLabel){
+  const b=document.getElementById(btnId);
+  if(b) b.innerHTML = baseLabel;
+}
+
+// Wipe all cached results — called when a new structure is loaded.
+function clearAllResults(){
+  surfData=null;
+  featData=null; compatData=null;
+  featList=[]; compatList=[];
+  activeKind=null; activeKey=null;
+  analysisMode=null;
+  hoverInfo={};
+  clearComputedMark('analyze-btn','🔬 Analyze Surface');
+  const fb=document.getElementById('filter-bar'); if(fb) fb.innerHTML='';
+  const hl=document.getElementById('heat-legend'); if(hl) hl.style.display='none';
+  const er=document.getElementById('export-row'); if(er) er.style.display='none';
+  const rb=document.getElementById('report-btn'); if(rb) rb.disabled=true;
+}
+
+let viewer=null, pdbTxt=null, patches=[], selIdx=null;
+
+// Registry of per-residue info to show on hover/click in the 3D viewer.
+// Key "CHAIN:RESSEQ" -> {label, lines:[{k,v}]}
+let hoverInfo = {};
+let _hoverLabel = null;
+
+// (Re)build hover+click on the currently styled residues. Call after each
+// highlight so the tooltip reflects the active metric's values.
+function setupHover(){
+  if(!viewer)return;
+  // hover
+  viewer.setHoverable({}, true,
+    function(atom){
+      if(!atom)return;
+      const key=(atom.chain||'A')+':'+atom.resi;
+      const info=hoverInfo[key];
+      const txt = info ? info.text
+        : `${atom.resn||''}${atom.resi||''} ${atom.chain||''}`;
+      if(_hoverLabel){ try{viewer.removeLabel(_hoverLabel);}catch(e){} _hoverLabel=null; }
+      _hoverLabel = viewer.addLabel(txt, {
+        position:{x:atom.x,y:atom.y,z:atom.z},
+        backgroundColor:'#0f172a', backgroundOpacity:0.92,
+        fontColor:'#f1f5f9', fontSize:12, borderThickness:0.5,
+        borderColor:'#334155', alignment:'bottomCenter'
+      });
+      viewer.render();
+    },
+    function(atom){   // unhover
+      if(_hoverLabel){ try{viewer.removeLabel(_hoverLabel);}catch(e){} _hoverLabel=null; viewer.render(); }
+    });
+  // click -> zoom to residue
+  viewer.setClickable({}, true, function(atom){
+    if(!atom)return;
+    zoomResidue(atom.resi, atom.chain||'A');
+  });
+}
+
+// Build the hover text for a residue given the active context
+function _hoverText(r, extra){
+  let s = `${r.res_name||r.resn||''}${r.res_seq||r.resi||''} ${r.chain||'A'}`;
+  if(extra) s += '\n'+extra;
+  return s;
+}
+
+let showP=true, curSt='cartoon';
+
+function initViewer(){
+  if(viewer)return true;
+  if(typeof $3Dmol==='undefined')return false;
+  viewer=$3Dmol.createViewer(document.getElementById('mv'),{backgroundColor:'#eef1f7',preserveDrawingBuffer:true});
+  return true;
+}
+
+function setPDB(){
+  const id=document.getElementById('pid').value.trim().toUpperCase();
+  if(!id||id.length<4)return;
+  showLd(`${id} downloading…`);showErr('');
+  fetch(`https://files.rcsb.org/download/${id}.pdb`)
+    .then(r=>{if(!r.ok)throw new Error('PDB not found: '+id);return r.text();})
+    .then(txt=>{pdbTxt=txt;loadV(txt);hideLd();})
+    .catch(e=>{hideLd();showErr(e.message);});
+}
+
+function loadFile(ev){
+  const f=ev.target.files[0];if(!f)return;
+  document.getElementById('fl').textContent='✓ '+f.name;
+  showLd('Reading file…');
+  const rd=new FileReader();
+  rd.onload=e=>{pdbTxt=e.target.result;loadV(pdbTxt);hideLd();};
+  rd.readAsText(f);
+}
+
+function loadV(txt, keepResults){
+  if(!initViewer()){setTimeout(()=>loadV(txt,keepResults),200);return;}
+  // a new structure invalidates any previous analysis results
+  if(!keepResults) clearAllResults();
+  viewer.clear();viewer.addModel(txt,'pdb');
+  viewer.setStyle({},{cartoon:{color:'spectrum'}});viewer.zoomTo();viewer.render();
+  document.getElementById('est').style.display='none';
+  if(agentOk){
+    ['analyze-btn'].forEach(id=>{
+      const b=document.getElementById(id); if(b)b.disabled=false;
+    });
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// ANALYSIS
+// ════════════════════════════════════════════════════════════
+let fgList = [];      // functional groups available (from backend)
+let lastStats = null; // stats from the most recent analysis
+let lastEnv   = null;  // environment used
+let lastPDBid = "";    // PDB id or filename analyzed
+
+async function runAn(){
+  if(!pdbTxt){showErr('Load a PDB file first');return;}
+  if(!agentOk){showErr('Backend not ready yet');return;}
+  showLd('pdb2pqr → APBS FD-LPB → Patch clustering → Feature mapping…');
+  showErr('');
+  try{
+    const env=getEnv();
+    const r=await fetch(API()+'/analyze',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pdb_text:pdbTxt,env:env}),
+      signal:AbortSignal.timeout(600000)
+    });
+    if(!r.ok){const e=await r.json();throw new Error(e.detail||'Backend error');}
+    const d=await r.json();
+    hideLd();patches=d.patches;fgList=d.functional_groups||[];
+    const s=d.stats;
+    lastStats=s; lastEnv=env; analysisMode='patch';
+    lastPDBid=(document.getElementById('pid').value||'structure').toUpperCase();
+    document.getElementById('sa').textContent=s.n_atoms;
+    document.getElementById('sr').textContent=s.n_residues;
+    document.getElementById('ss2').textContent=s.n_surface_res;
+    document.getElementById('sp').textContent=s.n_patches;
+    document.getElementById('sel').textContent=s.electrostatics;
+    selIdx=null;
+    renderFilterBar();
+    renderList();colorByP();
+    document.getElementById('report-btn').disabled=false;
+  }catch(e){hideLd();showErr(e.message);}
+}
+
+// ════════════════════════════════════════════════════════════
+// MODE B — SURFACE GROUP MAP (no clustering)
+// ════════════════════════════════════════════════════════════
+let surfaceGroups = null;       // {groups:{name:{n,residues}}, ...}
+let sgList = [];                // group names
+let activeSG = null;            // currently highlighted group
+const SG_COLORS = {
+  '-COOH (carboxyl)':'#ef4444','-OH (hydroxyl)':'#06b6d4','-SH (thiol)':'#eab308',
+  'Aromatic ring':'#10b981','-NH2 / amine':'#3b82f6','Guanidinium':'#6366f1',
+  'Imidazole':'#a855f7','Metal-binding site':'#f97316','H-bond donor':'#ec4899',
+  'H-bond acceptor':'#14b8a6','Hydrophobic':'#84cc16'
+};
+
+async function runSurfaceGroups(){
+  if(!pdbTxt){showErr('Load a PDB file first');return;}
+  if(!agentOk){showErr('Backend not ready yet');return;}
+  showLd('Scanning solvent-accessible surface chemistry…');
+  showErr('');
+  try{
+    const env=getEnv();
+    const r=await fetch(API()+'/surface_groups',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pdb_text:pdbTxt,env:env}),
+      signal:AbortSignal.timeout(600000)
+    });
+    if(!r.ok){const e=await r.json();throw new Error(e.detail||'Backend error');}
+    const d=await r.json();
+    hideLd();
+    surfaceGroups=d.groups; sgList=d.surface_group_list||[];
+    lastStats=d.stats; lastEnv=env; analysisMode='surface';
+    lastPDBid=(document.getElementById('pid').value||'structure').toUpperCase();
+    const s=d.stats;
+    document.getElementById('sa').textContent=s.n_atoms;
+    document.getElementById('sr').textContent=s.n_residues;
+    document.getElementById('ss2').textContent=s.n_surface_res;
+    document.getElementById('sp').textContent='—';
+    document.getElementById('sel').textContent='surface-map';
+    activeSG=null;
+    renderSGBar();
+    renderSGList();
+    // reset 3D to plain cartoon
+    if(viewer){clearSurfaces();viewer.setStyle({},{cartoon:{color:'#cbd5e1'}});viewer.render();}
+    document.getElementById('report-btn').disabled=false;
+  }catch(e){hideLd();showErr(e.message);}
+}
+
+// ════════════════════════════════════════════════════════════
+// MODE A — RESIDUE-LEVEL SURFACE FEATURE MAP
+// ════════════════════════════════════════════════════════════
+let featData = null;   // backend response
+let featList = [];     // feature keys
+let featInfo = {};     // {key:{label,mechanism}}
+let activeFeat = null;
+const FEAT_COLORS = {
+  charge_pos:'#3b82f6', charge_neg:'#ef4444', hbond_donor:'#ec4899',
+  hbond_acceptor:'#14b8a6', hydrophobic:'#84cc16', aromatic:'#10b981',
+  metal_binding:'#f97316', thiol:'#eab308', carboxyl:'#f43f5e', amine:'#6366f1'
+};
+const FEAT_LABEL = {
+  charge_pos:'Charge +', charge_neg:'Charge −', hbond_donor:'H-bond donor',
+  hbond_acceptor:'H-bond acceptor', hydrophobic:'Hydrophobic', aromatic:'Aromatic',
+  metal_binding:'Metal-binding', thiol:'Thiol', carboxyl:'Carboxyl', amine:'Amine'
+};
+
+// ════════════════════════════════════════════════════════════
+// UNIFIED SURFACE ANALYSIS — one call, one combined filter list
+// ════════════════════════════════════════════════════════════
+let surfData = null;        // full /analyze_surface response
+let activeKind = null;      // 'feature' | 'compatibility'
+let activeKey  = null;      // which filter is selected
+
+async function runAnalyzeSurface(){
+  if(!pdbTxt){showErr('Load a PDB file first');return;}
+  if(!agentOk){showErr('Backend not ready yet');return;}
+  // already computed for this protein → just re-display, no recompute
+  if(surfData){ showSurfaceResult(); return; }
+  showLd('Analyzing surface: features + functional-group compatibility…'); showErr('');
+  try{
+    const env=getEnv();
+    const r=await fetch(API()+'/analyze_surface',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pdb_text:pdbTxt,env:env}),
+      signal:AbortSignal.timeout(600000)});
+    if(!r.ok){const e=await r.json();throw new Error(e.detail||'Backend error');}
+    const d=await r.json();
+    hideLd();
+    surfData=d;
+    // keep legacy globals in sync so existing helpers/report keep working
+    featData={features:d.features,feature_list:d.feature_list,feature_info:d.feature_info,stats:d.stats};
+    featList=d.feature_list||[]; featInfo=d.feature_info||{};
+    compatData={compatibility:d.compatibility,compatibility_list:d.compatibility_list,stats:d.stats};
+    compatList=d.compatibility_list||[];
+    lastStats=d.stats; lastEnv=env;
+    lastPDBid=(document.getElementById('pid').value||'structure').toUpperCase();
+    markComputed('analyze-btn','🔬 Analyze Surface');
+    showSurfaceResult();
+  }catch(e){hideLd();showErr(e.message);}
+}
+
+// Display already-computed surface results (no fetch)
+function showSurfaceResult(){
+  if(!surfData)return;
+  analysisMode='surface';
+  const s=surfData.stats; lastStats=s;
+  document.getElementById('sa').textContent=s.n_atoms;
+  document.getElementById('sr').textContent=s.n_residues;
+  document.getElementById('ss2').textContent=s.n_surface_res;
+  document.getElementById('sp').textContent='—';
+  document.getElementById('sel').textContent=
+    s.electrostatics==='APBS_LinearPB'?'APBS':
+    (s.electrostatics==='pdb2pqr_only'?'pdb2pqr':'geometric');
+  activeKind=null; activeKey=null;
+  renderCombinedBar(); renderCombinedPanel();
+  if(viewer){clearSurfaces();viewer.setStyle({},{cartoon:{color:'#cbd5e1'}});viewer.render();}
+  document.getElementById('report-btn').disabled=false;
+  document.getElementById('export-row').style.display='block';
+}
+
+function renderCombinedBar(){
+  if(!surfData)return;
+  const featChips = featList.map(f=>{
+    const n=surfData.features[f]?.n||0; const col=FEAT_COLORS[f]||'#888';
+    const on=activeKind==='feature'&&activeKey===f;
+    return `<span class="q${on?' on-filter':''}" onclick="selectFilter('feature','${f}')"
+      style="${on?`border-color:${col};color:${col}`:''}">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${col};margin-right:3px"></span>${FEAT_LABEL[f]||f} (${n})</span>`;
+  }).join('');
+  const compChips = compatList.map(c=>{
+    const n=surfData.compatibility[c]?.n||0; const on=activeKind==='compatibility'&&activeKey===c;
+    return `<span class="q${on?' on-filter':''}" onclick="selectFilter('compatibility','${c}')"
+      style="${on?'border-color:#7c3aed;color:#7c3aed':''}">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#7c3aed;margin-right:3px"></span>${COMPAT_LABEL[c]||c} (${n})</span>`;
+  }).join('');
+  document.getElementById('filter-bar').innerHTML=
+    '<div style="font-size:11px;color:var(--mu);font-family:var(--mo);margin-bottom:4px;letter-spacing:1px">CLICK ANY FILTER — ● surface feature · ▪ surface compatibility</div>'
+    +'<div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:8px">'+featChips+compChips+'</div>';
+}
+
+function selectFilter(kind,key){
+  activeKind=kind; activeKey=key;
+  // sync legacy globals used by the panel/highlight helpers
+  activeFeat = (kind==='feature') ? key : null;
+  activeCompat = (kind==='compatibility') ? key : null;
+  renderCombinedBar();
+  renderCombinedPanel();
+  if(kind==='feature') highlightFeat(key);
+  else highlightCompat(key);
+}
+
+function renderCombinedPanel(){
+  if(!surfData)return;
+  if(!activeKey){
+    document.getElementById('plist').innerHTML=
+      '<div class="ib" style="margin:6px 0">Click any filter above. ● features show where a chemistry sits on the protein; ▪ compatibility scores how well residues fit a generic surface chemistry.</div>';
+    document.getElementById('pdet').innerHTML=
+      '<div class="es" style="min-height:140px"><div class="ei" style="font-size:20px">🔬</div><div class="et">Surface analysis — select a filter</div></div>';
+    document.getElementById('heat-legend').style.display='none';
+    return;
+  }
+  if(activeKind==='feature') renderFeatPanel();
+  else renderCompatPanel();
+}
+
+async function runFeatureMap(){
+  if(!pdbTxt){showErr('Load a PDB file first');return;}
+  if(!agentOk){showErr('Backend not ready yet');return;}
+  showLd('Mapping solvent-accessible surface features…'); showErr('');
+  try{
+    const env=getEnv();
+    const r=await fetch(API()+'/surface_feature_map',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pdb_text:pdbTxt,env:env}),
+      signal:AbortSignal.timeout(600000)});
+    if(!r.ok){const e=await r.json();throw new Error(e.detail||'Backend error');}
+    const d=await r.json();
+    hideLd();
+    featData=d; featList=d.feature_list||[]; featInfo=d.feature_info||{};
+    analysisMode='features'; lastStats=d.stats; lastEnv=env;
+    lastPDBid=(document.getElementById('pid').value||'structure').toUpperCase();
+    const s=d.stats;
+    document.getElementById('sa').textContent=s.n_atoms;
+    document.getElementById('sr').textContent=s.n_residues;
+    document.getElementById('ss2').textContent=s.n_surface_res;
+    document.getElementById('sp').textContent='—';
+    document.getElementById('sel').textContent='feature-map';
+    activeFeat=null;
+    renderFeatBar(); renderFeatPanel();
+    if(viewer){clearSurfaces();viewer.setStyle({},{cartoon:{color:'#cbd5e1'}});viewer.render();}
+    document.getElementById('report-btn').disabled=false;
+  }catch(e){hideLd();showErr(e.message);}
+}
+
+function renderFeatBar(){
+  if(!featList.length)return;
+  const html='<div style="font-size:11px;color:var(--mu);font-family:var(--mo);margin-bottom:4px;letter-spacing:1px">SELECT A SURFACE FEATURE (click)</div>'
+    +'<div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:8px">'
+    +featList.map(f=>{
+      const n=featData.features[f]?.n||0; const col=FEAT_COLORS[f]||'#888';
+      const on=activeFeat===f;
+      return `<span class="q${on?' on-filter':''}" onclick="setFeat('${f}')"
+        style="${on?`border-color:${col};color:${col}`:''}">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${col};margin-right:3px"></span>${FEAT_LABEL[f]||f} (${n})</span>`;
+    }).join('')+'</div>';
+  document.getElementById('filter-bar').innerHTML=html;
+}
+
+function setFeat(f){ activeFeat=f; renderFeatBar(); renderFeatPanel(); highlightFeat(f); }
+
+function highlightFeat(f){
+  if(!viewer||!featData.features[f])return;
+  clearSurfaces();
+  viewer.setStyle({},{cartoon:{color:'#cbd5e1'}});
+  const col=FEAT_COLORS[f]||'#f59e0b';
+  const residues=featData.features[f].residues;
+  const byChain={};
+  hoverInfo={};
+  residues.forEach(r=>{
+    (byChain[r.chain]=byChain[r.chain]||[]).push(r.res_seq);
+    const parts=[`SASA ${r.sasa} Å²`,`exposure ${r.exposure}`,`charge ${r.charge}`];
+    if(r.ss) parts.push(`SS ${r.ss}`);
+    hoverInfo[r.chain+':'+r.res_seq]={text:`${r.res_name}${r.res_seq} ${r.chain}\n${parts.join(' · ')}`};
+  });
+  Object.entries(byChain).forEach(([ch,resis])=>{
+    viewer.setStyle({chain:ch,resi:resis},{stick:{color:col,radius:0.25},sphere:{color:col,radius:0.5}});
+  });
+  if(curSt==='surface'){
+    const inFeat={};
+    residues.forEach(r=>{inFeat[(r.chain||'A')+':'+r.res_seq]=1;});
+    viewer.addSurface($3Dmol.SurfaceType.VDW,{opacity:0.9,
+      colorfunc:function(atom){
+        return (((atom.chain||'A')+':'+atom.resi) in inFeat)?col:'#dfe5ee';
+      }});
+    surfacesShown=true;
+  }
+  setupHover();
+  viewer.render();
+  // legend: feature is categorical → show count + mean exposure
+  const g=featData.features[f];
+  const el=document.getElementById('heat-legend');
+  if(el){el.style.display='block';
+    el.innerHTML=`<div style="font-size:11px;font-family:var(--mo);color:var(--mu);margin-bottom:3px">${FEAT_LABEL[f]||f}</div>
+      <div style="display:flex;align-items:center;gap:6px">
+      <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${col}"></span>
+      <span style="font-size:11px;color:var(--tx)">${g.n} residues · mean exposure ${g.mean_intensity}</span></div>`;}
+}
+
+function renderFeatPanel(){
+  if(!featData){return;}
+  if(!activeFeat){
+    document.getElementById('plist').innerHTML=
+      '<div class="ib" style="margin:6px 0">Click a feature above to highlight the solvent-accessible residues that present it.</div>';
+    document.getElementById('pdet').innerHTML=
+      '<div class="es" style="min-height:140px"><div class="ei" style="font-size:20px">🧭</div><div class="et">Surface feature map — select a feature</div></div>';
+    return;
+  }
+  const g=featData.features[activeFeat]; const col=FEAT_COLORS[activeFeat]||'#888';
+  document.getElementById('plist').innerHTML=
+    `<div style="font-size:12px;font-weight:700;margin-bottom:4px;color:${col}">${g.label} — ${g.n} residues</div>`
+    +`<div style="font-size:11px;color:var(--mu);margin-bottom:6px">${g.mechanism}</div>`
+    +'<div class="rl">'+g.residues.map(r=>
+      `<span class="rt" onclick="zoomResidue(${r.res_seq},'${r.chain}')"
+        style="border-color:${col};color:#334155" title="SASA ${r.sasa} Å² · exposure ${r.exposure} · q ${r.charge}">${r.res_name}${r.res_seq}${r.chain!=='A'?r.chain:''}</span>`
+    ).join('')+'</div>';
+  const top=g.residues.slice(0,12);
+  document.getElementById('pdet').innerHTML=
+    `<div class="dGd"><div class="dGv" style="color:${col}">${g.n}</div>
+     <div class="dGl">RESIDUES PRESENTING ${g.label.toUpperCase()}</div></div>
+     <div style="font-size:11px;color:var(--mu);font-family:var(--mo);margin:6px 0 3px;letter-spacing:1px">MEAN EXPOSURE ${g.mean_intensity} · MOST EXPOSED</div>`
+    +top.map(r=>`<div class="lr"><span class="lt2">${r.res_name}${r.res_seq} ${r.chain}</span>
+      <span class="lv" style="color:${col}">${r.sasa} Å²</span></div>`).join('');
+}
+
+// ════════════════════════════════════════════════════════════
+// MODE B — FUNCTIONAL-GROUP COMPATIBILITY MAP
+// ════════════════════════════════════════════════════════════
+let compatData = null;
+let compatList = [];
+let activeCompat = null;
+let compatColorMode = 'propensity';   // 'propensity' or 'patch' (SAP density)
+const COMPAT_LABEL = {
+  cationic:'Cationic surface', anionic:'Anionic surface',
+  hbond_donor:'H-bond donor surface', hbond_acceptor:'H-bond acceptor surface',
+  pi_carbon:'π / carbon-like', hydrophobic:'Hydrophobic surface',
+  oxide:'Oxide', hydroxyapatite:'Hydroxyapatite / Ca²⁺',
+  metal_coord:'Metal coordination', gold:'Gold', phosphate:'Phosphate'
+};
+
+async function runCompatMap(){
+  if(!pdbTxt){showErr('Load a PDB file first');return;}
+  if(!agentOk){showErr('Backend not ready yet');return;}
+  showLd('Computing residue-level functional-group compatibility…'); showErr('');
+  try{
+    const env=getEnv();
+    const r=await fetch(API()+'/compatibility_map',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pdb_text:pdbTxt,env:env}),
+      signal:AbortSignal.timeout(600000)});
+    if(!r.ok){const e=await r.json();throw new Error(e.detail||'Backend error');}
+    const d=await r.json();
+    hideLd();
+    compatData=d; compatList=d.compatibility_list||[];
+    analysisMode='compatibility'; lastStats=d.stats; lastEnv=env;
+    lastPDBid=(document.getElementById('pid').value||'structure').toUpperCase();
+    const s=d.stats;
+    document.getElementById('sa').textContent=s.n_atoms;
+    document.getElementById('sr').textContent=s.n_residues;
+    document.getElementById('ss2').textContent=s.n_surface_res;
+    document.getElementById('sp').textContent='—';
+    document.getElementById('sel').textContent='compatibility';
+    activeCompat=null;
+    renderCompatBar(); renderCompatPanel();
+    if(viewer){clearSurfaces();viewer.setStyle({},{cartoon:{color:'#cbd5e1'}});viewer.render();}
+    document.getElementById('report-btn').disabled=false;
+  }catch(e){hideLd();showErr(e.message);}
+}
+
+function renderCompatBar(){
+  if(!compatList.length)return;
+  const html='<div style="font-size:11px;color:var(--mu);font-family:var(--mo);margin-bottom:4px;letter-spacing:1px">SELECT A SURFACE CHEMISTRY (click)</div>'
+    +'<div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:8px">'
+    +compatList.map(c=>{
+      const n=compatData.compatibility[c]?.n||0; const on=activeCompat===c;
+      return `<span class="q${on?' on-filter':''}" onclick="setCompat('${c}')"
+        style="${on?'border-color:#7c3aed;color:#7c3aed':''}">${COMPAT_LABEL[c]||c} (${n})</span>`;
+    }).join('')+'</div>';
+  document.getElementById('filter-bar').innerHTML=html;
+}
+
+function setCompat(c){ activeCompat=c; renderCompatBar(); renderCompatPanel(); highlightCompat(c); }
+
+// color residues green(strong)→yellow→red(weak) by normalized score
+function compatColor(score){
+  // score 1 = strongest binder (green), 0 = weakest (red)
+  const g=Math.round(16+(217-16)*score), r=Math.round(239-(239-16)*score);
+  return `rgb(${score<0.5?239:r},${score<0.5?Math.round(40+(200)*score*2):217},${score<0.5?40:Math.round(138*score)})`;
+}
+
+function setCompatColorMode(mode){
+  compatColorMode = mode;
+  if(activeCompat) highlightCompat(activeCompat);
+  renderCompatPanel();
+}
+
+function highlightCompat(c){
+  if(!viewer||!compatData.compatibility[c])return;
+  clearSurfaces();
+  viewer.setStyle({},{cartoon:{color:'#e2e8f0'}});
+  const residues=compatData.compatibility[c].residues;
+  const usePatch = (compatColorMode==='patch');
+  const valOf = r => usePatch ? (r.patch_density/100) : (r.propensity/100);
+  // build hover registry with real numbers
+  hoverInfo={};
+  residues.forEach(r=>{
+    const parts=[`propensity ${r.propensity}/100`,`patch ${r.patch_density}/100`,`base ${r.base_energy} kcal/mol`];
+    if(r.phi!==null&&r.phi!==undefined) parts.push(`φ ${r.phi} kT/e`);
+    hoverInfo[r.chain+':'+r.res_seq]={text:`${r.res_name}${r.res_seq} ${r.chain}\n${parts.join(' · ')}`};
+    const col=compatColor(valOf(r));
+    viewer.setStyle({chain:r.chain,resi:[r.res_seq]},
+      {stick:{color:col,radius:0.25},sphere:{color:col,radius:0.5}});
+  });
+  // if surface display is on, colour the molecular surface
+  if(curSt==='surface'){
+    const vByRes={};
+    residues.forEach(r=>{vByRes[(r.chain||'A')+':'+r.res_seq]=valOf(r);});
+    viewer.addSurface($3Dmol.SurfaceType.VDW,{opacity:0.9,
+      colorfunc:function(atom){
+        const k=(atom.chain||'A')+':'+atom.resi;
+        return (k in vByRes)?compatColor(vByRes[k]):'#dfe5ee';
+      }});
+    surfacesShown=true;
+  }
+  setupHover();
+  viewer.render();
+  // legend
+  const el=document.getElementById('heat-legend');
+  const title = usePatch
+    ? `${COMPAT_LABEL[c]||c} · patch density (SAP)`
+    : `${COMPAT_LABEL[c]||c} · interaction propensity`;
+  const sub = usePatch ? 'isolated ← → clustered patch' : 'weak ← → strong';
+  if(el){el.style.display='block';
+    el.innerHTML=`<div style="font-size:11px;font-family:var(--mo);color:var(--mu);margin-bottom:3px">${title}</div>
+      <div style="display:flex;align-items:center;gap:5px">
+      <span style="font-size:9px;font-family:var(--mo);color:#ef4444">0</span>
+      <div style="flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,#ef4444,#f5c828,#10d98a)"></div>
+      <span style="font-size:9px;font-family:var(--mo);color:#10b981">100</span></div>
+      <div style="font-size:8px;color:var(--mu);text-align:center;margin-top:2px">${sub}</div>`;}
+}
+
+function renderCompatPanel(){
+  if(!compatData){return;}
+  if(!activeCompat){
+    document.getElementById('plist').innerHTML=
+      '<div class="ib" style="margin:6px 0">Click a surface chemistry above to score every solvent-accessible residue for compatibility with it.</div>';
+    document.getElementById('pdet').innerHTML=
+      '<div class="es" style="min-height:140px"><div class="ei" style="font-size:20px">🧩</div><div class="et">Functional compatibility — select a surface</div></div>';
+    return;
+  }
+  const g=compatData.compatibility[activeCompat];
+  const modeToggle =
+    `<div style="display:flex;gap:3px;margin-bottom:7px">
+      <button class="vb${compatColorMode==='propensity'?' on':''}" style="flex:1;font-size:10px"
+        onclick="setCompatColorMode('propensity')">Propensity</button>
+      <button class="vb${compatColorMode==='patch'?' on':''}" style="flex:1;font-size:10px"
+        onclick="setCompatColorMode('patch')">Patch density</button>
+    </div>`;
+  const usePatch = (compatColorMode==='patch');
+  document.getElementById('plist').innerHTML=
+    `<div style="font-size:12px;font-weight:700;margin-bottom:4px;color:#7c3aed">${g.label} — ${g.n} compatible residues</div>`
+    +`<div style="font-size:11px;color:var(--mu);margin-bottom:6px">${g.mechanism}</div>`
+    +modeToggle
+    +'<div class="rl">'+g.residues.map(r=>{
+      const col=compatColor((usePatch?r.patch_density:r.propensity)/100);
+      const base = `base ${r.base_energy} kcal/mol`;
+      const phi = (r.phi!==null&&r.phi!==undefined) ? ` · φ ${r.phi} kT/e` : '';
+      return `<span class="rt" onclick="zoomResidue(${r.res_seq},'${r.chain}')"
+        style="border-color:${col};color:#334155" title="${r.mechanism} · propensity ${r.propensity}/100 · patch ${r.patch_density}/100 · ${base}${phi}">${r.res_name}${r.res_seq}${r.chain!=='A'?r.chain:''}</span>`;
+    }).join('')+'</div>';
+  const elec = (lastStats&&lastStats.electrostatics)||'none';
+  const elecNote = elec==='APBS_LinearPB'
+    ? 'APBS electrostatic potential included in propensity'
+    : (elec==='pdb2pqr_only' ? 'charges from pdb2pqr (no APBS field)' : 'electrostatics unavailable');
+  const Rused = (lastStats&&lastStats.patch_radius)||12;
+  if(usePatch){
+    // patch-density view: rank by patch density (centre of strongest cluster)
+    const byPatch=[...g.residues].sort((a,b)=>b.patch_density-a.patch_density).slice(0,12);
+    document.getElementById('pdet').innerHTML=
+      `<div class="dGd"><div class="dGv" style="color:#0891b2">${g.max_patch_density}/100</div>
+       <div class="dGl">STRONGEST PATCH · CENTRE ${g.top_patch_residue||'—'}</div></div>
+       <div style="font-size:10px;color:var(--mu);font-family:var(--mo);margin:4px 0;font-style:italic">SAP-style density · radius R = ${Rused} Å · clustered exposed compatible residues</div>
+       <div style="font-size:11px;color:var(--mu);font-family:var(--mo);margin:6px 0 3px;letter-spacing:1px">PATCH CENTRES (highest density)</div>`
+      +byPatch.map(r=>`<div class="lr"><span class="lt2">${r.res_name}${r.res_seq} ${r.chain}</span>
+        <span class="lv" style="color:#0891b2">${r.patch_density}</span></div>`).join('');
+  } else {
+    const top=g.residues.slice(0,12);
+    document.getElementById('pdet').innerHTML=
+      `<div class="dGd"><div class="dGv" style="color:#7c3aed">${g.mean_propensity}/100</div>
+       <div class="dGl">MEAN INTERACTION PROPENSITY · ${g.n} RESIDUES</div></div>
+       <div style="font-size:10px;color:var(--mu);font-family:var(--mo);margin:4px 0;font-style:italic">${elecNote} · includes 3D cluster context</div>
+       <div style="font-size:11px;color:var(--mu);font-family:var(--mo);margin:6px 0 3px;letter-spacing:1px">STRONGEST CONTRIBUTORS (propensity)</div>`
+      +top.map(r=>`<div class="lr"><span class="lt2">${r.res_name}${r.res_seq} ${r.chain}${r.n_like_neighbors?` <span style="color:#10b981;font-size:9px">+${r.n_like_neighbors}nb</span>`:''}</span>
+        <span class="lv" style="color:#7c3aed">${r.propensity}</span></div>`).join('');
+  }
+}
+
+function renderSGBar(){
+  if(!sgList.length)return;
+  const html='<div style="font-size:11px;color:var(--mu);font-family:var(--mo);margin-bottom:4px;letter-spacing:1px">HIGHLIGHT A SURFACE GROUP (click)</div>'
+    +'<div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:8px">'
+    +sgList.map(g=>{
+      const n=surfaceGroups[g]?.n||0;
+      const col=SG_COLORS[g]||'#888';
+      const on=activeSG===g;
+      return `<span class="q${on?' on-filter':''}" onclick="setSG('${g.replace(/'/g,"\\'")}')"
+        style="${on?`border-color:${col};color:${col}`:''}">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${col};margin-right:3px"></span>${g} (${n})</span>`;
+    }).join('')
+    +'</div>';
+  document.getElementById('filter-bar').innerHTML=html;
+}
+
+function setSG(g){
+  activeSG=g;
+  renderSGBar();
+  renderSGList();
+  highlightSG(g);
+}
+
+function highlightSG(g){
+  if(!viewer||!surfaceGroups[g])return;
+  clearSurfaces();
+  viewer.setStyle({},{cartoon:{color:'#cbd5e1'}});
+  const col=SG_COLORS[g]||'#f59e0b';
+  const byChain={};
+  surfaceGroups[g].residues.forEach(r=>{(byChain[r.chain]=byChain[r.chain]||[]).push(r.res_seq);});
+  Object.entries(byChain).forEach(([ch,resis])=>{
+    viewer.setStyle({chain:ch,resi:resis},{stick:{color:col,radius:0.25},sphere:{color:col,radius:0.5}});
+  });
+  viewer.render();
+}
+
+function renderSGList(){
+  if(!surfaceGroups){return;}
+  if(!activeSG){
+    document.getElementById('plist').innerHTML=
+      '<div class="ib" style="margin:6px 0">Click a group above to highlight its residues on the 3D structure and list them here.</div>';
+    document.getElementById('pdet').innerHTML=
+      '<div class="es" style="min-height:140px"><div class="ei" style="font-size:20px">🗺</div><div class="et">Surface group map — select a group</div></div>';
+    return;
+  }
+  const grp=surfaceGroups[activeSG];
+  const col=SG_COLORS[activeSG]||'#888';
+  document.getElementById('plist').innerHTML=
+    `<div style="font-size:12px;font-weight:700;margin-bottom:6px;color:${col}">${activeSG} — ${grp.n} surface residues</div>`
+    +'<div class="rl">'+grp.residues.map(r=>
+      `<span class="rt" onclick="zoomResidue(${r.res_seq},'${r.chain}')"
+        style="border-color:${col};color:#334155" title="SASA ${r.sasa} Å² · ${r.ss}">${r.res_name}${r.res_seq}${r.chain!=='A'?r.chain:''}</span>`
+    ).join('')+'</div>';
+  // detail panel: SASA-sorted summary
+  const top=grp.residues.slice(0,12);
+  document.getElementById('pdet').innerHTML=
+    `<div class="dGd"><div class="dGv" style="color:${col}">${grp.n}</div>
+     <div class="dGl">SOLVENT-ACCESSIBLE ${activeSG.toUpperCase()} RESIDUES</div></div>
+     <div style="font-size:11px;color:var(--mu);font-family:var(--mo);margin-bottom:4px;letter-spacing:1px">MOST EXPOSED (by SASA)</div>`
+    +top.map(r=>`<div class="lr"><span class="lt2">${r.res_name}${r.res_seq} ${r.chain}</span>
+      <span class="lv" style="color:${col}">${r.sasa} Å²</span></div>`).join('');
+}
+
+// ════════════════════════════════════════════════════════════
+// FEATURE FILTER — let user pick which feature to rank patches by
+// ════════════════════════════════════════════════════════════
+let analysisMode = 'patch';   // 'patch' or 'surface'
+let activeFilter = null;   // null = sort by overall affinity_score
+
+function renderFilterBar(){
+  if(!fgList.length)return;
+  const groups = [
+    {k:null, label:'Overall'},
+    ...fgList.map(g=>({k:g, label:fgLabel(g)})),
+  ];
+  const html = '<div style="font-size:11px;color:var(--mu);font-family:var(--mo);margin-bottom:4px;letter-spacing:1px">RANK + 3D HEAT-MAP BY FEATURE</div>'
+    + '<div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:8px">'
+    + groups.map(g=>`<span class="q${activeFilter===g.k?' on-filter':''}" onclick="setFilter(${g.k===null?'null':`'${g.k}'`})" style="${activeFilter===g.k?'border-color:var(--ac);color:var(--ac)':''}">${g.label}</span>`).join('')
+    + '</div>';
+  document.getElementById('filter-bar').innerHTML = html;
+}
+
+function fgLabel(g){
+  const map={'-SH':'−SH / Au','Ca2+':'Ca²⁺','Ti-O':'Ti–O','Zr-O':'Zr–O',
+    'pi':'π (aromatic)','-NH2':'−NH₂','-COOH':'−COOH','-OH':'−OH',
+    '-CH3':'−CH₃ (hydrophobic)','PO4':'PO₄','-C=O':'−C=O'};
+  return map[g]||g;
+}
+
+function setFilter(k){
+  activeFilter=k;
+  // re-sort patches
+  if(k===null){
+    patches.sort((a,b)=>b.affinity.affinity_score-a.affinity.affinity_score);
+  } else {
+    patches.sort((a,b)=>
+      (a.affinity.functional_groups[k]?.dG??0)-(b.affinity.functional_groups[k]?.dG??0));
+  }
+  patches.forEach((p,i)=>p.rank=i+1);
+  selIdx=null;
+  renderFilterBar();renderList();colorByP();
+}
+
+// ════════════════════════════════════════════════════════════
+// COLORS & RENDERING
+// ════════════════════════════════════════════════════════════
+const COLS=['#00c8ff','#f59e0b','#10d98a','#f472b6','#a78bfa',
+            '#34d399','#fb7185','#38bdf8','#fbbf24','#c084fc','#4ade80','#f97316'];
+const pc=i=>COLS[i%COLS.length];
+const TL={pos_charged:'Cationic',neg_charged:'Anionic',hydrophobic:'Hydrophobic',
+          polar:'Polar',aromatic:'Aromatic',special:'Gly/Pro',other:'Other'};
+const TC={pos_charged:'t-ch',neg_charged:'t-ch',hydrophobic:'t-hb',
+          polar:'t-pl',aromatic:'t-ar'};
+const CC={pos_charged:'r-cp',neg_charged:'r-cn',hydrophobic:'r-hb',
+          polar:'r-pl',aromatic:'r-ar',special:'r-ot',other:'r-ot'};
+const SSN={H:'α-Helix',E:'β-Sheet',C:'Loop'};
+
+function renderList(){
+  if(!patches.length){
+    document.getElementById('plist').innerHTML='<div class="eb">No patches found</div>';return;
+  }
+  document.getElementById('plist').innerHTML='<div class="pl">'+patches.map((p,i)=>{
+    const m=p.metrics,a=p.affinity;
+    const sc=a.affinity_score>=65?'shi':a.affinity_score>=40?'smd':'slo';
+    // best functional group for this patch (or filtered one)
+    let fgShown, fgDG;
+    if(activeFilter && a.functional_groups[activeFilter]){
+      fgShown=fgLabel(activeFilter); fgDG=a.functional_groups[activeFilter].dG;
+    } else {
+      fgShown=fgLabel(a.best_group); fgDG=a.functional_groups[a.best_group]?.dG??0;
+    }
+    const cv=m.curvature?.index===1?'Convex':m.curvature?.index===-1?'Concave':'Flat';
+    return`<div class="pc${selIdx===i?' sel':''}" onclick="selP(${i})">
+<div class="ph2">
+  <span class="pn" style="color:${pc(i)}">◈ P${p.rank}</span>
+  <span class="ps ${sc}">${fgShown}: ${fgDG>0?'+':''}${(+fgDG).toFixed(1)} kcal/mol</span>
+</div>
+<div class="pm2">
+  <div class="mm"><div class="mv" style="color:${+m.net_charge>0?'#1d4ed8':+m.net_charge<0?'#b91c1c':'#aaa'}">${+m.net_charge>0?'+':''}${(+m.net_charge).toFixed(1)}</div><div class="ml">Charge</div></div>
+  <div class="mm"><div class="mv" style="color:${+m.hydro>0.2?'#f59e0b':+m.hydro<-0.2?'#1d4ed8':'#aaa'}">${(+m.hydro).toFixed(2)}</div><div class="ml">Hydro</div></div>
+  <div class="mm"><div class="mv">${m.n}</div><div class="ml">Res.</div></div>
+  <div class="mm"><div class="mv" style="color:var(--gr)">${(+a.affinity_score).toFixed(0)}</div><div class="ml">Affinity</div></div>
+</div>
+<div class="pt">
+  ${a.ranked_groups.slice(0,3).filter(g=>g.dG<-0.5).map(g=>
+    `<span class="ptag t-ch" title="${(g.mechanisms||[]).join(', ')}">${fgLabel(g.group)} ${g.dG.toFixed(0)}</span>`).join('')}
+  <span class="ptag" style="background:rgba(255,255,255,.05);color:var(--mu)">${cv}</span>
+  <span class="ptag" style="background:rgba(255,255,255,.05);color:var(--mu)">pI ${(+m.pI||0).toFixed(1)}</span>
+</div>
+</div>`;
+  }).join('')+'</div>';
+}
+
+function selP(i){selIdx=i;renderList();renderDet(patches[i]);hlP(i);}
+
+function renderDet(p){
+  const m=p.metrics,a=p.affinity,sp=a.surface_properties;
+
+  // ─── Functional group affinity heat-map (all groups) ───
+  const ranked=a.ranked_groups;
+  const maxAbs=Math.max(1,...ranked.map(g=>Math.abs(g.dG)));
+  const fgRows=ranked.map(g=>{
+    const frac=Math.abs(g.dG)/maxAbs;
+    const col=g.dG<-0.5?'#10d98a':g.dG>0.5?'#ef4444':'#4a6080';
+    const mechs=(g.mechanisms||[]).join(', ')||'no contacts';
+    return`<div class="br" title="${mechs}">
+      <span class="bl">${fgLabel(g.group)}</span>
+      <div class="bt"><div class="bf" style="width:${(frac*100).toFixed(0)}%;background:${col}"></div></div>
+      <span class="bv" style="color:${col}">${g.dG>0?'+':''}${g.dG.toFixed(1)}</span>
+    </div>`;
+  }).join('');
+
+  // ─── Surface property profile ───
+  const propRows=`
+<div class="lr"><span class="lt2">Net charge</span><span class="lv" style="color:${sp.net_charge>0?'#1d4ed8':sp.net_charge<0?'#b91c1c':'#aaa'}">${sp.net_charge>0?'+':''}${sp.net_charge} e</span></div>
+<div class="lr"><span class="lt2">Charge preference</span><span style="font-size:11px;color:var(--ac)">${sp.charge_preference}</span></div>
+<div class="lr"><span class="lt2">Hydrophobicity</span><span class="lv" style="color:${sp.hydrophobicity>0?'#f59e0b':'#1d4ed8'}">${sp.hydrophobicity}</span></div>
+<div class="lr"><span class="lt2">Surface pref.</span><span style="font-size:11px;color:var(--or)">${sp.hydrophobicity_preference}</span></div>
+<div class="lr"><span class="lt2">H-bond D/A</span><span class="lv">${sp.hbond_donors}D / ${sp.hbond_acceptors}A</span></div>
+<div class="lr"><span class="lt2">Aromatic frac.</span><span class="lv" style="color:var(--gr)">${(sp.aromatic_fraction*100).toFixed(0)}%</span></div>
+<div class="lr"><span class="lt2">pI (patch)</span><span class="lv" style="color:#c084fc">${sp.pI}</span></div>
+<div class="lr"><span class="lt2">Electrostatic</span><span class="lv" style="color:var(--ac)">${sp.electrostatic_strength} <span style="font-size:10px;color:var(--mu)">${sp.electrostatic_method==='APBS_LinearPB'?'APBS':'D-H'}</span></span></div>`;
+
+  // ─── Intrinsic penalties ───
+  const pen=a.penalties;
+  const penRows=`
+<div class="lr"><span class="lt2" style="color:var(--rd)">Orient. entropy loss</span><span class="lv" style="color:var(--rd)">+${pen.orientational_entropy}</span></div>
+<div class="lr"><span class="lt2" style="color:var(--rd)">Denaturation risk</span><span class="lv" style="color:var(--rd)">+${pen.denaturation_risk}</span></div>
+<div class="lr" style="border-top:1px solid var(--bd)"><span class="lt2">Baseline cost</span><span class="lv" style="color:var(--rd)">+${pen.total_penalty} kcal/mol</span></div>`;
+
+  // ─── SS bars ───
+  const ssb=`
+<div class="br"><span class="bl">α-Helix</span><div class="bt"><div class="bf" style="width:${(+(m.ss?.H||0)*100).toFixed(0)}%;background:#60a5fa"></div></div><span class="bv" style="color:#60a5fa">${(+(m.ss?.H||0)*100).toFixed(0)}%</span></div>
+<div class="br"><span class="bl">β-Sheet</span><div class="bt"><div class="bf" style="width:${(+(m.ss?.E||0)*100).toFixed(0)}%;background:#f87171"></div></div><span class="bv" style="color:#f87171">${(+(m.ss?.E||0)*100).toFixed(0)}%</span></div>
+<div class="br"><span class="bl">Loop</span><div class="bt"><div class="bf" style="width:${(+(m.ss?.C||0)*100).toFixed(0)}%;background:#f59e0b"></div></div><span class="bv" style="color:#f59e0b">${(+(m.ss?.C||0)*100).toFixed(0)}%</span></div>`;
+
+  // ─── Best-group contributing residues ───
+  const best=a.functional_groups[a.best_group];
+  const bestRes=(best?.residues||[]).map(rc=>
+    `<span class="rt r-ar" title="${rc.mechanism}">${rc.res} ${rc.dG}</span>`).join('');
+
+  const res=m.residues||[];
+  document.getElementById('pdet').innerHTML=`
+<div class="dGd">
+  <div class="dGv" style="color:${a.affinity_score>=65?'var(--gr)':a.affinity_score>=40?'var(--or)':'var(--rd)'}">Affinity ${a.affinity_score}/100</div>
+  <div class="dGl">BEST MATCH: ${fgLabel(a.best_group)} surface · ${a.best_group_dG.toFixed(1)} kcal/mol net</div>
+</div>
+<div style="font-size:11px;color:var(--mu);font-family:var(--mo);margin-bottom:4px;letter-spacing:1px">FUNCTIONAL GROUP AFFINITY (kcal/mol, more negative = better)</div>
+${fgRows}
+<div style="font-size:11px;color:var(--mu);font-family:var(--mo);margin:7px 0 3px;letter-spacing:1px">BEST-MATCH CONTRIBUTING RESIDUES — ${fgLabel(a.best_group)}</div>
+<div class="rl">${bestRes||'<span style="font-size:12px;color:var(--mu)">none</span>'}</div>
+<div style="font-size:11px;color:var(--mu);font-family:var(--mo);margin:7px 0 3px;letter-spacing:1px">SURFACE PROPERTY PROFILE</div>
+${propRows}
+<div style="font-size:11px;color:var(--mu);font-family:var(--mo);margin:7px 0 3px;letter-spacing:1px">INTRINSIC COST (material-independent)</div>
+${penRows}
+<div style="font-size:11px;color:var(--mu);font-family:var(--mo);margin:7px 0 3px;letter-spacing:1px">SECONDARY STRUCTURE (DSSP)</div>
+${ssb}
+<div style="font-size:11px;color:var(--mu);font-family:var(--mo);margin:7px 0 3px;letter-spacing:1px">ALL RESIDUES (${res.length})</div>
+<div class="rl">${res.map(r=>`<span class="rt ${CC[r.category]||'r-ot'}" onclick="zoomResidue(${r.res_seq},'${r.chain}')" title="${r.category}|q:${r.charge}|${SSN[r.ss]||r.ss}|SASA:${r.sasa}Å² — click to zoom">${r.res_name}${r.res_seq}${r.chain!=='A'?r.chain:''}</span>`).join('')}</div>`;
+}
+
+// ════════════════════════════════════════════════════════════
+// 3D
+// ════════════════════════════════════════════════════════════
+// Map a ΔG value to a green→yellow→red color (green = strong binding)
+function affinityColor(dG, minDG, maxDG){
+  // dG negative = favorable (green), positive/zero = unfavorable (red)
+  // normalize to 0..1 where 0=best(min) 1=worst(max)
+  if(maxDG===minDG) return '#10d98a';
+  let t=(dG-minDG)/(maxDG-minDG);   // 0 best .. 1 worst
+  t=Math.max(0,Math.min(1,t));
+  // interpolate green(16,217,138) → yellow(245,200,40) → red(239,68,68)
+  let r,g,b;
+  if(t<0.5){ const u=t/0.5; r=16+(245-16)*u; g=217+(200-217)*u; b=138+(40-138)*u; }
+  else{ const u=(t-0.5)/0.5; r=245+(239-245)*u; g=200+(68-200)*u; b=40+(68-40)*u; }
+  return `rgb(${r|0},${g|0},${b|0})`;
+}
+
+let surfacesShown = false;
+
+function clearSurfaces(){
+  if(viewer && surfacesShown){
+    try{ viewer.removeAllSurfaces(); }catch(e){}
+    surfacesShown = false;
+  }
+}
+
+// Apply the base (non-surface) style for a selection
+function applyStyle(sel, col){
+  if(curSt==='cartoon')      viewer.setStyle(sel,{cartoon:{color:col},sphere:{color:col,radius:0.08}});
+  else if(curSt==='stick')   viewer.setStyle(sel,{stick:{color:col,radius:0.12}});
+  else /* surface base */    viewer.setStyle(sel,{cartoon:{color:col,opacity:0.4}});
+}
+
+function colorByP(){
+  if(!viewer||!patches.length)return;
+  clearSurfaces();
+
+  const heat = !!activeFilter;
+  let minDG=0,maxDG=0;
+  if(heat){
+    const dGs=patches.map(p=>p.affinity.functional_groups[activeFilter]?.dG??0);
+    minDG=Math.min(...dGs); maxDG=Math.max(...dGs,0);
+  } else {
+    document.getElementById('heat-legend').style.display='none';
+  }
+
+  // dim the whole protein first
+  viewer.setStyle({},{cartoon:{color:'#c8d2e0'}});
+
+  patches.forEach((p,i)=>{
+    const res=p.metrics.residues||[];
+    const resis=res.map(r=>r.res_seq);
+    const ch=(res[0]?.chain)||'A';
+    const col = heat
+      ? affinityColor(p.affinity.functional_groups[activeFilter]?.dG??0, minDG, maxDG)
+      : pc(i);
+    const sel={resi:resis,chain:ch};
+    applyStyle(sel, col);
+    if(curSt==='surface'){
+      viewer.addSurface($3Dmol.SurfaceType.VDW, {opacity:0.85, color:col}, sel);
+      surfacesShown=true;
+    }
+  });
+
+  if(selIdx!==null) hlP(selIdx);
+  viewer.render();
+  if(heat) renderHeatLegend(minDG,maxDG);
+}
+
+function renderHeatLegend(minDG,maxDG){
+  const el=document.getElementById('heat-legend');
+  el.style.display='block';
+  el.innerHTML=`
+    <div style="font-size:11px;font-family:var(--mo);color:var(--mu);margin-bottom:3px">${fgLabel(activeFilter)} AFFINITY</div>
+    <div style="display:flex;align-items:center;gap:5px">
+      <span style="font-size:11px;font-family:var(--mo);color:#10d98a">${minDG.toFixed(0)}</span>
+      <div style="flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,#10d98a,#f5c828,#ef4444)"></div>
+      <span style="font-size:11px;font-family:var(--mo);color:#ef4444">${maxDG.toFixed(0)}</span>
+    </div>
+    <div style="font-size:10px;font-family:var(--mo);color:var(--mu);text-align:center;margin-top:2px">kcal/mol — green binds strongest</div>`;
+}
+
+function hlP(i){
+  if(!viewer||!patches[i])return;
+  const res=patches[i].metrics.residues||[];
+  const resis=res.map(r=>r.res_seq);
+  const ch=(res[0]?.chain)||'A';
+  // emphasise the selected patch with sticks + spheres and zoom to it
+  viewer.setStyle({resi:resis,chain:ch},{stick:{color:pc(i),radius:0.2},sphere:{color:pc(i),radius:0.4}});
+  viewer.zoomTo({resi:resis,chain:ch});
+  viewer.render();
+}
+
+// Zoom to a single residue (called when a residue tag is clicked)
+function zoomResidue(resSeq, chain){
+  if(!viewer)return;
+  const sel={resi:[resSeq],chain:chain||'A'};
+  viewer.setStyle(sel,{stick:{color:'#ffffff',radius:0.3},sphere:{color:'#ffffff',radius:0.5}});
+  viewer.zoomTo(sel);
+  viewer.render();
+  // re-apply patch colours after a moment so the white highlight is temporary
+  setTimeout(()=>{ if(selIdx!==null){ colorByP(); } }, 2500);
+}
+
+function togP(){
+  showP=!showP;
+  const b=document.getElementById('ptog');
+  if(showP){colorByP();b.textContent='Patch ON';b.classList.add('on');}
+  else{
+    clearSurfaces();
+    viewer.setStyle({},{cartoon:{color:'spectrum'}});
+    viewer.render();
+    b.textContent='Patch OFF';b.classList.remove('on');
+    document.getElementById('heat-legend').style.display='none';
+  }
+}
+
+function setSt(s){
+  curSt=s;
+  document.querySelectorAll('.vb').forEach(b=>b.classList.remove('on'));
+  if(typeof event!=='undefined' && event.target) event.target.classList.add('on');
+  if(!viewer)return;
+  clearSurfaces();
+  // If a filter is active, re-apply its coloring (now respecting surface mode)
+  if(analysisMode==='surface' && activeKey){
+    if(activeKind==='feature') return highlightFeat(activeKey);
+    if(activeKind==='compatibility') return highlightCompat(activeKey);
+  }
+  // otherwise plain styling
+  viewer.setStyle({},{cartoon:{color:'spectrum'}});
+  if(s==='surface'){ viewer.addSurface($3Dmol.SurfaceType.VDW,{opacity:0.85,color:'spectrum'}); surfacesShown=true; }
+  else if(s==='stick'){ viewer.setStyle({},{stick:{radius:0.12}}); }
+  viewer.render();
+}
+
+// ════════════════════════════════════════════════════════════
+// DRAG-DROP + INIT
+// ════════════════════════════════════════════════════════════
+const dz=document.getElementById('dz');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{
+  e.preventDefault();dz.classList.remove('drag');
+  const f=e.dataTransfer.files[0];
+  if(f&&f.name.endsWith('.pdb')){
+    document.getElementById('fl').textContent='✓ '+f.name;
+    showLd('Reading file…');
+    const rd=new FileReader();
+    rd.onload=ev=>{pdbTxt=ev.target.result;loadV(pdbTxt);hideLd();};
+    rd.readAsText(f);
+  }
+});
+
+// ════════════════════════════════════════════════════════════
+// PUBLICATION-READY REPORT
+// ════════════════════════════════════════════════════════════
+function captureViewer(){
+  // Grab the current 3D view as a PNG data URL (if available)
+  try{
+    if(viewer && typeof viewer.pngURI==='function') return viewer.pngURI();
+    const cv=document.querySelector('#mv canvas');
+    if(cv) return cv.toDataURL('image/png');
+  }catch(e){}
+  return null;
+}
+
+function fgHeatTableHTML(){
+  // Build a patch × functional-group matrix (kcal/mol), color-coded
+  if(!patches.length) return '';
+  const groups=fgList;
+  let head='<tr><th>Patch</th><th>Residues</th>'+
+    groups.map(g=>`<th>${fgLabel(g)}</th>`).join('')+'</tr>';
+  // global min/max for color scale
+  let all=[];
+  patches.forEach(p=>groups.forEach(g=>all.push(p.affinity.functional_groups[g]?.dG??0)));
+  const mn=Math.min(...all), mx=Math.max(...all,0);
+  const rows=patches.map(p=>{
+    const cells=groups.map(g=>{
+      const dG=p.affinity.functional_groups[g]?.dG??0;
+      const col=affinityColor(dG,mn,mx);
+      const txtcol = dG<(mn+mx)/2 ? '#06281d' : '#3b0a0a';
+      return `<td style="background:${col};color:${txtcol};text-align:center">${dG.toFixed(1)}</td>`;
+    }).join('');
+    return `<tr><td><b>P${p.rank}</b></td><td style="text-align:center">${p.metrics.n}</td>${cells}</tr>`;
+  }).join('');
+  return `<table class="heat">${head}${rows}</table>`;
+}
+
+function patchSummaryTableHTML(){
+  if(!patches.length) return '';
+  const rows=patches.map(p=>{
+    const m=p.metrics,a=p.affinity;
+    return `<tr>
+      <td><b>P${p.rank}</b></td>
+      <td style="text-align:center">${m.n}</td>
+      <td style="text-align:center">${(+m.net_charge>0?'+':'')}${(+m.net_charge).toFixed(1)}</td>
+      <td style="text-align:center">${(+m.hydro).toFixed(2)}</td>
+      <td style="text-align:center">${(+m.pI||0).toFixed(1)}</td>
+      <td style="text-align:center">${m.hb_donors}/${m.hb_acceptors}</td>
+      <td style="text-align:center">${((+m.ar_frac)*100).toFixed(0)}%</td>
+      <td style="text-align:center"><b>${fgLabel(a.best_group)}</b></td>
+      <td style="text-align:center">${a.best_group_dG.toFixed(1)}</td>
+      <td style="text-align:center">${a.affinity_score}</td>
+    </tr>`;
+  }).join('');
+  return `<table class="data">
+    <tr><th>Patch</th><th>n<sub>res</sub></th><th>Net charge (e)</th><th>Hydrophobicity</th>
+        <th>pI</th><th>H-bond D/A</th><th>Aromatic</th><th>Best-match group</th>
+        <th>ΔG<sub>net</sub> (kcal/mol)</th><th>Affinity</th></tr>
+    ${rows}</table>`;
+}
+
+function downloadSurfaceReport(){
+  if(!surfaceGroups){showErr('Run a surface-group map first');return;}
+  const now=new Date();
+  const img=captureViewer();
+  const s=lastStats||{}; const env=lastEnv||{};
+  const rows=sgList.map(g=>{
+    const grp=surfaceGroups[g]; if(!grp)return'';
+    const top=grp.residues.slice(0,6).map(r=>`${r.res_name}${r.res_seq}${r.chain!=='A'?r.chain:''}`).join(', ');
+    return `<tr><td><b>${g}</b></td><td style="text-align:center">${grp.n}</td><td>${top||'—'}</td></tr>`;
+  }).join('');
+  const html=`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<title>InterfaceScout Surface-Group Report — ${lastPDBid}</title>
+<style>
+@page{size:A4;margin:18mm}
+body{font-family:'Georgia','Times New Roman',serif;color:#1a1a1a;line-height:1.5;max-width:820px;margin:0 auto;padding:24px}
+h1{font-size:22px;border-bottom:3px solid #7c3aed;padding-bottom:6px;margin-bottom:2px}
+.sub{color:#555;font-size:12px;margin-bottom:18px}
+h2{font-size:15px;color:#5b21b6;border-bottom:1px solid #ccc;padding-bottom:3px;margin-top:22px}
+p{font-size:12.5px;text-align:justify}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:11px;font-family:Arial,sans-serif}
+th,td{border:1px solid #bbb;padding:5px 7px}
+th{background:#7c3aed;color:#fff}
+tr:nth-child(even) td{background:#f6f3fd}
+.fig{text-align:center;margin:14px 0}.fig img{max-width:90%;border:1px solid #ddd;border-radius:6px}
+.cap{font-size:11px;color:#555;font-style:italic;margin-top:5px}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;font-size:11.5px;background:#f6f3fd;border:1px solid #e0d6f7;border-radius:6px;padding:10px 14px;margin:10px 0}
+.meta b{color:#5b21b6}.foot{margin-top:26px;border-top:1px solid #ccc;padding-top:8px;font-size:10px;color:#888;text-align:center}
+@media print{button{display:none}}
+button{background:#7c3aed;color:#fff;border:none;padding:10px 18px;border-radius:6px;font-size:13px;cursor:pointer;margin:8px 4px}
+</style></head><body>
+<div style="text-align:right"><button onclick="window.print()">🖨 Print / Save as PDF</button></div>
+<h1>InterfaceScout — Surface Chemistry Map</h1>
+<div class="sub">Structure <b>${lastPDBid}</b> · generated ${now.toLocaleString()}</div>
+<h2>1. Method</h2>
+<p>Solvent-accessible surface residues were identified by Shrake-Rupley SASA
+(1.4 Å probe) at pH ${env.pH ?? '—'}. Each exposed residue was classified by the
+chemical groups it presents on the protein surface (carboxyl, hydroxyl, thiol,
+aromatic ring, amine, guanidinium, imidazole, metal-binding, H-bond donor/acceptor,
+hydrophobic). No patch clustering was applied; this is a direct, per-residue map of
+surface chemistry.</p>
+<div class="meta">
+  <div><b>PDB / structure:</b> ${lastPDBid}</div><div><b>pH:</b> ${env.pH ?? '—'}</div>
+  <div><b>Atoms:</b> ${s.n_atoms ?? '—'}</div><div><b>Residues:</b> ${s.n_residues ?? '—'}</div>
+  <div><b>Surface residues:</b> ${s.n_surface_res ?? '—'}</div>
+  <div><b>Highlighted group:</b> ${activeSG ?? 'none'}</div>
+</div>
+${img?`<h2>2. Surface map</h2><div class="fig"><img src="${img}">
+<div class="cap"><b>Figure 1.</b> ${activeSG?`Surface residues presenting ${activeSG} highlighted on ${lastPDBid}.`:`Structure of ${lastPDBid}.`}</div></div>`:''}
+<h2>${img?'3':'2'}. Surface group inventory</h2>
+<table><tr><th>Surface group</th><th>Count</th><th>Most-exposed residues</th></tr>${rows}</table>
+<div class="cap"><b>Table 1.</b> Solvent-accessible residues presenting each chemical group.</div>
+<div class="foot">Generated by InterfaceScout · surface chemistry map · Shrake-Rupley SASA</div>
+</body></html>`;
+  const w=window.open('','_blank');
+  if(!w){showErr('Allow pop-ups to download the report');return;}
+  w.document.open(); w.document.write(html); w.document.close();
+}
+
+function downloadResidueReport(kind){
+  const now=new Date(); const img=captureViewer();
+  const s=lastStats||{}; const env=lastEnv||{};
+  const isFeat = kind==='features';
+  const accent = isFeat ? '#0d9488' : '#7c3aed';
+  const title  = isFeat ? 'Surface Feature Map' : 'Functional-Group Compatibility Map';
+  const data   = isFeat ? featData : compatData;
+  if(!data){showErr('Run an analysis first');return;}
+
+  // build the inventory table
+  let rows='';
+  if(isFeat){
+    featList.forEach(f=>{
+      const g=data.features[f]; if(!g||!g.n)return;
+      const top=g.residues.slice(0,8).map(r=>`${r.res_name}${r.res_seq}${r.chain!=='A'?r.chain:''}`).join(', ');
+      rows+=`<tr><td><b>${g.label}</b></td><td style="text-align:center">${g.n}</td><td style="text-align:center">${g.mean_intensity}</td><td>${top||'—'}</td></tr>`;
+    });
+  } else {
+    compatList.forEach(c=>{
+      const g=data.compatibility[c]; if(!g||!g.n)return;
+      const top=g.residues.slice(0,8).map(r=>`${r.res_name}${r.res_seq}${r.chain!=='A'?r.chain:''}`).join(', ');
+      rows+=`<tr><td><b>${g.label}</b></td><td style="text-align:center">${g.n}</td><td style="text-align:center">${g.mean_propensity}</td><td>${top||'—'}</td></tr>`;
+    });
+  }
+  const tableHead = isFeat
+    ? '<tr><th>Surface feature</th><th>Residues</th><th>Mean exposure</th><th>Most-exposed residues</th></tr>'
+    : '<tr><th>Surface chemistry</th><th>Residues</th><th>Mean propensity (0-100)</th><th>Strongest contributors</th></tr>';
+
+  // detailed appendix: full residue content of the currently selected group
+  let appendix='';
+  const sel = isFeat ? activeFeat : activeCompat;
+  if(sel){
+    const g = isFeat ? data.features[sel] : data.compatibility[sel];
+    const label = g.label;
+    const arows = g.residues.map((r,i)=>{
+      if(isFeat){
+        return `<tr><td>${i+1}</td><td>${r.res_name}</td><td>${r.res_seq}</td><td>${r.chain}</td><td>${r.sasa}</td><td>${r.exposure}</td><td>${r.charge}</td><td>${r.ss}</td></tr>`;
+      }
+      return `<tr><td>${i+1}</td><td>${r.res_name}</td><td>${r.res_seq}</td><td>${r.chain}</td><td>${r.sasa}</td><td>${r.base_energy}</td><td>${r.propensity}</td><td>${r.mechanism}</td></tr>`;
+    }).join('');
+    const ahead = isFeat
+      ? '<tr><th>#</th><th>Res</th><th>Seq</th><th>Chain</th><th>SASA Å²</th><th>Exposure</th><th>Charge</th><th>SS</th></tr>'
+      : '<tr><th>#</th><th>Res</th><th>Seq</th><th>Chain</th><th>SASA Å²</th><th>Base energy (kcal/mol)</th><th>Propensity</th><th>Mechanism</th></tr>';
+    appendix=`<h2>Appendix. Full residue content — ${label}</h2>
+      <table class="data">${ahead}${arows}</table>`;
+  }
+
+  const html=`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<title>InterfaceScout ${title} — ${lastPDBid}</title>
+<style>
+@page{size:A4;margin:18mm}
+body{font-family:'Georgia','Times New Roman',serif;color:#1a1a1a;line-height:1.5;max-width:820px;margin:0 auto;padding:24px}
+h1{font-size:22px;border-bottom:3px solid ${accent};padding-bottom:6px;margin-bottom:2px}
+.sub{color:#555;font-size:12px;margin-bottom:18px}
+h2{font-size:15px;color:${accent};border-bottom:1px solid #ccc;padding-bottom:3px;margin-top:22px}
+p{font-size:12.5px;text-align:justify}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:10.5px;font-family:Arial,sans-serif}
+th,td{border:1px solid #bbb;padding:4px 6px}th{background:${accent};color:#fff}
+table.data td,table.data th{padding:3px 5px;font-size:9.5px}
+tr:nth-child(even) td{background:#f6f6fb}
+.fig{text-align:center;margin:14px 0}.fig img{max-width:90%;border:1px solid #ddd;border-radius:6px}
+.cap{font-size:11px;color:#555;font-style:italic;margin-top:5px}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;font-size:11.5px;background:#f6f6fb;border:1px solid #e2e2ee;border-radius:6px;padding:10px 14px;margin:10px 0}
+.meta b{color:${accent}}.foot{margin-top:26px;border-top:1px solid #ccc;padding-top:8px;font-size:10px;color:#888;text-align:center}
+@media print{button{display:none}}
+button{background:${accent};color:#fff;border:none;padding:10px 18px;border-radius:6px;font-size:13px;cursor:pointer;margin:8px 4px}
+</style></head><body>
+<div style="text-align:right"><button onclick="window.print()">🖨 Print / Save as PDF</button></div>
+<h1>InterfaceScout — ${title}</h1>
+<div class="sub">Structure <b>${lastPDBid}</b> · generated ${now.toLocaleString()}</div>
+<h2>1. Method</h2>
+<p>${isFeat
+  ? `Solvent-accessible residues were identified by Shrake-Rupley SASA (1.4 Å probe) at pH ${env.pH ?? '—'}. Each exposed residue was labelled with the chemical surface features it presents (charge, H-bond donor/acceptor, hydrophobic, aromatic, metal-binding, thiol, carboxyl, amine). Intensity reflects solvent exposure; this is a residue-level surface feature map, not a binding-site prediction.`
+  : `For each solvent-accessible residue, a residue-level compatibility score with the selected generic surface chemistry was computed by weighting literature-derived per-residue interaction energies by solvent exposure (min(SASA/50,1)). Scores rank residues on a consistent scale and are not predictions of exact adsorption sites.`}</p>
+<div class="meta">
+  <div><b>PDB / structure:</b> ${lastPDBid}</div><div><b>pH:</b> ${env.pH ?? '—'}</div>
+  <div><b>Atoms:</b> ${s.n_atoms ?? '—'}</div><div><b>Residues:</b> ${s.n_residues ?? '—'}</div>
+  <div><b>Surface residues:</b> ${s.n_surface_res ?? '—'}</div>
+  <div><b>Selected:</b> ${sel?(isFeat?(featInfo[sel]?.label||sel):(COMPAT_LABEL[sel]||sel)):'none'}</div>
+</div>
+${img?`<h2>2. Surface map</h2><div class="fig"><img src="${img}">
+<div class="cap"><b>Figure 1.</b> ${lastPDBid} coloured by ${sel?(isFeat?'the selected surface feature':'compatibility with the selected surface chemistry'):'structure'}.</div></div>`:''}
+<h2>${img?'3':'2'}. ${isFeat?'Surface feature inventory':'Compatibility summary'}</h2>
+<table>${tableHead}${rows}</table>
+<div class="cap"><b>Table 1.</b> ${isFeat?'Solvent-accessible residues presenting each surface feature.':'Protein-level compatibility with each generic surface chemistry.'}</div>
+${appendix}
+<div class="foot">Generated by InterfaceScout · residue-level surface chemistry mapping · Shrake-Rupley SASA${isFeat?'':' · literature-derived interaction energies'}</div>
+</body></html>`;
+  const w=window.open('','_blank');
+  if(!w){showErr('Allow pop-ups to download the report');return;}
+  w.document.open(); w.document.write(html); w.document.close();
+}
+
+// ════════════════════════════════════════════════════════════
+// DATA EXPORT — CSV, PDB (B-factor coloured)
+// ════════════════════════════════════════════════════════════
+function _download(filename, text, mime){
+  const blob=new Blob([text],{type:mime||'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=filename; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+// Build a per-residue table: one row per surface residue, with feature flags
+// and per-compatibility columns (propensity and SAP-style patch density).
+function _buildResidueTable(){
+  if(!surfData)return null;
+  const featKeys = surfData.feature_list;
+  const compKeys = surfData.compatibility_list;
+  // index compatibility propensity + patch density by residue key
+  const compByRes = {};  // "CHAIN:SEQ" -> {ctype:{prop,patch}}
+  compKeys.forEach(c=>{
+    (surfData.compatibility[c].residues||[]).forEach(r=>{
+      const k=r.chain+':'+r.res_seq;
+      (compByRes[k]=compByRes[k]||{})[c]={prop:r.propensity,patch:r.patch_density};
+    });
+  });
+  const rows = surfData.residues.map(r=>{
+    const k=r.chain+':'+r.res_seq;
+    const featFlags = featKeys.map(f=>r.features.includes(f)?1:'');
+    const compVals = [];
+    compKeys.forEach(c=>{
+      const v=compByRes[k]&&compByRes[k][c];
+      compVals.push((v&&v.prop!==undefined)?v.prop:'');
+      compVals.push((v&&v.patch!==undefined)?v.patch:'');
+    });
+    return {r, featFlags, compVals};
+  });
+  return {featKeys, compKeys, rows};
+}
+
+function exportCSV(){
+  const t=_buildResidueTable(); if(!t){showErr('Run an analysis first');return;}
+  const compHeaders=[];
+  t.compKeys.forEach(c=>{compHeaders.push('compat_'+c+'_propensity','compat_'+c+'_patchdensity');});
+  const head=['res_name','res_seq','chain','sasa','exposure','charge','ss','phi','n_neighbors',
+    ...t.featKeys.map(f=>'feat_'+f), ...compHeaders];
+  const lines=[head.join(',')];
+  t.rows.forEach(({r,featFlags,compVals})=>{
+    lines.push([r.res_name,r.res_seq,r.chain,r.sasa,r.exposure,r.charge,r.ss,
+      (r.phi??''),(r.n_neighbors??''),...featFlags,...compVals].join(','));
+  });
+  _download(`${lastPDBid}_surface_analysis.csv`, lines.join('\n'), 'text/csv');
+}
+
+// Export the structure as a PDB file. If a filter is selected, the per-residue
+// score (compatibility) or membership (feature) is written into the B-factor
+// column, so the structure can be coloured by B-factor in any viewer — no
+// viewer-specific scripts needed.
+function exportPDB(){
+  if(!pdbTxt){showErr('Load a structure first');return;}
+  // build a per-residue value map from the active filter (if any)
+  const valByRes={};   // "CHAIN:RESSEQ" -> value 0..1
+  let tag='structure';
+  if(surfData && activeKey){
+    if(activeKind==='feature'){
+      tag=activeKey;
+      (surfData.features[activeKey].residues||[]).forEach(r=>{
+        valByRes[r.chain+':'+r.res_seq]=1.00;   // member
+      });
+    } else if(activeKind==='compatibility'){
+      tag=activeKey;
+      (surfData.compatibility[activeKey].residues||[]).forEach(r=>{
+        valByRes[r.chain+':'+r.res_seq]=r.propensity/100;   // 0-1 for B-factor
+      });
+    }
+  }
+  // rewrite B-factor column (cols 61-66) of ATOM/HETATM records
+  const hasVals=Object.keys(valByRes).length>0;
+  const out=pdbTxt.split('\n').map(line=>{
+    if(!/^(ATOM|HETATM)/.test(line)) return line;
+    if(!hasVals) return line;
+    const chain=line.substr(21,1).trim()||'A';
+    const resseq=parseInt(line.substr(22,4));
+    const key=chain+':'+resseq;
+    const v=(key in valByRes)?valByRes[key]:0;
+    const b=v.toFixed(2).padStart(6);     // 6-char B-factor field
+    return line.substr(0,60)+b+line.substr(66);
+  }).join('\n');
+  const header=hasVals
+    ? `REMARK   InterfaceScout: B-factor column holds ${activeKind||'feature'} '${tag}' score (0-1)\n`
+    : `REMARK   InterfaceScout: original structure\n`;
+  _download(`${lastPDBid}_${tag}.pdb`, header+out, 'chemical/x-pdb');
+}
+
+function downloadReport(){
+  if(analysisMode==='surface'){
+    // report whichever filter is selected; default to features overview
+    if(activeKind==='compatibility') return downloadResidueReport('compatibility');
+    return downloadResidueReport('features');
+  }
+  if(analysisMode==='features'){ return downloadResidueReport('features'); }
+  if(analysisMode==='compatibility'){ return downloadResidueReport('compatibility'); }
+  if(!patches.length){showErr('Run an analysis first');return;}
+  const now=new Date();
+  const img=captureViewer();
+  const s=lastStats||{}; const env=lastEnv||{};
+  const elec = s.electrostatics==='APBS_LinearPB'
+      ? 'APBS (finite-difference linearized Poisson-Boltzmann)'
+      : 'Debye-Huckel screened Coulomb (APBS unavailable; fallback)';
+
+  // dominant driver across all patches
+  const fgTotals={};
+  patches.forEach(p=>fgList.forEach(g=>{fgTotals[g]=(fgTotals[g]||0)+(p.affinity.functional_groups[g]?.dG??0);}));
+  const ranked=Object.entries(fgTotals).sort((a,b)=>a[1]-b[1]);
+  const dominant=ranked.length?fgLabel(ranked[0][0]):'n/a';
+
+  const html=`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<title>InterfaceScout Report — ${lastPDBid}</title>
+<style>
+@page{size:A4;margin:18mm}
+body{font-family:'Georgia','Times New Roman',serif;color:#1a1a1a;line-height:1.5;max-width:820px;margin:0 auto;padding:24px}
+h1{font-size:22px;border-bottom:3px solid #0d9488;padding-bottom:6px;margin-bottom:2px}
+.sub{color:#555;font-size:12px;margin-bottom:18px}
+h2{font-size:15px;color:#0d6e66;border-bottom:1px solid #ccc;padding-bottom:3px;margin-top:22px}
+p{font-size:12.5px;text-align:justify}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:10.5px;font-family:Arial,sans-serif}
+table.data th,table.data td{border:1px solid #bbb;padding:4px 6px}
+table.data th{background:#0d9488;color:#fff;font-weight:600}
+table.data tr:nth-child(even) td{background:#f4faf9}
+table.heat th,table.heat td{border:1px solid #fff;padding:4px 5px;font-size:10px}
+table.heat th{background:#334155;color:#fff}
+.fig{text-align:center;margin:14px 0}
+.fig img{max-width:90%;border:1px solid #ddd;border-radius:6px}
+.cap{font-size:11px;color:#555;font-style:italic;margin-top:5px}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;font-size:11.5px;background:#f4faf9;border:1px solid #d6e9e7;border-radius:6px;padding:10px 14px;margin:10px 0}
+.meta b{color:#0d6e66}
+.foot{margin-top:26px;border-top:1px solid #ccc;padding-top:8px;font-size:10px;color:#888;text-align:center}
+@media print{button{display:none}}
+button{background:#0d9488;color:#fff;border:none;padding:10px 18px;border-radius:6px;font-size:13px;cursor:pointer;margin:8px 4px}
+</style></head><body>
+
+<div style="text-align:right">
+  <button onclick="window.print()">🖨 Print / Save as PDF</button>
+</div>
+
+<h1>InterfaceScout — Surface Feature Affinity Report</h1>
+<div class="sub">Structure <b>${lastPDBid}</b> · generated ${now.toLocaleString()}</div>
+
+<h2>1. Methodology</h2>
+<p>The protein structure was processed with <b>pdb2pqr</b> (PARSE force field with
+PropKa pK<sub>a</sub> assignment at the specified pH) to assign partial charges and
+protonation states. Electrostatic potentials were computed using <b>${elec}</b>.
+Solvent-accessible surface area (SASA) was evaluated by the Shrake-Rupley algorithm
+(probe radius 1.4 Å), and secondary structure was assigned by DSSP where available.
+Surface residues were grouped into local patches by spatial clustering.
+Each patch was then mapped against all candidate surface functional groups
+(−SH, Ca²⁺, Ti–O, Zr–O, π, −NH₂, −COOH, −OH, −CH₃, PO₄, −C=O) using a
+literature-derived per-residue interaction database, weighted by solvent
+accessibility. This material-independent mapping yields, for every patch, the
+binding free energy it would experience against each surface chemistry.</p>
+
+<div class="meta">
+  <div><b>PDB / structure:</b> ${lastPDBid}</div>
+  <div><b>pH:</b> ${env.pH ?? '—'}</div>
+  <div><b>Ionic strength:</b> ${env.ionic ?? '—'} mM</div>
+  <div><b>Temperature:</b> ${env.temp ?? '—'} K</div>
+  <div><b>Atoms:</b> ${s.n_atoms ?? '—'}</div>
+  <div><b>Residues:</b> ${s.n_residues ?? '—'}</div>
+  <div><b>Surface residues:</b> ${s.n_surface_res ?? '—'}</div>
+  <div><b>Patches identified:</b> ${s.n_patches ?? '—'}</div>
+  <div><b>Electrostatics:</b> ${s.electrostatics ?? '—'}</div>
+  <div><b>Dominant driver:</b> ${dominant}</div>
+</div>
+
+${img?`<h2>2. Surface map</h2>
+<div class="fig"><img src="${img}" alt="3D surface map">
+<div class="cap"><b>Figure 1.</b> Three-dimensional view of ${lastPDBid}.
+${activeFilter?`Surface colored by ${fgLabel(activeFilter)} affinity (green = strongest binding, red = repulsive).`
+:'Patches colored by identity.'}</div></div>`:''}
+
+<h2>${img?'3':'2'}. Patch feature-affinity matrix</h2>
+<p>Binding free energy (kcal/mol) of each surface patch against every candidate
+functional group. More negative (greener) values indicate stronger predicted
+adsorption; positive (red) values indicate repulsion.</p>
+${fgHeatTableHTML()}
+<div class="cap"><b>Table 1.</b> Patch × functional-group affinity matrix (kcal/mol).</div>
+
+<h2>${img?'4':'3'}. Patch summary</h2>
+${patchSummaryTableHTML()}
+<div class="cap"><b>Table 2.</b> Per-patch physicochemical descriptors and best-matching
+surface chemistry.</div>
+
+<h2>${img?'5':'4'}. Methods references</h2>
+<ol style="font-size:10.5px;color:#444">
+<li>Baker NA et al. Electrostatics of nanosystems: application to microtubules and the ribosome. <i>PNAS</i> 2001, 98, 10037. (APBS)</li>
+<li>Dolinsky TJ et al. PDB2PQR. <i>Nucleic Acids Res.</i> 2004, 32, W665.</li>
+<li>Shrake A, Rupley JA. <i>J. Mol. Biol.</i> 1973, 79, 351. (SASA)</li>
+<li>Kabsch W, Sander C. <i>Biopolymers</i> 1983, 22, 2577. (DSSP)</li>
+<li>Häkkinen H. The gold–sulfur interface. <i>Nat. Chem.</i> 2012, 4, 443.</li>
+<li>Dougherty DA. Cation–π interactions. <i>Science</i> 1996, 271, 163; <i>Chem. Rev.</i> 2025.</li>
+<li>Aromatic π–π / CH–π energetics. <i>J. Phys. Chem. B</i> 2024 (PMC11403661).</li>
+<li>Eisenberg D, McLachlan AD. Solvation energy. <i>Nature</i> 1986, 319, 199.</li>
+<li>Kumar S, Nussinov R. Salt bridges. <i>ChemBioChem</i> 2002, 3, 604.</li>
+</ol>
+<p class="cap">Interaction energies are literature-derived first-order estimates used to
+rank surface regions and chemistries on a consistent scale.</p>
+
+<div class="foot">Generated by InterfaceScout · feature-affinity mapping ·
+APBS / pdb2pqr / Shrake-Rupley / DSSP</div>
+
+</body></html>`;
+
+  const w=window.open('','_blank');
+  if(!w){showErr('Allow pop-ups to download the report');return;}
+  w.document.open(); w.document.write(html); w.document.close();
+}
+
+// ════════════════════════════════════════════════════════════
+// THEORY PAGE
+// ════════════════════════════════════════════════════════════
+function openTheory(){
+  const html=`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<title>InterfaceScout — Theory &amp; Methods</title>
+<style>
+body{font-family:'Georgia','Times New Roman',serif;color:#1a1a1a;line-height:1.65;max-width:820px;margin:0 auto;padding:40px 28px}
+h1{font-size:26px;color:#0d6e66;border-bottom:3px solid #0d9488;padding-bottom:8px}
+h2{font-size:18px;color:#0d6e66;margin-top:30px;border-bottom:1px solid #ddd;padding-bottom:4px}
+h3{font-size:14px;color:#334155;margin-top:18px}
+p,li{font-size:13.5px;text-align:justify}
+code{background:#f1f5f9;padding:1px 5px;border-radius:3px;font-size:12px}
+.step{background:#f4faf9;border-left:4px solid #0d9488;border-radius:0 6px 6px 0;padding:10px 16px;margin:12px 0}
+.step b{color:#0d6e66}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:12px;font-family:Arial,sans-serif}
+th,td{border:1px solid #cbd5e1;padding:5px 8px;text-align:left}
+th{background:#0d9488;color:#fff}
+tr:nth-child(even) td{background:#f4faf9}
+.note{font-size:12px;color:#555;font-style:italic}
+.foot{margin-top:36px;border-top:1px solid #ccc;padding-top:10px;font-size:11px;color:#888;text-align:center}
+</style></head><body>
+
+<h1>InterfaceScout — Theory &amp; Methods</h1>
+<p>InterfaceScout maps chemically relevant surface features and estimates residue-level
+compatibility with generic surface functional groups. It works at the level of
+individual solvent-accessible residues and does <i>not</i> require selecting a material,
+nor does it claim to predict exact adsorption sites. This page explains the physical
+model and every step of the pipeline.</p>
+
+<h2>1. The core idea: material-independent feature mapping</h2>
+<p>Conventional docking asks "how does protein X bind material Y?", forcing a choice
+of material up front. InterfaceScout inverts the question: it characterises the
+protein <i>once</i> and expresses each surface residue as a profile of compatibilities
+toward a complete panel of surface chemistries (thiol/gold, calcium/hydroxyapatite,
+titanium oxide, aromatic/graphitic, amine, carboxyl, hydroxyl, methyl, phosphate,
+carbonyl, transition-metal, salt-bridge). You then read off the residues that match
+whatever material you actually have. The same analysis serves every material.</p>
+
+<h2>2. Computational pipeline &amp; software</h2>
+<p>Every analysis runs the following deterministic pipeline locally on your machine.
+No machine learning is used. The exact open-source components are:</p>
+<table>
+<tr><th>Step</th><th>What it computes</th><th>Software / Python module</th><th>Reference</th></tr>
+<tr><td>Structure parsing</td><td>Reads the PDB, atoms, chains, residues</td><td>Biopython <code>Bio.PDB.PDBParser</code></td><td>Cock et al. 2009</td></tr>
+<tr><td>Protonation &amp; charges</td><td>pK<sub>a</sub> and formal charge of each titratable group at the chosen pH</td><td><code>pdb2pqr</code> (PARSE force field + PropKa)</td><td>Dolinsky 2004; Olsson 2011</td></tr>
+<tr><td>Electrostatic potential</td><td>Poisson-Boltzmann potential φ on a 3-D grid</td><td><code>apbs</code> (finite-difference linearised PB)</td><td>Baker 2001</td></tr>
+<tr><td>Solvent accessibility</td><td>Per-residue SASA (1.4 Å probe)</td><td>Biopython <code>Bio.PDB.SASA.ShrakeRupley</code></td><td>Shrake &amp; Rupley 1973</td></tr>
+<tr><td>Secondary structure</td><td>α-helix / β-sheet / loop assignment</td><td>DSSP (via Biopython <code>DSSP</code>); geometric fallback if DSSP absent</td><td>Kabsch &amp; Sander 1983</td></tr>
+<tr><td>3-D neighbourhood</td><td>Surface residues within 8 Å of each residue (Cα–Cα)</td><td>NumPy (in-house distance calc)</td><td>—</td></tr>
+<tr><td>Web service &amp; UI</td><td>API + serves the interface</td><td><code>fastapi</code>, <code>uvicorn</code>; 3Dmol.js viewer</td><td>Rego &amp; Koes 2015 (3Dmol.js)</td></tr>
+</table>
+<p class="note">If APBS or pdb2pqr are unavailable, the tool degrades gracefully: the
+electrostatic term is dropped (status bar shows "pdb2pqr" or "geometric" instead of
+"APBS") and the rest of the analysis still runs.</p>
+
+<h2>3. Surface features (Mode A)</h2>
+<p>Every solvent-accessible residue is labelled with the chemical features it presents:
+positive / negative charge (pH-aware, from the pdb2pqr protonation state), H-bond
+donor / acceptor, hydrophobic, aromatic, metal-binding, thiol, carboxyl, amine. Each
+residue carries an <code>exposure</code> = min(SASA / 50 Å², 1) intensity. This is a
+direct chemical inventory of the protein surface, independent of any material.</p>
+
+<h2>4. Interaction propensity (Mode B)</h2>
+<p>For each generic surface chemistry, every solvent-accessible residue receives an
+<b>interaction propensity</b> — a dimensionless 0–100 score (100 = strongest within
+that protein). The propensity is built from a literature base energy modulated by three
+geometric/physical weights:</p>
+<p style="text-align:center"><code>composite = E<sub>base</sub> × exposure × context × φ-factor × pH-factor</code></p>
+<p>then linearly rescaled to 0–100 across the residues of that protein. The components:</p>
+<ul>
+<li><b>E<sub>base</sub></b> — the per-residue interaction energy from the literature
+(kcal/mol, see §6). This is the only term with physical units; it is reported separately
+in the residue panel and exports so its provenance is always visible.</li>
+<li><b>exposure</b> = min(SASA / 50 Å², 1) — only residues exposed to solvent can touch
+a surface.</li>
+<li><b>context</b> = 1 + 0.5 × (fraction of 8 Å neighbours sharing the same compatible
+chemistry) — up to +50%. A clustered patch of carboxylates scores higher for Ca²⁺ than
+an isolated one, reflecting cooperative multivalent binding.</li>
+<li><b>φ-factor</b> — for charged surfaces (cationic, anionic, phosphate), folds in the
+real APBS electrostatic potential at the residue: a residue sitting in a complementary
+potential is up-weighted (up to +50%), an opposing one down-weighted. Neutral for
+non-electrostatic chemistries.</li>
+<li><b>pH-factor</b> — scales each residue by the protonation state its interaction
+mechanism requires, so the map responds to pH the way the chemistry does. For
+<b>cation-π</b> toward graphitic/aromatic surfaces, the factor follows the residue&#39;s
+positive fraction: His is the switch — protonated His⁺ binds aromatic faces strongly at
+low pH and weakly when neutral at higher pH, while Lys/Arg stay charged across pH 4.7–7.4.
+For <b>carboxylate coordination</b> (Asp/Glu) to oxide, Ca²⁺ and metal surfaces, the
+factor follows the deprotonated fraction: binding weakens as the carboxylate protonates
+near/below its pKa. <b>π-π stacking</b> (Phe/Tyr/Trp), hydrophobic contacts and thiol–gold
+bonding carry no ionisable change in this range and are pH-independent. References:
+Dougherty, Science 1996, 271:163; Ma &amp; Dougherty, Chem Rev 1997, 97:1303; Gallivan &amp;
+Dougherty, PNAS 1999, 96:9459; Liao et al., J Chem Theory Comput 2024 (His protonation);
+JACS Au 2021, 1c00565 and bioceramics review Phil Trans (carboxylate–oxide/Ca pH
+dependence).</li>
+</ul>
+<p class="note"><b>Why "propensity" and not "ΔG".</b> The composite blends a literature
+energy with geometric weights we introduce, so it is no longer a free energy and carries
+no kcal/mol unit. We therefore call it an interaction <i>propensity</i> — a ranking
+score — and keep the underlying literature energy separate and labelled. The propensity
+ranks residues and chemistries within one protein on a consistent scale; it is not an
+absolute binding free energy and does not predict an exact adsorption site.</p>
+
+<h2>5. Literature base energies</h2>
+<p>The per-residue base energies <code>E<sub>base</sub></code> are drawn from the
+experimental and computational literature (kcal/mol per contacting residue; negative =
+attractive):</p>
+<table>
+<tr><th>Surface group</th><th>Key residues</th><th>Mechanism</th><th>Energy</th></tr>
+<tr><td>−SH / Au</td><td>Cys</td><td>Au–S semi-covalent bond</td><td>−45</td></tr>
+<tr><td>Ca²⁺ / hydroxyapatite</td><td>Asp, Glu</td><td>carboxylate–Ca coordination</td><td>−10</td></tr>
+<tr><td>Transition metal</td><td>His, Cys, Asp, Glu</td><td>coordination (Zn/Ni/Cu/Fe)</td><td>−6 to −12</td></tr>
+<tr><td>Ti–O / Zr–O</td><td>Asp, Glu</td><td>carboxylate–metal-oxide</td><td>−8</td></tr>
+<tr><td>Aromatic / π</td><td>Phe, Trp, Tyr</td><td>π–π stacking</td><td>−4 to −5</td></tr>
+<tr><td>Salt bridge</td><td>Lys, Arg, Asp, Glu</td><td>ionic pairing</td><td>−5</td></tr>
+<tr><td>−NH₂, −COOH, −OH</td><td>various</td><td>electrostatic / H-bond</td><td>−0.8 to −4</td></tr>
+</table>
+
+<h2>6. Limitations</h2>
+<ul>
+<li>Rigid-structure analysis — conformational change on binding is not modelled.</li>
+<li>Base energies are literature-derived estimates for ranking, not force-field free energies.</li>
+<li>Propensity predicts intrinsic surface compatibility, not full adsorption isotherms or kinetics.</li>
+<li>Electrostatic accuracy depends on APBS being available (the geometric/pdb2pqr fallback is approximate).</li>
+<li>pH titration uses side-chain pK<sub>a</sub> values; it does not model pH-induced conformational change.</li>
+</ul>
+
+<h2>7. References</h2>
+<ol style="font-size:12px">
+<li><b>Au–S bond (−45 kcal/mol):</b> Häkkinen, <i>Nat. Chem.</i> 2012, 4, 443;
+Vericat et al., <i>Chem. Soc. Rev.</i> 2010, 39, 1805; Pensa et al.,
+<i>Acc. Chem. Res.</i> 2012, 45, 1183.</li>
+<li><b>Cation–π (−2 to −9 kcal/mol):</b> Dougherty, <i>Science</i> 1996, 271, 163;
+Gallivan &amp; Dougherty, <i>PNAS</i> 1999, 96, 9459.</li>
+<li><b>π–π stacking (−3.3 to −5.2 kcal/mol):</b> Aromatic residues re-evaluation,
+<i>J. Phys. Chem. B</i> 2024 (PMC11403661).</li>
+<li><b>Carboxylate–Ca²⁺ (hydroxyapatite):</b> Kawasaki, <i>J. Chromatogr.</i> 1991;
+Goobes et al., <i>PNAS</i> 2006.</li>
+<li><b>Carboxylate–TiO₂/ZrO₂:</b> Monti et al., <i>J. Phys. Chem. C</i> 2012;
+Skelton et al., <i>ACS Appl. Mater. Interfaces</i> 2009.</li>
+<li><b>Transition-metal coordination:</b> ZincBind, <i>Database</i> 2019, baz006;
+Berg, <i>J. Biol. Chem.</i> 1990.</li>
+<li><b>Salt bridges (−1 to −5 kcal/mol):</b> Kumar &amp; Nussinov, <i>ChemBioChem</i>
+2002; Bosshard et al., <i>J. Mol. Recognit.</i> 2004.</li>
+<li><b>Hydrogen bonds:</b> Fersht, <i>Structure and Mechanism in Protein Science</i>,
+Freeman, 1999.</li>
+<li><b>Hydrophobic / atomic solvation:</b> Eisenberg &amp; McLachlan, <i>Nature</i>
+1986, 319, 199.</li>
+<li><b>APBS (electrostatics):</b> Baker et al., <i>PNAS</i> 2001, 98, 10037.</li>
+<li><b>PDB2PQR:</b> Dolinsky et al., <i>Nucleic Acids Res.</i> 2004, 32, W665.</li>
+<li><b>PropKa:</b> Olsson et al., <i>J. Chem. Theory Comput.</i> 2011, 7, 525.</li>
+<li><b>SASA:</b> Shrake &amp; Rupley, <i>J. Mol. Biol.</i> 1973, 79, 351.</li>
+<li><b>DSSP:</b> Kabsch &amp; Sander, <i>Biopolymers</i> 1983, 22, 2577.</li>
+<li><b>Biopython:</b> Cock et al., <i>Bioinformatics</i> 2009, 25, 1422.</li>
+<li><b>3Dmol.js:</b> Rego &amp; Koes, <i>Bioinformatics</i> 2015, 31, 1322.</li>
+</ol>
+<p class="note">Base energies are first-order estimates intended for ranking surface
+residues and chemistries on a consistent scale, not absolute binding free energies.</p>
+
+<div class="foot">InterfaceScout · feature-affinity mapping ·
+pdb2pqr (PARSE + PropKa) · APBS (linearised Poisson-Boltzmann) ·
+Shrake-Rupley SASA · DSSP</div>
+</body></html>`;
+  const w=window.open('','_blank');
+  if(!w){alert('Allow pop-ups to open the theory page');return;}
+  w.document.open(); w.document.write(html); w.document.close();
+}
+
+// App initialization
+window.addEventListener('DOMContentLoaded',()=>{
+  updateMainHeight();
+  startPolling();
+  // Try init viewer after a short delay (3Dmol may still be loading)
+  setTimeout(()=>{
+    if(!viewer&&typeof $3Dmol!=='undefined')
+      viewer=$3Dmol.createViewer(document.getElementById('mv'),{backgroundColor:'#eef1f7',preserveDrawingBuffer:true});
+  },800);
+});
+</script>
+</body>
+</html>

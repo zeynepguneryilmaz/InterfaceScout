@@ -1,0 +1,53 @@
+cff-version: 1.2.0
+message: "If you use InterfaceScout, please cite the associated article."
+title: "InterfaceScout: residue-level protein surface chemistry and functional-group compatibility mapping"
+type: software
+authors:
+  - family-names: "Guner Yilmaz"
+    given-names: "O. Zeynep"
+    affiliation: "Department of Chemical Engineering, Istanbul Technical University"
+  - family-names: "Yilmaz"
+    given-names: "Anil"
+  - family-names: "Aydin"
+    given-names: "Bugce"
+  - family-names: "Bozoglu"
+    given-names: "Serdar"
+  - family-names: "Yavuz"
+    given-names: "Nilgun"
+  - family-names: "Acma"
+    given-names: "Hanzade"
+  - family-names: "Yaman"
+    given-names: "Serdar"
+  - family-names: "Guner"
+    given-names: "F. Seniha"
+license: MIT
+repository-code: "https://github.com/USERNAME/InterfaceScout"
+keywords:
+  - protein adsorption
+  - surface chemistry
+  - bovine serum albumin
+  - patch analysis
+  - cation-pi
+  - electrostatics
+preferred-citation:
+  type: article
+  title: "Patch-Level Interfacial Complementarity Explains Protein Adsorption Across Chemically Tuned Carbon Interfaces"
+  authors:
+    - family-names: "Guner Yilmaz"
+      given-names: "O. Zeynep"
+    - family-names: "Yilmaz"
+      given-names: "Anil"
+    - family-names: "Aydin"
+      given-names: "Bugce"
+    - family-names: "Bozoglu"
+      given-names: "Serdar"
+    - family-names: "Yavuz"
+      given-names: "Nilgun"
+    - family-names: "Acma"
+      given-names: "Hanzade"
+    - family-names: "Yaman"
+      given-names: "Serdar"
+    - family-names: "Guner"
+      given-names: "F. Seniha"
+  year: 2026
+  journal: "(to be added)"
