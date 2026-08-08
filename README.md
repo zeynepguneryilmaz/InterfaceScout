@@ -1,151 +1,292 @@
 # InterfaceScout
 
-**Residue-level protein surface chemistry & functional-group compatibility mapping.**
+**Residue-level protein surface chemistry and surface-chemistry compatibility mapping.**
 
-InterfaceScout analyzes the solvent-exposed surface of a protein once and scores
-every residue for compatibility with a panel of generic surface chemistries
-(cationic, anionic, hydrogen-bond donor/acceptor, π/graphitic, hydrophobic,
-oxide, hydroxyapatite/Ca²⁺, metal-coordination, gold, phosphate). Scoring is
-fully deterministic and physics-based — literature-derived interaction energies
-weighted by solvent exposure, three-dimensional cluster context, APBS
-electrostatics, and a pH-dependent protonation factor. **No machine learning.**
+InterfaceScout is an open-source, deterministic computational framework for analyzing the solvent-exposed surface of protein structures and identifying residue-level compatibility with generic classes of material surface chemistry.
 
-The app runs entirely on your computer and opens in your web browser at
-`http://localhost:8000`. Nothing is uploaded to any server.
+From a protein structure and user-defined solution conditions, InterfaceScout combines solvent-accessible surface area, local three-dimensional residue organization, pH-dependent protonation, and Poisson–Boltzmann electrostatic potential with literature-informed residue–chemistry reference strengths.
+
+The framework generates residue-level interaction-propensity maps and chemistry-specific patch-density maps for eleven interfacial chemistry classes:
+
+- cationic
+- anionic
+- hydrogen-bond donor
+- hydrogen-bond acceptor
+- π / carbon-like
+- hydrophobic
+- oxide
+- hydroxyapatite / Ca²⁺
+- transition-metal coordination
+- gold
+- phosphate
+
+InterfaceScout provides a protein-centered description of chemically compatible surface motifs and spatially enriched residue patches that can support the interpretation and comparison of protein–material interactions across chemically distinct interfaces.
+
+**No machine learning or fitting to experimental adsorption data is used.**
+
+The application runs locally on your computer and opens in your web browser at:
+
+`http://localhost:8000`
+
+Protein structures and analysis results are processed locally.
 
 ---
 
 ## What's in this folder
 
-```
-InterfaceScout/
-├── backend/          The analysis engine (Python)
-├── frontend/         The web interface
-├── run_local.bat     First-time setup  (Windows)
-├── start.bat         Daily launcher    (Windows)
-├── run_local.sh      First-time setup  (macOS / Linux)
-├── start.command     Daily launcher    (macOS)
-├── start.sh          Daily launcher    (Linux)
-├── interfacescout.ico / .png   App icon
-└── README.md         This file
-```
+    InterfaceScout/
+    ├── backend/          The analysis engine (Python)
+    ├── frontend/         The web interface
+    ├── run_local.bat     First-time setup  (Windows)
+    ├── start.bat         Daily launcher    (Windows)
+    ├── run_local.sh      First-time setup  (macOS / Linux)
+    ├── start.command     Daily launcher    (macOS)
+    ├── start.sh          Daily launcher    (Linux)
+    ├── interfacescout.ico / .png   App icon
+    └── README.md         This file
 
-**Keep all of these together in one folder.** The launchers sit next to
-`backend/` and find it automatically — don't move them into subfolders.
+**Keep all of these together in one folder.** The launchers sit next to `backend/` and find it automatically — don't move them into subfolders.
 
 ---
 
 ## Requirements
 
-- **Python 3.11 or 3.12** (with SSL). On Windows the setup script finds it
-  automatically; on macOS/Linux install from python.org or your package manager
-  if needed.
-- An internet connection **the first time only** (to download dependencies and,
-  on Windows, the APBS electrostatics binary).
-- Works on **Windows 10/11**, **macOS** (Intel or Apple Silicon), and **Linux**.
+- **Python 3.11 or 3.12** with SSL support
+- An internet connection during initial setup to download software dependencies and, where required, the APBS electrostatics binary
+- Supported operating systems:
+  - **Windows 10/11**
+  - **macOS** — Intel or Apple Silicon
+  - **Linux**
 
 ---
 
 ## Windows
 
-1. **Double-click `run_local.bat`** (first time only). It installs everything,
-   puts an **InterfaceScout** icon on your Desktop, and starts the app.
-2. **From then on, double-click the InterfaceScout Desktop icon.** It detects the
-   existing installation and starts immediately (no re-install); your browser
-   opens at `http://localhost:8000`.
+1. **Double-click `run_local.bat`** the first time. It installs the required components, places an **InterfaceScout** icon on your Desktop, and starts the application.
 
-> The Desktop icon runs `run_local.bat`, which is safe to run any time: the first
-> run sets everything up, later runs start the app straight away. To force a
-> clean reinstall, delete the `backend\.venv` folder and run it again.
-> If Windows SmartScreen warns about the `.bat` file, choose **More info → Run
-> anyway**. If the app fails to start, the window stays open with the error and a
-> log is written to `backend\startup_log.txt`.
+2. On later runs, double-click the **InterfaceScout** Desktop icon. The existing installation is detected automatically and the application opens in your browser at:
+
+   `http://localhost:8000`
+
+> The Desktop icon runs `run_local.bat`, which can be used again after the first installation. To force a clean reinstall, delete the `backend\.venv` folder and run the setup again.
+>
+> If Windows SmartScreen displays a warning for the `.bat` file, choose **More info → Run anyway**.
+>
+> If the application fails to start, the command window remains open and a log is written to `backend\startup_log.txt`.
 
 ---
 
 ## macOS
 
-1. **Run `run_local.sh` once**: right-click it → **Open**, or in Terminal run
-   `bash run_local.sh`. It installs everything and puts an
-   **InterfaceScout.command** icon on your Desktop.
-2. **From then on, double-click `InterfaceScout.command`** on your Desktop. The
-   backend starts in the background and your browser opens; no Terminal stays
-   open.
+1. Run **`run_local.sh`** once by right-clicking it and choosing **Open**, or run:
 
-> Gatekeeper may ask for confirmation the first time — right-click → **Open**,
-> then confirm. To give the icon the app picture: right-click → **Get Info**,
-> drag `interfacescout.png` onto the icon at the top-left.
+   `bash run_local.sh`
+
+   in Terminal.
+
+   The setup installs the required components and places an **InterfaceScout.command** launcher on your Desktop.
+
+2. On later runs, double-click **`InterfaceScout.command`**. The backend starts locally and the application opens in your browser.
+
+> Gatekeeper may request confirmation on the first run. Right-click → **Open** and confirm if needed.
 
 ---
 
 ## Linux
 
-1. **Run `run_local.sh` once**: `bash run_local.sh`. It installs everything and
-   puts an **InterfaceScout.desktop** launcher on your Desktop.
-2. **From then on, double-click the InterfaceScout Desktop launcher.** The
-   backend starts with no terminal window and your browser opens.
+1. Run:
 
-> If your desktop marks the launcher "untrusted", right-click → **Allow
-> Launching** (the installer marks it trusted on GNOME automatically).
+   `bash run_local.sh`
 
----
+   once.
 
-## Using the app
+   The setup installs the required components and places an **InterfaceScout.desktop** launcher on your Desktop.
 
-1. Enter a PDB ID (e.g. `4F5U`) and click **Fetch**, or paste/upload a structure.
-2. Set the environment: **pH**, **ionic strength** (mM), **temperature** (K), and
-   **patch radius** (Å, default 12).
-3. Click **Analyze Surface**. The protein is analyzed once; every surface
-   chemistry is then available instantly.
-4. Explore the 3D map, switch between **propensity** and **patch-density**
-   colouring, and read the per-residue table.
-5. Export results as **CSV**, **PDB**, or **PDF**.
+2. On later runs, double-click the InterfaceScout Desktop launcher.
 
-The **Theory** page in the app documents the scoring scheme, every equation, and
-the literature behind each interaction energy and the pH-dependent protonation
-factor.
+> If the launcher is marked as untrusted, right-click and choose **Allow Launching** where supported.
 
 ---
 
-## Security note (antivirus / SmartScreen warnings)
+## Using InterfaceScout
 
-InterfaceScout is **open source and runs entirely on your own computer** — it
-does not upload data anywhere. Because the launcher scripts are not digitally
-signed (code-signing certificates are costly and unusual for academic tools),
-Windows SmartScreen or some antivirus products (Defender, Avast, Kaspersky,
-McAfee) may show a one-time **"unrecognized app"** warning. This is a *false
-positive* caused by the missing signature, not by any harmful content — every
-script is plain text you can open and read.
+1. Enter a PDB ID, such as `4F5U`, and click **Fetch**, or upload a PDB file.
+
+2. Define the analysis conditions:
+   - **pH**
+   - **ionic strength** (mM)
+   - **temperature** (K)
+   - **patch radius** (Å; default 12)
+
+3. Click **Analyze Surface**.
+
+4. Explore:
+   - residue-level surface-feature mapping
+   - generic surface-chemistry compatibility mapping
+   - interaction-propensity maps
+   - chemistry-specific patch-density maps
+
+5. Inspect the three-dimensional protein representation and residue-level analysis tables.
+
+6. Export results as:
+   - **CSV**
+   - **PDB**
+   - **PDF**
+
+---
+
+## Analysis workflow
+
+InterfaceScout analyzes the protein structure independently of an explicit material model.
+
+The workflow includes:
+
+1. Protein structure preparation
+2. Solvent-accessible surface analysis
+3. Condition-dependent protonation and electrostatics
+4. Assignment of residue–surface chemistry interaction classes
+5. Residue-level compatibility scoring
+6. Chemistry-specific patch-density analysis
+7. Three-dimensional visualization and data export
+
+Solvent-accessible surface area is calculated using the **Shrake–Rupley algorithm**.
+
+Condition-specific protonation states and atomic charges are assigned using **PDB2PQR / PROPKA**.
+
+Electrostatic potentials are calculated using **APBS** and the Poisson–Boltzmann equation.
+
+Residue-level compatibility is evaluated using literature-informed residue–chemistry reference strengths together with solvent exposure, local three-dimensional chemical context, electrostatic complementarity, and mechanism-specific protonation weighting.
+
+---
+
+## Surface feature mapping
+
+InterfaceScout identifies chemically relevant features presented by solvent-accessible protein residues, including:
+
+- positive charge
+- negative charge
+- hydrogen-bond donor
+- hydrogen-bond acceptor
+- hydrophobic character
+- aromatic character
+- metal-binding groups
+- thiol groups
+- carboxyl groups
+- amine-containing groups
+
+These features can be visualized directly on the three-dimensional protein structure.
+
+---
+
+## Surface-chemistry compatibility mapping
+
+InterfaceScout evaluates exposed residues against eleven generic classes of surface chemistry:
+
+| Surface chemistry | Main interaction motifs |
+|---|---|
+| Cationic | electrostatic attraction and hydrogen bonding |
+| Anionic | electrostatic attraction and hydrogen bonding |
+| H-bond donor | hydrogen-bond complementarity |
+| H-bond acceptor | hydrogen-bond complementarity |
+| π / carbon-like | π–π and cation–π interactions |
+| Hydrophobic | hydrophobic and CH–π contacts |
+| Oxide | carboxylate–oxide interactions and hydrogen bonding |
+| Hydroxyapatite / Ca²⁺ | Ca²⁺ coordination and related interactions |
+| Transition-metal coordination | His/Cys/Asp/Glu/Met coordination |
+| Gold | sulfur–gold affinity |
+| Phosphate | electrostatic and hydrogen-bond interactions |
+
+For each chemistry class, InterfaceScout reports residue-level **interaction propensity** and spatially resolved **patch density**.
+
+---
+
+## Interaction propensity
+
+Residue-level interaction propensity combines:
+
+- literature-informed residue–chemistry reference strength
+- solvent exposure
+- local three-dimensional residue context
+- electrostatic complementarity where applicable
+- mechanism-specific pH-dependent protonation
+
+The resulting normalized propensity values allow compatible residues to be ranked within each surface-chemistry map and analysis condition.
+
+---
+
+## Patch-density analysis
+
+Patch-density analysis identifies spatial regions enriched in exposed residues compatible with the same surface chemistry.
+
+For each surface position, InterfaceScout integrates compatible residue contributions within a user-defined three-dimensional neighborhood.
+
+The default patch radius is **12 Å**.
+
+This provides a complementary view of:
+
+- strong individual residue contributors
+- spatially coherent chemistry-enriched surface regions
+
+---
+
+## Theory and references
+
+The **Theory** section within the application documents:
+
+- the scoring framework
+- mathematical expressions used in the analysis
+- solvent-accessibility weighting
+- local three-dimensional context
+- electrostatic weighting
+- protonation-dependent weighting
+- patch-density calculation
+- literature sources supporting residue–chemistry interaction assignments
+
+---
+
+## Security note
+
+InterfaceScout is open source and runs as a local application.
+
+The launcher scripts are not digitally signed, so Windows SmartScreen or some antivirus programs may occasionally display a warning for downloaded scripts.
 
 To proceed:
 
-- **SmartScreen:** click **More info → Run anyway**.
-- **Downloaded ZIP blocked:** right-click the ZIP → **Properties** → tick
-  **Unblock** → **OK**, then extract.
-- **Antivirus quarantined a file:** restore it and, if needed, add the
-  InterfaceScout folder to your antivirus exclusions. Downloading the release
-  from the official GitHub repository (rather than email/USB) also reduces these
-  warnings, because files from a known source accumulate reputation over time.
+- **SmartScreen:** click **More info → Run anyway**
+- **Downloaded ZIP blocked:** right-click the ZIP → **Properties** → **Unblock** → **OK**
+- **Antivirus quarantined a file:** inspect and restore the file if appropriate
 
-The scripts only: find Python, create a local virtual environment, install the
-listed Python packages, download the APBS electrostatics binary (Windows), and
-start the local server. Nothing else.
+All launcher scripts are plain-text files and can be inspected directly.
 
 ---
 
 ## Troubleshooting
 
-- **"could not find backend\main.py":** the launcher was moved out of the
-  InterfaceScout folder. Keep `run_local.bat`/`start.bat` next to `backend/`.
-- **"No environment found":** run the setup script once first
-  (`run_local.bat` on Windows, `run_local.sh` on macOS/Linux).
-- **Browser didn't open:** open `http://localhost:8000` manually.
-- **APBS not found (Windows):** the setup script installs it (via conda if
-  available, otherwise a standalone download). Without APBS the app falls back to
-  a Debye-Huckel electrostatic estimate.
-- **Port 8000 busy:** the launchers free it automatically.
+- **"could not find backend\main.py"**  
+  Keep `run_local.bat` / `start.bat` next to the `backend/` folder.
+
+- **"No environment found"**  
+  Run the setup script once first: `run_local.bat` on Windows or `run_local.sh` on macOS/Linux.
+
+- **Browser didn't open**  
+  Open `http://localhost:8000` manually.
+
+- **APBS not found**  
+  Check that APBS is installed and accessible to InterfaceScout.
+
+- **Port 8000 busy**  
+  Close the process using the port or restart the launcher.
 
 ---
 
-*InterfaceScout · residue-level surface chemistry mapping · Shrake-Rupley SASA ·
-APBS electrostatics · literature-derived interaction energies.*
+## Citation
+
+If you use InterfaceScout in your research, please cite the associated InterfaceScout publication.
+
+Software repository:
+
+`https://github.com/zeynepguneryilmaz/InterfaceScout`
+
+---
+
+*InterfaceScout · protein surface chemistry · residue-level compatibility mapping · Shrake–Rupley SASA · PDB2PQR · PROPKA · APBS electrostatics · surface-chemistry interaction propensity · patch-density mapping*
