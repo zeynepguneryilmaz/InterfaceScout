@@ -40,14 +40,21 @@ Protein analysis is performed locally. An internet connection is required only f
 
 ```text
 InterfaceScout/
-├── backend/          Python analysis engine
-├── frontend/         Browser-based user interface
-├── run_local.bat     Setup + daily launcher  (Windows)
-├── run_local.sh      First-time setup  (macOS / Linux)
-├── start.command     Daily launcher    (macOS)
-├── start.sh          Daily launcher    (Linux)
-├── interfacescout.ico / .png   App icon
-└── README.md         This file
+├── backend/
+│   ├── main.py               Python analysis engine
+│   └── requirements.txt      Core Python dependencies
+├── frontend/
+│   ├── index.html            Browser-based user interface
+│   ├── logo.png              In-app logo
+│   └── favicon.png           Browser-tab icon
+├── run_local.bat             Setup + daily launcher (Windows)
+├── run_local.sh              First-time setup (macOS / Linux)
+├── start.command             Daily launcher (macOS)
+├── start.sh                  Daily launcher (Linux)
+├── interfacescout.ico        Windows Desktop icon
+├── interfacescout.png        Linux/macOS launcher artwork
+├── LICENSE
+└── README.md                 This file
 ```
 
 **Keep these files together in the same InterfaceScout folder.**
@@ -66,7 +73,7 @@ The launcher files are expected to remain next to the `backend/` and `frontend/`
   - **macOS** — Intel or Apple Silicon
   - **Linux**
 
-PDB2PQR/PROPKA and APBS are used only for optional electrostatic descriptors. The canonical InterfaceScout compatibility calculation does not require APBS electrostatic potential to rank residues or multiscale hotspots.
+PDB2PQR/PROPKA and APBS are used only for optional electrostatic descriptors. The canonical InterfaceScout compatibility calculation does not require APBS electrostatic potential to rank residues or multiscale hotspots. The setup scripts attempt to configure APBS when supported, but failure to install APBS does not prevent the canonical analysis from running.
 
 ---
 

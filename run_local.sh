@@ -1,17 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# InterfaceScout - One-Click Local Setup (macOS / Linux)
-# ============================================================
-# First-time setup:
-#   - finds Python with SSL
-#   - creates backend/.venv
-#   - installs core Python dependencies
-#   - attempts optional apbs-binary installation
-#   - creates a Desktop launcher
-#   - starts InterfaceScout locally
-#
-# This file must sit in the InterfaceScout folder, next to backend/
-# and frontend/.
+# InterfaceScout - first-time setup (macOS / Linux)
 # ============================================================
 set -e
 
@@ -19,22 +8,11 @@ PROJ_DIR="$(cd "$(dirname "$0")" && pwd)"
 BACKEND="$PROJ_DIR/backend"
 FRONTEND="$PROJ_DIR/frontend"
 
-if [ ! -f "$BACKEND/main.py" ]; then
-  echo "ERROR: could not find backend/main.py"
-  echo "Looked in: $BACKEND"
-  echo "run_local.sh must sit in the InterfaceScout folder, next to backend/ and frontend/."
+if [ ! -f "$BACKEND/main.py" ] || [ ! -f "$FRONTEND/index.html" ]; then
+  echo "ERROR: InterfaceScout files are incomplete."
+  echo "Keep run_local.sh next to backend/ and frontend/."
   exit 1
 fi
-
-if [ ! -f "$FRONTEND/index.html" ]; then
-  echo "ERROR: could not find frontend/index.html"
-  echo "Looked in: $FRONTEND"
-  exit 1
-fi
-
-cd "$BACKEND"
-
-TRUSTED="--trusted-host pypi.org --trusted-host files.pythonhosted.org --trusted-host pypi.python.org"
 
 PYEXE=""
 for c in python3.12 python3.11 python3.10 python3; do
@@ -45,58 +23,43 @@ for c in python3.12 python3.11 python3.10 python3; do
 done
 
 if [ -z "$PYEXE" ]; then
-  echo "ERROR: no Python 3 with SSL found. Install Python 3.11 or 3.12."
+  echo "ERROR: no supported Python with SSL found. Install Python 3.11 or 3.12."
   exit 1
 fi
 
-echo "==> Using $($PYEXE --version) ($PYEXE)"
+cd "$BACKEND"
 
 if [ ! -d ".venv" ]; then
-  echo "==> Creating virtual environment (.venv)..."
+  echo "==> Creating virtual environment..."
   "$PYEXE" -m venv .venv
 fi
 
 # shellcheck disable=SC1091
 source .venv/bin/activate
 
-echo "==> Upgrading pip..."
-python -m pip install --upgrade pip $TRUSTED >/dev/null
-
 echo "==> Installing core dependencies..."
-python -m pip install -r requirements.txt $TRUSTED
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 
-echo ""
-echo "==> Attempting optional APBS binary installation..."
-if python -m pip install apbs-binary $TRUSTED; then
-  echo "==> Optional APBS binary package installed."
+echo "==> Checking optional APBS support..."
+if python -c "import apbs_binary" >/dev/null 2>&1; then
+  echo "==> apbs-binary already installed."
 else
-  echo "WARNING: apbs-binary could not be installed on this platform."
-  echo "         Canonical InterfaceScout compatibility analysis will still run."
-  echo "         Only optional APBS electrostatic descriptors may be unavailable."
+  if python -m pip install "apbs-binary>=3.4.1.2"; then
+    echo "==> Optional apbs-binary installed."
+  else
+    echo "WARNING: optional APBS binary could not be installed."
+    echo "         Canonical InterfaceScout compatibility analysis will still run."
+  fi
 fi
 
-echo ""
-echo "==> Checking optional computational binaries..."
-python - <<'PY'
-import shutil
-print("  pdb2pqr:", shutil.which("pdb2pqr") or "NOT FOUND")
-try:
-    import apbs_binary
-    print("  apbs:   ", getattr(apbs_binary, "APBS_BIN_PATH", "package found"))
-except Exception:
-    print("  apbs:    NOT FOUND (optional)")
-PY
-
 chmod +x "$PROJ_DIR/start.command" "$PROJ_DIR/start.sh" 2>/dev/null || true
+
 DESKTOP="$HOME/Desktop"
+OS="$(uname -s)"
 
 if [ -d "$DESKTOP" ]; then
-  OS="$(uname -s)"
-
   if [ "$OS" = "Darwin" ]; then
-    # Do not copy the real start.command to Desktop because it resolves
-    # backend/ relative to itself. Create a tiny wrapper pointing back
-    # to the project launcher instead.
     LAUNCHER="$DESKTOP/InterfaceScout.command"
     {
       echo '#!/usr/bin/env bash'
@@ -104,9 +67,6 @@ if [ -d "$DESKTOP" ]; then
     } > "$LAUNCHER"
     chmod +x "$LAUNCHER"
     echo "==> Desktop launcher created: InterfaceScout.command"
-    echo "    It points back to the InterfaceScout project folder."
-    echo "    To customize its icon: Finder > Get Info and use interfacescout.png."
-
   else
     LAUNCHER="$DESKTOP/InterfaceScout.desktop"
     cat > "$LAUNCHER" <<EOF
@@ -127,23 +87,9 @@ EOF
   fi
 fi
 
-echo ""
-echo "============================================================"
-echo "  Setup complete."
-echo "  InterfaceScout will start at http://localhost:8000"
-echo "  On later runs, use the Desktop launcher."
-echo "============================================================"
-echo ""
-
-nohup python main.py >/tmp/interfacescout.log 2>&1 &
-sleep 2
-
-OS="$(uname -s)"
+cd "$PROJ_DIR"
 if [ "$OS" = "Darwin" ]; then
-  open "http://localhost:8000" 2>/dev/null || true
-elif command -v xdg-open >/dev/null 2>&1; then
-  xdg-open "http://localhost:8000" >/dev/null 2>&1 || true
+  exec "$PROJ_DIR/start.command"
+else
+  exec "$PROJ_DIR/start.sh"
 fi
-
-echo "InterfaceScout started. Log: /tmp/interfacescout.log"
-exit 0

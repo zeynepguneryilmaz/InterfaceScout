@@ -1,5 +1,5 @@
 """
-InterfaceScout — backend
+InterfaceScout — publication-freeze backend (v5.1)
 ==================================================
 Canonical model implemented to match the manuscript/SI formulation:
 
@@ -924,13 +924,54 @@ def model_spec():
     return JSONResponse(spec)
 
 
+# Repository layout:
+#
+# InterfaceScout/
+# ├── backend/
+# │   └── main.py
+# └── frontend/
+#     └── index.html
+#
+# The repository layout is preferred. A same-directory fallback is retained
+# for minimal deployments that keep main.py and index.html together.
+BACKEND_DIR = Path(__file__).resolve().parent
+PROJECT_DIR = BACKEND_DIR.parent
+FRONTEND_INDEX = PROJECT_DIR / "frontend" / "index.html"
+SAME_DIR_INDEX = BACKEND_DIR / "index.html"
+
+
 @app.get("/")
 def root():
-    # Serve the final frontend automatically when index.html is placed next to this backend.
-    index = Path(__file__).with_name("index.html")
-    if index.exists():
-        return FileResponse(index)
-    return {"name": "InterfaceScout", "version": APP_VERSION, "frontend": "Place index.html beside this file."}
+    """Serve the browser frontend from the repository-level frontend folder."""
+    if FRONTEND_INDEX.exists():
+        return FileResponse(FRONTEND_INDEX)
+    if SAME_DIR_INDEX.exists():
+        return FileResponse(SAME_DIR_INDEX)
+    return JSONResponse(
+        {
+            "name": "InterfaceScout",
+            "version": APP_VERSION,
+            "frontend": "not found",
+            "expected_frontend": str(FRONTEND_INDEX),
+        },
+        status_code=404,
+    )
+
+
+@app.get("/favicon.png")
+def favicon():
+    path = PROJECT_DIR / "frontend" / "favicon.png"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="favicon.png not found")
+    return FileResponse(path)
+
+
+@app.get("/logo.png")
+def logo():
+    path = PROJECT_DIR / "frontend" / "logo.png"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="logo.png not found")
+    return FileResponse(path)
 
 
 if __name__ == "__main__":

@@ -4,12 +4,13 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>InterfaceScout — Protein Surface Compatibility Mapping</title>
+<link rel="icon" type="image/png" href="/favicon.png"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.1.0/3Dmol-min.js"></script>
 <style>
 :root{--bg:#f7f8fb;--panel:#fff;--border:#d9dee8;--text:#172033;--muted:#667085;--accent:#2563eb;--accent2:#7c3aed;--green:#15803d;--orange:#b45309;--red:#b91c1c;--soft:#eef2f7;--mono:'Courier New',monospace}
 *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif;font-size:14px}
 header{height:70px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 22px;gap:16px}
-.brand h1{font-size:18px;margin:0}.brand p{margin:4px 0 0;color:var(--muted);font-size:12px}.status{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px}.dot{width:9px;height:9px;border-radius:50%;background:#f59e0b}.dot.ok{background:#16a34a}.dot.err{background:#dc2626}
+.brandWrap{display:flex;align-items:center;gap:10px}.brandLogo{width:42px;height:42px;border-radius:10px;object-fit:cover}.brand h1{font-size:18px;margin:0}.brand p{margin:4px 0 0;color:var(--muted);font-size:12px}.status{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px}.dot{width:9px;height:9px;border-radius:50%;background:#f59e0b}.dot.ok{background:#16a34a}.dot.err{background:#dc2626}
 .layout{display:grid;grid-template-columns:310px minmax(0,1fr);height:calc(100vh - 70px)}
 .sidebar{background:#fff;border-right:1px solid var(--border);padding:15px;overflow:auto}.section{margin-bottom:15px}.section h3{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);margin:0 0 8px}.field{margin-bottom:8px}.field label{display:block;font-size:11px;color:var(--muted);font-family:var(--mono);margin-bottom:3px}.input{width:100%;border:1px solid var(--border);border-radius:6px;background:#fff;padding:8px;color:var(--text);outline:none}.input:focus{border-color:var(--accent)}.row{display:grid;grid-template-columns:1fr 1fr;gap:7px}.tabs{display:flex;gap:4px;margin-bottom:8px}.tab{flex:1;border:1px solid var(--border);background:#fff;border-radius:5px;padding:6px;cursor:pointer;color:var(--muted)}.tab.on{border-color:var(--accent);color:var(--accent);background:#eff6ff}.btn{width:100%;border:none;border-radius:7px;padding:9px 10px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}.btn:disabled{opacity:.4;cursor:not-allowed}.btn.secondary{background:#fff;border:1px solid var(--border);color:var(--text);font-weight:600}.btnrow{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}.drop{border:1px dashed var(--border);border-radius:7px;padding:14px;text-align:center;color:var(--muted);cursor:pointer;font-size:12px}.info{background:#f8fafc;border:1px solid var(--border);border-radius:7px;padding:9px;color:var(--muted);font-size:12px;line-height:1.5}.info strong{color:var(--text)}
 .main{display:grid;grid-template-rows:minmax(300px,1fr) 330px;min-width:0}.viewerWrap{position:relative;background:#eef1f6;border-bottom:1px solid var(--border)}#viewer{width:100%;height:100%}.viewerBtns{position:absolute;top:9px;right:9px;display:flex;gap:4px}.viewerBtns button{background:rgba(255,255,255,.94);border:1px solid var(--border);border-radius:5px;padding:5px 8px;cursor:pointer}.legend{position:absolute;left:10px;bottom:10px;background:rgba(255,255,255,.96);border:1px solid var(--border);border-radius:7px;padding:9px;min-width:205px;font-size:11px;display:none}.loading{position:absolute;inset:0;background:rgba(255,255,255,.88);display:none;align-items:center;justify-content:center;z-index:30}.spinner{width:24px;height:24px;border:3px solid #d7dce5;border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 8px}@keyframes spin{to{transform:rotate(360deg)}}
@@ -21,7 +22,7 @@ header{height:70px;background:#fff;border-bottom:1px solid var(--border);display
 </head>
 <body>
 <header>
-  <div class="brand"><h1>InterfaceScout</h1><p>Lightweight protein-side compatibility mapping for experimental protein–material studies</p></div>
+  <div class="brandWrap"><img class="brandLogo" src="/logo.png" alt="InterfaceScout logo"><div class="brand"><h1>InterfaceScout</h1><p>Lightweight protein-side compatibility mapping for experimental protein–material studies</p></div></div>
   <div class="status"><span class="dot" id="dot"></span><span id="statusText">Checking backend…</span></div>
 </header>
 <div class="layout">
