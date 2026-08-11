@@ -42,8 +42,7 @@ Protein analysis is performed locally. An internet connection is required only f
 InterfaceScout/
 ├── backend/          Python analysis engine
 ├── frontend/         Browser-based user interface
-├── run_local.bat     First-time setup  (Windows)
-├── start.bat         Daily launcher    (Windows)
+├── run_local.bat     Setup + daily launcher  (Windows)
 ├── run_local.sh      First-time setup  (macOS / Linux)
 ├── start.command     Daily launcher    (macOS)
 ├── start.sh          Daily launcher    (Linux)
@@ -53,7 +52,7 @@ InterfaceScout/
 
 **Keep these files together in the same InterfaceScout folder.**
 
-The launcher files are expected to remain next to the `backend/` and `frontend/` directories.
+The launcher files are expected to remain next to the `backend/` and `frontend/` directories. On Windows, `run_local.bat` serves both as the first-time setup script and the subsequent launcher.
 
 ---
 
@@ -77,7 +76,7 @@ PDB2PQR/PROPKA and APBS are used only for optional electrostatic descriptors. Th
 
    The setup installs the required Python components, prepares the local environment, creates an InterfaceScout Desktop launcher where supported, and starts the application.
 
-2. On later runs, use the **InterfaceScout Desktop icon** or `start.bat`.
+2. On later runs, use the **InterfaceScout Desktop icon** or run `run_local.bat` again. The launcher detects the existing environment and starts immediately without reinstalling dependencies.
 
 3. The application opens at:
 
@@ -99,7 +98,7 @@ PDB2PQR/PROPKA and APBS are used only for optional electrostatic descriptors. Th
    bash run_local.sh
    ```
 
-2. On later runs, use `InterfaceScout.command` or the supplied startup script.
+2. On later runs, double-click the generated **`InterfaceScout.command`** on your Desktop. This Desktop launcher points back to the real `start.command` in the InterfaceScout folder, so the project folder is located reliably.
 
 3. The backend starts locally and the application opens in your browser.
 
@@ -490,11 +489,11 @@ Typical options are:
 
 ### Backend not found
 
-Keep the launcher files in the expected InterfaceScout directory structure so that they can locate the Python backend.
+Keep the launcher files in the expected InterfaceScout directory structure so that they can locate both `backend/main.py` and `frontend/index.html`.
 
 ### Python environment not found
 
-Run the first-time setup script before using the daily launcher.
+Run the first-time setup script before using the daily launcher. On Windows, `run_local.bat` performs both setup and later launches.
 
 ### Browser did not open
 
