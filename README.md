@@ -156,10 +156,10 @@ PDB2PQR/PROPKA and APBS are used only for optional electrostatic descriptors. Th
 
 6. Inspect the three-dimensional protein representation and residue-level result tables.
 
-7. Export machine-readable results as:
+7. Export results as:
 
-   - **CSV**
-   - **JSON**
+   - **CSV** — a comprehensive residue-level table containing the calculated structural descriptors, surface-feature flags, and chemistry-specific favorable, repulsive, and multiscale-patch quantities for the analyzed chain(s)
+   - **PDB** — the currently displayed chemistry/map is written into the PDB **B-factor field** on a 0–100 scale so the exported structure can be recolored by B-factor in external molecular viewers
 
 There is no user-adjustable canonical patch-radius parameter in the publication-frozen model.
 
@@ -418,6 +418,22 @@ These material- and system-level variables must be assessed separately.
 InterfaceScout outputs should therefore be interpreted as **protein-side compatibility hypotheses**, not direct quantitative predictions of adsorption magnitude.
 
 ---
+
+
+## Export behavior
+
+The CSV export is analysis-wide for the selected chain or chain set. It contains the calculated residue-level structural descriptors, surface exposure quantities, ionization descriptors, auxiliary electrostatic values when available, surface-feature membership, and chemistry-specific favorable, repulsive, and patch-level quantities.
+
+The PDB export follows the **current view**:
+
+- the selected chain is the only chain exported; if `ALL` is analyzed, all analyzed chains are retained
+- the selected surface-chemistry class is retained
+- the active display mode is retained: residue propensity, 5/8 Å multiscale persistence, or repulsion propensity
+- the displayed 0–100 value is written into the standard PDB **B-factor field**
+- residues without a non-zero value in the selected map receive `0.00`
+
+This makes the exported PDB directly usable for B-factor-based coloring in molecular-visualization software.
+
 
 ## Theory and references
 
