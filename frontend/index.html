@@ -38,11 +38,10 @@ header{height:70px;background:#fff;border-bottom:1px solid var(--border);display
     <div class="section"><h3>2 · Solution condition</h3>
       <div class="row"><div class="field"><label>pH</label><input class="input" id="pH" type="number" step="0.1" value="7.4" min="0" max="14"></div><div class="field"><label>IONIC STRENGTH (mM)</label><input class="input" id="ionic" type="number" value="150" min="0"></div></div>
       <div class="field"><label>TEMPERATURE (K)</label><input class="input" id="temp" type="number" value="298" min="1"></div>
-      <div class="info"><strong>Frozen model settings:</strong> side-chain RSA threshold 0.05; Shrake–Rupley 1.40 Å probe / 200 points per atom; patch persistence at fixed 5 and 8 Å. No user-tuned patch radius.</div>
     </div>
 
     <button class="btn" id="analyzeBtn" onclick="analyze()" disabled>Analyze protein surface</button>
-    <div class="btnrow"><button class="btn secondary" id="csvBtn" onclick="exportCSV()" disabled>Export CSV</button><button class="btn secondary" id="jsonBtn" onclick="exportJSON()" disabled>Export JSON</button></div>
+    <div class="btnrow"><button class="btn secondary" id="csvBtn" onclick="exportCSV()" disabled>Export Full CSV</button><button class="btn secondary" id="pdbBtn" onclick="exportPDB()" disabled>Export PDB (B-factor)</button></div>
     <button class="btn secondary" style="margin-top:6px" onclick="openTheory()">Model scope & theory</button>
     <div id="error"></div>
   </aside>
@@ -82,24 +81,289 @@ async function fetchPDB(){const id=document.getElementById('pdbId').value.trim()
 function loadFile(ev){const f=ev.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{pdbText=e.target.result;loadViewer(pdbText);document.getElementById('proteinInfo').innerHTML=`<strong>${escapeHtml(f.name)}</strong> loaded.`;};rd.readAsText(f);}
 function env(){return{pH:+document.getElementById('pH').value,ionic:+document.getElementById('ionic').value,temp:+document.getElementById('temp').value}}
 function showLoading(t){document.getElementById('loadingText').textContent=t;document.getElementById('loading').style.display='flex'}function hideLoading(){document.getElementById('loading').style.display='none'}function showError(t){document.getElementById('error').innerHTML=t?`<div class="err">${escapeHtml(t)}</div>`:''}
-async function analyze(){if(!pdbText)return;showLoading('scRSA → chemistry mapping → 5/8 Å persistence → auxiliary descriptors…');showError('');try{const r=await fetch(API()+'/analyze_surface',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pdb_text:pdbText,chain:document.getElementById('chain').value.trim()||null,env:env()}),signal:AbortSignal.timeout(600000)});const d=await r.json();if(!r.ok)throw new Error(d.detail||'Backend error');data=d;document.getElementById('proteinInfo').innerHTML=`<strong>${d.settings.chain==='ALL'?'All chains':'Chain '+escapeHtml(d.settings.chain)}</strong> · ${d.stats.n_residues} residues · ${d.stats.n_surface_res} surface residues<br>Electrostatics: ${escapeHtml(d.stats.electrostatics)}`;document.getElementById('csvBtn').disabled=false;document.getElementById('jsonBtn').disabled=false;renderChips();activeChem=d.chemistry_list[0];colorMode='propensity';renderAll();}catch(e){showError(e.message)}finally{hideLoading()}}
+async function analyze(){if(!pdbText)return;showLoading('scRSA → chemistry mapping → 5/8 Å persistence → auxiliary descriptors…');showError('');try{const r=await fetch(API()+'/analyze_surface',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pdb_text:pdbText,chain:document.getElementById('chain').value.trim()||null,env:env()}),signal:AbortSignal.timeout(600000)});const d=await r.json();if(!r.ok)throw new Error(d.detail||'Backend error');data=d;document.getElementById('proteinInfo').innerHTML=`<strong>${d.settings.chain==='ALL'?'All chains':'Chain '+escapeHtml(d.settings.chain)}</strong> · ${d.stats.n_residues} residues · ${d.stats.n_surface_res} surface residues<br>Electrostatics: ${escapeHtml(d.stats.electrostatics)}`;document.getElementById('csvBtn').disabled=false;document.getElementById('pdbBtn').disabled=false;activeChem=d.chemistry_list[0];colorMode='propensity';renderAll();if(viewer){viewer.zoomTo(analysisSelector(),500);viewer.render();}}catch(e){showError(e.message)}finally{hideLoading()}}
 function renderChips(){document.getElementById('chips').innerHTML=data.chemistry_list.map(k=>`<button class="chip${activeChem===k?' on':''}" onclick="selectChem('${k}')">${LABELS[k]||k}</button>`).join('');document.getElementById('modebar').style.display='flex';document.getElementById('mapNote').innerHTML='Scores are <strong>within-map rankings</strong>, not adsorption free energies or cross-chemistry affinities.';}
 function selectChem(k){activeChem=k;renderAll()}
 function setMode(m){colorMode=m;document.querySelectorAll('.modebtn').forEach(b=>b.classList.toggle('on',b.dataset.mode===m));renderAll()}
 function renderAll(){renderChips();renderDetail();highlight()}
 function scoreColor(v){v=Math.max(0,Math.min(100,v||0))/100;const r=Math.round(220-(180*v));const g=Math.round(65+(115*v));const b=Math.round(55+(40*v));return `rgb(${r},${g},${b})`}
-function highlight(){if(!viewer||!data||!activeChem)return;clearSurfaces();viewer.setStyle({},{cartoon:{color:'#cbd5e1'}});const g=data.chemistries[activeChem];let rows=[];if(colorMode==='repulsion'){rows=g.repulsive_residues.map(r=>({...r,_v:r.repulsion_propensity}))}else{rows=g.residues.map(r=>({...r,_v:colorMode==='persistence'?r.multiscale_persistence:r.propensity}))}rows.forEach(r=>{viewer.setStyle({chain:r.chain,resi:r.res_seq},{stick:{color:scoreColor(r._v),radius:.25},sphere:{color:scoreColor(r._v),radius:.5}})});if(currentStyle==='surface'){const map={};rows.forEach(r=>map[r.chain+':'+r.res_seq]=r._v);const id=viewer.addSurface($3Dmol.SurfaceType.VDW,{opacity:.88,colorfunc:a=>scoreColor(map[(a.chain||'A')+':'+a.resi]||0)});surfaces.push(id)}viewer.render();const leg=document.getElementById('legend');leg.style.display='block';leg.innerHTML=`<b>${LABELS[activeChem]||activeChem}</b><br>${colorMode==='persistence'?'5/8 Å multiscale persistence':colorMode==='repulsion'?'repulsion propensity':'within-map residue propensity'}<div style="height:7px;margin:6px 0;background:linear-gradient(90deg,rgb(220,65,55),rgb(130,123,75),rgb(40,180,95));border-radius:4px"></div><div style="display:flex;justify-content:space-between"><span>0</span><span>100</span></div>`;}
-function renderDetail(){const g=data.chemistries[activeChem];if(!g)return;const rows=colorMode==='repulsion'?g.repulsive_residues:g.residues;const top=g.top_patch;let html=`<div class="headline"><div><h2>${escapeHtml(g.label)}</h2><div class="sub">${escapeHtml(g.description)}</div></div><div class="metric"><b>${top?top.multiscale_persistence.toFixed(1):'—'}</b><span>TOP PATCH PERSISTENCE</span></div></div>`;html+=`<div class="info"><strong>Surface group:</strong> ${escapeHtml(g.surface_group)}<br><strong>Canonical residue score:</strong> scRSA × membership × required-state availability. <strong>Ebase and APBS are auxiliary only.</strong></div>`;if(top){html+=`<div class="footerline"><strong>Top persistent patch centre:</strong> ${top.res_name}${top.res_seq}${top.icode||''} ${top.chain} · 5 Å ${top.density_5A_norm.toFixed(1)} · 8 Å ${top.density_8A_norm.toFixed(1)} · persistence ${top.multiscale_persistence.toFixed(1)}</div>`}
-if(!rows.length){html+=`<p class="muted">No ${colorMode==='repulsion'?'repulsive':'favorable'} residues passed the scRSA threshold for this chemistry.</p>`;document.getElementById('detail').innerHTML=html;return;}
-if(colorMode==='repulsion'){html+=`<table class="table"><thead><tr><th>Residue</th><th>scRSA</th><th>State</th><th>Repulsion</th><th>φ (kT/e)</th><th>Mechanism</th></tr></thead><tbody>`+rows.map(r=>`<tr><td class="click" onclick="zoomResidue(${r.res_seq},'${r.chain}')">${r.res_name}${r.res_seq}${r.icode||''} ${r.chain}</td><td>${r.scrsa.toFixed(3)}</td><td>${r.state_availability.toFixed(3)}</td><td>${barCell(r.repulsion_propensity)}</td><td>${fmt(r.phi)}</td><td>${escapeHtml(r.mechanism)}</td></tr>`).join('')+`</tbody></table>`;}else{html+=`<table class="table"><thead><tr><th>Residue</th><th>scRSA</th><th>State avail.</th><th>Propensity</th><th>5 Å</th><th>8 Å</th><th>Persistence</th><th>APBS φ</th><th>Ebase*</th></tr></thead><tbody>`+rows.map(r=>`<tr><td class="click" onclick="zoomResidue(${r.res_seq},'${r.chain}')">${r.res_name}${r.res_seq}${r.icode||''} ${r.chain}${r.ionization_sensitive?' <span class="badge warn">pKa-sensitive</span>':''}</td><td>${r.scrsa.toFixed(3)}</td><td>${r.state_availability.toFixed(3)}${r.auxiliary_charged_fraction!=null?` <span class="badge">aux fchg ${r.auxiliary_charged_fraction.toFixed(2)}</span>`:''}</td><td>${barCell(r.propensity)}</td><td>${r.patch_density_5A.toFixed(1)}</td><td>${r.patch_density_8A.toFixed(1)}</td><td>${barCell(r.multiscale_persistence)}</td><td>${fmt(r.phi)}</td><td>${r.ebase_metadata_kcal_mol.toFixed(1)}</td></tr>`).join('')+`</tbody></table><div class="footerline">*Ebase is literature metadata and is not used in propensity or patch ranking.</div>`;}
-document.getElementById('detail').innerHTML=html;}
+function analysisSelector(){
+  if(!data || !data.settings || data.settings.chain==='ALL') return {};
+  return {chain:data.settings.chain};
+}
+function applyBaseStyle(){
+  if(!viewer)return;
+  viewer.setStyle({},{});
+  const sel=analysisSelector();
+  if(currentStyle==='stick') viewer.setStyle(sel,{stick:{colorscheme:'Jmol'}});
+  else viewer.setStyle(sel,{cartoon:{color:'#cbd5e1'}});
+}
+function currentMapRows(){
+  if(!data||!activeChem)return[];
+  const g=data.chemistries[activeChem];
+  if(colorMode==='repulsion') return (g.repulsive_residues||[]).map(r=>({...r,_key:r.key,_v:r.repulsion_propensity}));
+  if(colorMode==='persistence') return (g.patch_centers||[]).map(r=>({...r,_key:r.center_key,_v:r.multiscale_persistence}));
+  return (g.residues||[]).map(r=>({...r,_key:r.key,_v:r.propensity}));
+}
+function currentMetricLabel(){
+  return colorMode==='persistence'?'5/8 Å multiscale persistence':colorMode==='repulsion'?'repulsion propensity':'within-map residue propensity';
+}
+function highlight(){
+  if(!viewer||!data||!activeChem)return;
+  clearSurfaces();
+  applyBaseStyle();
+  const rows=currentMapRows();
+  rows.forEach(r=>{
+    viewer.setStyle({chain:r.chain,resi:r.res_seq},{stick:{color:scoreColor(r._v),radius:.25},sphere:{color:scoreColor(r._v),radius:.5}});
+  });
+  if(currentStyle==='surface'){
+    const map={}; rows.forEach(r=>map[r.chain+':'+r.res_seq+':'+(r.icode||'')]=r._v);
+    const id=viewer.addSurface(
+      $3Dmol.SurfaceType.VDW,
+      {opacity:.88,colorfunc:a=>scoreColor(map[(a.chain||'')+':'+a.resi+':'+(a.icode||'')]||0)},
+      analysisSelector()
+    );
+    surfaces.push(id);
+  }
+  viewer.render();
+  const leg=document.getElementById('legend');
+  leg.style.display='block';
+  leg.innerHTML=`<b>${LABELS[activeChem]||activeChem}</b><br>${currentMetricLabel()}<div style="height:7px;margin:6px 0;background:linear-gradient(90deg,rgb(220,65,55),rgb(130,123,75),rgb(40,180,95));border-radius:4px"></div><div style="display:flex;justify-content:space-between"><span>0</span><span>100</span></div>`;
+}
+function renderDetail(){
+  const g=data.chemistries[activeChem]; if(!g)return;
+  const top=g.top_patch;
+  let html=`<div class="headline"><div><h2>${escapeHtml(g.label)}</h2><div class="sub">${escapeHtml(g.description)}</div></div><div class="metric"><b>${top?top.multiscale_persistence.toFixed(1):'—'}</b><span>TOP PATCH PERSISTENCE</span></div></div>`;
+  html+=`<div class="info"><strong>Surface group:</strong> ${escapeHtml(g.surface_group)}<br><strong>Canonical residue score:</strong> scRSA × membership × required-state availability. <strong>Ebase and APBS are auxiliary only.</strong></div>`;
+  if(top){html+=`<div class="footerline"><strong>Top persistent patch centre:</strong> ${top.res_name}${top.res_seq}${top.icode||''} ${top.chain} · 5 Å ${top.density_5A_norm.toFixed(1)} · 8 Å ${top.density_8A_norm.toFixed(1)} · persistence ${top.multiscale_persistence.toFixed(1)}</div>`}
+
+  if(colorMode==='persistence'){
+    const rows=g.patch_centers||[];
+    if(!rows.length){html+=`<p class="muted">No non-zero persistent patch centres were found for this chemistry.</p>`;document.getElementById('detail').innerHTML=html;return;}
+    html+=`<table class="table"><thead><tr><th>Patch centre</th><th>5 Å raw</th><th>8 Å raw</th><th>5 Å norm.</th><th>8 Å norm.</th><th>Persistence</th><th>Geo. mean</th><th>Compatible members (8 Å)</th></tr></thead><tbody>`+
+      rows.map(r=>`<tr><td class="click" onclick="zoomResidue(${r.res_seq},'${r.chain}')">${r.res_name}${r.res_seq}${r.icode||''} ${r.chain}</td><td>${Number(r.density_5A_raw).toFixed(4)}</td><td>${Number(r.density_8A_raw).toFixed(4)}</td><td>${Number(r.density_5A_norm).toFixed(1)}</td><td>${Number(r.density_8A_norm).toFixed(1)}</td><td>${barCell(r.multiscale_persistence)}</td><td>${Number(r.multiscale_geomean).toFixed(1)}</td><td>${(r.compatible_members_8A||[]).length}</td></tr>`).join('')+
+      `</tbody></table>`;
+  }else if(colorMode==='repulsion'){
+    const rows=g.repulsive_residues||[];
+    if(!rows.length){html+=`<p class="muted">No repulsive residues passed the scRSA threshold for this chemistry.</p>`;document.getElementById('detail').innerHTML=html;return;}
+    html+=`<table class="table"><thead><tr><th>Residue</th><th>scRSA</th><th>State</th><th>Repulsion</th><th>φ (kT/e)</th><th>Ebase*</th><th>Mechanism</th></tr></thead><tbody>`+
+      rows.map(r=>`<tr><td class="click" onclick="zoomResidue(${r.res_seq},'${r.chain}')">${r.res_name}${r.res_seq}${r.icode||''} ${r.chain}</td><td>${r.scrsa.toFixed(3)}</td><td>${r.state_availability.toFixed(3)}</td><td>${barCell(r.repulsion_propensity)}</td><td>${fmt(r.phi)}</td><td>${Number(r.ebase_metadata_kcal_mol).toFixed(1)}</td><td>${escapeHtml(r.mechanism)}</td></tr>`).join('')+
+      `</tbody></table><div class="footerline">*Ebase is literature metadata and is not used in ranking.</div>`;
+  }else{
+    const rows=g.residues||[];
+    if(!rows.length){html+=`<p class="muted">No favorable residues passed the scRSA threshold for this chemistry.</p>`;document.getElementById('detail').innerHTML=html;return;}
+    html+=`<table class="table"><thead><tr><th>Residue</th><th>scRSA</th><th>State avail.</th><th>Local score</th><th>Propensity</th><th>5 Å</th><th>8 Å</th><th>Persistence</th><th>APBS φ</th><th>Ebase*</th><th>Mechanism</th></tr></thead><tbody>`+
+      rows.map(r=>`<tr><td class="click" onclick="zoomResidue(${r.res_seq},'${r.chain}')">${r.res_name}${r.res_seq}${r.icode||''} ${r.chain}${r.ionization_sensitive?' <span class="badge warn">pKa-sensitive</span>':''}</td><td>${r.scrsa.toFixed(3)}</td><td>${r.state_availability.toFixed(3)}${r.auxiliary_charged_fraction!=null?` <span class="badge">aux fchg ${r.auxiliary_charged_fraction.toFixed(2)}</span>`:''}</td><td>${Number(r.local_score).toFixed(4)}</td><td>${barCell(r.propensity)}</td><td>${r.patch_density_5A.toFixed(1)}</td><td>${r.patch_density_8A.toFixed(1)}</td><td>${barCell(r.multiscale_persistence)}</td><td>${fmt(r.phi)}</td><td>${Number(r.ebase_metadata_kcal_mol).toFixed(1)}</td><td>${escapeHtml(r.mechanism)}</td></tr>`).join('')+
+      `</tbody></table><div class="footerline">*Ebase is literature metadata and is not used in propensity or patch ranking.</div>`;
+  }
+  document.getElementById('detail').innerHTML=html;
+}
 function barCell(v){return `<div style="display:flex;align-items:center;gap:6px"><div class="bar"><i style="width:${Math.max(0,Math.min(100,v))}%"></i></div><span>${Number(v).toFixed(1)}</span></div>`}
 function fmt(v){return v==null?'—':Number(v).toFixed(3)}
 function zoomResidue(resi,chain){if(!viewer)return;viewer.zoomTo({chain:chain,resi:resi},800)}
-let currentStyle='cartoon';function setStyle(s){currentStyle=s;if(!viewer)return;clearSurfaces();if(s==='cartoon')viewer.setStyle({},{cartoon:{color:'#cbd5e1'}});else if(s==='stick')viewer.setStyle({},{stick:{colorscheme:'Jmol'}});else viewer.setStyle({},{cartoon:{color:'#cbd5e1'}});if(data&&activeChem)highlight();else viewer.render()}
-function exportJSON(){if(!data)return;downloadBlob(JSON.stringify(data,null,2),'InterfaceScout_results.json','application/json')}
-function exportCSV(){if(!data||!activeChem)return;const g=data.chemistries[activeChem];const h=['chemistry','residue','chain','res_seq','scrsa','state_availability','propensity','patch_5A','patch_8A','multiscale_persistence','phi_aux','ebase_metadata','mechanism'];const rows=g.residues.map(r=>[activeChem,r.res_name,r.chain,r.res_seq,r.scrsa,r.state_availability,r.propensity,r.patch_density_5A,r.patch_density_8A,r.multiscale_persistence,r.phi??'',r.ebase_metadata_kcal_mol,r.mechanism]);const csv=[h,...rows].map(row=>row.map(csvCell).join(',')).join('\n');downloadBlob(csv,`InterfaceScout_${activeChem}.csv`,'text/csv')}
-function csvCell(v){const s=String(v??'');return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}function downloadBlob(txt,name,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+let currentStyle='cartoon';
+function setStyle(s){
+  currentStyle=s;if(!viewer)return;clearSurfaces();
+  if(data&&activeChem)highlight();
+  else{
+    viewer.setStyle({},{});
+    if(s==='stick')viewer.setStyle({},{stick:{colorscheme:'Jmol'}});
+    else viewer.setStyle({},{cartoon:{color:'#cbd5e1'}});
+    viewer.render();
+  }
+}
+
+function residueKey(r){return r.key || `${r.chain}:${r.res_seq}:${r.icode||''}`;}
+function mapByKey(rows,keyField='key'){
+  const m={}; (rows||[]).forEach(r=>{const k=r[keyField]||residueKey(r);m[k]=r;}); return m;
+}
+function featureSets(){
+  const out={};
+  (data.feature_list||[]).forEach(f=>{
+    out[f]=new Set(((data.features[f]||{}).residues||[]).map(residueKey));
+  });
+  return out;
+}
+function currentViewValueMap(){
+  const out={};
+  currentMapRows().forEach(r=>{out[r._key]=Number(r._v)||0;});
+  return out;
+}
+function exportCSV(){
+  if(!data)return;
+
+  const all=data.all_residues||data.surface_residues||[];
+  const fsets=featureSets();
+  const currentValues=currentViewValueMap();
+
+  const headers=[
+    'analysis_version','selected_chain','pH','ionic_strength_mM','temperature_K',
+    'current_selected_chemistry','current_display_mode','current_bfactor_export_value',
+    'residue_key','res_name','res_seq','icode','chain',
+    'ca_x_A','ca_y_A','ca_z_A','sidechain_centroid_x_A','sidechain_centroid_y_A','sidechain_centroid_z_A',
+    'total_sasa_A2','sidechain_sasa_A2','scrsa_raw','scrsa_clipped','surface_exposed',
+    'charge_fraction','charge_descriptor','reference_pKa','ionization_sensitive',
+    'secondary_structure','original_bfactor','apbs_phi_aux_kT_per_e','neighbors_8A_aux'
+  ];
+
+  (data.feature_list||[]).forEach(f=>headers.push(`feature_${f}`));
+
+  (data.chemistry_list||[]).forEach(c=>{
+    headers.push(
+      `${c}_favorable_member`,
+      `${c}_state_requirement`,
+      `${c}_state_availability`,
+      `${c}_auxiliary_charged_fraction`,
+      `${c}_local_score`,
+      `${c}_propensity`,
+      `${c}_patch_5A_raw`,
+      `${c}_patch_8A_raw`,
+      `${c}_patch_5A_norm`,
+      `${c}_patch_8A_norm`,
+      `${c}_multiscale_persistence`,
+      `${c}_multiscale_geomean`,
+      `${c}_compatible_members_8A`,
+      `${c}_electrostatic_relation`,
+      `${c}_ebase_metadata_kcal_mol`,
+      `${c}_mechanism`,
+      `${c}_repulsive_member`,
+      `${c}_repulsion_state_requirement`,
+      `${c}_repulsion_state_availability`,
+      `${c}_repulsion_score`,
+      `${c}_repulsion_propensity`,
+      `${c}_repulsion_ebase_metadata_kcal_mol`,
+      `${c}_repulsion_mechanism`
+    );
+  });
+
+  const chemMaps={};
+  (data.chemistry_list||[]).forEach(c=>{
+    const g=data.chemistries[c]||{};
+    chemMaps[c]={
+      fav:mapByKey(g.residues||[]),
+      rep:mapByKey(g.repulsive_residues||[]),
+      patch:mapByKey(g.patch_centers||[],'center_key')
+    };
+  });
+
+  const rows=all.map(r=>{
+    const k=residueKey(r);
+    const row=[
+      data.version,
+      data.settings.chain,
+      data.settings.pH,
+      data.settings.ionic_mM,
+      data.settings.temperature_K,
+      activeChem||'',
+      colorMode,
+      currentValues[k]??0,
+      k,r.res_name,r.res_seq,r.icode||'',r.chain,
+      r.x,r.y,r.z,r.sc_x,r.sc_y,r.sc_z,
+      r.total_sasa,r.sidechain_sasa,r.scrsa_raw,r.scrsa,r.surface_exposed,
+      r.charge_fraction,r.charge_descriptor,r.pka??'',r.ionization_sensitive,
+      r.ss,r.bfactor,r.phi??'',r.n_neighbors_8A??0
+    ];
+
+    (data.feature_list||[]).forEach(f=>row.push(fsets[f]&&fsets[f].has(k)?1:0));
+
+    (data.chemistry_list||[]).forEach(c=>{
+      const maps=chemMaps[c];
+      const fav=maps.fav[k]||{};
+      const rep=maps.rep[k]||{};
+      const pat=maps.patch[k]||{};
+      row.push(
+        maps.fav[k]?1:0,
+        fav.state_requirement??'',
+        fav.state_availability??'',
+        fav.auxiliary_charged_fraction??'',
+        fav.local_score??'',
+        fav.propensity??'',
+        pat.density_5A_raw??'',
+        pat.density_8A_raw??'',
+        pat.density_5A_norm??'',
+        pat.density_8A_norm??'',
+        pat.multiscale_persistence??'',
+        pat.multiscale_geomean??'',
+        (pat.compatible_members_8A||[]).join(';'),
+        fav.electrostatic_relation??'',
+        fav.ebase_metadata_kcal_mol??'',
+        fav.mechanism??'',
+        maps.rep[k]?1:0,
+        rep.state_requirement??'',
+        rep.state_availability??'',
+        rep.repulsion_score??'',
+        rep.repulsion_propensity??'',
+        rep.ebase_metadata_kcal_mol??'',
+        rep.mechanism??''
+      );
+    });
+    return row;
+  });
+
+  const csv=[headers,...rows].map(row=>row.map(csvCell).join(',')).join('\n');
+  const chainTag=data.settings.chain==='ALL'?'ALL':data.settings.chain;
+  downloadBlob(csv,`InterfaceScout_${chainTag}_all_calculated_properties.csv`,'text/csv');
+}
+
+function exportPDB(){
+  if(!data||!pdbText||!activeChem)return;
+
+  const scoreMap=currentViewValueMap();
+  const chainSel=data.settings.chain;
+  const aa=new Set(['ALA','ARG','ASN','ASP','CYS','GLN','GLU','GLY','HIS','ILE','LEU','LYS','MET','PHE','PRO','SER','THR','TRP','TYR','VAL']);
+  const lines=pdbText.split(/\r?\n/);
+  const out=[];
+  out.push('REMARK 900 INTERFACESCOUT B-FACTOR EXPORT');
+  out.push(`REMARK 900 CHEMISTRY ${activeChem}`);
+  out.push(`REMARK 900 DISPLAY_MODE ${colorMode}`);
+  out.push(`REMARK 900 CHAIN ${chainSel}`);
+  out.push(`REMARK 900 B-FACTOR STORES ${currentMetricLabel().toUpperCase()} (0-100)`);
+  out.push(`REMARK 900 pH ${data.settings.pH} IONIC_STRENGTH_mM ${data.settings.ionic_mM} TEMPERATURE_K ${data.settings.temperature_K}`);
+
+  let seenModel=false;
+  let firstModelOpen=true;
+  let lastChain=null;
+
+  for(const line0 of lines){
+    const rec=line0.slice(0,6).trim();
+    if(rec==='MODEL'){
+      if(!seenModel){seenModel=true;firstModelOpen=true;continue;}
+      firstModelOpen=false;continue;
+    }
+    if(rec==='ENDMDL' && seenModel)break;
+    if(seenModel && !firstModelOpen)continue;
+    if(rec!=='ATOM')continue;
+
+    const resn=line0.slice(17,20).trim().toUpperCase();
+    if(!aa.has(resn))continue;
+    const chain=line0.length>21?line0[21]:' ';
+    if(chainSel!=='ALL' && chain!==chainSel)continue;
+
+    const resseqRaw=line0.slice(22,26).trim();
+    const resseq=parseInt(resseqRaw,10);
+    if(!Number.isFinite(resseq))continue;
+    const icode=(line0.length>26?line0[26]:' ').trim();
+    const k=`${chain}:${resseq}:${icode}`;
+    const v=Math.max(0,Math.min(100,Number(scoreMap[k]??0)));
+    const b=v.toFixed(2).padStart(6,' ');
+
+    if(lastChain!==null && chain!==lastChain)out.push('TER');
+    lastChain=chain;
+
+    const line=line0.padEnd(66,' ');
+    out.push(line.slice(0,60)+b+line.slice(66));
+  }
+
+  if(lastChain!==null)out.push('TER');
+  out.push('END');
+
+  const chainTag=chainSel==='ALL'?'ALL':chainSel;
+  const name=`InterfaceScout_${chainTag}_${activeChem}_${colorMode}_Bfactor.pdb`;
+  downloadBlob(out.join('\n')+'\n',name,'chemical/x-pdb');
+}
+
+function csvCell(v){const s=String(v??'');return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}
+function downloadBlob(txt,name,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
 function openTheory(){document.getElementById('theoryModal').style.display='flex'}function closeTheory(){document.getElementById('theoryModal').style.display='none'}
 function escapeHtml(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 async function checkBackend(){try{const r=await fetch(API()+'/health',{signal:AbortSignal.timeout(2500)});if(!r.ok)throw 0;const d=await r.json();document.getElementById('dot').className='dot ok';document.getElementById('statusText').textContent=`v${d.version} · ${d.apbs?'APBS':'APBS optional'}`;}catch(e){document.getElementById('dot').className='dot err';document.getElementById('statusText').textContent='Backend not connected';}}
