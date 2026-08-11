@@ -787,6 +787,7 @@ def chemistry_map(surface: List[Dict[str, Any]], distances: np.ndarray, key: str
         "n_repulsive_residues": len(repulsive),
         "top_patch": patch_centers[0] if patch_centers else None,
         "top_patches": patch_centers[:10],
+        "patch_centers": patch_centers,
         "residues": members,
         "repulsive_residues": repulsive,
         "notes": {
@@ -872,6 +873,7 @@ def analyze(req: AnalyzeRequest) -> Dict[str, Any]:
             "chemistries": chem,
             "feature_list": list(FEATURE_RESIDUES.keys()),
             "features": features,
+            "all_residues": all_residues,
             "surface_residues": surface,
             "reference_sidechain_asa": SIDECHAIN_REF_ASA,
         }
