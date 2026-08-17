@@ -1,0 +1,1 @@
+Run BAD2 benchmark after workflow installation.
