@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse, json, urllib.request
+import argparse, json, urllib.request, os
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -91,7 +91,8 @@ def main(args):
     out=Path(args.outdir); out.mkdir(parents=True,exist_ok=True); pdbdir=Path(args.pdbdir); sel=out/'selected_chains'
     structures=[]; sasa=[]; thr=[]; single=[]; pair=[]; pkar=[]; loo=[]; failures=[]
     needed={3.,4.,5.,6.,7.,8.,9.,10.,11.,12.,13.,14.,15.,16.}
-    for name,pid in PANEL:
+    panel = [x for x in PANEL if not os.environ.get('ONLY_PDB') or x[1] == os.environ.get('ONLY_PDB')]
+    for name,pid in panel:
         try:
             cp,cid,nres,counts=select_chain(download(pid,pdbdir),sel); rmap={n:parse_sasa(cp,n) for n in SASA_POINTS}; rec=rmap[200]
             structures.append({'protein':name,'pdb_id':pid,'chain':cid,'n_residues':nres,'chain_counts':json.dumps(counts,sort_keys=True)})
@@ -143,7 +144,7 @@ def main(args):
         l=t[t.t_high==x].iloc[0]; r=t[t.t_low==x].iloc[0]; scores.append((x,min(l.patch_jaccard_median,r.patch_jaccard_median),min(l.surface_jaccard_median,r.surface_jaccard_median)))
     scrsa=sorted(scores,key=lambda z:(z[1],z[2]),reverse=True)[0][0]
     vr=rp[(rp.spatial_match_median>=.8)&(rp.nearest_A_median<=5.)]; best=(vr.sort_values(['r2_A','r1_A','patch_jaccard_median'],ascending=[True,True,False]).iloc[0] if len(vr) else rp.sort_values(['spatial_match_median','patch_jaccard_median','nearest_A_median'],ascending=[False,False,True]).iloc[0])
-    rec={'requested_proteins':len(PANEL),'completed_proteins':len(structures),'failed_pdbs':[x['pdb_id'] for x in failures],'SASA_N_POINTS':npt,'SURFACE_SCRSA_THRESHOLD':float(scrsa),'PATCH_RADII_A':[float(best.r1_A),float(best.r2_A)],'selection_basis':'BAD 2.0-derived protein panel; cross-protein numerical/geometric robustness; no adsorption-capacity fitting','pKa_sensitivity':'generic pH 3-11; robustness only','Ebase_invariance':'PASS by model definition'}; (out/'recommended_defaults.json').write_text(json.dumps(rec,indent=2))
+    rec={'requested_proteins':len(panel),'completed_proteins':len(structures),'failed_pdbs':[x['pdb_id'] for x in failures],'SASA_N_POINTS':npt,'SURFACE_SCRSA_THRESHOLD':float(scrsa),'PATCH_RADII_A':[float(best.r1_A),float(best.r2_A)],'selection_basis':'BAD 2.0-derived protein panel; cross-protein numerical/geometric robustness; no adsorption-capacity fitting','pKa_sensitivity':'generic pH 3-11; robustness only','Ebase_invariance':'PASS by model definition'}; (out/'recommended_defaults.json').write_text(json.dumps(rec,indent=2))
     pd.DataFrame([{'test':'Ebase rescaling invariance','status':'PASS','max_absolute_change':0.0,'basis':'Ebase magnitudes are metadata and do not enter canonical score'}]).to_csv(out/'ebase_invariance.csv',index=False)
     plt.rcParams.update({'font.family':'DejaVu Serif','font.size':10})
     def sv(fig,n): fig.tight_layout(); fig.savefig(out/n,dpi=300,bbox_inches='tight'); plt.close(fig)
