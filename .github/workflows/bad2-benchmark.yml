@@ -10,32 +10,28 @@ on:
 
 jobs:
   benchmark:
+    strategy:
+      fail-fast: false
+      matrix:
+        pdb: [6TAV, 1PIF, 1CHO, 1A4V, 3BLG, 4ARX, 1HRC, 1M1J, 3M7P, 1GPE, 1BUW, 1BJ5, 1IGT, 2RCJ, 1HLS, 1B0L, 2LYZ, 3RGK]
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - name: Install dependencies
+        run: pip install numpy pandas matplotlib biopython
+      - name: Run one BAD 2.0 protein
+        env:
+          ONLY_PDB: ${{ matrix.pdb }}
         run: |
-          python -m pip install --upgrade pip
-          pip install numpy pandas matplotlib biopython
-      - name: Check benchmark runner
-        run: python -m py_compile benchmark/run_BAD2_ultrafast.py
-      - name: Run BAD 2.0 cross-protein fine tuning
-        run: |
-          mkdir -p benchmark/results_ultrafast
-          python benchmark/run_BAD2_ultrafast.py --pdbdir benchmark/pdbs --outdir benchmark/results_ultrafast | tee benchmark/results_ultrafast/run.log
-      - name: List outputs
-        if: always()
-        run: find benchmark/results_ultrafast -maxdepth 2 -type f -printf '%p %s bytes\n' | sort
+          mkdir -p benchmark/results_${{ matrix.pdb }}
+          python benchmark/run_BAD2_ultrafast.py --pdbdir benchmark/pdbs --outdir benchmark/results_${{ matrix.pdb }} | tee benchmark/results_${{ matrix.pdb }}/run.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: BAD2-finetuning-ultrafast-results
-          path: |
-            benchmark/results_ultrafast
-            benchmark/run_BAD2_ultrafast.py
-            benchmark/BAD2_protein_panel.csv
+          name: BAD2-${{ matrix.pdb }}
+          path: benchmark/results_${{ matrix.pdb }}
           if-no-files-found: warn
