@@ -1,0 +1,44 @@
+name: BAD2 InterfaceScout benchmark
+
+on:
+  push:
+    branches: [bad2-benchmark]
+    paths:
+      - 'benchmark/**'
+      - '.github/workflows/bad2-benchmark.yml'
+  workflow_dispatch:
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy pandas matplotlib biopython
+      - name: Decode benchmark runner
+        run: |
+          cat benchmark/standalone.b64.00 benchmark/standalone.b64.01 benchmark/standalone.b64.02 benchmark/standalone.b64.03 > benchmark/standalone.b64
+          base64 -d benchmark/standalone.b64 > benchmark/run_BAD2_standalone.py
+          python -m py_compile benchmark/run_BAD2_standalone.py
+      - name: Run BAD 2.0 cross-protein fine tuning
+        run: |
+          mkdir -p benchmark/results
+          python benchmark/run_BAD2_standalone.py --pdbdir benchmark/pdbs --outdir benchmark/results | tee benchmark/results/run.log
+      - name: List outputs
+        if: always()
+        run: find benchmark/results -maxdepth 2 -type f -printf '%p %s bytes\n' | sort
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: BAD2-finetuning-results
+          path: |
+            benchmark/results
+            benchmark/run_BAD2_standalone.py
+            benchmark/BAD2_protein_panel.csv
+          if-no-files-found: warn
