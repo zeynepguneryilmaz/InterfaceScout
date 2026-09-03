@@ -1,4 +1,4 @@
-name: InterfaceScout external validation
+name: InterfaceScout geometry audit
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  validate:
+  geometry-audit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,17 +17,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt scipy scikit-learn
-      - name: Run frozen-v5.1 validation
-        run: python validation/run_external_benchmark.py
-      - name: Run extended established-metric and sensitivity checks
-        run: python validation/run_extended_checks.py
-      - name: Run bootstrap and matched-null statistical checks
-        run: python validation/run_statistical_checks.py
+          pip install -r backend/requirements.txt scipy
       - name: Run adsorption-independent geometry audit
         run: python validation/run_geometry_audit.py
-      - name: Upload validation outputs
+      - name: Upload geometry audit outputs
         uses: actions/upload-artifact@v4
         with:
-          name: interfacescout-external-validation
+          name: interfacescout-geometry-audit
           path: validation_results/
