@@ -23,12 +23,11 @@ OUT = ROOT / "validation_results"
 OUT.mkdir(exist_ok=True)
 RNG = np.random.default_rng(20260904)
 
-# Structural-development panel only. No adsorption/contact labels are used.
+# Adsorption-independent structural-development panel. None of the published
+# protein-surface anchor/contact benchmark systems is included here.
 PANEL = [
-    "1UBQ","1CRN","1BTA","1L2Y","1VII","1PGB","1R69","1CSP","2PTL","1TEN",
-    "1AKE","1TIM","1LYZ","1HRC","1MBO","1A3N","1FNF","1EMA","1AON","1GFL",
-    "1FKJ","1APS","1D3Z","1E0L","1EAZ","1EJG","1HHP","1KTE","1MJC","1N55",
-    "1O6X","1PHT","1QYS","1R2R","1SMD","1TIT","1VCC","1WIT","2CI2","2HPR",
+    "1UBQ","1CRN","1BTA","1VII","1PGB","1R69","1CSP","2PTL","1TEN","1AKE",
+    "1LYZ","1HRC","1MBO","1EMA","1FKJ","1D3Z","1TIT","1WIT","2CI2","2HPR",
 ]
 RADIUS_VALUES = [4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 15.0]
 RADIUS_PAIRS = list(itertools.combinations(RADIUS_VALUES, 2))
@@ -45,30 +44,40 @@ def fetch_pdb(pid):
 
 def residue_table(pdb_text):
     s = PDBParser(QUIET=True).get_structure("x", io.StringIO(pdb_text))
+    # Compute accessibility in the deposited assembly coordinates, then audit one
+    # protein chain per structure to prevent large oligomers dominating the panel.
     ShrakeRupley(probe_radius=IS.SASA_PROBE_A, n_points=IS.SASA_POINTS).compute(s, level="A")
+    model = next(s.get_models())
+    chosen = None
+    for chain in model:
+        if any(is_aa(res, standard=True) and res.has_id("CA") for res in chain):
+            chosen = chain
+            break
+    if chosen is None:
+        return []
     rows=[]
-    for chain in next(s.get_models()):
-        for res in chain:
-            if not is_aa(res, standard=True) or not res.has_id("CA"):
-                continue
-            rn=res.get_resname().strip().upper()
-            if rn not in IS.SIDECHAIN_REF_ASA:
-                continue
-            if rn == "GLY":
+    for res in chosen:
+        if not is_aa(res, standard=True) or not res.has_id("CA"):
+            continue
+        rn=res.get_resname().strip().upper()
+        if rn not in IS.SIDECHAIN_REF_ASA:
+            continue
+        if rn == "GLY":
+            sc_atoms=[res["CA"]]
+        else:
+            backbone={"N","CA","C","O","OXT"}
+            sc_atoms=[a for a in res.get_atoms() if a.get_name().strip().upper() not in backbone and a.element != "H"]
+            if not sc_atoms:
                 sc_atoms=[res["CA"]]
-            else:
-                backbone={"N","CA","C","O","OXT"}
-                sc_atoms=[a for a in res.get_atoms() if a.get_name().strip().upper() not in backbone and a.element != "H"]
-                if not sc_atoms: sc_atoms=[res["CA"]]
-            sasa=np.asarray([max(float(getattr(a,"sasa",0.0)),0.0) for a in sc_atoms])
-            scrsa_raw=float(sasa.sum())/IS.SIDECHAIN_REF_ASA[rn]
-            if scrsa_raw < IS.SC_RSA_THRESHOLD:
-                continue
-            coords=np.vstack([np.asarray(a.coord,float) for a in sc_atoms])
-            sc=coords.mean(axis=0)
-            exp=np.average(coords,axis=0,weights=sasa) if sasa.sum()>1e-12 else sc.copy()
-            rows.append({"rn":rn,"scrsa":min(max(scrsa_raw,0.0),1.0),
-                         "ca":np.asarray(res["CA"].coord,float),"sc":sc,"exp":exp})
+        sasa=np.asarray([max(float(getattr(a,"sasa",0.0)),0.0) for a in sc_atoms])
+        scrsa_raw=float(sasa.sum())/IS.SIDECHAIN_REF_ASA[rn]
+        if scrsa_raw < IS.SC_RSA_THRESHOLD:
+            continue
+        coords=np.vstack([np.asarray(a.coord,float) for a in sc_atoms])
+        sc=coords.mean(axis=0)
+        exp=np.average(coords,axis=0,weights=sasa) if sasa.sum()>1e-12 else sc.copy()
+        rows.append({"rn":rn,"scrsa":min(max(scrsa_raw,0.0),1.0),
+                     "ca":np.asarray(res["CA"].coord,float),"sc":sc,"exp":exp})
     return rows
 
 
@@ -106,7 +115,8 @@ def jac(a,b):
 
 
 def rho(a,b):
-    if len(a)<3 or np.allclose(a,a[0]) or np.allclose(b,b[0]): return None
+    if len(a)<3 or np.allclose(a,a[0]) or np.allclose(b,b[0]):
+        return None
     x=spearmanr(a,b).statistic
     return None if x is None or math.isnan(x) else float(x)
 
@@ -116,7 +126,8 @@ def main():
     for pid in PANEL:
         try:
             rows=residue_table(fetch_pdb(pid))
-            if len(rows)<20: raise ValueError(f"too few exposed residues ({len(rows)})")
+            if len(rows)<20:
+                raise ValueError(f"too few exposed residues ({len(rows)})")
         except Exception as e:
             failures.append({"pdb":pid,"reason":str(e)}); continue
         reps={"C_alpha":np.vstack([r["ca"] for r in rows]),
@@ -131,7 +142,8 @@ def main():
         for chem in CHEMISTRIES:
             for pH in PH_VALUES:
                 local=local_scores(rows,chem,pH)
-                if np.count_nonzero(local)<2: continue
+                if np.count_nonzero(local)<2:
+                    continue
                 for rep,(coords,base_dm,noises) in geom.items():
                     base_maps={pair:persist_dm(local,base_dm,pair) for pair in RADIUS_PAIRS}
                     tops={pair:topk(x) for pair,x in base_maps.items()}
@@ -152,9 +164,9 @@ def main():
                         for alt in RADIUS_PAIRS:
                             if alt==pair: continue
                             dr=abs(alt[0]-pair[0])+abs(alt[1]-pair[1])
-                            if dr<=3.0: nearby.append(jac(bt,tops[alt]))
+                            if dr<=3.0:
+                                nearby.append(jac(bt,tops[alt]))
                         rad=float(np.median(nearby)) if nearby else None
-                        # compactness at the pair's larger radius, using the actual selected representation
                         R=pair[1]; dd=base_dm[bi]
                         idx=np.where((dd<=R)&(local>0))[0]
                         diam=0.0 if len(idx)<2 else float(np.max(base_dm[np.ix_(idx,idx)]))
@@ -170,7 +182,8 @@ def main():
             w=csv.DictWriter(f,fieldnames=fields); w.writeheader(); w.writerows(raw)
 
     groups={}
-    for r in raw: groups.setdefault((r["representation"],r["r1"],r["r2"]),[]).append(r)
+    for r in raw:
+        groups.setdefault((r["representation"],r["r1"],r["r2"]),[]).append(r)
     summary=[]
     for key,rs in groups.items():
         def med(k):
@@ -178,7 +191,7 @@ def main():
             return float(np.median(v)) if v else None
         j25,j50,rad=med("noise025_top10_jaccard"),med("noise050_top10_jaccard"),med("radius_neighbor_top10_jaccard")
         d25,d50=med("noise025_top1_disp_A"),med("noise050_top1_disp_A")
-        # Developmental ranking only: no adsorption labels or benchmark outcomes enter this score.
+        # Developmental ranking only. No adsorption labels or benchmark outcomes enter this score.
         score=.30*(j25 or 0)+.30*(j50 or 0)+.30*(rad or 0)+.05/(1+(d25 if d25 is not None else 999))+.05/(1+(d50 if d50 is not None else 999))
         summary.append({"representation":key[0],"r1":key[1],"r2":key[2],"n_conditions":len(rs),
                         "median_noise025_top10_jaccard":j25,"median_noise050_top10_jaccard":j50,
@@ -191,7 +204,8 @@ def main():
         if fields:
             w=csv.DictWriter(f,fieldnames=fields); w.writeheader(); w.writerows(summary)
     best={}
-    for x in summary: best.setdefault(x["representation"],x)
+    for x in summary:
+        best.setdefault(x["representation"],x)
     report={"panel_requested":PANEL,"panel_successful":sorted(set(r["pdb"] for r in raw)),"failures":failures,
             "selection_is_adsorption_independent":True,"noise_reps":NOISE_REPS,
             "best_by_representation":best,"overall_best":summary[0] if summary else None,"top15":summary[:15]}
@@ -203,7 +217,9 @@ def main():
     for rep,x in best.items():
         lines.append(f"- **{rep}**: {x['r1']}/{x['r2']} Å; audit={x['audit_rank_score']:.4f}; J0.25={x['median_noise025_top10_jaccard']:.3f}; J0.50={x['median_noise050_top10_jaccard']:.3f}; radius-J={x['median_radius_neighbor_top10_jaccard']:.3f}")
     if summary:
-        x=summary[0]; lines += ["","## Overall winner",f"**{x['representation']} at {x['r1']}/{x['r2']} Å** (audit score {x['audit_rank_score']:.4f})."]
+        x=summary[0]
+        lines += ["","## Overall winner",f"**{x['representation']} at {x['r1']}/{x['r2']} Å** (audit score {x['audit_rank_score']:.4f})."]
     (OUT/"GEOMETRY_AUDIT.md").write_text("\n".join(lines))
 
-if __name__=="__main__": main()
+if __name__=="__main__":
+    main()
