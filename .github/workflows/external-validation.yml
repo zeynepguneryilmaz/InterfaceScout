@@ -24,6 +24,8 @@ jobs:
         run: python validation/run_extended_checks.py
       - name: Run bootstrap and matched-null statistical checks
         run: python validation/run_statistical_checks.py
+      - name: Run adsorption-independent geometry audit
+        run: python validation/run_geometry_audit.py
       - name: Upload validation outputs
         uses: actions/upload-artifact@v4
         with:
