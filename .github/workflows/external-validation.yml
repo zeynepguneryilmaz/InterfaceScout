@@ -17,9 +17,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt scipy
+          pip install -r backend/requirements.txt scipy scikit-learn
       - name: Run adsorption-independent geometry audit
         run: python validation/run_geometry_audit.py
+      - name: Run v5.2 side-chain geometry diagnostic
+        run: python validation/run_v52_geometry_diagnostic.py
       - name: Upload geometry audit outputs
         uses: actions/upload-artifact@v4
         with:
