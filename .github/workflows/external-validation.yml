@@ -20,6 +20,8 @@ jobs:
           pip install -r backend/requirements.txt scipy scikit-learn
       - name: Run frozen-v5.1 validation
         run: python validation/run_external_benchmark.py
+      - name: Run extended established-metric and sensitivity checks
+        run: python validation/run_extended_checks.py
       - name: Upload validation outputs
         uses: actions/upload-artifact@v4
         with:
