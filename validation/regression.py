@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Regression validation for InterfaceScout 2.0 development.
+"""Regression validation for InterfaceScout 2.0 protein-centered development.
 
 Checks that the frozen InterfaceScout 1.0 canonical score is unchanged in
-legacy structural mode and that new 2.0 structural descriptors remain auxiliary.
+legacy structural mode and that v2 structural/protein-derived annotations remain
+auxiliary and material-agnostic.
 """
 from __future__ import annotations
 
@@ -17,6 +18,7 @@ sys.path.insert(0, str(BACKEND))
 
 import main as core  # noqa: E402
 import structural_context as structural  # noqa: E402
+from target_profile import build_target_interface_profile  # noqa: E402
 
 core.PDB2PQR = None
 core.APBS = None
@@ -45,13 +47,12 @@ def request_core(pdb_id, chain=None, ph=7.4):
     return core.analyze(core.AnalyzeRequest(pdb_id=pdb_id, chain=chain, env=core.EnvParams(pH=ph, ionic=150, temp=298)))
 
 
-def request_v2(pdb_id, chain=None, context="auto", protrusion=True, profile=None, ph=7.4):
+def request_v2(pdb_id, chain=None, context="auto", protrusion=True, ph=7.4):
     return structural.analyze_structural(structural.AnalyzeRequest(
         pdb_id=pdb_id,
         chain=chain,
         structure_context=context,
         protrusion=protrusion,
-        material_profile=profile,
         env=structural.EnvParams(pH=ph, ionic=150, temp=298),
     ))
 
@@ -90,11 +91,15 @@ def main():
     changed = [k for k in set(iso_sc) & set(asm_sc) if abs(float(iso_sc[k]) - float(asm_sc[k])) > 1e-5]
     check("assembly context changes shielded exposure", bool(changed), {"n_changed": len(changed)}, records)
 
-    prof = request_v2("1MBN", "A", context="selected_chain_legacy", protrusion=False, profile="graphitic_carbon")
-    p = prof["material_profile"]
-    check("material profile channels declared", p and p["channels"] == ["pi_carbon", "hydrophobic"], p.get("channels") if p else None, records)
-    identical = all(p["channel_results"][ch] == prof["chemistries"][ch] for ch in p["channels"])
-    check("material profile does not mix scores", identical and p.get("combination_rule", "").startswith("none"), p.get("combination_rule"), records)
+    prof_source = request_v2("1MBN", "A", context="selected_chain_legacy", protrusion=False)
+    target = build_target_interface_profile(
+        prof_source["chemistries"], prof_source["surface_residues"], prof_source["all_residues"],
+        site_annotations=[], protected_residue_keys=["A:64:"]
+    )
+    check("target profile is protein-only", target.get("basis") == "protein_only" and target.get("material_library_used") is False, target.get("basis"), records)
+    check("target profile has no named recommendation", target.get("named_material_recommendation") is False and target.get("cross_channel_weighted_score") is False, target.get("named_material_recommendation"), records)
+    check("target profile preserves all chemistry channels", len(target.get("interface_channels", [])) == len(prof_source["chemistry_list"]), len(target.get("interface_channels", [])), records)
+    check("protected residue annotation is auxiliary", compare_chemistry(prof_source, request_v2("1MBN", "A", context="selected_chain_legacy", protrusion=False)), "canonical maps identical", records)
 
     report = {
         "status": "PASS",
@@ -104,8 +109,8 @@ def main():
         "checks_total": len(records),
         "checks": records,
     }
-    target = Path(__file__).with_name("regression_report.json")
-    target.write_text(json.dumps(report, indent=2))
+    target_file = Path(__file__).with_name("regression_report.json")
+    target_file.write_text(json.dumps(report, indent=2))
     print(json.dumps(report, indent=2))
 
 
