@@ -2,9 +2,9 @@
 """Development diagnostic for InterfaceScout 2.0 nonpolar orientation energy.
 
 The systems below have already been inspected during model development and are
-therefore NOT held-out validation.  They are used only to check that the
+therefore NOT held-out validation. They are used only to check that the
 established-physics implementation is numerically finite, deterministic, and
-more physically selective than the earlier SASA-only prototype.
+physically selective on already-known development systems.
 """
 from __future__ import annotations
 
@@ -25,18 +25,18 @@ core.APBS = None
 core.MKDSSP = None
 
 
-def run_case(pdb_id, chain, anchors, pH=7.4, ionic=150.0):
+def run_case(pdb_id, chain, anchors, pH=7.4, ionic=150.0, context="selected_chain_legacy"):
     import tempfile, shutil
     work = Path(tempfile.mkdtemp(prefix="is_v2_nonpolar_diag_"))
     try:
         req = AnalyzeRequest(
             pdb_id=pdb_id,
             chain=chain,
-            structure_context="deposited_structure",
+            structure_context=context,
             protrusion=False,
             env=EnvParams(pH=pH, ionic=ionic, temp=298.0),
         )
-        pdb, _, _, _ = prepare_context(req, work)
+        pdb, _, context_label, _ = prepare_context(req, work)
         struct, _, _, _ = core.build_surface_residues(pdb, pH)
         result = scan(pdb, struct, pH=pH, n_orientations=512)
         if result.get("status") != "ok":
@@ -65,8 +65,6 @@ def run_case(pdb_id, chain, anchors, pH=7.4, ionic=150.0):
         for o in top[:10]:
             union10.update(int(r["res_seq"]) for r in o.get("contact_residues", []) if r.get("chain") == chain)
 
-        # Determinism check: same inputs, smaller repeat is intentionally not
-        # used because orientation count would change the Fibonacci grid.
         repeat = scan(pdb, struct, pH=pH, n_orientations=512)
         deterministic = (
             repeat.get("status") == "ok"
@@ -77,6 +75,7 @@ def run_case(pdb_id, chain, anchors, pH=7.4, ionic=150.0):
         return {
             "pdb": pdb_id,
             "chain": chain,
+            "structure_context": context_label,
             "anchors": anchors,
             "status": result["status"],
             "method": result["method"],
@@ -97,7 +96,10 @@ def main():
         # Wei et al. lysozyme/polyethylene successful landing region; already
         # inspected in prior development, so diagnostic only.
         run_case("1AKI", "A", [67, 68, 69, 70, 71, 81], pH=7.0, ionic=150.0),
-        # Farouq et al. neutral Au(111) Protein A anchors; already inspected.
+        # Farouq et al. neutral Au(111) Protein A anchors; B/C were the complete
+        # benchmark chains. Isolated-chain context is deliberate here because
+        # the source adsorption calculation concerns the individual Protein A
+        # molecule, not the crystallographic multi-copy packing context.
         run_case("5H7A", "B", [33, 34, 218, 220, 221], pH=7.0, ionic=20.0),
         run_case("5H7A", "C", [33, 34, 218, 220, 221], pH=7.0, ionic=20.0),
     ]
