@@ -20,12 +20,14 @@ try:
     from .structural_context import AnalyzeRequest, analyze_structural, prepare_context, available_material_profiles
     from .physics_refinement import enrich_nonpolar_physics
     from .nonpolar_energy import scan as scan_nonpolar_energy
+    from .structure_repair import repair_for_forcefield
     from .ui import inject_ui
 except ImportError:
     import main as core
     from structural_context import AnalyzeRequest, analyze_structural, prepare_context, available_material_profiles
     from physics_refinement import enrich_nonpolar_physics
     from nonpolar_energy import scan as scan_nonpolar_energy
+    from structure_repair import repair_for_forcefield
     from ui import inject_ui
 
 APP_VERSION = "2.0.0-dev"
@@ -36,8 +38,19 @@ def _nonpolar_energy(req: AnalyzeRequest):
     workdir = Path(tempfile.mkdtemp(prefix="interfacescout_v2_nonpolar_"))
     try:
         pdb, _, _, _ = prepare_context(req, workdir)
-        struct, _, _, _ = core.build_surface_residues(pdb, req.env.pH)
-        return scan_nonpolar_energy(pdb, struct, pH=req.env.pH)
+        fixed = workdir / "forcefield_ready.pdb"
+        repair = repair_for_forcefield(pdb, fixed)
+        if repair.get("status") != "ok":
+            return {
+                "status": "unavailable",
+                "method": "vdW + Harrison-style SASA solvation planar screen",
+                "reason": repair.get("reason", "force-field structure repair unavailable"),
+                "structure_repair": repair,
+            }
+        struct, _, _, _ = core.build_surface_residues(fixed, req.env.pH)
+        energy = scan_nonpolar_energy(fixed, struct, pH=req.env.pH)
+        energy["structure_repair"] = repair
+        return energy
     finally:
         shutil.rmtree(workdir, ignore_errors=True)
 
@@ -71,6 +84,7 @@ def analyze(req: AnalyzeRequest):
 
     result["applicability"].setdefault("not_included_or_interpretation_limits", []).extend([
         "the nonpolar orientation layer is a deterministic continuum adaptation, not an exact explicit-graphene Metropolis reproduction",
+        "missing whole residues are not model-built for atomistic screening; only missing atoms within observed residues are repaired",
         "explicit molecular water and adsorption-induced large conformational rearrangement remain outside the lightweight model",
     ])
     return result
@@ -121,6 +135,7 @@ def model_spec():
             "continuous_scales": ["Eisenberg", "Wimley-White interface"],
             "orientation_descriptors": ["tertiary hydrophobic vector"],
             "orientation_energy": "CHARMM36 protein vdW + integrated neutral graphitic carbon plane + Harrison-style SASA solvation",
+            "forcefield_structure_repair": "PDBFixer missing heavy/terminal atoms only; missing whole residues are not built",
             "vdw_term_complete": True,
             "explicit_water": False,
             "fitted_weights": False,
