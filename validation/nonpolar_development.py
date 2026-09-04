@@ -19,6 +19,7 @@ sys.path.insert(0, str(BACKEND))
 import main as core  # noqa: E402
 from structural_context import AnalyzeRequest, EnvParams, prepare_context  # noqa: E402
 from nonpolar_energy import scan  # noqa: E402
+from structure_repair import repair_for_forcefield  # noqa: E402
 
 core.PDB2PQR = None
 core.APBS = None
@@ -37,8 +38,12 @@ def run_case(pdb_id, chain, anchors, pH=7.4, ionic=150.0, context="selected_chai
             env=EnvParams(pH=pH, ionic=ionic, temp=298.0),
         )
         pdb, _, context_label, _ = prepare_context(req, work)
-        struct, _, _, _ = core.build_surface_residues(pdb, pH)
-        result = scan(pdb, struct, pH=pH, n_orientations=512)
+        fixed = work / "forcefield_ready.pdb"
+        repair = repair_for_forcefield(pdb, fixed)
+        if repair.get("status") != "ok":
+            raise RuntimeError(repair)
+        struct, _, _, _ = core.build_surface_residues(fixed, pH)
+        result = scan(fixed, struct, pH=pH, n_orientations=512)
         if result.get("status") != "ok":
             raise RuntimeError(result)
         top = result["top_orientations"]
@@ -65,7 +70,7 @@ def run_case(pdb_id, chain, anchors, pH=7.4, ionic=150.0, context="selected_chai
         for o in top[:10]:
             union10.update(int(r["res_seq"]) for r in o.get("contact_residues", []) if r.get("chain") == chain)
 
-        repeat = scan(pdb, struct, pH=pH, n_orientations=512)
+        repeat = scan(fixed, struct, pH=pH, n_orientations=512)
         deterministic = (
             repeat.get("status") == "ok"
             and repeat.get("best_energy_change_kj_mol") == result.get("best_energy_change_kj_mol")
@@ -77,6 +82,7 @@ def run_case(pdb_id, chain, anchors, pH=7.4, ionic=150.0, context="selected_chai
             "chain": chain,
             "structure_context": context_label,
             "anchors": anchors,
+            "structure_repair": repair,
             "status": result["status"],
             "method": result["method"],
             "best_energy_change_kj_mol": result["best_energy_change_kj_mol"],
@@ -93,13 +99,7 @@ def run_case(pdb_id, chain, anchors, pH=7.4, ionic=150.0, context="selected_chai
 
 def main():
     cases = [
-        # Wei et al. lysozyme/polyethylene successful landing region; already
-        # inspected in prior development, so diagnostic only.
         run_case("1AKI", "A", [67, 68, 69, 70, 71, 81], pH=7.0, ionic=150.0),
-        # Farouq et al. neutral Au(111) Protein A anchors; B/C were the complete
-        # benchmark chains. Isolated-chain context is deliberate here because
-        # the source adsorption calculation concerns the individual Protein A
-        # molecule, not the crystallographic multi-copy packing context.
         run_case("5H7A", "B", [33, 34, 218, 220, 221], pH=7.0, ionic=20.0),
         run_case("5H7A", "C", [33, 34, 218, 220, 221], pH=7.0, ionic=20.0),
     ]
