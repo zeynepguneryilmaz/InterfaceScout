@@ -20,11 +20,13 @@ try:
     from .structural_context import AnalyzeRequest, analyze_structural, prepare_context, available_material_profiles
     from .physics_refinement import enrich_nonpolar_physics
     from .nonpolar_sasa_orientation import scan as scan_nonpolar_sasa
+    from .ui import inject_ui
 except ImportError:
     import main as core
     from structural_context import AnalyzeRequest, analyze_structural, prepare_context, available_material_profiles
     from physics_refinement import enrich_nonpolar_physics
     from nonpolar_sasa_orientation import scan as scan_nonpolar_sasa
+    from ui import inject_ui
 
 APP_VERSION = "2.0.0-dev"
 CORE_RELEASE_VERSION = "1.0.0"
@@ -118,7 +120,7 @@ def model_spec():
 def root():
     path = core.PROJECT_DIR / "frontend" / "index.html"
     if path.exists():
-        return HTMLResponse(path.read_text(encoding="utf-8"))
+        return HTMLResponse(inject_ui(path.read_text(encoding="utf-8")))
     return JSONResponse({"name": "InterfaceScout", "version": APP_VERSION, "frontend": "not found"}, status_code=404)
 
 
