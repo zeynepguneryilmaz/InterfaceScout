@@ -5,3 +5,4 @@ numpy>=1.26
 biopython>=1.83
 pdb2pqr>=3.6.1
 openmm>=8.2
+pdbfixer-wheel>=1.12.0
