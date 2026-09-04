@@ -1,0 +1,31 @@
+name: InterfaceScout 2.0 regression
+
+on:
+  push:
+    branches:
+      - development/v2.0.0
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'validation/regression.py'
+      - 'validation/ui_validation.py'
+      - '.github/workflows/v2-regression.yml'
+  workflow_dispatch:
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r backend/requirements.txt
+      - name: Run structural regression
+        run: python validation/regression.py
+      - name: Run UI validation
+        run: python validation/ui_validation.py
