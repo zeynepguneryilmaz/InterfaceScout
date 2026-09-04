@@ -1,15 +1,15 @@
 """InterfaceScout 2.0 development application.
 
-InterfaceScout 2.0 retains the frozen 1.0 canonical compatibility core for
-backward-comparable residue/patch maps and adds structural-context and
-surface-type-specific physics layers under separate, explicitly qualified
-outputs.
+InterfaceScout 2.0 is protein-centered. The program derives a target interface
+profile from the supplied protein structure and reports which protein patches
+could engage each generalized surface property. It does not use a named-material
+library and it does not recommend materials by name.
+
+The frozen InterfaceScout 1.0 residue/patch equations remain the reference
+compatibility core. Material-specific physics modules are retained only as
+validation/research modules and are not run by the default application path.
 """
 from __future__ import annotations
-
-import shutil
-import tempfile
-from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,75 +17,59 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 
 try:
     from . import main as core
-    from .structural_context import AnalyzeRequest, analyze_structural, prepare_context, available_material_profiles
-    from .physics_refinement import enrich_nonpolar_physics
-    from .nonpolar_energy import scan as scan_nonpolar_energy
-    from .structure_repair import repair_for_forcefield
+    from .structural_context import AnalyzeRequest, analyze_structural
+    from .functional_sites import normalize_protected_residues, pdb_site_annotations
+    from .target_profile import build_target_interface_profile
     from .ui import inject_ui
 except ImportError:
     import main as core
-    from structural_context import AnalyzeRequest, analyze_structural, prepare_context, available_material_profiles
-    from physics_refinement import enrich_nonpolar_physics
-    from nonpolar_energy import scan as scan_nonpolar_energy
-    from structure_repair import repair_for_forcefield
+    from structural_context import AnalyzeRequest, analyze_structural
+    from functional_sites import normalize_protected_residues, pdb_site_annotations
+    from target_profile import build_target_interface_profile
     from ui import inject_ui
 
 APP_VERSION = "2.0.0-dev"
 CORE_RELEASE_VERSION = "1.0.0"
 
 
-def _nonpolar_energy(req: AnalyzeRequest):
-    workdir = Path(tempfile.mkdtemp(prefix="interfacescout_v2_nonpolar_"))
-    try:
-        pdb, _, _, _ = prepare_context(req, workdir)
-        fixed = workdir / "forcefield_ready.pdb"
-        repair = repair_for_forcefield(pdb, fixed)
-        if repair.get("status") != "ok":
-            return {
-                "status": "unavailable",
-                "method": "vdW + Harrison-style SASA solvation planar screen",
-                "reason": repair.get("reason", "force-field structure repair unavailable"),
-                "structure_repair": repair,
-            }
-        struct, _, _, _ = core.build_surface_residues(fixed, req.env.pH)
-        energy = scan_nonpolar_energy(fixed, struct, pH=req.env.pH)
-        energy["structure_repair"] = repair
-        return energy
-    finally:
-        shutil.rmtree(workdir, ignore_errors=True)
-
-
 def analyze(req: AnalyzeRequest):
     result = dict(analyze_structural(req))
     result["version"] = APP_VERSION
     result["core_version"] = CORE_RELEASE_VERSION
-    result["model"] = "InterfaceScout 2.0 development"
+    result["model"] = "InterfaceScout 2.0 protein-centered development"
 
-    nonpolar = enrich_nonpolar_physics(
-        result.get("surface_residues", []), result.get("all_residues", [])
+    protected = normalize_protected_residues(getattr(req, "protected_residue_keys", None))
+    sites = pdb_site_annotations(req.pdb_id, req.pdb_text)
+    target = build_target_interface_profile(
+        chemistries=result.get("chemistries", {}),
+        surface_residues=result.get("surface_residues", []),
+        all_residues=result.get("all_residues", []),
+        site_annotations=sites,
+        protected_residue_keys=protected,
     )
-    nonpolar["orientation_energy"] = _nonpolar_energy(req)
-    result["nonpolar_physics"] = nonpolar
+    result["protein_derived_target_interface_profile"] = target
 
-    result.setdefault("applicability", {}).setdefault("included_in_this_run", []).extend([
-        "continuous Eisenberg hydrophobic surface field",
-        "Wimley-White interfacial preference sensitivity descriptor",
-        "exposure-weighted tertiary hydrophobic vector",
+    # Named-material profiles are intentionally removed from the primary v2
+    # interpretation even if a legacy field is still present in the structural
+    # compatibility layer for regression/backward-compatibility purposes.
+    result["material_profile"] = None
+    result["available_material_profiles"] = []
+    if "settings" in result:
+        result["settings"]["material_profile"] = None
+
+    app = result.setdefault("applicability", {})
+    included = app.setdefault("included_in_this_run", [])
+    included.extend([
+        "protein-derived target interface profile",
+        "patch-resolved generalized surface-property requirements",
+        "PDB SITE proximity/overlap annotation when present",
+        "user-specified protected functional-residue overlap when provided",
     ])
-    if nonpolar["orientation_energy"].get("status") == "ok":
-        result["applicability"]["included_in_this_run"].append(
-            "CHARMM36 van der Waals + Harrison-style SASA-solvation nonpolar orientation energy"
-        )
-    else:
-        result["applicability"].setdefault("not_included_or_interpretation_limits", []).append(
-            "full nonpolar orientation energy was unavailable in this run: "
-            + str(nonpolar["orientation_energy"].get("reason", "unknown reason"))
-        )
-
-    result["applicability"].setdefault("not_included_or_interpretation_limits", []).extend([
-        "the nonpolar orientation layer is a deterministic continuum adaptation, not an exact explicit-graphene Metropolis reproduction",
-        "missing whole residues are not model-built for atomistic screening; only missing atoms within observed residues are repaired",
-        "explicit molecular water and adsorption-induced large conformational rearrangement remain outside the lightweight model",
+    limits = app.setdefault("not_included_or_interpretation_limits", [])
+    limits.extend([
+        "no named-material library or named-material recommendation is used",
+        "PDB SITE records are generic structural annotations and are not automatically interpreted as catalytic active sites",
+        "material-specific adsorption physics is not part of the default protein-only prediction path",
     ])
     return result
 
@@ -103,13 +87,10 @@ def health():
         "frozen_reference": CORE_RELEASE_VERSION,
         "canonical_v1_score_changed": False,
         "structural_context": "biological assembly aware",
-        "nonpolar_physics": "continuous hydrophobic fields + hydrophobic vector + CHARMM36 vdW/Harrison-SASA orientation energy",
+        "primary_output": "protein-derived target interface profile",
+        "material_library": False,
+        "named_material_recommendation": False,
     }
-
-
-@app.get("/material_profiles")
-def material_profiles():
-    return {"profiles": available_material_profiles(), "combination_rule": "none; channels remain separate"}
 
 
 @app.post("/analyze_surface")
@@ -130,16 +111,16 @@ def model_spec():
         "status": "development",
         "frozen_reference": CORE_RELEASE_VERSION,
         "canonical_v1_core_unchanged": True,
-        "structure_context_modes": ["auto", "biological_assembly_1", "deposited_structure", "selected_chain_legacy"],
-        "nonpolar_layer": {
-            "continuous_scales": ["Eisenberg", "Wimley-White interface"],
-            "orientation_descriptors": ["tertiary hydrophobic vector"],
-            "orientation_energy": "CHARMM36 protein vdW + integrated neutral graphitic carbon plane + Harrison-style SASA solvation",
-            "forcefield_structure_repair": "PDBFixer missing heavy/terminal atoms only; missing whole residues are not built",
-            "vdw_term_complete": True,
-            "explicit_water": False,
-            "fitted_weights": False,
+        "primary_direction": "protein -> target interface properties -> patch-level interpretation",
+        "material_library": False,
+        "named_material_recommendation": False,
+        "target_profile_channels": list(core.CHEMISTRIES.keys()),
+        "functional_site_annotation": {
+            "PDB_SITE": "generic annotation only; not automatically catalytic",
+            "user_protected_residues": "supported; used only to annotate patch overlap/proximity",
+            "changes_compatibility_score": False,
         },
+        "material_specific_physics": "research/validation modules only; excluded from default protein-only analysis",
     }
 
 
