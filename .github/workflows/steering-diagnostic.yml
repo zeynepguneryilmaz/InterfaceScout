@@ -20,6 +20,8 @@ jobs:
           pip install -r backend/requirements.txt
       - name: Run steering diagnostic
         run: python validation/run_steering_diagnostic.py
+      - name: Run orientation-null diagnostic
+        run: python validation/run_steering_orientation_null.py
       - name: Upload outputs
         uses: actions/upload-artifact@v4
         with:
