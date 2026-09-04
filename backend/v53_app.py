@@ -1,7 +1,7 @@
 """InterfaceScout v5.3 development wrapper.
 
 Runs the v5.2 structural-context candidate unchanged, then adds independent
-established-physics descriptors for nonpolar interfaces.  The frozen canonical
+established-physics descriptors for nonpolar interfaces. The frozen canonical
 v5.1 chemistry/state and C-alpha 5/8 A scores remain available and unchanged.
 """
 from __future__ import annotations
@@ -20,15 +20,17 @@ APP_VERSION = "5.3.0-established-physics-development"
 
 
 def analyze(req: AnalyzeRequest):
-    result = analyze_v52(req)
-    result = dict(result)
+    result = dict(analyze_v52(req))
+    parent_version = result.get("version")
     result["version"] = APP_VERSION
-    result["parent_structural_version"] = result.get("version")
-    result["nonpolar_physics"] = enrich_nonpolar_physics(result.get("surface_residues", []))
+    result["parent_structural_version"] = parent_version
+    result["nonpolar_physics"] = enrich_nonpolar_physics(
+        result.get("surface_residues", []), result.get("all_residues", [])
+    )
     result.setdefault("applicability", {}).setdefault("included_in_this_run", []).extend([
         "continuous Eisenberg hydrophobic surface field",
         "Wimley-White interfacial-scale sensitivity descriptor",
-        "3-D hydrophobic dipole / preferred-hemisphere descriptor",
+        "exposure-weighted tertiary hydrophobic vector / preferred-hemisphere descriptor",
     ])
     result["applicability"].setdefault("not_included_or_interpretation_limits", []).append(
         "explicit molecular water and adsorption-induced large conformational rearrangement remain outside the lightweight model"
@@ -46,7 +48,7 @@ def health():
         "status": "ok",
         "version": APP_VERSION,
         "canonical_v51_changed": False,
-        "new_nonpolar_model": "continuous hydrophobic field + hydrophobic dipole; no fitted weighted sum",
+        "new_nonpolar_model": "continuous hydrophobic field + exposure-weighted tertiary hydrophobic vector; no fitted weighted sum",
     }
 
 
