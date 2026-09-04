@@ -1,0 +1,42 @@
+name: v5.2 held-out lysozyme PE validation
+
+on:
+  push:
+    branches:
+      - validation/v52-heldout-lysozyme-pe-20260904
+    paths:
+      - 'validation/run_v52_heldout_lysozyme_pe.py'
+      - '.github/workflows/v52-heldout-lysozyme-pe.yml'
+  workflow_dispatch:
+
+jobs:
+  heldout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install fastapi pydantic numpy biopython uvicorn
+      - name: Run held-out validation
+        run: python validation/run_v52_heldout_lysozyme_pe.py
+      - name: Verify freeze ancestry
+        run: |
+          python - <<'PY'
+          import subprocess
+          freeze='8e83ee3c2242cfd22714d47c585cb7afac120d72'
+          changed=subprocess.check_output(['git','diff','--name-only',freeze+'..HEAD'], text=True).splitlines()
+          backend=[p for p in changed if p.startswith('backend/') or p.startswith('frontend/')]
+          print('changed files:', changed)
+          if backend:
+              raise SystemExit('Frozen backend/frontend changed on held-out branch: '+', '.join(backend))
+          PY
+      - name: Upload held-out report
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-v52-heldout-lysozyme-pe
+          path: validation/v52_heldout_lysozyme_pe_report.json
