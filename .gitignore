@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Runtime/log artifacts
+*.log
+startup_log.txt
+
+# OS/editor artifacts
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local validation outputs
+validation/*.json
+validation/*.csv
+validation/*.zip
+
+# Temporary files
+*.tmp
+*.bak
