@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+*.log
+.venv/
+backend/.venv/
+.DS_Store
+Thumbs.db
+startup_log.txt
+validation/*_report.json
+validation/*.zip
