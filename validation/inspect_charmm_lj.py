@@ -16,7 +16,10 @@ work=Path(tempfile.mkdtemp(prefix='is_lj_inspect_'))
 try:
     req=AnalyzeRequest(pdb_id='1AKI',chain='A',structure_context='selected_chain_legacy',protrusion=False,env=EnvParams(pH=7.0,ionic=150,temp=298))
     pdb,_,_,_=prepare_context(req,work)
-    repaired,_=repair_for_forcefield(pdb,work)
+    repaired=work/'forcefield_ready.pdb'
+    repair=repair_for_forcefield(pdb,repaired)
+    if repair.get('status')!='ok':
+        raise RuntimeError(repair)
     p=PDBFile(str(repaired))
     ff=ForceField('charmm36.xml')
     m=Modeller(p.topology,p.positions)
@@ -31,17 +34,17 @@ try:
             row['global_parameters']=[{'name':f.getGlobalParameterName(i),'default':float(f.getGlobalParameterDefaultValue(i))} for i in range(f.getNumGlobalParameters())]
             row['tabulated_functions']=[f.getTabulatedFunctionName(i) for i in range(f.getNumTabulatedFunctions())]
             row['n_particles']=f.getNumParticles()
-            row['first_particle_params']=[[float(x) for x in f.getParticleParameters(i)] for i in range(min(5,f.getNumParticles()))]
+            row['first_particle_params']=[[float(x) for x in f.getParticleParameters(i)] for i in range(min(8,f.getNumParticles()))]
         elif isinstance(f,openmm.NonbondedForce):
             row['n_particles']=f.getNumParticles()
             vals=[]
             from openmm import unit
-            for i in range(min(5,f.getNumParticles())):
+            for i in range(min(8,f.getNumParticles())):
                 q,s,e=f.getParticleParameters(i)
                 vals.append({'q_e':float(q.value_in_unit(unit.elementary_charge)),'sigma_A':float(s.value_in_unit(unit.angstrom)),'epsilon_kj_mol':float(e.value_in_unit(unit.kilojoule_per_mole))})
             row['first_particle_params']=vals
         out.append(row)
-    report={'forces':out}
+    report={'repair':repair,'forces':out}
     Path('validation/charmm_lj_force_layout.json').write_text(json.dumps(report,indent=2))
     print(json.dumps(report,indent=2))
 finally:
