@@ -1,17 +1,16 @@
 """Structural-context layer for InterfaceScout 2.0 development.
 
-This module keeps the InterfaceScout 1.0 canonical chemistry/state and C-alpha
-5/8 A scoring equations unchanged while adding lightweight protein-side
-structural context:
+This layer preserves the frozen InterfaceScout 1.0 chemistry/state and C-alpha
+5/8 A scoring equations while adding protein-side structural context:
 
 - RCSB biological assembly 1 when available,
-- Pintar-style CX protrusion descriptors (auxiliary only).
+- Pintar-style CX protrusion descriptors (auxiliary only),
+- optional user-specified function-critical residue annotations.
 
-No named-material library is used here. Generalized chemistry channels are
-computed directly from the protein and interpreted upstream as a protein-derived
-target interface profile.
+No named-material library is used here.  The chemistry maps are generalized
+protein-side interaction channels that feed the protein-derived target interface
+profile in ``target_profile.py``.
 """
-
 from __future__ import annotations
 
 import gzip
@@ -53,6 +52,7 @@ class AnalyzeRequest(BaseModel):
     env: EnvParams = EnvParams()
     structure_context: str = "auto"
     protrusion: bool = True
+    protected_residue_keys: Optional[List[str]] = None
 
 
 class FirstModelStandardAA(core.Select):
@@ -174,7 +174,7 @@ def _heavy_atoms_first_model(struct) -> List[Any]:
 
 
 def compute_cx_descriptors(struct, residues: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """Attach Pintar-style CX descriptors without changing canonical scores."""
+    """Attach Pintar-style assembly-context CX descriptors without changing scores."""
     atoms = _heavy_atoms_first_model(struct)
     if not atoms:
         return {"status": "unavailable", "n_atoms": 0, "used_in_primary_score": False}
@@ -263,7 +263,7 @@ def applicability_notes(context_label: str, protrusion: bool) -> Dict[str, Any]:
         "side-chain solvent accessibility (scRSA)",
         "reference-pKa state availability at the requested bulk pH",
         "C-alpha 5/8 A multiscale persistence",
-        "all generalized protein-interface chemistry channels reported independently",
+        "protein-derived generalized interaction channels",
     ]
     limits: List[str] = []
     if context_label == "biological_assembly_1":
@@ -275,7 +275,7 @@ def applicability_notes(context_label: str, protrusion: bool) -> Dict[str, Any]:
         limits.append("for uploaded structures, biological-assembly correctness depends on supplied coordinates")
 
     if protrusion:
-        included.append("Pintar-style CX protrusion descriptors (auxiliary; not scored)")
+        included.append("Pintar-style assembly-context CX protrusion descriptors (auxiliary; not scored)")
     else:
         limits.append("accessible residues are not distinguished by geometric protrusion")
 
@@ -321,11 +321,11 @@ def analyze_structural(req: AnalyzeRequest) -> Dict[str, Any]:
             "status": "ok",
             "version": STRUCTURAL_LAYER_VERSION,
             "core_version": CORE_RELEASE_VERSION,
-            "model": "InterfaceScout 2.0 protein structural-context layer over the InterfaceScout 1.0 canonical scoring core",
+            "model": "InterfaceScout 2.0 material-agnostic structural layer over the InterfaceScout 1.0 canonical scoring core",
             "scope": {
                 "predicts": "protein-side residue/patch compatibility hypotheses for generalized interface properties",
                 "does_not_predict": [
-                    "named material recommendation", "adsorption capacity", "absolute adsorption free energy", "unique adsorption orientation",
+                    "named material identity", "adsorption capacity", "absolute adsorption free energy", "unique adsorption orientation",
                     "adsorption-induced conformational change", "explicit interfacial hydration", "multi-protein corona organization",
                 ],
             },
