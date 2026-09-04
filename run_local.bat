@@ -3,30 +3,19 @@ setlocal EnableExtensions EnableDelayedExpansion
 REM ============================================================
 REM InterfaceScout - Windows setup + daily launcher
 REM ============================================================
-REM Keep this file in the InterfaceScout folder, next to:
-REM   backend\   frontend\   interfacescout.ico
-REM
-REM First run:
-REM   - finds Python 3.10-3.12 with SSL
-REM   - creates backend\.venv
-REM   - installs core dependencies
-REM   - attempts optional APBS setup
-REM   - creates a Desktop shortcut
-REM
-REM Later runs:
-REM   - reuses the existing environment
-REM   - starts InterfaceScout immediately
-REM ============================================================
-
 cd /d "%~dp0"
 set "ROOT=%~dp0"
 set "BACKEND=%ROOT%backend"
 set "FRONTEND=%ROOT%frontend"
-set "APBSDIR=%ROOT%apbs-win"
 set "TRUSTED=--trusted-host pypi.org --trusted-host files.pythonhosted.org --trusted-host pypi.python.org"
 
 if not exist "%BACKEND%\main.py" (
   echo ERROR: could not find backend\main.py
+  pause
+  exit /b 1
+)
+if not exist "%BACKEND%\v52_app.py" (
+  echo ERROR: could not find backend\v52_app.py
   pause
   exit /b 1
 )
@@ -44,7 +33,6 @@ echo   InterfaceScout - first-time setup
 echo ============================================================
 echo.
 
-REM ---- Find Python with SSL; prefer 3.12 / 3.11 ----
 set "PYEXE="
 for %%P in (
   "%LOCALAPPDATA%\Programs\Python\Python312\python.exe"
@@ -59,7 +47,6 @@ for %%P in (
     )
   )
 )
-
 python -c "import ssl" >nul 2>&1
 if !errorlevel! equ 0 set "PYEXE=python"
 
@@ -83,16 +70,12 @@ if errorlevel 1 (
 )
 
 call "%BACKEND%\.venv\Scripts\activate.bat"
-
-echo ==^> Upgrading pip...
 python -m pip install --upgrade pip %TRUSTED%
 if errorlevel 1 (
   echo ERROR: pip upgrade failed.
   pause
   exit /b 1
 )
-
-echo ==^> Installing core dependencies...
 python -m pip install -r "%BACKEND%\requirements.txt" %TRUSTED%
 if errorlevel 1 (
   echo ERROR: dependency installation failed.
@@ -100,35 +83,18 @@ if errorlevel 1 (
   exit /b 1
 )
 
-REM ---- Optional APBS ----
 set "APBSEXE="
 where apbs >nul 2>&1
 if !errorlevel! equ 0 (
   for /f "delims=" %%F in ('where apbs') do if "!APBSEXE!"=="" set "APBSEXE=%%F"
 )
-
-if "!APBSEXE!"=="" (
-  where conda >nul 2>&1
-  if !errorlevel! equ 0 (
-    echo ==^> Optional: attempting APBS installation via conda-forge...
-    call conda install -y -c conda-forge apbs
-    where apbs >nul 2>&1
-    if !errorlevel! equ 0 (
-      for /f "delims=" %%F in ('where apbs') do if "!APBSEXE!"=="" set "APBSEXE=%%F"
-    )
-  )
-)
-
 if "!APBSEXE!"=="" (
   echo WARNING: APBS is not available.
   echo          Canonical InterfaceScout compatibility analysis will still run.
-  echo          Only optional APBS electrostatic descriptors will be unavailable.
 ) else (
-  echo ==^> Optional APBS found: !APBSEXE!
   set "APBS_PATH=!APBSEXE!"
 )
 
-REM ---- Desktop shortcut ----
 echo ==^> Creating Desktop shortcut...
 set "MKLNK=%TEMP%\_iscout_mklnk.ps1"
 >  "%MKLNK%" echo $ErrorActionPreference = 'SilentlyContinue'
@@ -152,27 +118,21 @@ del "%MKLNK%" >nul 2>&1
 goto :launch
 
 :launch_existing
-echo ==^> Existing InterfaceScout environment found.
 call "%BACKEND%\.venv\Scripts\activate.bat"
-
-REM If our server is already running, only open the browser.
 powershell -NoProfile -Command "try { $r=Invoke-WebRequest -UseBasicParsing 'http://127.0.0.1:8000/health' -TimeoutSec 2; if($r.StatusCode -eq 200){exit 0}else{exit 1} } catch { exit 1 }" >nul 2>&1
 if !errorlevel! equ 0 (
   start "" "http://localhost:8000"
   exit /b 0
 )
 
-REM Refuse to kill an unrelated process using port 8000.
 set "PORTPID="
 for /f "tokens=5" %%P in ('netstat -ano ^| findstr ":8000 " ^| findstr LISTENING') do set "PORTPID=%%P"
 if defined PORTPID (
   echo ERROR: Port 8000 is already in use by another process ^(PID !PORTPID!^).
-  echo Close that process, then run InterfaceScout again.
   pause
   exit /b 1
 )
 
-REM Restore optional APBS path if available.
 where apbs >nul 2>&1
 if !errorlevel! equ 0 (
   for /f "delims=" %%F in ('where apbs') do (
@@ -185,24 +145,22 @@ if !errorlevel! equ 0 (
 :launch
 echo.
 echo ============================================================
-echo   Starting InterfaceScout
+echo   Starting InterfaceScout v5.2 structural candidate
 echo   http://localhost:8000
 echo ============================================================
 echo.
 
 cd /d "%BACKEND%"
-
-REM Open the browser after the server has had time to start.
 start "" /b powershell -NoProfile -WindowStyle Hidden -Command "Start-Sleep -Seconds 2; Start-Process 'http://localhost:8000'"
 
-python main.py
+python v52_app.py
 set "RC=%errorlevel%"
 
 if not "%RC%"=="0" (
   echo.
   echo InterfaceScout stopped with error code %RC%.
   echo Re-running once to write backend\startup_log.txt ...
-  python main.py > "%BACKEND%\startup_log.txt" 2>&1
+  python v52_app.py > "%BACKEND%\startup_log.txt" 2>&1
   echo Log saved: %BACKEND%\startup_log.txt
   pause
 )
