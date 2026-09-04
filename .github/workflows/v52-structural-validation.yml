@@ -7,7 +7,9 @@ on:
       - development/v5.2-core-freeze
     paths:
       - 'backend/**'
+      - 'frontend/**'
       - 'validation/run_v52_structural_validation.py'
+      - 'validation/run_v52_ui_validation.py'
       - '.github/workflows/v52-structural-validation.yml'
 
 jobs:
@@ -25,8 +27,12 @@ jobs:
           python -m pip install fastapi pydantic numpy biopython uvicorn
       - name: Run structural/regression validation
         run: python validation/run_v52_structural_validation.py
-      - name: Upload report
+      - name: Run UI validation
+        run: python validation/run_v52_ui_validation.py
+      - name: Upload reports
         uses: actions/upload-artifact@v4
         with:
           name: interfacescout-v52-structural-validation
-          path: validation/v52_structural_validation_report.json
+          path: |
+            validation/v52_structural_validation_report.json
+            validation/v52_ui_validation_report.json
