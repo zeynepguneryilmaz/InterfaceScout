@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sys
+import tempfile
 import urllib.request
 from pathlib import Path
 
@@ -21,14 +22,20 @@ def fetch(pid: str) -> str:
 
 
 def analyze(pid: str, chain: str | None, pH: float, ionic: float, temp: float):
+    # Diagnostic deliberately bypasses APBS because the steering module uses the
+    # independent Debye-Huckel charged-plane formulation rather than the auxiliary
+    # APBS descriptor used elsewhere in InterfaceScout.
     req = IS.AnalyzeRequest(pdb_text=fetch(pid), chain=chain,
                             env=IS.EnvParams(pH=pH, ionic=ionic, temp=temp))
-    result = IS.analyze(req)
+    with tempfile.TemporaryDirectory(prefix="interfacescout_steering_") as td:
+        pdb, _ = IS.prepare_input_pdb(req, Path(td))
+        _, all_residues, _, _ = IS.build_surface_residues(pdb, pH)
+    surface = [r for r in all_residues if r["surface_exposed"]]
     steering = compute_electrostatic_steering(
-        result["all_residues"], result["surface_residues"], ionic, temp,
+        all_residues, surface, ionic, temp,
         n_orientations=4096, footprint_depths_A=(5.0, 8.0, 10.0),
     )
-    return result, steering
+    return {"all_residues": all_residues, "surface_residues": surface}, steering
 
 
 def footprint_nums(steering, surfkey, depth):
