@@ -19,25 +19,25 @@ try:
     from . import main as core
     from .structural_context import AnalyzeRequest, analyze_structural, prepare_context, available_material_profiles
     from .physics_refinement import enrich_nonpolar_physics
-    from .nonpolar_sasa_orientation import scan as scan_nonpolar_sasa
+    from .nonpolar_energy import scan as scan_nonpolar_energy
     from .ui import inject_ui
 except ImportError:
     import main as core
     from structural_context import AnalyzeRequest, analyze_structural, prepare_context, available_material_profiles
     from physics_refinement import enrich_nonpolar_physics
-    from nonpolar_sasa_orientation import scan as scan_nonpolar_sasa
+    from nonpolar_energy import scan as scan_nonpolar_energy
     from ui import inject_ui
 
 APP_VERSION = "2.0.0-dev"
 CORE_RELEASE_VERSION = "1.0.0"
 
 
-def _atom_level_nonpolar_orientation(req: AnalyzeRequest):
+def _nonpolar_energy(req: AnalyzeRequest):
     workdir = Path(tempfile.mkdtemp(prefix="interfacescout_v2_nonpolar_"))
     try:
         pdb, _, _, _ = prepare_context(req, workdir)
         struct, _, _, _ = core.build_surface_residues(pdb, req.env.pH)
-        return scan_nonpolar_sasa(struct)
+        return scan_nonpolar_energy(pdb, struct, pH=req.env.pH)
     finally:
         shutil.rmtree(workdir, ignore_errors=True)
 
@@ -51,17 +51,26 @@ def analyze(req: AnalyzeRequest):
     nonpolar = enrich_nonpolar_physics(
         result.get("surface_residues", []), result.get("all_residues", [])
     )
-    nonpolar["atom_level_sasa_orientation"] = _atom_level_nonpolar_orientation(req)
+    nonpolar["orientation_energy"] = _nonpolar_energy(req)
     result["nonpolar_physics"] = nonpolar
 
     result.setdefault("applicability", {}).setdefault("included_in_this_run", []).extend([
         "continuous Eisenberg hydrophobic surface field",
         "Wimley-White interfacial preference sensitivity descriptor",
         "exposure-weighted tertiary hydrophobic vector",
-        "atom-level SASA nonpolar orientation descriptor",
     ])
+    if nonpolar["orientation_energy"].get("status") == "ok":
+        result["applicability"]["included_in_this_run"].append(
+            "CHARMM36 van der Waals + Harrison-style SASA-solvation nonpolar orientation energy"
+        )
+    else:
+        result["applicability"].setdefault("not_included_or_interpretation_limits", []).append(
+            "full nonpolar orientation energy was unavailable in this run: "
+            + str(nonpolar["orientation_energy"].get("reason", "unknown reason"))
+        )
+
     result["applicability"].setdefault("not_included_or_interpretation_limits", []).extend([
-        "the current atom-level nonpolar orientation layer contains the published SASA-solvation component but not yet the full van der Waals term",
+        "the nonpolar orientation layer is a deterministic continuum adaptation, not an exact explicit-graphene Metropolis reproduction",
         "explicit molecular water and adsorption-induced large conformational rearrangement remain outside the lightweight model",
     ])
     return result
@@ -80,7 +89,7 @@ def health():
         "frozen_reference": CORE_RELEASE_VERSION,
         "canonical_v1_score_changed": False,
         "structural_context": "biological assembly aware",
-        "nonpolar_physics": "continuous hydrophobic fields + hydrophobic vector + SASA orientation component",
+        "nonpolar_physics": "continuous hydrophobic fields + hydrophobic vector + CHARMM36 vdW/Harrison-SASA orientation energy",
     }
 
 
@@ -110,8 +119,11 @@ def model_spec():
         "structure_context_modes": ["auto", "biological_assembly_1", "deposited_structure", "selected_chain_legacy"],
         "nonpolar_layer": {
             "continuous_scales": ["Eisenberg", "Wimley-White interface"],
-            "orientation_descriptors": ["tertiary hydrophobic vector", "atom-level SASA orientation component"],
-            "vdw_term_complete": False,
+            "orientation_descriptors": ["tertiary hydrophobic vector"],
+            "orientation_energy": "CHARMM36 protein vdW + integrated neutral graphitic carbon plane + Harrison-style SASA solvation",
+            "vdw_term_complete": True,
+            "explicit_water": False,
+            "fitted_weights": False,
         },
     }
 
