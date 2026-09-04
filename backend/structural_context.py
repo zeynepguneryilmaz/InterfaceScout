@@ -1,14 +1,15 @@
 """Structural-context layer for InterfaceScout 2.0 development.
 
 This module keeps the InterfaceScout 1.0 canonical chemistry/state and C-alpha
-5/8 A scoring equations unchanged while adding lightweight structural context:
+5/8 A scoring equations unchanged while adding lightweight protein-side
+structural context:
 
 - RCSB biological assembly 1 when available,
-- Pintar-style CX protrusion descriptors (auxiliary only),
-- material mechanism profiles reported as separate chemistry channels.
+- Pintar-style CX protrusion descriptors (auxiliary only).
 
-The historical 1.0 computational core remains in ``backend/main.py`` on this
-development branch so regression tests can verify backward compatibility.
+No named-material library is used here. Generalized chemistry channels are
+computed directly from the protein and interpreted upstream as a protein-derived
+target interface profile.
 """
 
 from __future__ import annotations
@@ -30,10 +31,8 @@ from pydantic import BaseModel, Field
 
 try:
     from . import main as core
-    from .options import available_material_profiles, material_profile
 except ImportError:
     import main as core
-    from options import available_material_profiles, material_profile
 
 STRUCTURAL_LAYER_VERSION = "2.0.0-dev"
 CORE_RELEASE_VERSION = "1.0.0"
@@ -52,12 +51,8 @@ class AnalyzeRequest(BaseModel):
     pdb_text: Optional[str] = None
     chain: Optional[str] = None
     env: EnvParams = EnvParams()
-    # auto: biological assembly 1 for identifiable RCSB entries, otherwise
-    # deposited/full uploaded coordinates. selected_chain_legacy reproduces
-    # the 1.0 isolated-chain structural context for regression testing.
     structure_context: str = "auto"
     protrusion: bool = True
-    material_profile: Optional[str] = None
 
 
 class FirstModelStandardAA(core.Select):
@@ -263,11 +258,12 @@ def _filter_feature_to_chain(group: Dict[str, Any], chain: str) -> Dict[str, Any
     return out
 
 
-def applicability_notes(context_label: str, protrusion: bool, selected_profile: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+def applicability_notes(context_label: str, protrusion: bool) -> Dict[str, Any]:
     included = [
         "side-chain solvent accessibility (scRSA)",
         "reference-pKa state availability at the requested bulk pH",
         "C-alpha 5/8 A multiscale persistence",
+        "all generalized protein-interface chemistry channels reported independently",
     ]
     limits: List[str] = []
     if context_label == "biological_assembly_1":
@@ -283,15 +279,11 @@ def applicability_notes(context_label: str, protrusion: bool, selected_profile: 
     else:
         limits.append("accessible residues are not distinguished by geometric protrusion")
 
-    if selected_profile:
-        included.append("material mechanism profile with unweighted, separately reported chemistry channels")
-    else:
-        limits.append("each chemistry map represents an idealized single interface chemistry unless a material profile is selected")
-
     limits.extend([
+        "no named-material library is used",
         "structure-specific pKa shifts are not included in the canonical score",
         "whole-protein electrostatic steering is not included in the canonical score",
-        "explicit interfacial hydration/desolvation is not modeled by the 1.0 core",
+        "explicit interfacial hydration/desolvation is not modeled by the canonical core",
         "adsorption-induced large conformational change/unfolding is not modeled",
         "multi-protein crowding and mature corona organization are not modeled",
         "absolute adsorption free energy and adsorption capacity are not predicted",
@@ -324,28 +316,16 @@ def analyze_structural(req: AnalyzeRequest) -> Dict[str, Any]:
         all_report = all_residues if selected_chain == "ALL" else [r for r in all_residues if r["chain"] == selected_chain]
         surface_report = surface_all if selected_chain == "ALL" else [r for r in surface_all if r["chain"] == selected_chain]
 
-        profile = material_profile(req.material_profile)
-        if req.material_profile and profile is None:
-            raise HTTPException(400, f"Unknown material_profile '{req.material_profile}'.")
-        profile_result = None
-        if profile:
-            profile_result = {
-                "key": req.material_profile,
-                **profile,
-                "channel_results": {ch: chem[ch] for ch in profile["channels"] if ch in chem},
-                "combination_rule": "none; chemistry channels are reported separately",
-            }
-
         n_atoms_context = sum(1 for m in struct for c in m for res in c if is_aa(res, standard=True) for _ in res.get_atoms())
         return {
             "status": "ok",
             "version": STRUCTURAL_LAYER_VERSION,
             "core_version": CORE_RELEASE_VERSION,
-            "model": "InterfaceScout 2.0 development structural layer over the InterfaceScout 1.0 canonical scoring core",
+            "model": "InterfaceScout 2.0 protein structural-context layer over the InterfaceScout 1.0 canonical scoring core",
             "scope": {
-                "predicts": "protein-side residue/patch compatibility hypotheses for generalized interface chemistries",
+                "predicts": "protein-side residue/patch compatibility hypotheses for generalized interface properties",
                 "does_not_predict": [
-                    "adsorption capacity", "absolute adsorption free energy", "unique adsorption orientation",
+                    "named material recommendation", "adsorption capacity", "absolute adsorption free energy", "unique adsorption orientation",
                     "adsorption-induced conformational change", "explicit interfacial hydration", "multi-protein corona organization",
                 ],
             },
@@ -360,7 +340,6 @@ def analyze_structural(req: AnalyzeRequest) -> Dict[str, Any]:
                 "patch_pair_selection": core.PATCH_PAIR_AUDIT,
                 "context_radius_A_auxiliary": core.CONTEXT_RADIUS_A,
                 "protrusion_enabled": bool(req.protrusion),
-                "material_profile": req.material_profile,
             },
             "stats": {
                 "n_atoms_context": n_atoms_context,
@@ -375,9 +354,7 @@ def analyze_structural(req: AnalyzeRequest) -> Dict[str, Any]:
                 "pdb2pqr": bool(core.PDB2PQR), "apbs": bool(core.APBS), "dssp": bool(core.MKDSSP),
             },
             "protrusion": cx_meta,
-            "material_profile": profile_result,
-            "available_material_profiles": available_material_profiles(),
-            "applicability": applicability_notes(context_label, req.protrusion, profile),
+            "applicability": applicability_notes(context_label, req.protrusion),
             "chemistry_list": list(core.CHEMISTRIES.keys()),
             "chemistries": chem,
             "feature_list": list(core.FEATURE_RESIDUES.keys()),
