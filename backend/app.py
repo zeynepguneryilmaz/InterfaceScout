@@ -11,6 +11,8 @@ validation/research modules and are not run by the default application path.
 """
 from __future__ import annotations
 
+from typing import List, Optional
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
@@ -32,13 +34,18 @@ APP_VERSION = "2.0.0-dev"
 CORE_RELEASE_VERSION = "1.0.0"
 
 
-def analyze(req: AnalyzeRequest):
+class ProteinAnalyzeRequest(AnalyzeRequest):
+    """Default v2 request: protein structure plus optional protected residues."""
+    protected_residue_keys: Optional[List[str]] = None
+
+
+def analyze(req: ProteinAnalyzeRequest):
     result = dict(analyze_structural(req))
     result["version"] = APP_VERSION
     result["core_version"] = CORE_RELEASE_VERSION
     result["model"] = "InterfaceScout 2.0 protein-centered development"
 
-    protected = normalize_protected_residues(getattr(req, "protected_residue_keys", None))
+    protected = normalize_protected_residues(req.protected_residue_keys)
     sites = pdb_site_annotations(req.pdb_id, req.pdb_text)
     target = build_target_interface_profile(
         chemistries=result.get("chemistries", {}),
@@ -49,13 +56,14 @@ def analyze(req: AnalyzeRequest):
     )
     result["protein_derived_target_interface_profile"] = target
 
-    # Named-material profiles are intentionally removed from the primary v2
-    # interpretation even if a legacy field is still present in the structural
-    # compatibility layer for regression/backward-compatibility purposes.
+    # Named-material profiles are intentionally suppressed from the primary v2
+    # output. Any legacy field that survives in the structural regression layer
+    # is neutralized here.
     result["material_profile"] = None
     result["available_material_profiles"] = []
     if "settings" in result:
         result["settings"]["material_profile"] = None
+        result["settings"]["protected_residue_keys"] = protected
 
     app = result.setdefault("applicability", {})
     included = app.setdefault("included_in_this_run", [])
@@ -94,7 +102,7 @@ def health():
 
 
 @app.post("/analyze_surface")
-def analyze_surface(req: AnalyzeRequest):
+def analyze_surface(req: ProteinAnalyzeRequest):
     try:
         return analyze(req)
     except HTTPException:
