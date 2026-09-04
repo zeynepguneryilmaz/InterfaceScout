@@ -7,7 +7,7 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 BACKEND="$HERE/backend"
 FRONTEND="$HERE/frontend"
 
-if [ ! -f "$BACKEND/main.py" ] || [ ! -f "$FRONTEND/index.html" ]; then
+if [ ! -f "$BACKEND/v52_app.py" ] || [ ! -f "$BACKEND/main.py" ] || [ ! -f "$FRONTEND/index.html" ]; then
   echo "InterfaceScout files are incomplete. Keep start.sh next to backend/ and frontend/." >&2
   exit 1
 fi
@@ -31,7 +31,7 @@ cd "$BACKEND" || exit 1
 # shellcheck disable=SC1091
 source .venv/bin/activate
 
-nohup python main.py >/tmp/interfacescout.log 2>&1 &
+nohup python v52_app.py >/tmp/interfacescout.log 2>&1 &
 sleep 2
 
 command -v xdg-open >/dev/null 2>&1 && xdg-open "http://localhost:8000" >/dev/null 2>&1 || true
