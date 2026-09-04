@@ -22,6 +22,8 @@ jobs:
         run: python validation/run_steering_diagnostic.py
       - name: Run orientation-null diagnostic
         run: python validation/run_steering_orientation_null.py
+      - name: Run atom-charge steering diagnostic
+        run: python validation/run_atomistic_steering_diagnostic.py
       - name: Upload outputs
         uses: actions/upload-artifact@v4
         with:
