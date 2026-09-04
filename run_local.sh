@@ -8,7 +8,7 @@ PROJ_DIR="$(cd "$(dirname "$0")" && pwd)"
 BACKEND="$PROJ_DIR/backend"
 FRONTEND="$PROJ_DIR/frontend"
 
-if [ ! -f "$BACKEND/main.py" ] || [ ! -f "$FRONTEND/index.html" ]; then
+if [ ! -f "$BACKEND/main.py" ] || [ ! -f "$BACKEND/v52_app.py" ] || [ ! -f "$FRONTEND/index.html" ]; then
   echo "ERROR: InterfaceScout files are incomplete."
   echo "Keep run_local.sh next to backend/ and frontend/."
   exit 1
