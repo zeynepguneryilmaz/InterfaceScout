@@ -41,7 +41,7 @@ def analyze_v2(
     """Run V2-alpha patch-level material-aware analysis.
 
     V2-alpha deliberately reuses the frozen V1 residue chemistry maps as input
-    descriptors.  It does not alter V1 and it does not fit any coefficients.
+    descriptors. It does not alter V1 and it does not fit any coefficients.
     """
     if not (0.0 <= float(pH) <= 14.0):
         raise ValueError("pH must be between 0 and 14")
@@ -71,14 +71,13 @@ def analyze_v2(
     candidates = assemble_candidate_patches(chemistries, weights)
     ranked = rank_patches(candidates)
     top = nonredundant_top_patches(ranked, top_n=int(top_n))
-    # Re-label retained patch ranks after redundancy filtering while preserving raw rank.
     for final_rank, row in enumerate(top, start=1):
         row["raw_rank"] = row.get("rank")
         row["rank"] = final_rank
 
     return {
         "engine": "InterfaceScout V2-alpha",
-        "version": "2.0.0-alpha.1",
+        "version": "2.0.0-alpha.2",
         "scope": {
             "prediction_unit": "protein surface patch",
             "orientation_search": False,
@@ -102,11 +101,13 @@ def analyze_v2(
             "normalized_weights": weights,
         },
         "n_candidate_patch_centers": len(candidates),
+        "patches": ranked,
         "top_patches": top,
         "competition": summarize_competition(ranked),
         "method_notes": [
             "V1 publication-freeze chemistry maps are reused without modification.",
             "Patch score is the normalized surface-profile-weighted mean of V1 5/8 Å multiscale persistence.",
+            "All ranked candidate patch centers are returned for benchmark/statistical evaluation.",
             "Near-duplicate Top patches are suppressed by compatible-member-set overlap.",
             "V2-alpha is a patch-localization prototype, not an adsorption free-energy or rigid-body docking model.",
         ],
