@@ -24,7 +24,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install numpy pandas scipy biopython fastapi pydantic
       - name: Run ANM exploratory batch
-        run: python validation/run_anm_ensemble_exploratory.py
+        run: python validation/run_anm_ensemble_exploratory_fixed.py
       - name: Commit results
         run: |
           git config user.name 'InterfaceScout validation bot'
