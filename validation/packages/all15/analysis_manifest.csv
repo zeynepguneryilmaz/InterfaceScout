@@ -1,0 +1,6 @@
+analysis_group,include_statuses,tiers,metrics,notes
+quantitative_primary,"ready;computed","Tier1","AUROC;AP;Recall@5;Recall@10;Recall@20;Spatial@5A;Spatial@8A;Spatial@10A;nearest_patch_distance;exposure_matched_permutation_p","Only exhaustive or sufficiently explicit residue-level ground truth. Single/few-anchor conditions emphasize rank/percentile and spatial metrics."
+chemistry_negative_controls,"computed;ready","Negative-control","same metrics as paired positive condition","Report mismatched-chemistry failures; never tune chemistry maps to improve them."
+orientation_spatial,"ready","Tier2","orientation_face_recovery;active_site_accessibility;nearest_patch_distance;spatial_overlap","Do not compute AUROC/AP without exhaustive residue labels."
+stress_tests,"ready","Tier3","supported_mode_recovery;spatial_overlap;nearest_patch_distance","Curvature/size or other variables not represented by InterfaceScout are limitations tests, not primary score claims."
+pending_audit,"pending;blocked;planned","Tier1-candidate;Tier2-candidate","none until provenance/chemistry audit complete","Excluded from pooled metrics until ground truth and ontology mapping are frozen."
