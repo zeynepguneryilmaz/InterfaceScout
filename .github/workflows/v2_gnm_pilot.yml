@@ -29,6 +29,7 @@ jobs:
         run: |
           PYTHONPATH=backend python - <<'PY'
           import os, json
+          from pathlib import Path
           from v2.dynamic_engine import analyze_v2_dynamic
           name,pdb,chain,ph,chem,gt=os.environ['CASE'].split('|')
           ph=float(ph)
@@ -38,12 +39,19 @@ jobs:
           def isgt(n):
             return (exact is not None and n in exact) or (ranges is not None and any(a<=n<=b for a,b in ranges))
           r=analyze_v2_dynamic(chemistry=chem,pdb_id=pdb,chain=chain,pH=ph,top_n_anchors=10,gnm_cutoff_A=7.3,extension_radius_A=12.0,min_abs_corr=0.35,max_extensions=12)
-          anchor_gt=[]; ext_gt=[]; ext_all=[]
+          anchor_gt=[]; ext_gt=[]; ext_all=[]; extension_gt_union=set()
           for a in r['dynamic_anchor_analysis']:
             if isgt(int(a.get('anchor_res_seq') or -999)): anchor_gt.append(a['anchor_key'])
             hits=[x for x in a.get('dynamic_extension',[]) if isgt(int(x['res_seq']))]
+            extension_gt_union.update(x['key'] for x in hits)
             if hits:
               ext_gt.append({'anchor':a['anchor_key'],'gt_hits':[x['key'] for x in hits], 'mean_abs_corr':a.get('mean_abs_corr_reported'), 'anchor_fluct':a.get('anchor_normalized_fluctuation')})
             ext_all.append({'anchor':a['anchor_key'],'extensions':[x['key'] for x in a.get('dynamic_extension',[])], 'fluct':a.get('anchor_normalized_fluctuation'),'degree':a.get('anchor_contact_degree')})
-          print('PILOT_JSON '+json.dumps({'name':name,'pdb':pdb,'ph':ph,'gt':gt,'v1_anchor_gt_hits':anchor_gt,'dynamic_gt_hits':ext_gt,'anchors':ext_all},sort_keys=True))
+          out={'name':name,'pdb':pdb,'ph':ph,'gt':gt,'v1_anchor_gt_hits':anchor_gt,'dynamic_gt_hits':ext_gt,'dynamic_gt_union':sorted(extension_gt_union),'anchors':ext_all}
+          Path(f'{name}.json').write_text(json.dumps(out,indent=2,sort_keys=True))
+          print('PILOT_JSON '+json.dumps(out,sort_keys=True))
           PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gnm-${{ strategy.job-index }}
+          path: '*.json'
