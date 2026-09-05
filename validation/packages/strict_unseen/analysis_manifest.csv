@@ -1,0 +1,2 @@
+analysis_group,policy
+strict_prospective_holdout,"Do not populate or score until chemistry ontology, pKa provenance, preprocessing rules and scoring implementation are frozen. Admit only previously uninspected protein-surface conditions with predefined ground truth and no benchmark-specific tuning."
