@@ -1,0 +1,4 @@
+candidate_id,protein,pdb,pH,ground_truth_type,n_surface,n_truth_requested,n_truth_mapped,AUROC,AP,Recall@5,Recall@10,Recall@20,Spatial@5A_top10,Spatial@8A_top10,Spatial@10A_top10,median_nearest_top10_A,top10
+UBQ_AUNP_NMR,human ubiquitin,1UBQ,7.7,residue,61,6,3,0.13793103448275862,0.044129702825355,0.0,0.0,0.0,0.3333333333333333,0.6666666666666666,1.0,6.897659998351343,A:10:;A:55:;A:12:;A:6:;A:8:;A:19:;A:11:;A:4:;A:21:;A:9:
+B2M_CIT_AUNP_WT,beta-2-microglobulin,1JNJ,7.7,residue,54,11,10,0.6670454545454545,0.3884499759499759,0.2,0.3,0.4,0.5,0.5,0.8,6.19506547148545,A:56:;A:57:;A:58:;A:52:;A:53:;A:11:;A:88:;A:89:;A:33:;A:34:
+HSA_PAA_FE3O4_XLMS,human serum albumin,2VUF,7.0,region,468,40,30,,,,,,0.0,0.0,0.03333333333333333,16.952116773756853,A:516:;A:240:;A:520:;A:235:;A:474:;A:475:;A:524:;A:479:;A:163:;A:521:

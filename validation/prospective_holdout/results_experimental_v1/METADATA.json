@@ -1,0 +1,7 @@
+{
+  "model": "IS-v1-Core-primary",
+  "frozen_before_scoring": true,
+  "SASA_POINTS": 200,
+  "chemistry": "anionic for all three cases",
+  "note": "No model, cutoff, ontology, or score rule was changed after experimental GT freeze."
+}
