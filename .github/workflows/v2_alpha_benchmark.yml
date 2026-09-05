@@ -25,7 +25,6 @@ jobs:
           import main as v1
           from v2.engine import analyze_v2
 
-          # Frozen material mappings / experimental-like conditions.
           specs = [
             dict(name='BSA', pdb='4F5S', chain='A', ph=7.4, surface='silica', v1chem='anionic', gt_ranges=[(196,383)], gt_exact=None, tier='B-domain'),
             dict(name='HSA', pdb='2VUF', chain='A', ph=6.2, surface='paa_fe3o4', v1chem='anionic', gt_ranges=[(373,389),(403,410),(414,428)], gt_exact=None, tier='A/B-peptide'),
@@ -58,10 +57,7 @@ jobs:
               c=r1['chemistries'][s['v1chem']]
               v1map={int(x['res_seq']): float(x.get('multiscale_persistence',0.0)) for x in c.get('patch_centers',[])}
               rv2=analyze_v2(surface=s['surface'], pdb_id=s['pdb'], chain=s['chain'], pH=s['ph'], top_n=20)
-              v2map={int(x['res_seq']): float(x.get('score',0.0)) for x in rv2.get('patches',rv2.get('all_patches',rv2.get('top_patches',[])))}
-              if len(v2map) < 5:
-                # top_patches may be the only exposed list in current alpha; use it without inventing scores for missing centers.
-                v2map={int(x['res_seq']): float(x.get('score',0.0)) for x in rv2.get('top_patches',[])}
+              v2map={int(x['res_seq']): float(x.get('score',0.0)) for x in rv2.get('patches',[])}
 
               surf=r1['surface_residues']
               nums=[int(x['res_seq']) for x in surf]
@@ -99,3 +95,4 @@ jobs:
         with:
           name: v2-alpha-benchmark-results
           path: v2_benchmark_results.json
+# rerun after exposing all ranked V2 patches
