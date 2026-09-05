@@ -1,0 +1,181 @@
+{
+  "design": {
+    "n_modes": 5,
+    "n_conformers_per_protein": 10,
+    "target_ca_rmsd_A": 1.0,
+    "sasa_points": 120,
+    "top_fraction_for_persistence": 0.1
+  },
+  "proteins": {
+    "1FNF": {
+      "paths": [
+        "validation/packages/all15/results_anm_exploratory/conformers/1FNF_m1_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1FNF_m1_plus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1FNF_m2_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1FNF_m2_plus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1FNF_m3_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1FNF_m3_plus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1FNF_m4_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1FNF_m4_plus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1FNF_m5_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1FNF_m5_plus.pdb"
+      ],
+      "eigenvalues": [
+        0.005974606815746277,
+        0.008525725056228303,
+        0.02191189913048844,
+        0.04733925320884298,
+        0.06242778619492643
+      ],
+      "n_ca": 368
+    },
+    "1LYZ": {
+      "paths": [
+        "validation/packages/all15/results_anm_exploratory/conformers/1LYZ_m1_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1LYZ_m1_plus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1LYZ_m2_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1LYZ_m2_plus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1LYZ_m3_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1LYZ_m3_plus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1LYZ_m4_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1LYZ_m4_plus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1LYZ_m5_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1LYZ_m5_plus.pdb"
+      ],
+      "eigenvalues": [
+        0.7219102576114268,
+        1.0092675143080734,
+        1.2645539552509133,
+        1.7609466557242401,
+        1.9761769057555951
+      ],
+      "n_ca": 129
+    },
+    "1MBN": {
+      "paths": [
+        "validation/packages/all15/results_anm_exploratory/conformers/1MBN_m1_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1MBN_m1_plus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1MBN_m2_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1MBN_m2_plus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1MBN_m3_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1MBN_m3_plus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1MBN_m4_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1MBN_m4_plus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1MBN_m5_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/1MBN_m5_plus.pdb"
+      ],
+      "eigenvalues": [
+        0.9042996898784773,
+        1.2073153862527723,
+        1.649991804088626,
+        1.7515326508880276,
+        2.1664886915589507
+      ],
+      "n_ca": 153
+    },
+    "3NWV": {
+      "paths": [
+        "validation/packages/all15/results_anm_exploratory/conformers/3NWV_m1_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/3NWV_m1_plus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/3NWV_m2_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/3NWV_m2_plus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/3NWV_m3_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/3NWV_m3_plus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/3NWV_m4_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/3NWV_m4_plus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/3NWV_m5_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/3NWV_m5_plus.pdb"
+      ],
+      "eigenvalues": [
+        2.230061086444621,
+        2.6047331812271346,
+        2.793088479363057,
+        3.512287543720484,
+        3.7903292016895063
+      ],
+      "n_ca": 104
+    },
+    "4CHA": {
+      "paths": [
+        "validation/packages/all15/results_anm_exploratory/conformers/4CHA_m1_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/4CHA_m1_plus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/4CHA_m2_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/4CHA_m2_plus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/4CHA_m3_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/4CHA_m3_plus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/4CHA_m4_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/4CHA_m4_plus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/4CHA_m5_minus.pdb",
+        "validation/packages/all15/results_anm_exploratory/conformers/4CHA_m5_plus.pdb"
+      ],
+      "eigenvalues": [
+        1.4443137810953721,
+        1.5504301892313066,
+        1.7521371710900768,
+        2.0143120051248387,
+        2.0664206211964955
+      ],
+      "n_ca": 239
+    }
+  },
+  "median_metrics_by_method": {
+    "anm_consensus": {
+      "AUROC": 0.5756415364079597,
+      "AP": 0.100825673207465,
+      "Recall@5": 0.0,
+      "Recall@10": 0.0,
+      "Recall@20": 0.34285714285714286
+    },
+    "anm_mean": {
+      "AUROC": 0.5987344487344488,
+      "AP": 0.08741679782920708,
+      "Recall@5": 0.0,
+      "Recall@10": 0.0,
+      "Recall@20": 0.2792207792207792
+    },
+    "anm_persistence": {
+      "AUROC": 0.576335210459298,
+      "AP": 0.0749413573878595,
+      "Recall@5": 0.0,
+      "Recall@10": 0.0,
+      "Recall@20": 0.41428571428571426
+    },
+    "static_sameSASA": {
+      "AUROC": 0.5968319807916413,
+      "AP": 0.08200633261489151,
+      "Recall@5": 0.0,
+      "Recall@10": 0.0,
+      "Recall@20": 0.2792207792207792
+    }
+  },
+  "mean_metrics_by_method": {
+    "anm_consensus": {
+      "AUROC": 0.5938204907019937,
+      "AP": 0.15155708028366732,
+      "Recall@5": 0.15505494505494505,
+      "Recall@10": 0.18989010989010988,
+      "Recall@20": 0.3496903096903097
+    },
+    "anm_mean": {
+      "AUROC": 0.5946867587713157,
+      "AP": 0.1521666708496922,
+      "Recall@5": 0.15505494505494505,
+      "Recall@10": 0.18989010989010988,
+      "Recall@20": 0.28826173826173823
+    },
+    "anm_persistence": {
+      "AUROC": 0.5932368112893672,
+      "AP": 0.12325649160367262,
+      "Recall@5": 0.05307692307692308,
+      "Recall@10": 0.0898901098901099,
+      "Recall@20": 0.38150849150849153
+    },
+    "static_sameSASA": {
+      "AUROC": 0.5907404812729119,
+      "AP": 0.1360571659227435,
+      "Recall@5": 0.055054945054945056,
+      "Recall@10": 0.18989010989010988,
+      "Recall@20": 0.2782617382617382
+    }
+  }
+}
