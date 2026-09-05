@@ -1,0 +1,95 @@
+name: V2 alpha benchmark audit
+on:
+  push:
+    paths:
+      - '.github/workflows/v2_alpha_benchmark_audit.yml'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        case: [GB3, AcP, Catalase, Asparaginase, Transferrin]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r backend/requirements.txt scikit-learn
+      - name: Run audited case
+        env:
+          CASE: ${{ matrix.case }}
+        run: |
+          PYTHONPATH=backend python - <<'PY'
+          import os, json, urllib.request
+          import numpy as np
+          from io import StringIO
+          from Bio.PDB import PDBParser, PDBIO, Select
+          from sklearn.metrics import roc_auc_score, average_precision_score
+          import main as v1
+          from v2.engine import analyze_v2
+          from v2.prepare import prepare_pdb_text
+
+          cfg={
+            'GB3': dict(pdb='2OED', chain='A', ph=7.4, surface='citrate_au', chem='anionic', exact={4,13,50}, ranges=None, prep=True),
+            'AcP': dict(pdb='2K7K', chain='A', ph=7.0, surface='silica', chem='anionic', exact=None, ranges=[(22,33),(55,66)], prep=True),
+            'Catalase': dict(pdb='1TGU', chain=None, ph=7.4, surface='polystyrene', chem='hydrophobic', exact=None, ranges=[(350,380)], prep=False),
+            'Asparaginase': dict(pdb='3ECA', chain=None, ph=7.5, surface='alumoh', chem='cationic', exact=None, ranges=[(250,310)], prep=False),
+            'Transferrin': dict(pdb='1SUV', chain=None, ph=7.4, surface='polystyrene', chem='hydrophobic', exact=None, ranges=[(140,160),(480,500)], prep=False),
+          }
+          name=os.environ['CASE']; c=cfg[name]
+          raw=urllib.request.urlopen(f"https://files.rcsb.org/download/{c['pdb']}.pdb",timeout=30).read().decode()
+
+          if name=='Transferrin':
+            # One transferrin molecule is represented by N-lobe chain C + C-lobe chain E.
+            parser=PDBParser(QUIET=True); st=parser.get_structure('tf',StringIO(raw))
+            class CE(Select):
+              def accept_chain(self,ch): return 1 if str(ch.id) in {'C','E'} else 0
+              def accept_residue(self,res):
+                from Bio.PDB.Polypeptide import is_aa
+                return 1 if is_aa(res,standard=True) else 0
+              def accept_atom(self,a):
+                e=(getattr(a,'element','') or '').strip().upper(); n=a.get_name().strip().upper()
+                return 0 if e=='H' or n.startswith('H') else 1
+            io=PDBIO(); io.set_structure(st); buf=StringIO(); io.save(buf,CE()); prepared=buf.getvalue()
+          elif c['prep']:
+            prepared,_=prepare_pdb_text(raw,chain=c['chain'])
+          else:
+            # Keep biological/asymmetric oligomer chains, remove hydrogens consistently.
+            parser=PDBParser(QUIET=True); st=parser.get_structure('x',StringIO(raw))
+            class Heavy(Select):
+              def accept_residue(self,res):
+                from Bio.PDB.Polypeptide import is_aa
+                return 1 if is_aa(res,standard=True) else 0
+              def accept_atom(self,a):
+                e=(getattr(a,'element','') or '').strip().upper(); n=a.get_name().strip().upper()
+                return 0 if e=='H' or n.startswith('H') else 1
+            io=PDBIO(); io.set_structure(st); buf=StringIO(); io.save(buf,Heavy()); prepared=buf.getvalue()
+
+          req=v1.AnalyzeRequest(pdb_text=prepared,chain=c['chain'],env=v1.EnvParams(pH=c['ph'],ionic=150,temp=298))
+          r1=v1.analyze(req); chem=r1['chemistries'][c['chem']]
+          r2=analyze_v2(surface=c['surface'],pdb_text=prepared,chain=c['chain'],pH=c['ph'],top_n=20)
+
+          def isgt(seq):
+            return (c['exact'] is not None and seq in c['exact']) or (c['ranges'] is not None and any(a<=seq<=b for a,b in c['ranges']))
+
+          # chain-aware keys throughout
+          surface={x['key']:x for x in r1['surface_residues']}
+          v1map={x['center_key']:float(x.get('multiscale_persistence',0)) for x in chem.get('patch_centers',[])}
+          v2map={x['center_key']:float(x.get('score',0)) for x in r2.get('patches',[])}
+          keys=list(surface)
+          y=np.array([int(isgt(int(surface[k]['res_seq']))) for k in keys])
+          s1=np.array([v1map.get(k,0) for k in keys]); s2=np.array([v2map.get(k,0) for k in keys])
+          v1top=[x['center_key'] for x in sorted(chem.get('patch_centers',[]),key=lambda z:z.get('multiscale_persistence',0),reverse=True)[:10]]
+          v2top=[x['center_key'] for x in r2.get('top_patches',[])[:10]]
+          gtkeys={k for k in keys if isgt(int(surface[k]['res_seq']))}
+          out={'name':name,'pdb':c['pdb'],'gt_surface_n':int(y.sum()),'prevalence':float(y.mean()),
+               'v1_top10':v1top,'v2_top10':v2top,'v1_hit3':len(gtkeys&set(v1top[:3])),'v2_hit3':len(gtkeys&set(v2top[:3])),
+               'v1_hit10':len(gtkeys&set(v1top)),'v2_hit10':len(gtkeys&set(v2top))}
+          if 0<y.sum()<len(y):
+            out.update(v1_auc=float(roc_auc_score(y,s1)),v1_ap=float(average_precision_score(y,s1)),
+                       v2_auc=float(roc_auc_score(y,s2)),v2_ap=float(average_precision_score(y,s2)))
+          print('AUDIT_JSON '+json.dumps(out,sort_keys=True))
+          PY
