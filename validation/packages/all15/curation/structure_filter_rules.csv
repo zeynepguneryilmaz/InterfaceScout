@@ -1,6 +1,6 @@
 protein,pdb,chains,residue_filter,reason,confidence
 BSA,4F5S,A,all_standard_amino_acids,"Use one representative BSA monomer; remove duplicate crystal copy.",HIGH
-Fibronectin III8-10,1FNF,A,all_standard_amino_acids,"Benchmark construct is the deposited FNIII8-10 chain.",HIGH
+Fibronectin III8-10,1FNF,A,PDB_resseq_1236_to_1509,"Correct source paper uses the FNIII8-10 construct corresponding to fibronectin residues 1236-1509 extracted from 1FNF; residues outside this range must not enter the benchmark.",HIGH
 Cytochrome c,3NWV,A,all_standard_amino_acids,"Use one of four equivalent monomeric crystal copies.",HIGH
 Lysozyme,1LYZ,A,all_standard_amino_acids,"Monomeric benchmark target.",HIGH
 Alpha-chymotrypsin,4CHA,A;B;C,all_standard_amino_acids,"One proteolytically split alpha-chymotrypsin molecule; remove duplicate enzyme copy.",HIGH
