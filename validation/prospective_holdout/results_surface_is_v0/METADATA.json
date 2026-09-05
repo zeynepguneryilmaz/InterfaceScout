@@ -1,0 +1,7 @@
+{
+  "protocol": "SURFACE_IS_PROTOCOL_V0",
+  "model_status": "exploratory; frozen IS-v1 unchanged",
+  "sasa_points": 200,
+  "probe_A": 1.4,
+  "surface_arm": "H-stripped exposed heavy atoms; functional-group SASA; 5/8A persistence"
+}
