@@ -28,3 +28,4 @@ jobs:
           git commit -m 'Add GB3 frozen experimental holdout result' || exit 0
           git pull --rebase origin validation-study
           git push origin validation-study
+# diagnostic rerun after exposure-audit instrumentation
