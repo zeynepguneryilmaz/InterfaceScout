@@ -1,0 +1,34 @@
+{
+  "freeze_version": "IS-v1-primary-score-freeze",
+  "freeze_date": "2026-09-05",
+  "branch": "validation-study",
+  "status": "development model frozen; prospective validation pending",
+  "primary_score_name": "IS",
+  "primary_score_definition": "100 * min(normalized_patch_density_5A, normalized_patch_density_8A)",
+  "local_contribution": "I_chemistry * scRSA * f_state(pH)",
+  "parameters": {
+    "scRSA_threshold": 0.05,
+    "SASA_probe_A": 1.4,
+    "SASA_points": 200,
+    "patch_radii_A": [5.0, 8.0],
+    "context_radius_A": 8.0
+  },
+  "primary_multipliers_excluded": ["GNM", "APBS", "radial_prominence", "RIN_degree", "RIN_closeness", "RIN_betweenness"],
+  "auxiliary_descriptors_retained": ["GNM_mobility", "APBS_phi", "APBS_chemistry_gated_compatibility", "radial_prominence", "RIN_degree", "RIN_closeness", "RIN_betweenness"],
+  "development_evidence": {
+    "primary_conditions": 12,
+    "unique_primary_proteins": 7,
+    "protein_clustered_bootstrap_B": 10000,
+    "protein_macro_median": {
+      "Core_AUROC": 0.7110694183864915,
+      "Core_AP": 0.2819989944358647,
+      "Core_Recall5": 0.14285714285714285,
+      "Core_Recall10": 0.3,
+      "Core_Recall20": 0.36363636363636365,
+      "Core_Spatial10A_top10": 0.6428571428571429,
+      "Core_median_nearest_top10_A": 7.1760270395510934
+    }
+  },
+  "reason_for_parsimony": "GNM marginally raises protein-macro AUROC but degrades AP/early/spatial recovery; APBS is case-specific and not globally beneficial; radial/RIN fail broader protein-level generalization and can erode chemistry specificity in the intentional wrong-chemistry negative control.",
+  "prospective_holdout_policy": "No formula, parameter, chemistry-rule or cutoff changes after holdout outcomes are inspected. Any change requires a new model version and a new untouched holdout."
+}
