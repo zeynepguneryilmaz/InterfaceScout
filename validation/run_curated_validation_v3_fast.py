@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 # Reuse the source-corrected benchmark definitions, structure filters, metrics, GNM/RIN implementation.
-ns={}
+ns={'__file__':'validation/run_curated_validation_v2.py','__name__':'curated_v2_definitions'}
 src=Path('validation/run_curated_validation_v2.py').read_text()
 exec(src.split('# Structure QC before metrics.')[0],ns)
 
@@ -25,7 +25,6 @@ def basic_env(pid,ph):
 def charged_env(pid,ph,ionic,temp):
  key=(pid,ph,ionic,temp)
  if key in CHARGED:return CHARGED[key]
- # Rebuild because APBS attaches phi to residue dictionaries.
  old=ism.SASA_POINTS;ism.SASA_POINTS=SASA_POINTS
  try:
   _,res,atoms,_=ism.build_surface_residues(getpdb(pid),ph);e=ism.EnvParams(pH=ph,ionic=ionic,temp=temp)
@@ -60,7 +59,6 @@ def evaluate(case,role):
   s=df[method].to_numpy(float);o=np.argsort(-s,kind='stable');top=df.key.iloc[o[:10]].tolist();rows.append({'condition_id':case['id'],'protein':case['protein'],'pdb':case['pdb'],'role':role,'method':method,'ionic_mM':case['ionic'],'pH':case['pH'],'n_surface':len(df),'n_truth_requested':len(truth),'n_truth_mapped':int(y.sum()),'AUROC':auc(y,s),'AP':ap(y,s),'Recall@5':recall(y,s,5),'Recall@10':recall(y,s,10),'Recall@20':recall(y,s,20),'Spatial@5A_top10':spatial(truthkeys,top,coords,5),'Spatial@8A_top10':spatial(truthkeys,top,coords,8),'Spatial@10A_top10':spatial(truthkeys,top,coords,10),'median_nearest_top10_A':nearest(truthkeys,top,coords),'apbs_status':status,'apbs_used':apbs_used,'source':case['source'],'note':case.get('condition_note',case.get('note',''))})
  df['condition_id']=case['id'];df['protein']=case['protein'];df['role']=role;df['truth']=y;return rows,df
 
-# Structure QC.
 qc=[]
 for pid in ns['CHAIN_RULES']:
  st,n=structure(pid);p=getpdb(pid);s=ns['PDBParser'](QUIET=True).get_structure(pid,str(p));m=next(s.get_models());chains=sorted({c.id for c in m});seqs=[int(r.id[1]) for c in m for r in c if ns['is_aa'](r,standard=True)]
