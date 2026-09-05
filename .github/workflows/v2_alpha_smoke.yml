@@ -1,0 +1,28 @@
+name: V2 alpha smoke
+on:
+  push:
+    paths:
+      - '.github/workflows/v2_alpha_smoke.yml'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r backend/requirements.txt
+      - name: Smoke test
+        run: python -m backend.v2.smoke_test
+      - name: Real GB3 test
+        run: |
+          PYTHONPATH=backend python - <<'PY'
+          from v2.engine import analyze_v2
+          r=analyze_v2(surface='citrate_au',pdb_id='2OED',chain='A',pH=7.4,top_n=3)
+          print('ENGINE',r['engine'])
+          print('N_CANDIDATES',r['n_candidate_patch_centers'])
+          print('TOP',[(x['center_key'],x['score']) for x in r['top_patches']])
+          assert r['top_patches']
+          PY
