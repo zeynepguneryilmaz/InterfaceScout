@@ -1,6 +1,11 @@
 name: Method validation audit
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'validation/**'
+      - '.github/workflows/method-validation.yml'
   push:
     branches: [validation-study]
     paths:
@@ -28,6 +33,7 @@ jobs:
       - name: Run method validation
         run: python validation/run_method_validation.py
       - name: Commit validation outputs
+        if: github.event_name == 'push'
         run: |
           git config user.name 'InterfaceScout validation bot'
           git config user.email 'validation@interfacescout.local'
@@ -38,3 +44,8 @@ jobs:
             git commit -m 'Add method validation results'
             git push origin validation-study
           fi
+      - name: Upload validation outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: method-validation-results
+          path: validation/results
