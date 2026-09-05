@@ -1,0 +1,9 @@
+{
+  "protocol": "GNM_RIN_RESCUE_PROTOCOL_V1",
+  "model_status": "exploratory; frozen IS-v1-Core-primary unchanged",
+  "SASA_POINTS": 200,
+  "GNM_cutoff_A": 10.0,
+  "RIN_cutoff_A": 8.0,
+  "rescue_floor_scrsa": 0.05,
+  "rules": "top quartile GNM; bottom quartile RIN degree; conjunction for combined rescue"
+}
