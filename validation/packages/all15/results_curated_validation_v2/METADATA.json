@@ -1,0 +1,25 @@
+{
+  "version": "curated-validation-v2",
+  "date": "2026-09-05",
+  "primary_conditions": 12,
+  "primary_unique_proteins": 7,
+  "stress_conditions": 3,
+  "negative_controls": 1,
+  "SASA_POINTS": 200,
+  "GNM_cutoff_A": 10.0,
+  "RIN_cutoff_A": 8.0,
+  "construct_corrections": {
+    "1FNF": "chain A residues 1236-1509",
+    "2HG0": "chain A PDB residues 8-109"
+  },
+  "FN_source": "doi:10.3390/ijms19113321",
+  "FN_ionic_mM": {
+    "COO": 1000,
+    "NH3": 800,
+    "CH3": 50
+  },
+  "PLOS_pH": 7.4,
+  "WNV_truth": "PDB 55-61,106-109 corresponding original E 346-352,397-400 >35% contact regions",
+  "RNase4_truth": "15,16,17,18,21,50,51,52,53,55",
+  "interpretation": "Model-development evidence, not prospective independent validation. No fitted coefficients. Protein-clustered summaries treat repeated conditions within one protein as non-independent."
+}

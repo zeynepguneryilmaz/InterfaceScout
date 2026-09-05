@@ -1,0 +1,8 @@
+pdb,chains,n_CA,min_resseq,max_resseq,range_rule
+1FNF,A,274,1236,1509,"(1236, 1509)"
+3NWV,A,104,1,104,all
+1LYZ,A,129,1,129,all
+4CHA,A;B;C,239,1,245,all
+1MBN,A,153,1,153,all
+2HG0,A,102,8,109,"(8, 109)"
+7RSA,A,124,1,124,all
