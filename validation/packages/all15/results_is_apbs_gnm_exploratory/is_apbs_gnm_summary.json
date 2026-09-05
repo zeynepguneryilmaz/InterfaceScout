@@ -1,0 +1,112 @@
+{
+  "design": {
+    "gnm_cutoff_A": 10.0,
+    "sasa_points": 120,
+    "ionic_strength_mM": 150.0,
+    "temperature_K": 298.0,
+    "APBS_rule": "anionic uses max(+phi,0); cationic uses max(-phi,0); non-electrostatic chemistries use neutral factor 1",
+    "combination": "average-tie percentile-rank products; no fitted coefficients"
+  },
+  "all_conditions_median": {
+    "IS_static": {
+      "AUROC": 0.5968319807916413,
+      "AP": 0.08200633261489151,
+      "Recall@5": 0.0,
+      "Recall@10": 0.0,
+      "Recall@20": 0.2792207792207792
+    },
+    "IS_x_APBS": {
+      "AUROC": 0.6165099121303501,
+      "AP": 0.0856216028051986,
+      "Recall@5": 0.0,
+      "Recall@10": 0.17857142857142855,
+      "Recall@20": 0.2857142857142857
+    },
+    "IS_x_GNM": {
+      "AUROC": 0.6845994577308911,
+      "AP": 0.0897464413323093,
+      "Recall@5": 0.0,
+      "Recall@10": 0.05,
+      "Recall@20": 0.24285714285714285
+    },
+    "IS_x_GNM_x_APBS": {
+      "AUROC": 0.6894973389538608,
+      "AP": 0.12314129487559078,
+      "Recall@5": 0.0,
+      "Recall@10": 0.10555555555555556,
+      "Recall@20": 0.34523809523809523
+    }
+  },
+  "all_conditions_mean": {
+    "IS_static": {
+      "AUROC": 0.5907404812729119,
+      "AP": 0.1360571659227435,
+      "Recall@5": 0.055054945054945056,
+      "Recall@10": 0.18989010989010988,
+      "Recall@20": 0.2782617382617382
+    },
+    "IS_x_APBS": {
+      "AUROC": 0.603902098927139,
+      "AP": 0.17497604600973896,
+      "Recall@5": 0.15505494505494505,
+      "Recall@10": 0.2541758241758242,
+      "Recall@20": 0.3282617382617382
+    },
+    "IS_x_GNM": {
+      "AUROC": 0.6802127542164997,
+      "AP": 0.1530629068549295,
+      "Recall@5": 0.04925074925074925,
+      "Recall@10": 0.09233988233988234,
+      "Recall@20": 0.22815850815850816
+    },
+    "IS_x_GNM_x_APBS": {
+      "AUROC": 0.6916716843697512,
+      "AP": 0.17088777331765886,
+      "Recall@5": 0.14925074925074924,
+      "Recall@10": 0.19233988233988236,
+      "Recall@20": 0.3567299367299367
+    }
+  },
+  "charged_conditions_median": {
+    "IS_static": {
+      "AUROC": 0.6066090699482926,
+      "AP": 0.08786112126754295,
+      "Recall@5": 0.0,
+      "Recall@10": 0.10714285714285714,
+      "Recall@20": 0.2857142857142857
+    },
+    "IS_x_APBS": {
+      "AUROC": 0.6619040797486027,
+      "AP": 0.14481861819035788,
+      "Recall@5": 0.07142857142857142,
+      "Recall@10": 0.35714285714285715,
+      "Recall@20": 0.39285714285714285
+    },
+    "IS_x_GNM": {
+      "AUROC": 0.7270841007590124,
+      "AP": 0.05980898752159111,
+      "Recall@5": 0.0,
+      "Recall@10": 0.0,
+      "Recall@20": 0.07142857142857142
+    },
+    "IS_x_GNM_x_APBS": {
+      "AUROC": 0.7504809200922276,
+      "AP": 0.16225367011511588,
+      "Recall@5": 0.07142857142857142,
+      "Recall@10": 0.14285714285714285,
+      "Recall@20": 0.4285714285714286
+    }
+  },
+  "apbs_statuses": {
+    "FN_COO": "APBS_LinearPB_auxiliary",
+    "FN_NH3": "APBS_LinearPB_auxiliary",
+    "FN_CH3_HEAD": "APBS_LinearPB_auxiliary",
+    "FN_CH3_SIDE": "APBS_LinearPB_auxiliary",
+    "FN_CH3_BETA": "APBS_LinearPB_auxiliary",
+    "CYTC_CH3": "APBS_LinearPB_auxiliary",
+    "CYTC_COOH": "APBS_LinearPB_auxiliary",
+    "LYZ_SWCNT": "APBS_LinearPB_auxiliary",
+    "CHT_CNT_HYDRO": "APBS_LinearPB_auxiliary",
+    "MB_CIT_AUNP": "APBS_LinearPB_auxiliary"
+  }
+}
