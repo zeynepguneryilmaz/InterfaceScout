@@ -1,0 +1,29 @@
+{
+  "n_conditions_run": 11,
+  "n_primary_conditions": 10,
+  "n_unique_proteins": 5,
+  "condition_macro_medians": {
+    "AUROC": 0.6052675875784732,
+    "AP": 0.08217326459638308,
+    "Recall@5": 0.0,
+    "Recall@10": 0.0,
+    "Recall@20": 0.2792207792207792,
+    "Spatial@5A_top10": 0.14285714285714285,
+    "Spatial@8A_top10": 0.21428571428571427,
+    "Spatial@10A_top10": 0.4642857142857143,
+    "median_nearest_top10_patch_A": 11.729440811397915,
+    "permutation_p": 0.28527147285271476
+  },
+  "protein_macro_medians": {
+    "AUROC": 0.6548701298701298,
+    "AP": 0.19322003612129907,
+    "Recall@5": 0.1,
+    "Recall@10": 0.21428571428571427,
+    "Recall@20": 0.2857142857142857,
+    "Spatial@5A_top10": 0.2857142857142857,
+    "Spatial@8A_top10": 0.2857142857142857,
+    "Spatial@10A_top10": 0.6428571428571429,
+    "median_nearest_top10_patch_A": 8.963285002398452,
+    "permutation_p": 0.012198780121987801
+  }
+}
