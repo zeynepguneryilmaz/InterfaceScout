@@ -1,0 +1,35 @@
+condition_id,protein,pdb,surface_or_condition,chemistry_channel,tier,ground_truth_type,ground_truth_status,analysis_role,package_status
+BSA_TIO2,BSA,4F5S,TiO2,oxide,Tier1-candidate,residue-level literature anchors,PENDING_AUDIT,full-package only,planned
+BSA_SILICA,BSA,4F5S,silica,oxide_or_hbond,Tier1-candidate,residue-level literature anchors,PENDING_AUDIT,full-package only,planned
+BSA_GRAPHITIC,BSA,4F5S,graphitic carbon,pi_carbon_or_hydrophobic,Tier1-candidate,residue-level literature anchors,PENDING_AUDIT,full-package only,planned
+FN_COO,Fibronectin III8-10,1FNF,COO- SAM,anionic,Tier1,final anchor residue,READY,quantitative primary,ready
+FN_NH3,Fibronectin III8-10,1FNF,NH3+ SAM,cationic,Tier1,final anchor residues,READY,quantitative primary,ready
+FN_CH3_HEAD,Fibronectin III8-10,1FNF,CH3 SAM head-on,hydrophobic,Tier1,orientation-specific explicit contacts,READY,quantitative primary mode,ready
+FN_CH3_SIDE,Fibronectin III8-10,1FNF,CH3 SAM side-on,hydrophobic,Tier1,orientation-specific explicit contacts,READY,quantitative primary mode,ready
+FN_CH3_BETA,Fibronectin III8-10,1FNF,CH3 SAM beta-on,hydrophobic,Tier1,orientation-specific explicit contacts,READY,quantitative primary mode,ready
+FN_OH,Fibronectin III8-10,1FNF,OH SAM,hbond_donor_acceptor,Tier1-candidate,explicit contact patch,READY_CHEMISTRY_AUDIT_REQUIRED,quantitative after H-bond semantic freeze,blocked
+CYTC_CH3,Cytochrome c,3NWV,CH3-functionalized silica,hydrophobic,Tier1,explicit residue contacts,READY,quantitative primary,ready
+CYTC_COOH,Cytochrome c,3NWV,COOH-functionalized silica,anionic,Tier1,explicit residue contacts,READY,quantitative primary,ready
+CYTC_OH,Cytochrome c,3NWV,OH-functionalized silica,hbond_donor_acceptor,Tier1-candidate,explicit residue contacts,READY_CHEMISTRY_AUDIT_REQUIRED,quantitative after H-bond semantic freeze,blocked
+CYTC_NH2,Cytochrome c,3NWV,NH2-functionalized silica,cationic_or_hbond,Tier1-candidate,reported binding pattern,PENDING_EXHAUSTIVE_GT_AUDIT,quantitative only if exhaustive contacts recoverable,pending
+CYTC_SILICA_4NM,Cytochrome c,3NWV,4-nm silica,oxide,Tier3,explicit residue contacts,READY,curvature stress test,ready
+CYTC_SILICA_11NM,Cytochrome c,3NWV,11-nm silica,oxide,Tier3,explicit residue contacts,READY,curvature stress test,ready
+LYZ_SWCNT,Lysozyme,1LYZ,SWCNT,pi_carbon,Tier1,14 explicit MD contact residues,READY,quantitative full-package,computed
+CHT_CNT_HYDRO,Alpha-chymotrypsin,4CHA,CNT,hydrophobic,Tier1,per-residue favorable binding contributors,READY,quantitative primary,computed
+CHT_CNT_PI_NEG,Alpha-chymotrypsin,4CHA,CNT,pi_carbon,Negative-control,same ground truth under mismatched chemistry,READY,chemistry-specificity negative control,computed
+MB_CIT_AUNP,Myoglobin,1MBN,citrate-capped AuNP,anionic,Tier1,persistent CG-MD binding residues,READY,quantitative primary,ready
+HB_CIT_AUNP,Hemoglobin,2HHB,citrate-capped AuNP,anionic,Tier1-candidate,persistent CG-MD binding regions,PENDING_EXACT_RESIDUE_AUDIT,quantitative if exact persistent residues recoverable,pending
+TRP_CIT_AUNP,Trypsin,2PTN,citrate-capped AuNP,anionic,Tier1-candidate,persistent CG-MD binding regions,PENDING_EXACT_RESIDUE_AUDIT,quantitative if exact persistent residues recoverable,pending
+RNASE_SILICA_4NM,RNase A,7RSA,4-nm silica,oxide,Tier1-candidate,explicit residue contacts,PENDING_SOURCE_RECHECK,quantitative primary candidate,pending
+RNASE_SILICA_11NM,RNase A,7RSA,11-nm silica,oxide,Tier3,explicit residue contacts,PENDING_SOURCE_RECHECK,curvature stress test,pending
+RNASE_COOH_SAM,RNase A,7RSA,COOH SAM,anionic,Tier2,preferred orientation,READY,orientation/spatial,ready
+RNASE_NH2_SAM,RNase A,7RSA,NH2 SAM,cationic,Tier2,preferred orientation,READY,orientation/spatial,ready
+ACHE_COOH_SAM,Acetylcholinesterase,1EEA,COOH SAM,anionic,Tier2,preferred orientation and active-site accessibility,READY,orientation/spatial,ready
+ACHE_NH2_SAM,Acetylcholinesterase,1EEA,NH2 SAM,cationic,Tier2,preferred orientation and active-site accessibility,READY,orientation/spatial,ready
+ACHE_CIT_AUNP,Acetylcholinesterase,1EEA,citrate-capped AuNP,anionic,Tier2,experimental activity/orientation evidence,READY,orientation/activity sensitivity,ready
+WNV_GRAPHENE,WNV E protein domain III,2HG0,graphene,pi_carbon,Tier1,explicit contacts plus residue contact frequency,READY,quantitative plus Spearman,ready
+GB3_CIT_AUNP,GB3 / Protein G B1,2OED,citrate-capped AuNP,anionic,Tier2,experimentally supported orientation,READY,orientation/spatial,ready
+PK_CIT_AUNP,Proteinase K,5B1E,citrate-capped AuNP,anionic,Tier2,experimentally tested orientation/activity,READY,orientation/activity,ready
+CA2_CIT_AUNP,Carbonic anhydrase II,1CA2,citrate-capped AuNP,anionic,Tier2,experimentally tested orientation/activity,READY,orientation/activity,ready
+FIB_CIT_AUNP,Fibrinogen,3GHG,citrate-capped AuNP,anionic,Tier2,experimental orientation/activity context,READY,orientation/spatial,ready
+FIB_GRAPHENE,Fibrinogen,3GHG,graphene,pi_carbon_or_hydrophobic,Tier2-candidate,mechanistic/spatial MD evidence,PENDING_GT_AUDIT,qualitative/spatial only unless explicit contacts recovered,pending
