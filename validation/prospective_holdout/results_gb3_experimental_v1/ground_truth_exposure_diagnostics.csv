@@ -1,0 +1,4 @@
+key,res_name,res_seq,sidechain_sasa,scrsa_raw,scrsa,surface_exposed
+A:4:,LYS,4,3.452,0.02124,0.02124,False
+A:13:,LYS,13,2.848,0.01753,0.01753,False
+A:50:,LYS,50,2.962,0.01823,0.01823,False
