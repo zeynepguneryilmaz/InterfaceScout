@@ -1,0 +1,14 @@
+{
+  "date": "2026-09-05",
+  "canonical_sasa_points": 200,
+  "gnm_cutoff_A": 10.0,
+  "rin_cutoff_A": 8.0,
+  "default_ionic_mM_for_unspecified_sources": 150.0,
+  "n_registry_conditions": 34,
+  "n_full_proteins": 15,
+  "n_quantitative_primary_conditions": 11,
+  "n_quantitative_primary_proteins": 6,
+  "negative_controls": 1,
+  "WNV_mapping": "2HG0 PDB residues 8-109 = original E residues 299-400; frequent-contact GT PDB 55-61 and 106-109 = original 346-352 and 397-400",
+  "important": "This is model-development evidence because benchmark outcomes were inspected before feature freeze. Conditions with non-source-frozen pH/ionic strength remain developmental, not final independent validation."
+}

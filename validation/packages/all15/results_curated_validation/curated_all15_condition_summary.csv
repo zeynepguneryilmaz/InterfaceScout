@@ -1,0 +1,43 @@
+condition_id,protein,pdb,channel_variant,n_surface,pH,pH_status,apbs_status,apbs_used,top10
+BSA_TIO2,BSA,4F5S,oxide,474,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,A:562:;A:363:;A:1:;A:561:;A:364:;A:2:;A:541:;A:560:;A:306:;A:171:
+BSA_SILICA,BSA,4F5S,oxide,474,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,A:562:;A:363:;A:1:;A:561:;A:364:;A:2:;A:541:;A:560:;A:306:;A:171:
+BSA_SILICA,BSA,4F5S,hbond_donor,474,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,A:562:;A:541:;A:171:;A:363:;A:2:;A:364:;A:503:;A:362:;A:306:;A:561:
+BSA_SILICA,BSA,4F5S,hbond_acceptor,474,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,A:2:;A:580:;A:3:;A:579:;A:503:;A:573:;A:577:;A:504:;A:374:;A:576:
+BSA_GRAPHITIC,BSA,4F5S,pi_carbon,474,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,A:2:;A:3:;A:503:;A:504:;A:374:;A:573:;A:500:;A:313:;A:312:;A:4:
+BSA_GRAPHITIC,BSA,4F5S,hydrophobic,474,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,A:569:;A:576:;A:573:;A:552:;A:560:;A:302:;A:555:;A:559:;A:577:;A:568:
+FN_COO,Fibronectin III8-10,1FNF,anionic,282,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,True,A:1430:;A:1476:;A:1223:;A:1478:;A:1220:;A:1479:;A:1459:;A:1497:;A:1469:;A:1477:
+FN_NH3,Fibronectin III8-10,1FNF,cationic,282,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,True,A:1221:;A:1222:;A:1457:;A:1148:;A:1171:;A:1495:;A:1453:;A:1432:;A:1197:;A:1458:
+FN_CH3_HEAD,Fibronectin III8-10,1FNF,hydrophobic,282,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,A:1142:;A:1430:;A:1431:;A:1429:;A:1427:;A:1458:;A:1459:;A:1480:;A:1478:;A:1479:
+FN_CH3_SIDE,Fibronectin III8-10,1FNF,hydrophobic,282,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,A:1142:;A:1430:;A:1431:;A:1429:;A:1427:;A:1458:;A:1459:;A:1480:;A:1478:;A:1479:
+FN_CH3_BETA,Fibronectin III8-10,1FNF,hydrophobic,282,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,A:1142:;A:1430:;A:1431:;A:1429:;A:1427:;A:1458:;A:1459:;A:1480:;A:1478:;A:1479:
+FN_OH,Fibronectin III8-10,1FNF,hbond_donor,282,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,A:1222:;A:1221:;A:1223:;A:1457:;A:1170:;A:1456:;A:1432:;A:1220:;A:1476:;A:1169:
+FN_OH,Fibronectin III8-10,1FNF,hbond_acceptor,282,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,A:1430:;A:1476:;A:1169:;A:1168:;A:1432:;A:1475:;A:1222:;A:1429:;A:1457:;A:1477:
+CYTC_CH3,Cytochrome c,3NWV,hydrophobic,96,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,A:45:;A:50:;A:44:;A:76:;A:12:;A:4:;A:77:;A:49:;A:83:;A:2:
+CYTC_COOH,Cytochrome c,3NWV,anionic,96,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,True,A:87:;A:86:;A:76:;A:88:;A:73:;A:23:;A:8:;A:27:;A:50:;A:5:
+CYTC_OH,Cytochrome c,3NWV,hbond_donor,96,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,A:87:;A:4:;A:86:;A:88:;A:50:;A:89:;A:54:;A:5:;A:104:;A:23:
+CYTC_OH,Cytochrome c,3NWV,hbond_acceptor,96,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,A:87:;A:23:;A:50:;A:86:;A:76:;A:54:;A:88:;A:47:;A:4:;A:73:
+CYTC_NH2,Cytochrome c,3NWV,cationic,96,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,True,A:4:;A:104:;A:47:;A:2:;A:54:;A:89:;A:62:;A:16:;A:46:;A:21:
+CYTC_NH2,Cytochrome c,3NWV,hbond_donor,96,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,A:87:;A:4:;A:86:;A:88:;A:50:;A:89:;A:54:;A:5:;A:104:;A:23:
+CYTC_NH2,Cytochrome c,3NWV,hbond_acceptor,96,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,A:87:;A:23:;A:50:;A:86:;A:76:;A:54:;A:88:;A:47:;A:4:;A:73:
+CYTC_SILICA_4NM,Cytochrome c,3NWV,oxide,96,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,A:4:;A:47:;A:89:;A:104:;A:2:;A:50:;A:88:;A:5:;A:45:;A:22:
+CYTC_SILICA_11NM,Cytochrome c,3NWV,oxide,96,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,A:4:;A:47:;A:89:;A:104:;A:2:;A:50:;A:88:;A:5:;A:45:;A:22:
+LYZ_SWCNT,Lysozyme,1LYZ,pi_carbon,95,7.4,source-matched,APBS_LinearPB_auxiliary,False,A:128:;A:126:;A:129:;A:22:;A:113:;A:14:;A:46:;A:73:;A:67:;A:125:
+CHT_CNT_HYDRO,Alpha-chymotrypsin,4CHA,hydrophobic,161,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,C:244:;C:243:;C:245:;B:97:;C:149:;B:38:;C:150:;B:98:;B:131:;B:127:
+CHT_CNT_PI_NEG,Alpha-chymotrypsin,4CHA,pi_carbon,161,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,C:170:;B:37:;B:36:;C:174:;C:173:;B:79:;C:171:;B:78:;C:204:;C:169:
+MB_CIT_AUNP,Myoglobin,1MBN,anionic,124,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,True,A:96:;A:50:;A:150:;A:147:;A:47:;A:98:;A:149:;A:78:;A:57:;A:120:
+HB_CIT_AUNP,Hemoglobin,2HHB,anionic,453,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,True,B:5:;D:5:;D:58:;B:58:;B:16:;B:17:;A:4:;B:120:;D:120:;D:16:
+TRP_CIT_AUNP,Trypsin,2PTN,anionic,153,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,True,A:148:;A:109:;A:169:;A:111:;A:222:;A:243:;A:239:;A:62:;A:92:;A:87:
+RNASE_SILICA_4NM,RNase A,7RSA,oxide,62,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,A:88:;A:113:;A:38:;A:114:;A:89:;A:39:;A:22:;A:21:;A:77:;A:52:
+RNASE_SILICA_11NM,RNase A,7RSA,oxide,62,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,A:88:;A:113:;A:38:;A:114:;A:89:;A:39:;A:22:;A:21:;A:77:;A:52:
+RNASE_COOH_SAM,RNase A,7RSA,anionic,62,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,True,A:88:;A:89:;A:64:;A:22:;A:69:;A:38:;A:21:;A:70:;A:77:;A:39:
+RNASE_NH2_SAM,RNase A,7RSA,cationic,62,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,True,A:113:;A:38:;A:69:;A:53:;A:23:;A:24:;A:111:;A:21:;A:94:;A:70:
+ACHE_COOH_SAM,Acetylcholinesterase,1EEA,anionic,319,7.0,source-matched,APBS_LinearPB_auxiliary,True,A:498:;A:107:;A:56:;A:54:;A:53:;A:530:;A:491:;A:52:;A:257:;A:13:
+ACHE_NH2_SAM,Acetylcholinesterase,1EEA,cationic,319,7.0,source-matched,APBS_LinearPB_auxiliary,True,A:380:;A:381:;A:261:;A:342:;A:253:;A:369:;A:4:;A:25:;A:24:;A:383:
+ACHE_CIT_AUNP,Acetylcholinesterase,1EEA,anionic,319,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,True,A:498:;A:107:;A:56:;A:54:;A:53:;A:530:;A:491:;A:52:;A:257:;A:13:
+WNV_GRAPHENE,WNV E protein domain III,2HG0,pi_carbon,99,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,False,A:37:;A:36:;A:38:;A:101:;A:102:;A:35:;A:39:;A:19:;A:107:;A:105:
+GB3_CIT_AUNP,GB3 / Protein G B1,2OED,anionic,30,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,True,A:48:;A:11:;A:49:;A:21:;A:24:;A:38:;A:56:;A:25:;A:42:;A:47:
+PK_CIT_AUNP,Proteinase K,5B1E,anionic,168,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,True,A:259:;A:241:;A:19:;A:215:;A:242:;A:18:;A:124:;A:4:;A:62:;A:139:
+CA2_CIT_AUNP,Carbonic anhydrase II,1CA2,anionic,170,7.0,development-assumption-not-source-frozen,APBS_LinearPB_auxiliary,True,A:42:;A:9:;A:127:;A:39:;A:45:;A:18:;A:151:;A:252:;A:46:;A:111:
+FIB_CIT_AUNP,Fibrinogen,3GHG,anionic,2988,7.0,development-assumption-not-source-frozen,pdb2pqr_only,False,L:356:;L:357:;B:232:;K:232:;C:357:;L:355:;K:233:;C:355:;B:233:;C:356:
+FIB_GRAPHENE,Fibrinogen,3GHG,pi_carbon,2988,7.0,development-assumption-not-source-frozen,pdb2pqr_only,False,L:303:;C:303:;L:322:;L:302:;L:294:;L:300:;L:321:;C:302:;L:362:;L:356:
+FIB_GRAPHENE,Fibrinogen,3GHG,hydrophobic,2988,7.0,development-assumption-not-source-frozen,pdb2pqr_only,False,C:393:;C:241:;L:393:;C:394:;L:300:;L:241:;C:242:;L:242:;L:394:;L:271:
