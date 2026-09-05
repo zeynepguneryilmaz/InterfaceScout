@@ -1,30 +1,22 @@
-# InterfaceScout external validation package — Strict unseen sensitivity set
+# InterfaceScout external validation package — Strict unseen prospective holdout
 
-This package is the sensitivity/generalization subset of the full 15-protein validation package. It excludes proteins explicitly used during InterfaceScout development or previously inspected in development-facing analyses.
+This package is reserved for a true prospective holdout analysis after the InterfaceScout chemistry ontology, pKa source, preprocessing rules and scoring implementation are frozen.
 
-## Excluded from strict-unseen sensitivity statistics
-- BSA
-- Lysozyme
+## Critical provenance rule
+Any protein or condition whose literature ground truth, contact residues, orientation outcome or validation result has already been inspected during model development or benchmark design is excluded from this strict holdout package, even if that protein was not used to fit numerical parameters.
 
-## Included proteins
-- Fibronectin III8-10
-- Cytochrome c
-- Alpha-chymotrypsin
-- Myoglobin
-- Hemoglobin
-- Trypsin
-- RNase A
-- Acetylcholinesterase
-- WNV E protein domain III
-- GB3 / Protein G B1
-- Proteinase K
-- Carbonic anhydrase II
-- Fibrinogen
+Because the current 15-protein literature panel has already been inspected to varying degrees while designing the benchmark, it belongs to the All-15 external validation package and must not be relabeled as strict blind validation.
 
-This yields 13 unique proteins before any later provenance-driven exclusion.
+## Current status
+No protein is yet admitted to the strict prospective holdout set.
+
+## Admission criteria after freeze
+- previously uninspected protein-surface condition;
+- exact PDB or defensible sequence-to-structure mapping;
+- published residue-level, spatial, orientation, or continuous-contact ground truth defined before InterfaceScout scoring is examined;
+- surface chemistry maps unambiguously to the frozen InterfaceScout ontology;
+- no benchmark-specific parameter or chemistry-map tuning;
+- preprocessing rules fixed in advance, including MODEL selection and biologically required chains.
 
 ## Statistical policy
-- Same frozen InterfaceScout parameters as the All-15 package.
-- No benchmark-specific tuning.
-- Per-condition metrics are identical to the full package where ground truth permits.
-- Summary statistics use condition-level macro summaries with protein-clustered bootstrap confidence intervals and leave-one-protein-out sensitivity analysis.
+The future holdout will use the same frozen scoring implementation and metrics as the All-15 package. Results will be reported without retuning, including failures, with per-condition metrics plus protein-clustered summary confidence intervals when sample size permits.
