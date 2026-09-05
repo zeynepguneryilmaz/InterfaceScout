@@ -1,0 +1,41 @@
+name: One-shot curated validation v3 fast
+
+on:
+  push:
+    branches: [validation-study]
+    paths:
+      - '.github/workflows/one-shot-curated-validation-v3-fast.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: validation-study
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apbs
+          pip install numpy pandas scipy biopython fastapi pydantic pdb2pqr
+      - name: Run curated validation v3 fast
+        run: python validation/run_curated_validation_v3_fast.py
+      - name: Commit results
+        run: |
+          git config user.name 'InterfaceScout validation bot'
+          git config user.email 'validation@interfacescout.local'
+          git add validation/packages/all15/results_curated_validation_v3_fast
+          if git diff --cached --quiet; then
+            echo 'No result changes'
+          else
+            git commit -m 'Add optimized curated validation v3 results'
+            git pull --rebase origin validation-study
+            git push origin validation-study
+          fi
