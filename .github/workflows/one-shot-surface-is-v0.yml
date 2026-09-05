@@ -1,0 +1,29 @@
+name: one-shot Surface-IS v0
+on:
+  push:
+    branches: [validation-study]
+    paths:
+      - '.github/workflows/one-shot-surface-is-v0.yml'
+      - 'validation/run_surface_is_v0.py'
+permissions:
+  contents: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: validation-study
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install numpy pandas scipy biopython fastapi pydantic
+      - run: python validation/run_surface_is_v0.py
+      - name: commit results
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add validation/prospective_holdout/results_surface_is_v0
+          git commit -m 'Add Surface-IS V0 exploratory results' || exit 0
+          git pull --rebase origin validation-study
+          git push origin validation-study
