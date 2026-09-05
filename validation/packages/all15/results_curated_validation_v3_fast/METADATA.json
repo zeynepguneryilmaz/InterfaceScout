@@ -1,0 +1,16 @@
+{
+  "version": "v3-fast-scientifically-equivalent-primary",
+  "primary_conditions": 12,
+  "primary_proteins": 7,
+  "stress_conditions": 3,
+  "negative_controls": 1,
+  "SASA_POINTS": 200,
+  "GNM_cutoff_A": 10.0,
+  "RIN_cutoff_A": 8.0,
+  "APBS_policy": "run only for chemistry channels with expected electrostatic sign; neutral/not run for hydrophobic, pi-carbon, oxide",
+  "FN": "1FNF A:1236-1509; pH7; COO 1M; NH3 0.8M; CH3 0.05M; 300K",
+  "WNV": "2HG0 A:8-109; frequent-contact GT 55-61,106-109",
+  "PLOS": "Cyt-c/RNase pH7.4 source-aligned",
+  "statistical_unit": "protein; repeated conditions within protein summarized before macro inference",
+  "status": "development benchmark, not prospective validation"
+}
