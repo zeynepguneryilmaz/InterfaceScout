@@ -1,0 +1,38 @@
+name: One-shot IS APBS GNM ablation
+
+on:
+  push:
+    branches: [validation-study]
+    paths:
+      - '.github/workflows/one-shot-is-apbs-gnm.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: validation-study
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy pandas scipy biopython fastapi pydantic pdb2pqr apbs-bin
+      - name: Run IS APBS GNM ablation
+        run: python validation/run_is_apbs_gnm_exploratory.py
+      - name: Commit results
+        run: |
+          git config user.name 'InterfaceScout validation bot'
+          git config user.email 'validation@interfacescout.local'
+          git add validation/packages/all15/results_is_apbs_gnm_exploratory
+          if git diff --cached --quiet; then
+            echo 'No result changes'
+          else
+            git commit -m 'Add IS APBS GNM exploratory results'
+            git push origin validation-study
+          fi
