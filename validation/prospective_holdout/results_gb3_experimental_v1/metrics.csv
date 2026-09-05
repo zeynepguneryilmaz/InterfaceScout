@@ -1,0 +1,2 @@
+candidate_id,protein,pdb,pH,chemistry,n_surface,n_truth_requested,n_truth_mapped,AUROC,AP,Recall@5,Recall@10,Recall@20,Spatial@5A_top10,Spatial@8A_top10,Spatial@10A_top10,median_nearest_top10_A,top10
+GB3_CIT_AUNP_MUT,GB3,2OED,7.0,anionic,30,3,0,,,,,,,,,,A:16:;A:17:;A:18:;A:11:;A:8:;A:55:;A:44:;A:56:;A:24:;A:25:

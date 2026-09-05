@@ -1,0 +1,7 @@
+{
+  "model": "IS-v1-Core-primary",
+  "ground_truth_frozen_before_scoring": true,
+  "SASA_POINTS": 200,
+  "source": "J Phys Chem C 2016 doi:10.1021/acs.jpcc.6b08469; K4/K13/K50 Ala variants significantly reduce GB3 adsorption to citrate-AuNP",
+  "note": "No model or GT changes after scoring."
+}
