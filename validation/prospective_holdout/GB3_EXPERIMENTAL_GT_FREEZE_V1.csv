@@ -1,0 +1,2 @@
+candidate_id,protein,pdb,chain,material,chemistry,pH,ground_truth_type,ground_truth_residues,source_reference,freeze_note
+GB3_CIT_AUNP_MUT,GB3,2OED,A,15-nm citrate-capped AuNP,anionic,7.0,experimental mutagenesis binding-site residues,"4;13;50","Electrostatic Interactions and Protein Competition Reveal a Dynamic Surface in Gold Nanoparticle-Protein Adsorption; experimental lysine-to-alanine mutagenesis identified K4 K13 K50 as the most disruptive binding-site residues","Frozen before IS scoring; no post-score editing."
