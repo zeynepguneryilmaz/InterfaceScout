@@ -1,0 +1,36 @@
+name: One-shot lightweight geometry ablation
+
+on:
+  push:
+    branches: [validation-study]
+    paths:
+      - '.github/workflows/one-shot-light-geometry.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: validation-study
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install numpy pandas scipy biopython
+      - name: Run lightweight geometry ablation
+        run: python validation/run_light_geometry_exploratory.py
+      - name: Commit results
+        run: |
+          git config user.name 'InterfaceScout validation bot'
+          git config user.email 'validation@interfacescout.local'
+          git add validation/packages/all15/results_light_geometry_exploratory
+          if git diff --cached --quiet; then
+            echo 'No result changes'
+          else
+            git commit -m 'Add lightweight geometry ablation results'
+            git push origin validation-study
+          fi
