@@ -1,0 +1,16 @@
+protein,pdb,registry_conditions,computed_conditions,computed_channel_variants,all_registry_conditions_mappable
+Carbonic anhydrase II,1CA2,1,1,1,True
+Acetylcholinesterase,1EEA,3,3,3,True
+Fibronectin III8-10,1FNF,6,6,7,True
+Lysozyme,1LYZ,1,1,1,True
+Myoglobin,1MBN,1,1,1,True
+WNV E protein domain III,2HG0,1,1,1,True
+Hemoglobin,2HHB,1,1,1,True
+GB3 / Protein G B1,2OED,1,1,1,True
+Trypsin,2PTN,1,1,1,True
+Fibrinogen,3GHG,2,2,3,True
+Cytochrome c,3NWV,6,6,9,True
+Alpha-chymotrypsin,4CHA,2,2,2,True
+BSA,4F5S,3,3,6,True
+Proteinase K,5B1E,1,1,1,True
+RNase A,7RSA,4,4,4,True

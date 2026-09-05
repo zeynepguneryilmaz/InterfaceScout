@@ -1,0 +1,13 @@
+{
+  "n_registry_conditions": 34,
+  "n_proteins": 15,
+  "n_proteins_with_scores": 15,
+  "n_computed_condition_variants": 42,
+  "n_residue_score_rows": 20833,
+  "score_definition": "percentile(core patch persistence) * percentile(GNM mobility) * conditional percentile(APBS compatibility) * percentile(radial prominence), normalized to 0-100 within condition/channel",
+  "RIN_role": "computed/exported only; not in primary IS score",
+  "pH_policy": "LYZ_SWCNT 7.4 existing benchmark; others pH 7.0 screening assumption pending source-condition freeze",
+  "ionic_strength_mM": 150.0,
+  "sasa_points_exploratory": 120,
+  "apbs_cache": "once per protein/pH, reused across chemistry channels"
+}
