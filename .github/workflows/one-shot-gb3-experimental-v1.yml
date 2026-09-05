@@ -4,6 +4,7 @@ on:
     branches: [validation-study]
     paths:
       - '.github/workflows/one-shot-gb3-experimental-v1.yml'
+      - 'validation/run_gb3_experimental_holdout.py'
   workflow_dispatch:
 permissions:
   contents: write
