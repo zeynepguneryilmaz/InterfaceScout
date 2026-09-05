@@ -19,10 +19,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install dependencies
+      - name: Install APBS and Python dependencies
         run: |
+          sudo apt-get update
+          sudo apt-get install -y apbs
           python -m pip install --upgrade pip
-          pip install numpy pandas scipy biopython fastapi pydantic pdb2pqr apbs-bin
+          pip install numpy pandas scipy biopython fastapi pydantic pdb2pqr
       - name: Run IS APBS GNM ablation
         run: python validation/run_is_apbs_gnm_exploratory.py
       - name: Commit results
