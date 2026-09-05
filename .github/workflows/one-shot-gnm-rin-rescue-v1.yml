@@ -1,0 +1,31 @@
+name: one-shot GNM RIN rescue v1
+on:
+  push:
+    branches: [validation-study]
+    paths:
+      - '.github/workflows/one-shot-gnm-rin-rescue-v1.yml'
+      - 'validation/run_gnm_rin_rescue_v1.py'
+      - 'validation/prospective_holdout/GNM_RIN_RESCUE_PROTOCOL_V1.md'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: validation-study
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install numpy pandas scipy biopython fastapi pydantic
+      - run: python validation/run_gnm_rin_rescue_v1.py
+      - name: commit results
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add validation/prospective_holdout/results_gnm_rin_rescue_v1
+          git commit -m 'Add GNM RIN rescue ablation results' || exit 0
+          git pull --rebase origin validation-study
+          git push origin validation-study
