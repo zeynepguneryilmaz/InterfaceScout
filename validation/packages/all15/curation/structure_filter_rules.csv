@@ -1,0 +1,16 @@
+protein,pdb,chains,residue_filter,reason,confidence
+BSA,4F5S,A,all_standard_amino_acids,"Use one representative BSA monomer; remove duplicate crystal copy.",HIGH
+Fibronectin III8-10,1FNF,A,all_standard_amino_acids,"Benchmark construct is the deposited FNIII8-10 chain.",HIGH
+Cytochrome c,3NWV,A,all_standard_amino_acids,"Use one of four equivalent monomeric crystal copies.",HIGH
+Lysozyme,1LYZ,A,all_standard_amino_acids,"Monomeric benchmark target.",HIGH
+Alpha-chymotrypsin,4CHA,A;B;C,all_standard_amino_acids,"One proteolytically split alpha-chymotrypsin molecule; remove duplicate enzyme copy.",HIGH
+Myoglobin,1MBN,A,all_standard_amino_acids,"Monomeric benchmark target.",HIGH
+Hemoglobin,2HHB,A;B;C;D,all_standard_amino_acids,"Retain native alpha2-beta2 tetramer.",HIGH
+Trypsin,2PTN,A,all_standard_amino_acids,"Monomeric benchmark target.",HIGH
+RNase A,7RSA,A,all_standard_amino_acids,"Monomeric benchmark target.",HIGH
+Acetylcholinesterase,1EEA,A,all_standard_amino_acids,"Primary source-target model is one TcAChE molecule approaching the surface; dimer is a later sensitivity analysis.",MEDIUM
+WNV E protein domain III,2HG0,A,PDB_resseq_8_to_109,"The graphene paper models E-protein domain III, original E residues 299-400. In 2HG0 the ectodomain starts at original residue 291 but is renumbered from PDB residue 1, so domain III maps to PDB residues 8-109. The previous full-ectodomain run is invalid for this benchmark.",HIGH
+GB3 / Protein G B1,2OED,A,all_standard_amino_acids,"Monomeric benchmark target.",HIGH
+Proteinase K,5B1E,A,all_standard_amino_acids,"Monomeric benchmark target.",HIGH
+Carbonic anhydrase II,1CA2,A,all_standard_amino_acids,"Monomeric benchmark target.",HIGH
+Fibrinogen,3GHG,A;B;C;D;E;F;G;H;I;J;K;L,all_standard_amino_acids,"Retain complete fibrinogen assembly geometry.",HIGH
