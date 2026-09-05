@@ -25,13 +25,11 @@ try:
 finally: ism.SASA_POINTS=old
 core={x['center_key']:x['multiscale_persistence']/100 for x in mp['patch_centers']}
 keys=[r['key'] for r in surf]; seq=np.array([int(r['res_seq']) for r in surf]); score=np.array([core.get(k,0.) for k in keys]); y=np.isin(seq,TRUTH).astype(int)
-coords=np.array([np.array(r['ca_coord'],float) for r in surf]); top=np.argsort(-score,kind='stable')[:10]
-truth_idx=np.where(y==1)[0]
-nearest=[]
-for ti in truth_idx:
- nearest.append(float(np.min(np.linalg.norm(coords[top]-coords[ti],axis=1))))
+top=np.argsort(-score,kind='stable')[:10]; truth_idx=np.where(y==1)[0]
+nearest=[float(np.min(D[ti,top])) for ti in truth_idx]
 row={'candidate_id':'GB3_CIT_AUNP_MUT','protein':'GB3','pdb':PDB,'pH':PH,'chemistry':CHEM,'n_surface':len(surf),'n_truth_requested':len(TRUTH),'n_truth_mapped':int(y.sum()),'AUROC':auc(y,score),'AP':ap(y,score),'Recall@5':rec(y,score,5),'Recall@10':rec(y,score,10),'Recall@20':rec(y,score,20),'Spatial@5A_top10':float(np.mean(np.array(nearest)<=5)),'Spatial@8A_top10':float(np.mean(np.array(nearest)<=8)),'Spatial@10A_top10':float(np.mean(np.array(nearest)<=10)),'median_nearest_top10_A':float(np.median(nearest)),'top10':';'.join(keys[i] for i in top)}
 pd.DataFrame([row]).to_csv(OUT/'metrics.csv',index=False)
-pd.DataFrame([{'key':k,'res_seq':int(r),'score':float(sc),'rank':int(np.where(np.argsort(-score,kind='stable')==i)[0][0]+1),'ground_truth':int(yy)} for i,(k,r,sc,yy) in enumerate(zip(keys,seq,score,y))]).to_csv(OUT/'residue_scores.csv',index=False)
+order=np.argsort(-score,kind='stable'); ranks=np.empty(len(order),int); ranks[order]=np.arange(1,len(order)+1)
+pd.DataFrame([{'key':k,'res_seq':int(r),'score':float(sc),'rank':int(ranks[i]),'ground_truth':int(yy)} for i,(k,r,sc,yy) in enumerate(zip(keys,seq,score,y))]).to_csv(OUT/'residue_scores.csv',index=False)
 (OUT/'METADATA.json').write_text(json.dumps({'model':'IS-v1-Core-primary','ground_truth_frozen_before_scoring':True,'SASA_POINTS':200,'source':'J Phys Chem C 2016 doi:10.1021/acs.jpcc.6b08469; K4/K13/K50 Ala variants significantly reduce GB3 adsorption to citrate-AuNP','note':'No model or GT changes after scoring.'},indent=2))
 print(pd.DataFrame([row]).to_string(index=False))
