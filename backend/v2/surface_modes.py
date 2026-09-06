@@ -1,7 +1,7 @@
 """Categorical material-to-chemistry mapping for InterfaceScout V2.
 
 Unlike the retired V2-alpha surface profiles, these mappings contain no fitted
-or hand-tuned numeric weights.  They only select the primary frozen V1 chemistry
+or hand-tuned numeric weights. They only select the primary frozen V1 chemistry
 channel used to seed coarse interface patches.
 """
 
@@ -27,6 +27,12 @@ SURFACE_MODES = {
     "alumoh": SurfaceMode("alumoh", "Aluminum hydroxide / alum", "cationic", "Primary compatibility with a positively charged hydroxide-rich surface in the benchmark condition."),
     "fe3o4": SurfaceMode("fe3o4", "Iron oxide", "oxide", "Primary compatibility with a metal-oxide interface."),
     "hydroxyapatite": SurfaceMode("hydroxyapatite", "Hydroxyapatite", "hydroxyapatite", "Primary compatibility with calcium-phosphate-rich hydroxyapatite."),
+    "calcium_fluoride": SurfaceMode(
+        "calcium_fluoride",
+        "Calcium fluoride nanoparticle",
+        "cationic",
+        "Primary protein-side compatibility with exposed calcium-rich sites; used categorically for CaF2 systems where experiments identify acidic protein regions contacting surface Ca2+ sites. No numeric material weight is assigned.",
+    ),
     "hydrophobic": SurfaceMode("hydrophobic", "Generic hydrophobic surface", "hydrophobic", "Generic nonpolar surface mode."),
     "anionic": SurfaceMode("anionic", "Generic anionic surface", "anionic", "Generic negatively charged surface mode."),
     "cationic": SurfaceMode("cationic", "Generic cationic surface", "cationic", "Generic positively charged surface mode."),
