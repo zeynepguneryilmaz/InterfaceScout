@@ -1,12 +1,17 @@
-"""InterfaceScout V2-alpha.
+"""InterfaceScout V2 coarse protein-material biointerface predictor.
 
-This package is intentionally isolated from the publication-frozen V1 backend.
-V2-alpha predicts and ranks protein surface patches using material surface profiles.
-It does not yet perform rigid-body orientation search or adsorption free-energy prediction.
+V2 is isolated from the publication-frozen V1 backend. It predicts plausible
+coarse protein surface regions using frozen V1 chemistry/accessibility plus
+local geometry, native-state GNM dynamics, and coarse orientation descriptors.
+It does not predict adsorption free energy, adsorption amount, or a unique
+atomistic orientation.
 """
 
-V2_VERSION = "2.0.0-alpha.1"
+V2_VERSION = "2.2.1-coarse-prototype"
 
-from .engine import analyze_v2
+from .interface_engine import analyze_interface_v2
 
-__all__ = ["V2_VERSION", "analyze_v2"]
+# Public alias retained for callers that expect an ``analyze_v2`` entry point.
+analyze_v2 = analyze_interface_v2
+
+__all__ = ["V2_VERSION", "analyze_interface_v2", "analyze_v2"]
