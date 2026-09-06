@@ -1,4 +1,4 @@
-"""Standalone FastAPI surface for InterfaceScout V2-alpha.
+"""Standalone FastAPI surface for InterfaceScout V2 coarse biointerface prediction.
 
 Run from repository root with:
     uvicorn backend.v2.api:app --reload
@@ -15,15 +15,15 @@ from typing import Optional
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-# Allow engine.py to import the frozen backend/main.py as module ``main``.
 _BACKEND = Path(__file__).resolve().parents[1]
 if str(_BACKEND) not in sys.path:
     sys.path.insert(0, str(_BACKEND))
 
-from .engine import analyze_v2
-from .surface_profiles import SURFACE_PROFILES
+from . import V2_VERSION
+from .interface_engine import analyze_interface_v2
+from .surface_modes import SURFACE_MODES
 
-app = FastAPI(title="InterfaceScout V2-alpha", version="2.0.0-alpha.1")
+app = FastAPI(title="InterfaceScout V2", version=V2_VERSION)
 
 
 class V2AnalyzeRequest(BaseModel):
@@ -34,16 +34,16 @@ class V2AnalyzeRequest(BaseModel):
     pH: float = Field(7.4, ge=0.0, le=14.0)
     ionic_mM: float = Field(150.0, ge=0.0)
     temp_K: float = Field(298.0, gt=0.0)
-    top_n: int = Field(3, ge=1, le=20)
 
 
 @app.get("/v2/health")
 def health():
     return {
         "status": "ok",
-        "engine": "InterfaceScout V2-alpha",
-        "version": "2.0.0-alpha.1",
+        "engine": "InterfaceScout V2 coarse interface predictor",
+        "version": V2_VERSION,
         "v1_modified": False,
+        "benchmark_fitted_weights": False,
     }
 
 
@@ -51,18 +51,18 @@ def health():
 def surfaces():
     return {
         key: {
-            "label": profile.label,
-            "description": profile.description,
-            "weights": profile.normalized_weights(),
+            "label": mode.label,
+            "primary_chemistry": mode.chemistry,
+            "description": mode.description,
         }
-        for key, profile in sorted(SURFACE_PROFILES.items())
+        for key, mode in sorted(SURFACE_MODES.items())
     }
 
 
 @app.post("/v2/analyze")
 def analyze(req: V2AnalyzeRequest):
     try:
-        return analyze_v2(
+        return analyze_interface_v2(
             surface=req.surface,
             pH=req.pH,
             ionic_mM=req.ionic_mM,
@@ -70,11 +70,10 @@ def analyze(req: V2AnalyzeRequest):
             pdb_id=req.pdb_id,
             pdb_text=req.pdb_text,
             chain=req.chain,
-            top_n=req.top_n,
         )
     except KeyError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"V2-alpha analysis failed: {exc}") from exc
+        raise HTTPException(status_code=500, detail=f"V2 analysis failed: {exc}") from exc
