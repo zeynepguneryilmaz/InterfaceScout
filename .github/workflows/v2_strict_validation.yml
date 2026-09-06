@@ -3,6 +3,11 @@ on:
   push:
     paths:
       - '.github/workflows/v2_strict_validation.yml'
+      - 'backend/v2/protein_only.py'
+      - 'backend/v2/rin.py'
+      - 'backend/v2/gnm.py'
+      - 'backend/v2/validation/evaluate_protein_only_ablation.py'
+      - 'backend/v2/validation/benchmark_strict.json'
   workflow_dispatch:
 
 jobs:
@@ -15,9 +20,9 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install -r backend/requirements.txt
-      - name: Run extended strict experimental validation
-        run: PYTHONPATH=backend python backend/v2/validation/evaluate_extended.py
+      - name: Run protein-only material-blind ablation
+        run: PYTHONPATH=backend python backend/v2/validation/evaluate_protein_only_ablation.py
       - uses: actions/upload-artifact@v4
         with:
-          name: v2-extended-validation
-          path: v2_extended_validation.json
+          name: protein-only-ablation
+          path: protein_only_ablation.json
