@@ -1,0 +1,35 @@
+{
+  "cases": [
+    {
+      "id": "calmodulin_caf2",
+      "protein": "Human calmodulin",
+      "pdb_id": "1CLL",
+      "chain": "A",
+      "surface": "calcium_fluoride",
+      "pH": 6.5,
+      "gt_kind": "ranges",
+      "gt_ranges": [[77, 87]],
+      "tier": "A-region",
+      "evidence": "solution NMR paramagnetic relaxation enhancement; strongest PRE maps residues 77-87 in the central linker contacting the nanoparticle during the transient encounter complex",
+      "journal": "Scientific Reports",
+      "year": 2018,
+      "doi": "10.1038/s41598-018-21571-y",
+      "quartile_audit": {
+        "jcr": "Q1",
+        "sjr": "Q1",
+        "year": 2018
+      },
+      "notes": "NMR buffer pH 6.5. The paper reports very similar holo and NP-bound conformations and identifies the acidic 77-87 linker by PRE as the transient contact region; N-terminal EF1/EF2 CSPs represent a tighter second-step interaction and are not merged into this PRE ground-truth region. PDB 1CLL chain A is human Ca2+-loaded calmodulin."
+    }
+  ],
+  "pending_high_quality_cases": [
+    {
+      "protein": "Ubiquitin",
+      "surface": "Gd-doped SrF2-based nanoparticles",
+      "journal": "Journal of the American Chemical Society",
+      "year": 2016,
+      "doi": "10.1021/jacs.5b11582",
+      "reason_pending": "residue-specific PRE maps a contiguous experimental binding surface, but the exact experimental residue set must be frozen from the article/SI before scoring"
+    }
+  ]
+}
