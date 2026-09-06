@@ -15,9 +15,9 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install -r backend/requirements.txt
-      - name: Run strict experimental validation
-        run: PYTHONPATH=backend python backend/v2/validation/evaluate_strict.py
+      - name: Run extended strict experimental validation
+        run: PYTHONPATH=backend python backend/v2/validation/evaluate_extended.py
       - uses: actions/upload-artifact@v4
         with:
-          name: v2-strict-validation-null
-          path: v2_strict_validation.json
+          name: v2-extended-validation
+          path: v2_extended_validation.json
