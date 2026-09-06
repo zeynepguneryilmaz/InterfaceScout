@@ -1,4 +1,4 @@
-"""Structure-preparation helpers for InterfaceScout V2-alpha."""
+"""Structure-preparation helpers for InterfaceScout V2."""
 
 from __future__ import annotations
 
@@ -8,20 +8,28 @@ from typing import Tuple
 from Bio.PDB import PDBParser, PDBIO, Select
 
 
+def _parse_chain_selection(chain: str | None) -> set[str] | None:
+    text = (chain or "").strip()
+    if not text:
+        return None
+    selected = {x.strip() for x in text.split(",") if x.strip()}
+    return selected or None
+
+
 class FirstModelHeavyAtomSelect(Select):
-    """Keep model 0, standard amino acids, and non-hydrogen atoms only."""
+    """Keep model 0, selected chain(s), standard amino acids, and heavy atoms."""
 
     def __init__(self, chain: str | None = None):
         super().__init__()
-        self.chain = (chain or "").strip() or None
+        self.chains = _parse_chain_selection(chain)
 
     def accept_model(self, model):
         return 1 if int(model.id) == 0 else 0
 
     def accept_chain(self, chain):
-        if self.chain is None:
+        if self.chains is None:
             return 1
-        return 1 if str(chain.id) == self.chain else 0
+        return 1 if str(chain.id) in self.chains else 0
 
     def accept_residue(self, residue):
         hetflag = str(residue.id[0]).strip()
@@ -34,15 +42,17 @@ class FirstModelHeavyAtomSelect(Select):
 
 
 def prepare_pdb_text(pdb_text: str, chain: str | None = None) -> Tuple[str, dict]:
-    """Normalize an input PDB for V2-alpha.
+    """Normalize an input PDB for V2.
 
-    Current policy:
+    Policy:
     - first structural model only;
-    - selected chain if supplied;
+    - one or more selected chains if supplied (e.g. ``A`` or ``C,E``);
     - remove explicit hydrogens;
-    - remove hetero residues for the alpha patch engine.
+    - remove hetero residues from the current coarse protein patch engine.
 
-    Returns normalized PDB text and a compact preparation report.
+    Hetero removal is a structural-preparation simplification, not a claim that
+    cofactors are irrelevant to adsorption.  Systems whose native interface
+    depends directly on a retained cofactor require a dedicated future policy.
     """
     parser = PDBParser(QUIET=True)
     structure = parser.get_structure("v2_input", StringIO(pdb_text))
@@ -51,27 +61,30 @@ def prepare_pdb_text(pdb_text: str, chain: str | None = None) -> Tuple[str, dict
         raise ValueError("No structural model found in PDB input")
 
     available_chains = [str(c.id) for c in models[0].get_chains()]
-    requested_chain = (chain or "").strip()
-    if requested_chain and requested_chain not in available_chains:
-        raise ValueError(
-            f"Chain {requested_chain!r} not found in first model. "
-            f"Available: {', '.join(available_chains)}"
-        )
+    requested = _parse_chain_selection(chain)
+    if requested:
+        missing = sorted(requested - set(available_chains))
+        if missing:
+            raise ValueError(
+                f"Chain(s) {', '.join(missing)} not found in first model. "
+                f"Available: {', '.join(available_chains)}"
+            )
 
     io = PDBIO()
     io.set_structure(structure)
     out = StringIO()
-    io.save(out, FirstModelHeavyAtomSelect(requested_chain or None))
+    io.save(out, FirstModelHeavyAtomSelect(chain))
     normalized = out.getvalue()
     if "ATOM" not in normalized:
         raise ValueError("Prepared structure contains no protein ATOM records")
 
+    selected_label = ",".join(sorted(requested)) if requested else "ALL"
     report = {
-        "policy": "first_model_heavy_atom",
+        "policy": "first_model_heavy_atom_selected_chains",
         "input_models": len(models),
         "selected_model": 1,
         "available_chains_first_model": available_chains,
-        "selected_chain": requested_chain or "ALL",
+        "selected_chain": selected_label,
         "explicit_hydrogens_removed": True,
         "hetero_residues_removed": True,
     }
