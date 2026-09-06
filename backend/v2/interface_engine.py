@@ -37,13 +37,7 @@ def analyze_interface_v2(
     chain: Optional[str] = None,
     gnm_cutoff_A: float = 7.3,
 ) -> Dict[str, Any]:
-    """Predict coarse plausible protein-material interface regions.
-
-    There is deliberately no learned/fitted composite score. Chemistry,
-    accessibility and spatial continuity define candidate regions; GNM dynamics
-    and coarse orientation describe those regions. Pareto fronts identify
-    non-dominated alternatives without assigning empirical coefficients.
-    """
+    """Predict coarse plausible protein-material interface regions."""
     if not (0.0 <= float(pH) <= 14.0):
         raise ValueError("pH must be between 0 and 14")
     if float(ionic_mM) < 0:
@@ -56,8 +50,8 @@ def analyze_interface_v2(
     prepared, prep_report = prepare_pdb_text(raw, chain=chain)
 
     # The input is already reduced to the requested chain subset. Passing
-    # chain=None prevents the frozen V1 parser from trying to interpret a
-    # multi-chain selector such as "C,E" as one literal chain ID.
+    # chain=None prevents the frozen V1 parser from interpreting a multi-chain
+    # selector such as "C,E" as one literal chain ID.
     v1 = _load_v1()
     request = v1.AnalyzeRequest(
         pdb_text=prepared,
@@ -70,11 +64,11 @@ def analyze_interface_v2(
 
     gnm = solve_gnm(prepared, cutoff_A=float(gnm_cutoff_A))
     patches = build_coarse_patches(v1_result=v1_result, chemistry=mode.chemistry, gnm=gnm)
-    primary = [p for p in patches if int(p.get("pareto_front", 999)) == 1]
+    pareto_primary = [p for p in patches if int(p.get("pareto_front", 999)) == 1]
 
     return {
         "engine": "InterfaceScout V2",
-        "version": "2.2.0-coarse-prototype",
+        "version": "2.2.1-coarse-prototype",
         "scope": {
             "prediction_unit": "coarse protein surface region / interface patch",
             "predicts_absolute_adsorption_free_energy": False,
@@ -98,12 +92,13 @@ def analyze_interface_v2(
         "method": {
             "chemistry_source": "frozen InterfaceScout V1 compatibility channel",
             "accessibility_source": "V1 side-chain relative solvent accessibility",
-            "patch_connectivity_A": PATCH_SCALE_A,
-            "patch_connectivity_basis": "frozen V1 8 A patch scale; not adsorption-label fitted",
-            "orientation": "coarse outward C-alpha hemisphere consistency; descriptive",
+            "patch_radius_A": PATCH_SCALE_A,
+            "patch_radius_basis": "frozen V1 8 A patch scale; not adsorption-label fitted",
+            "patch_definition": "non-transitive local surface neighbourhood around a V1 chemistry-patch maximum",
+            "orientation": "coarse outward C-alpha face consistency; descriptive",
             "dynamics": "unweighted C-alpha GNM; descriptive",
             "gnm_cutoff_A": float(gnm_cutoff_A),
-            "ranking": "Pareto fronts across chemistry support, accessibility, dynamic coupling, and orientation coherence; no weighted sum",
+            "ranking": "Pareto fronts across chemistry support, accessibility, patch coherence, dynamic coupling, and orientation coherence; no weighted sum",
         },
         "surface_mode": {
             "key": mode.key,
@@ -112,14 +107,18 @@ def analyze_interface_v2(
             "description": mode.description,
         },
         "n_patches": len(patches),
-        "n_primary_patches": len(primary),
-        "primary_patches": primary,
+        "n_pareto_primary_patches": len(pareto_primary),
+        "primary_patches": pareto_primary,
         "patches": patches,
+        "diagnostics": {
+            "n_surface_residues": len(v1_result.get("surface_residues", [])),
+            "surface_residue_keys": [str(r["key"]) for r in v1_result.get("surface_residues", []) if r.get("key")],
+        },
         "method_notes": [
             "Experimental interface labels are not inputs to patch construction or ranking.",
             "Patch membership is intentionally coarse; individual residues are not claimed as precise adsorption contacts.",
-            "Spatial coherence is a construction requirement rather than a fitted score.",
-            "GNM and orientation provide physical context without changing membership through benchmark-tuned thresholds.",
+            "Patch growth is non-transitive to prevent surface percolation into unrealistically large regions.",
+            "GNM and orientation provide physical context without benchmark-tuned membership thresholds.",
             "Multiple Pareto-optimal patches are allowed because protein adsorption may have alternative plausible interfaces.",
         ],
     }
