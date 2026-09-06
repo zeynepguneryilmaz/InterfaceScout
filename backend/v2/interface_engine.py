@@ -39,9 +39,9 @@ def analyze_interface_v2(
 ) -> Dict[str, Any]:
     """Predict coarse plausible protein-material interface regions.
 
-    There is deliberately no learned/fitted composite score.  Chemistry,
+    There is deliberately no learned/fitted composite score. Chemistry,
     accessibility and spatial continuity define candidate regions; GNM dynamics
-    and coarse orientation describe those regions.  Pareto fronts identify
+    and coarse orientation describe those regions. Pareto fronts identify
     non-dominated alternatives without assigning empirical coefficients.
     """
     if not (0.0 <= float(pH) <= 14.0):
@@ -55,10 +55,13 @@ def analyze_interface_v2(
     raw = _obtain_pdb_text(pdb_id, pdb_text)
     prepared, prep_report = prepare_pdb_text(raw, chain=chain)
 
+    # The input is already reduced to the requested chain subset. Passing
+    # chain=None prevents the frozen V1 parser from trying to interpret a
+    # multi-chain selector such as "C,E" as one literal chain ID.
     v1 = _load_v1()
     request = v1.AnalyzeRequest(
         pdb_text=prepared,
-        chain=chain,
+        chain=None,
         env=v1.EnvParams(pH=float(pH), ionic=float(ionic_mM), temp=float(temp_K)),
     )
     v1_result = v1.analyze(request)
@@ -83,7 +86,7 @@ def analyze_interface_v2(
         },
         "input": {
             "pdb_id": (pdb_id or "").strip().upper() or None,
-            "chain": (chain or "").strip() or "ALL",
+            "chain": prep_report.get("selected_chain", "ALL"),
             "surface": mode.key,
             "surface_label": mode.label,
             "primary_chemistry": mode.chemistry,
