@@ -10,8 +10,9 @@ Construction logic
    already-frozen 8 A V1 patch scale.
 3. A V2 patch is the non-transitive 8 A surface neighbourhood of one local
    maximum, restricted to the same coarse outward-facing hemisphere.
-4. Chemistry, accessibility, dynamics and orientation are reported separately.
-5. Patches are compared by Pareto dominance; no empirical weighted sum is used.
+4. Chemistry, accessibility and local surface organization define/rank patches.
+5. GNM dynamics are reported only as downstream descriptive context.
+6. Patches are compared by Pareto dominance; no empirical weighted sum is used.
 
 The non-transitive definition is deliberate. Connected-component growth can
 percolate through a protein surface and turn a local biointerface hypothesis
@@ -20,7 +21,7 @@ into an unrealistically large fraction of the protein.
 
 from __future__ import annotations
 
-from typing import Dict, Iterable, List
+from typing import Dict, List
 
 import numpy as np
 
@@ -50,12 +51,7 @@ def _pair_values(keys: List[str], matrix: np.ndarray, index: Dict[str, int]) -> 
 
 
 def _local_maxima(channel: dict, geometry: dict) -> List[dict]:
-    """Select nonredundant V1 patch maxima without a benchmark-fitted threshold.
-
-    Centres are processed by the frozen V1 persistence ranking. A lower-ranked
-    centre is suppressed only when it lies within the same 8 A local patch and
-    on the same coarse face as an already retained maximum.
-    """
+    """Select nonredundant V1 patch maxima without benchmark-fitted thresholds."""
     rows = [
         r for r in channel.get("patch_centers", [])
         if r.get("center_key") in geometry["coords"]
@@ -72,33 +68,27 @@ def _local_maxima(channel: dict, geometry: dict) -> List[dict]:
     kept: List[dict] = []
     for row in rows:
         key = str(row["center_key"])
-        redundant = False
-        for prev in kept:
-            pkey = str(prev["center_key"])
-            if ca_distance(key, pkey, geometry) <= PATCH_SCALE_A and same_face(key, pkey, geometry):
-                redundant = True
-                break
-        if not redundant:
-            kept.append(row)
+        if any(
+            ca_distance(key, str(prev["center_key"]), geometry) <= PATCH_SCALE_A
+            and same_face(key, str(prev["center_key"]), geometry)
+            for prev in kept
+        ):
+            continue
+        kept.append(row)
     return kept
 
 
 def _patch_around_center(center: dict, chemistry_rows: Dict[str, dict], geometry: dict) -> dict:
     ckey = str(center["center_key"])
-    members = []
-    for key in geometry["coords"]:
-        if ca_distance(ckey, key, geometry) <= PATCH_SCALE_A and same_face(ckey, key, geometry):
-            members.append(key)
+    members = [
+        key for key in geometry["coords"]
+        if ca_distance(ckey, key, geometry) <= PATCH_SCALE_A and same_face(ckey, key, geometry)
+    ]
     if ckey not in members:
         members.append(ckey)
-
+    members = sorted(set(members))
     seeds = sorted(k for k in members if k in chemistry_rows)
-    return {
-        "center": ckey,
-        "center_row": center,
-        "members": sorted(set(members)),
-        "seeds": seeds,
-    }
+    return {"center": ckey, "center_row": center, "members": members, "seeds": seeds}
 
 
 def _patch_descriptors(patch: dict, geometry: dict, gnm: dict) -> dict:
@@ -106,12 +96,8 @@ def _patch_descriptors(patch: dict, geometry: dict, gnm: dict) -> dict:
     seeds = list(patch["seeds"])
     center = patch["center_row"]
 
-    # Chemistry is represented as composition (fraction of patch residues that
-    # are chemically compatible in the frozen V1 channel), while patch
-    # coherence is the V1 multiscale local persistence at the patch centre.
     chemistry_fraction = float(len(seeds) / len(members)) if members else 0.0
     patch_coherence = float(center.get("multiscale_persistence", 0.0)) / 100.0
-
     access_vals = [float(geometry["scrsa"].get(k, 0.0)) for k in members]
     accessibility = float(np.mean(access_vals)) if access_vals else 0.0
 
@@ -142,19 +128,20 @@ def _patch_descriptors(patch: dict, geometry: dict, gnm: dict) -> dict:
         "chemistry_support": chemistry_fraction,
         "mean_accessibility": accessibility,
         "patch_coherence": patch_coherence,
+        "orientation_coherence": orientation,
         "dynamic_coupling_abs": dynamic_coupling,
         "dynamic_coupling_signed": dynamic_signed,
-        "orientation_coherence": orientation,
         "spatial_coherence": "fixed 8 A local neighbourhood around a V1 patch maximum",
+        "dynamic_role": "descriptive only; excluded from patch membership and ranking",
     }
 
 
 def _dominates(a: dict, b: dict) -> bool:
+    # Only prediction-defining descriptors enter ranking. GNM is downstream.
     fields = (
         "chemistry_support",
         "mean_accessibility",
         "patch_coherence",
-        "dynamic_coupling_abs",
         "orientation_coherence",
     )
     av = [float(a[f]) for f in fields]
