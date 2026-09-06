@@ -19,5 +19,5 @@ jobs:
         run: PYTHONPATH=backend python backend/v2/validation/evaluate_strict.py
       - uses: actions/upload-artifact@v4
         with:
-          name: v2-strict-validation-local-patches
+          name: v2-strict-validation-null
           path: v2_strict_validation.json
