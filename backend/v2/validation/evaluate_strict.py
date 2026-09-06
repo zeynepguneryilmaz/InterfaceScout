@@ -1,8 +1,8 @@
 """Evaluate InterfaceScout V2 against locked experimental coarse-interface GT.
 
-This script is deliberately separate from the predictor.  Ground-truth labels
-are never passed to ``analyze_interface_v2`` and are used only after predictions
-have been generated.
+Ground-truth labels are never passed to the predictor. They are used only after
+predictions are generated. Validation reports continuous metrics rather than a
+post-hoc fitted success threshold.
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ import json
 import urllib.request
 from io import StringIO
 from pathlib import Path
-from typing import Dict, Iterable, List
+from typing import Dict, List
 
 import numpy as np
 from Bio.PDB import PDBParser
@@ -82,9 +82,16 @@ def _patch_metrics(patch: dict, gt: List[str], coords: Dict[str, np.ndarray]) ->
             near_hits.append(g)
     near_recall = len(near_hits) / len(gset) if gset else 0.0
 
+    center = patch.get("center_key")
+    center_min_gt_A = None
+    if center in coords and gt:
+        center_min_gt_A = min(float(np.linalg.norm(coords[center] - coords[g])) for g in gt)
+
     return {
         "display_rank": patch.get("display_rank"),
         "pareto_front": patch.get("pareto_front"),
+        "center_key": center,
+        "center_min_gt_A": center_min_gt_A,
         "n_members": len(members),
         "overlap_n": len(overlap),
         "overlap_recall": overlap_recall,
@@ -94,9 +101,43 @@ def _patch_metrics(patch: dict, gt: List[str], coords: Dict[str, np.ndarray]) ->
         "near_8A_keys": sorted(near_hits),
         "chemistry_support": patch.get("chemistry_support"),
         "mean_accessibility": patch.get("mean_accessibility"),
+        "patch_coherence": patch.get("patch_coherence"),
         "dynamic_coupling_abs": patch.get("dynamic_coupling_abs"),
         "orientation_coherence": patch.get("orientation_coherence"),
     }
+
+
+def _surface_null_patches(surface_keys: List[str], coords: Dict[str, np.ndarray]) -> List[dict]:
+    """Every exposed residue is used once as a geometry-matched null centre.
+
+    The null uses the same non-transitive 8 A neighbourhood and same-hemisphere
+    rule as V2, but ignores material chemistry, V1 patch coherence and GNM.
+    Therefore it asks whether the V2 ranking localizes experiment better than an
+    arbitrary solvent-exposed surface location of the same geometric scale.
+    """
+    valid = [k for k in surface_keys if k in coords]
+    if not valid:
+        return []
+    protein_centroid = np.mean(np.vstack(list(coords.values())), axis=0)
+
+    def unit(v: np.ndarray) -> np.ndarray:
+        n = float(np.linalg.norm(v))
+        return v / n if n > 1e-12 else np.zeros(3)
+
+    normals = {k: unit(coords[k] - protein_centroid) for k in valid}
+    out = []
+    for center in valid:
+        members = []
+        for key in valid:
+            d = float(np.linalg.norm(coords[center] - coords[key]))
+            if d <= COARSE_NEAR_A and float(np.dot(normals[center], normals[key])) > 0.0:
+                members.append(key)
+        out.append({"center_key": center, "members": members})
+    return out
+
+
+def _best_top_k(metrics: List[dict], k: int, field: str) -> float:
+    return max((float(m[field]) for m in metrics[:k]), default=0.0)
 
 
 def evaluate_case(case: dict) -> dict:
@@ -123,9 +164,17 @@ def evaluate_case(case: dict) -> dict:
     for p in pred.get("primary_patches", []):
         primary_union.update(p.get("members", []))
 
-    n_surface = len({r["key"] for p in pred.get("patches", []) for r in p.get("member_residues", [])})
-    # n_surface above is only the union represented by generated patches; report
-    # it as predicted-region universe rather than pretending it is total SASA surface.
+    surface_keys = list(pred.get("diagnostics", {}).get("surface_residue_keys", []))
+    null_patches = _surface_null_patches(surface_keys, coords)
+    null_metrics = [_patch_metrics(p, gt, coords) for p in null_patches]
+    top1_near = _best_top_k(metrics, 1, "near_8A_recall")
+    null_near = [float(m["near_8A_recall"]) for m in null_metrics]
+    null_ge_top1_fraction = (
+        float(np.mean([v >= top1_near for v in null_near])) if null_near else None
+    )
+    null_median = float(np.median(null_near)) if null_near else None
+
+    patch_sizes = [int(m["n_members"]) for m in metrics]
 
     return {
         "id": case["id"],
@@ -137,13 +186,28 @@ def evaluate_case(case: dict) -> dict:
         "tier": case["tier"],
         "gt_kind": case["gt_kind"],
         "n_gt_structure_residues": len(gt),
+        "n_surface_residues": len(surface_keys),
         "n_predicted_patches": len(metrics),
         "n_primary_pareto_patches": len(primary),
+        "median_patch_size": float(np.median(patch_sizes)) if patch_sizes else None,
+        "max_patch_size": max(patch_sizes) if patch_sizes else None,
+        "top1_near_8A_recall": _best_top_k(metrics, 1, "near_8A_recall"),
+        "top3_near_8A_recall": _best_top_k(metrics, 3, "near_8A_recall"),
+        "top5_near_8A_recall": _best_top_k(metrics, 5, "near_8A_recall"),
+        "top10_near_8A_recall": _best_top_k(metrics, 10, "near_8A_recall"),
+        "top1_overlap_recall": _best_top_k(metrics, 1, "overlap_recall"),
+        "top3_overlap_recall": _best_top_k(metrics, 3, "overlap_recall"),
+        "top5_overlap_recall": _best_top_k(metrics, 5, "overlap_recall"),
         "best_primary_overlap_recall": best(primary, "overlap_recall"),
         "best_primary_near_8A_recall": best(primary, "near_8A_recall"),
         "best_any_overlap_recall": best(metrics, "overlap_recall"),
         "best_any_near_8A_recall": best(metrics, "near_8A_recall"),
         "primary_union_n_members": len(primary_union),
+        "matched_surface_null": {
+            "n_null_centres": len(null_metrics),
+            "median_near_8A_recall": null_median,
+            "fraction_null_at_least_as_good_as_v2_top1": null_ge_top1_fraction,
+        },
         "patch_metrics": metrics,
         "gt_keys": gt,
         "notes": case.get("notes"),
@@ -164,12 +228,16 @@ def summarize(results: List[dict]) -> dict:
         "n_conditions": len(results),
         "n_unique_proteins": len(unique),
         "unique_proteins": unique,
+        "median_top1_near_8A_recall": med(results, "top1_near_8A_recall"),
+        "median_top3_near_8A_recall": med(results, "top3_near_8A_recall"),
+        "median_top5_near_8A_recall": med(results, "top5_near_8A_recall"),
         "median_best_primary_near_8A_recall_all": med(results, "best_primary_near_8A_recall"),
         "median_best_primary_near_8A_recall_exact": med(exact, "best_primary_near_8A_recall"),
         "median_best_primary_near_8A_recall_regional": med(regional, "best_primary_near_8A_recall"),
+        "n_conditions_top3_near_recall_nonzero": sum(float(r["top3_near_8A_recall"]) > 0.0 for r in results),
+        "n_conditions_top5_near_recall_nonzero": sum(float(r["top5_near_8A_recall"]) > 0.0 for r in results),
         "n_conditions_primary_near_recall_nonzero": sum(float(r["best_primary_near_8A_recall"]) > 0.0 for r in results),
-        "n_conditions_any_near_recall_nonzero": sum(float(r["best_any_near_8A_recall"]) > 0.0 for r in results),
-        "interpretation": "Coarse near-recall is the primary pilot metric; no success threshold is fitted from these labels."
+        "interpretation": "Continuous coarse-patch metrics plus an all-surface matched geometric null; no adsorption-label-fitted threshold."
     }
 
 
@@ -181,9 +249,9 @@ def main() -> None:
         result = evaluate_case(case)
         results.append(result)
         print(
-            f"RESULT {case['id']} primary_near={result['best_primary_near_8A_recall']:.3f} "
-            f"primary_overlap={result['best_primary_overlap_recall']:.3f} "
-            f"any_near={result['best_any_near_8A_recall']:.3f}",
+            f"RESULT {case['id']} top1={result['top1_near_8A_recall']:.3f} "
+            f"top3={result['top3_near_8A_recall']:.3f} top5={result['top5_near_8A_recall']:.3f} "
+            f"null_ge_top1={result['matched_surface_null']['fraction_null_at_least_as_good_as_v2_top1']}",
             flush=True,
         )
 
