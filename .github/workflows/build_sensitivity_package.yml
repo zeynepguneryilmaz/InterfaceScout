@@ -1,0 +1,32 @@
+name: Build InterfaceScout sensitivity package
+on:
+  push:
+    paths:
+      - '.github/workflows/build_sensitivity_package.yml'
+      - 'backend/v2/validation/build_sensitivity_package.py'
+      - 'backend/v2/validation/evaluate_sensitivity_panel.py'
+      - 'backend/v2/validation/evaluate_radius_sensitivity_panel.py'
+  workflow_dispatch:
+
+jobs:
+  build-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      INTERFACESCOUT_VALIDATION_CANONICAL_ONLY: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - run: pip install -r backend/requirements-publication-lock.txt matplotlib
+      - name: Run 14-protein sensitivity panel
+        run: PYTHONPATH=backend python backend/v2/validation/evaluate_sensitivity_panel.py
+      - name: Run radius-pair sensitivity panel
+        run: PYTHONPATH=backend python backend/v2/validation/evaluate_radius_sensitivity_panel.py
+      - name: Build package
+        run: PYTHONPATH=backend python backend/v2/validation/build_sensitivity_package.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: InterfaceScout-14protein-sensitivity-package
+          path: InterfaceScout_14protein_sensitivity_package.zip
