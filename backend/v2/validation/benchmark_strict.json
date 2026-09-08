@@ -11,7 +11,8 @@
       "CD/FTIR alone",
       "activity-only orientation inference",
       "protein-protein, peptide, nucleic-acid, or membrane-lipid interfaces",
-      "systems dominated by major adsorption-induced unfolding when the native-state patch is not interpretable"
+      "systems dominated by major adsorption-induced unfolding when the native-state patch is not interpretable",
+      "provisional structural proxies not frozen from the experimental source before scoring"
     ]
   },
   "cases": [
@@ -90,10 +91,10 @@
       "gt_exact": [4, 13, 50],
       "tier": "A",
       "evidence": "experimental Lys-to-Ala perturbation / nanoparticle binding measurements",
-      "journal": "peer-reviewed experimental nanoparticle study",
+      "journal": "Journal of Physical Chemistry C",
       "year": 2016,
-      "doi": null,
-      "notes": "K4/K13/K50 are the locked experimental anchor set used in the prior audit; bibliographic DOI should be frozen before manuscript export."
+      "doi": "10.1021/acs.jpcc.6b08469",
+      "notes": "K4/K13/K50 are the frozen experimental anchor set."
     },
     {
       "id": "catalase_ps",
@@ -144,22 +145,6 @@
       "notes": "Broad regional GT; native 3D structure retained in the experimental interpretation."
     },
     {
-      "id": "acp_silica",
-      "protein": "Acylphosphatase",
-      "pdb_id": "2K7K",
-      "chain": "A",
-      "surface": "silica",
-      "pH": 7.0,
-      "gt_kind": "ranges",
-      "gt_ranges": [[22, 33], [55, 66]],
-      "tier": "B-provisional",
-      "evidence": "NMR + proteomics-MS; common interaction face formed by the two alpha helices",
-      "journal": "Langmuir",
-      "year": 2013,
-      "doi": "10.1021/la401985d",
-      "notes": "Ranges are structural proxies for the two experimental helices and must be replaced by exact SI residue membership before final manuscript statistics."
-    },
-    {
       "id": "b2m_mpa_au",
       "protein": "beta-2-microglobulin",
       "pdb_id": "1JNJ",
@@ -177,6 +162,14 @@
     }
   ],
   "pending_high_quality_cases": [
+    {
+      "protein": "Acylphosphatase",
+      "surface": "silica",
+      "journal": "Langmuir",
+      "year": 2013,
+      "doi": "10.1021/la401985d",
+      "reason_pending": "the two interacting alpha helices are experimentally supported, but exact residue membership must be frozen from the experimental structural/SI definition rather than approximated by provisional ranges"
+    },
     {
       "protein": "RNase A",
       "surface": "silica",
