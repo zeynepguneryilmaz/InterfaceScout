@@ -20,6 +20,7 @@ from Bio.PDB.Polypeptide import is_aa
 import main as v1
 from v2.chemistry_freeze import apply_publication_chemistry
 from v2.geometry import build_surface_geometry, ca_distance, same_face
+from v2.gnm import solve_gnm
 from v2.interface_engine import analyze_interface_v2
 from v2.prepare import prepare_pdb_text
 from v2.surface_modes import get_surface_mode
@@ -114,10 +115,8 @@ def evaluate(case: dict) -> dict:
     mode = get_surface_mode(case["surface"])
     channel = base["chemistries"][mode.chemistry]
 
-    # geometry builder only needs V1 surface metadata; GNM fields are irrelevant here.
-    dummy_gnm = {"keys": [], "coords": {}, "index": {}, "correlation_matrix": np.zeros((0, 0))}
-    geometry = build_surface_geometry(base, dummy_gnm)
-    surface = {str(r["key"]): r for r in base.get("surface_residues", [])}
+    geometry = build_surface_geometry(base, solve_gnm(prepared, cutoff_A=7.3))
+    surface = {str(r["key"]): r for r in base.get("surface_residues", []) if str(r.get("key")) in geometry["coords"]}
     chem_rows = {str(r["key"]): r for r in channel.get("residues", [])}
     center_rows = {str(r["center_key"]): r for r in channel.get("patch_centers", [])}
 
