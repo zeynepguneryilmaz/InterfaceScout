@@ -4,6 +4,7 @@ on:
     paths:
       - '.github/workflows/v2_strict_validation.yml'
       - 'backend/main.py'
+      - 'backend/sitecustomize.py'
       - 'backend/v2/**'
   workflow_dispatch:
 
@@ -11,6 +12,8 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      INTERFACESCOUT_VALIDATION_CANONICAL_ONLY: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
