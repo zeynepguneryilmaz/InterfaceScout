@@ -5,6 +5,7 @@ on:
       - '.github/workflows/v2_strict_validation.yml'
       - 'backend/main.py'
       - 'backend/sitecustomize.py'
+      - 'backend/requirements-publication-lock.txt'
       - 'backend/v2/**'
   workflow_dispatch:
 
@@ -18,8 +19,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-      - run: pip install -r backend/requirements.txt
+          python-version: '3.11.9'
+      - run: pip install -r backend/requirements-publication-lock.txt
       - name: Run strict experimental validation
         run: PYTHONPATH=backend python backend/v2/validation/evaluate_strict.py
       - name: Run geometry-matched baselines
