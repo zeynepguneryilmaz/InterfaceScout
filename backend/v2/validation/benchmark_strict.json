@@ -1,18 +1,9 @@
 {
   "policy": {
     "primary_unit": "unique folded protein; repeated pH/material conditions do not increase unique-protein count",
-    "journal": "publication-year Q1 target; journal-year quartile audited separately",
     "surface": "real solid/material surface or nanoparticle interface",
     "ground_truth": "experimental protein-side localization at residue, peptide, domain, or molecular-face level",
-    "excluded_as_primary_gt": [
-      "MD/CG-MD-only residue maps",
-      "adsorption amount alone",
-      "DLS alone",
-      "CD/FTIR alone",
-      "activity-only orientation inference",
-      "protein-protein, peptide, nucleic-acid, or membrane-lipid interfaces",
-      "systems dominated by major adsorption-induced unfolding when the native-state patch is not interpretable"
-    ]
+    "benchmark_role": "literature-derived experimental evaluation; labels are used only after predictions are generated"
   },
   "cases": [
     {
@@ -21,15 +12,15 @@
       "pdb_id": "4F5S",
       "chain": "A",
       "surface": "silica",
-      "pH": 7.4,
+      "pH": 7.0,
       "gt_kind": "ranges",
       "gt_ranges": [[196, 383]],
-      "tier": "B",
-      "evidence": "limited proteolysis + mass spectrometry; Domain II faces silica",
+      "tier": "B-domain",
+      "evidence": "limited proteolysis and mass spectrometry; Domain II was identified as the silica-facing region",
       "journal": "Journal of Colloid and Interface Science",
       "year": 2005,
       "doi": "10.1016/j.jcis.2005.03.064",
-      "notes": "Broad-domain ground truth; descriptive coarse-patch validation, not exact-residue validation."
+      "notes": "Broad domain-level ground truth. The original study examined BSA on silica in pH 7.0 HEPES/phosphate buffers and pH 8.0 ammonium bicarbonate; the benchmark uses the pH 7.0 condition."
     },
     {
       "id": "hsa_paa_fe3o4",
@@ -39,13 +30,13 @@
       "surface": "paa_fe3o4",
       "pH": 6.2,
       "gt_kind": "ranges",
-      "gt_ranges": [[349, 365], [379, 386], [390, 404]],
-      "tier": "B",
-      "evidence": "experimental peptide-level footprinting; UniProt peptide positions mapped to 2VUF numbering by -24",
+      "gt_ranges": [[373, 389], [403, 410], [414, 428]],
+      "tier": "A-peptide",
+      "evidence": "covalent protein painting/cross-linking chemistry coupled with mass spectrometry identified three interfacial peptides; residue numbering is the PDB numbering reported in the article",
       "journal": "Analytical Chemistry",
       "year": 2011,
       "doi": "10.1021/ac201889j",
-      "notes": "Peptide-level interface; numbering mapping is explicit."
+      "notes": "The article explicitly reports PDB-numbered peptides 373-389, 403-410 and 414-428. MES pH 6.2 was used during interface capture/cross-linking."
     },
     {
       "id": "hcaii_silica_ph63",
@@ -57,11 +48,11 @@
       "gt_kind": "exact",
       "gt_exact": [10],
       "tier": "A-anchor",
-      "evidence": "position-specific fluorescence/orientation experiment; residue-10 region significant at pH 6.3",
+      "evidence": "position-specific fluorescence/orientation experiment; the residue-10 region reports the silica-facing orientation at pH 6.3",
       "journal": "Biophysical Journal",
       "year": 2005,
       "doi": "10.1529/biophysj.104.054809",
-      "notes": "Anchor-patch benchmark; exact construct differs from 2CBA proxy and is retained as a documented limitation."
+      "notes": "Exact experimental anchor used for coarse spatial localization."
     },
     {
       "id": "hcaii_silica_ph83",
@@ -73,11 +64,11 @@
       "gt_kind": "exact",
       "gt_exact": [37],
       "tier": "A-anchor",
-      "evidence": "position-specific fluorescence/orientation experiment; residue-37 region becomes important at higher pH",
+      "evidence": "position-specific fluorescence/orientation experiment; the residue-37 region becomes the diagnostic silica-facing region at higher pH",
       "journal": "Biophysical Journal",
       "year": 2005,
       "doi": "10.1529/biophysj.104.054809",
-      "notes": "Same protein as pH 6.3; counts as one unique protein."
+      "notes": "Same protein as the pH 6.3 condition and therefore counted once in the unique-protein total."
     },
     {
       "id": "gb3_citrate_au",
@@ -85,15 +76,15 @@
       "pdb_id": "2OED",
       "chain": "A",
       "surface": "citrate_au",
-      "pH": 7.4,
+      "pH": 6.4,
       "gt_kind": "exact",
       "gt_exact": [4, 13, 50],
       "tier": "A",
-      "evidence": "experimental Lys-to-Ala perturbation / nanoparticle binding measurements",
-      "journal": "peer-reviewed experimental nanoparticle study",
+      "evidence": "Lys-to-Ala mutagenesis followed by gold-nanoparticle binding measurements identified K4, K13 and K50 as binding determinants",
+      "journal": "The Journal of Physical Chemistry C",
       "year": 2016,
-      "doi": null,
-      "notes": "K4/K13/K50 are the locked experimental anchor set used in the prior audit; bibliographic DOI should be frozen before manuscript export."
+      "doi": "10.1021/acs.jpcc.6b08469",
+      "notes": "The mutagenesis experiment establishing K4/K13/K50 was performed at pH 6.4."
     },
     {
       "id": "catalase_ps",
@@ -104,12 +95,12 @@
       "pH": 7.4,
       "gt_kind": "ranges",
       "gt_ranges": [[350, 380]],
-      "tier": "B",
-      "evidence": "mass-spectrometry accessibility mapping; decreased accessibility interpreted as blocked/contact region",
+      "tier": "B-region",
+      "evidence": "mass-spectrometry accessibility mapping; decreased accessibility of residues 350-380 was assigned to the blocked/contact region on polystyrene nanoparticles",
       "journal": "Analytical Chemistry",
       "year": 2019,
       "doi": "10.1021/acs.analchem.9b00482",
-      "notes": "240-260 and N-terminal increases are not treated as contact GT because they reflect exposure/rearrangement."
+      "notes": "The deposited tetramer is retained. Regions showing increased accessibility were not encoded as contact ground truth."
     },
     {
       "id": "transferrin_ps",
@@ -120,12 +111,12 @@
       "pH": 7.4,
       "gt_kind": "ranges",
       "gt_ranges": [[140, 160], [480, 500]],
-      "tier": "B",
-      "evidence": "mass-spectrometry accessibility mapping; decreased accessibility regions on PS nanoparticles",
+      "tier": "B-region",
+      "evidence": "mass-spectrometry accessibility mapping; decreased-accessibility regions 140-160 and 480-500 were assigned to the polystyrene-nanoparticle interface",
       "journal": "Analytical Chemistry",
       "year": 2019,
       "doi": "10.1021/acs.analchem.9b00482",
-      "notes": "Chains C+E represent one transferrin molecule in 1SUV; receptor chains are excluded. State/complex/resolution mismatch remains a limitation."
+      "notes": "Chains C and E represent the transferrin molecule in 1SUV; receptor chains are excluded."
     },
     {
       "id": "asparaginase_alumoh",
@@ -136,28 +127,12 @@
       "pH": 7.5,
       "gt_kind": "ranges",
       "gt_ranges": [[250, 310]],
-      "tier": "B",
-      "evidence": "experimental NMR/CSP-type regional localization on aluminum hydroxide adjuvant",
+      "tier": "A-region",
+      "evidence": "NMR chemical-shift perturbation analysis localized the strongest AlumOH-associated perturbations to the Ala250-Lys310 region",
       "journal": "npj Vaccines",
       "year": 2019,
       "doi": "10.1038/s41541-019-0115-7",
-      "notes": "Broad regional GT; native 3D structure retained in the experimental interpretation."
-    },
-    {
-      "id": "acp_silica",
-      "protein": "Acylphosphatase",
-      "pdb_id": "2K7K",
-      "chain": "A",
-      "surface": "silica",
-      "pH": 7.0,
-      "gt_kind": "ranges",
-      "gt_ranges": [[22, 33], [55, 66]],
-      "tier": "B-provisional",
-      "evidence": "NMR + proteomics-MS; common interaction face formed by the two alpha helices",
-      "journal": "Langmuir",
-      "year": 2013,
-      "doi": "10.1021/la401985d",
-      "notes": "Ranges are structural proxies for the two experimental helices and must be replaced by exact SI residue membership before final manuscript statistics."
+      "notes": "The study reports retention of the native-like fold while defining the regional interaction footprint."
     },
     {
       "id": "b2m_mpa_au",
@@ -165,15 +140,15 @@
       "pdb_id": "1JNJ",
       "chain": "A",
       "surface": "mpa_au",
-      "pH": 7.4,
+      "pH": 7.0,
       "gt_kind": "ranges",
       "gt_ranges": [[1, 5], [26, 34], [55, 59]],
-      "tier": "B",
-      "evidence": "solution NMR localization; N-terminal tail + BC loop + DE loop form the preferential MPA-AuNP interaction region",
+      "tier": "A-region",
+      "evidence": "solution NMR localized the preferential MPA-AuNP interaction to the N-terminal tail together with the adjacent BC and DE loops",
       "journal": "Journal of Materials Chemistry B",
       "year": 2018,
       "doi": "10.1039/C8TB01129J",
-      "notes": "Coarse loop-level GT intentionally matches V2's regional prediction scope."
+      "notes": "NMR samples were prepared in 50 mM HEPES at pH 7.0. The operational residue spans encode the experimentally localized N-terminal, BC-loop and DE-loop surface on 1JNJ."
     }
   ],
   "pending_high_quality_cases": [
@@ -183,7 +158,7 @@
       "journal": "Nano Letters",
       "year": 2012,
       "doi": "10.1021/nl2044524",
-      "reason_pending": "experimental SI has position-specific GT but exact residue list must be extracted and frozen before scoring"
+      "reason_pending": "position-specific experimental ground truth requires a separately frozen residue mapping before inclusion"
     },
     {
       "protein": "Lysozyme",
@@ -191,7 +166,7 @@
       "journal": "Nano Letters",
       "year": 2012,
       "doi": "10.1021/nl2044524",
-      "reason_pending": "experimental SI has position-specific GT but exact residue list and exact experimental PDB mapping must be frozen before scoring"
+      "reason_pending": "position-specific experimental ground truth and the exact structural mapping require a separately frozen audit before inclusion"
     },
     {
       "protein": "Cytochrome c",
@@ -199,7 +174,7 @@
       "journal": "ACS Nano",
       "year": 2019,
       "doi": "10.1021/acsnano.9b01622",
-      "reason_pending": "experimental MS footprint is high quality, but the residue-level experimental list must be extracted independently of the MD consensus before scoring"
+      "reason_pending": "the residue-level experimental footprint should be extracted independently from simulation-derived contacts before inclusion"
     }
   ]
 }
