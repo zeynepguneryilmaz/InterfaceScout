@@ -7,6 +7,7 @@ prepared protein structure. It does not predict adsorption energy.
 
 from __future__ import annotations
 
+import os
 from io import StringIO
 from typing import Dict, List, Tuple
 
@@ -67,10 +68,26 @@ def solve_gnm(pdb_text: str, cutoff_A: float = 7.3, zero_tol: float = 1e-8) -> d
 
     All non-zero modes are retained. Reported fluctuations are normalized by
     their mean, so values >1 indicate above-average native-state mobility.
+    In canonical-only validation, the correlation layer is skipped because GNM
+    is excluded from patch membership and ranking; only node geometry is kept.
     """
     nodes = extract_ca_nodes(pdb_text)
-    gamma, adjacency = build_kirchhoff(nodes, cutoff_A=cutoff_A)
+    if os.environ.get("INTERFACESCOUT_VALIDATION_CANONICAL_ONLY") == "1":
+        n = len(nodes)
+        return {
+            "cutoff_A": float(cutoff_A),
+            "n_nodes": n,
+            "n_zero_modes": None,
+            "n_nonzero_modes": None,
+            "nodes": nodes,
+            "index": {node["key"]: i for i, node in enumerate(nodes)},
+            "correlation_matrix": np.zeros((n, n), dtype=float),
+            "adjacency": np.zeros((n, n), dtype=int),
+            "residue_metrics": {},
+            "canonical_only_validation": True,
+        }
 
+    gamma, adjacency = build_kirchhoff(nodes, cutoff_A=cutoff_A)
     eigvals, eigvecs = np.linalg.eigh(gamma)
     keep = eigvals > float(zero_tol)
     if not np.any(keep):
