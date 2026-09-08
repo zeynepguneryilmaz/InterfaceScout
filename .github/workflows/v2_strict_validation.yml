@@ -12,7 +12,7 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     env:
       INTERFACESCOUT_VALIDATION_CANONICAL_ONLY: '1'
     steps:
@@ -27,6 +27,8 @@ jobs:
         run: PYTHONPATH=backend python backend/v2/validation/evaluate_matched_baselines.py
       - name: Run multi-structure robustness audit
         run: PYTHONPATH=backend python backend/v2/validation/evaluate_shape_robustness.py
+      - name: Run 14-protein sensitivity panel
+        run: PYTHONPATH=backend python backend/v2/validation/evaluate_sensitivity_panel.py
       - name: Export representative 4F5U map
         run: PYTHONPATH=backend python backend/v2/validation/export_representative_case.py
       - uses: actions/upload-artifact@v4
@@ -36,4 +38,5 @@ jobs:
             v2_strict_validation.json
             matched_baselines.json
             shape_robustness.json
+            sensitivity_panel.json
             representative_4F5U_anionic.json
