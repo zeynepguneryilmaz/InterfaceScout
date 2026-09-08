@@ -1,0 +1,31 @@
+name: InterfaceScout sensitivity panel
+on:
+  push:
+    paths:
+      - '.github/workflows/sensitivity_panel.yml'
+      - 'backend/main.py'
+      - 'backend/sitecustomize.py'
+      - 'backend/requirements-publication-lock.txt'
+      - 'backend/v2/chemistry_freeze.py'
+      - 'backend/v2/prepare.py'
+      - 'backend/v2/validation/evaluate_sensitivity_panel.py'
+  workflow_dispatch:
+
+jobs:
+  sensitivity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      INTERFACESCOUT_VALIDATION_CANONICAL_ONLY: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - run: pip install -r backend/requirements-publication-lock.txt
+      - name: Run 14-protein sensitivity panel
+        run: PYTHONPATH=backend python backend/v2/validation/evaluate_sensitivity_panel.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-sensitivity-panel
+          path: sensitivity_panel.json
