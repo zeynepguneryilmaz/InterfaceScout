@@ -26,3 +26,13 @@ jobs:
         with:
           name: protein-only-ablation
           path: protein_only_ablation.json
+      - name: Download publication benchmark PDB snapshots
+        run: |
+          mkdir -p PDB
+          for id in 4F5S 2VUF 2CBA 2OED 1TGU 1SUV 3ECA 1JNJ 1CLL; do
+            curl -fsSL "https://files.rcsb.org/download/${id}.pdb" -o "PDB/${id}.pdb"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-pdb-snapshot
+          path: PDB/*.pdb
