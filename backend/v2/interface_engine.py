@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import importlib
+import os
 import urllib.request
 from typing import Any, Dict, Optional
 
+import numpy as np
+
 from .chemistry_freeze import apply_publication_chemistry
 from .coarse_patch import build_coarse_patches, PATCH_SCALE_A
-from .gnm import solve_gnm
+from .gnm import extract_ca_nodes, solve_gnm
 from .prepare import prepare_pdb_text
 from .rin import build_rin, annotate_rin_percentiles, summarize_patch_rin
 from .surface_modes import get_surface_mode
@@ -28,6 +31,24 @@ def _obtain_pdb_text(pdb_id: Optional[str], pdb_text: Optional[str]) -> str:
         raise ValueError("Provide pdb_id or pdb_text")
     with urllib.request.urlopen(f"https://files.rcsb.org/download/{pid}.pdb", timeout=30) as response:
         return response.read().decode("utf-8", errors="replace")
+
+
+def _geometry_only_gnm(prepared: str, cutoff_A: float) -> dict:
+    """Return only the GNM fields required by coarse-patch geometry.
+
+    Used in canonical-only validation because GNM correlations are descriptive
+    and excluded from membership/ranking. Normal InterfaceScout runs still call
+    the full solve_gnm implementation.
+    """
+    nodes = extract_ca_nodes(prepared)
+    n = len(nodes)
+    return {
+        "cutoff_A": float(cutoff_A),
+        "n_nodes": n,
+        "nodes": nodes,
+        "index": {x["key"]: i for i, x in enumerate(nodes)},
+        "correlation_matrix": np.zeros((n, n), dtype=float),
+    }
 
 
 def analyze_interface_v2(
@@ -63,13 +84,19 @@ def analyze_interface_v2(
     if hasattr(v1_result, "body"):
         raise RuntimeError("Unexpected HTTP response object returned by V1 analyze()")
 
-    gnm = solve_gnm(prepared, cutoff_A=float(gnm_cutoff_A))
+    canonical_only = os.environ.get("INTERFACESCOUT_VALIDATION_CANONICAL_ONLY") == "1"
+    gnm = _geometry_only_gnm(prepared, float(gnm_cutoff_A)) if canonical_only else solve_gnm(prepared, cutoff_A=float(gnm_cutoff_A))
     patches = build_coarse_patches(v1_result=v1_result, chemistry=mode.chemistry, gnm=gnm)
 
     surface_keys = [str(r["key"]) for r in v1_result.get("surface_residues", []) if r.get("key")]
-    rin = annotate_rin_percentiles(build_rin(prepared), surface_keys)
-    for patch in patches:
-        patch["rin_context"] = summarize_patch_rin(patch.get("members", []), rin)
+    if canonical_only:
+        rin = {"cutoff_A": None, "n_nodes": 0, "n_edges": 0}
+        for patch in patches:
+            patch["rin_context"] = {"status": "disabled_in_canonical_only_validation"}
+    else:
+        rin = annotate_rin_percentiles(build_rin(prepared), surface_keys)
+        for patch in patches:
+            patch["rin_context"] = summarize_patch_rin(patch.get("members", []), rin)
 
     pareto_primary = [p for p in patches if int(p.get("pareto_front", 999)) == 1]
 
@@ -131,6 +158,7 @@ def analyze_interface_v2(
         "diagnostics": {
             "n_surface_residues": len(surface_keys),
             "surface_residue_keys": surface_keys,
+            "canonical_only_validation": canonical_only,
         },
         "method_notes": [
             "Experimental interface labels are not inputs to patch construction or ranking.",
@@ -140,6 +168,7 @@ def analyze_interface_v2(
             "Numerical literature Ebase values inherited from V1 remain metadata only and never change V2 ranking.",
             "GNM is excluded from patch ranking and is retained only as native-state dynamic context.",
             "RIN is excluded from patch prediction and is used only to characterize the structural-network location of a predicted patch.",
+            "Canonical-only validation may skip GNM/RIN numerical descriptors because they do not affect patch membership or ranking.",
             "Multiple Pareto-optimal patches are allowed because protein adsorption may have alternative plausible encounter interfaces.",
         ],
     }
