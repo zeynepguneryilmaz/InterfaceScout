@@ -23,6 +23,8 @@ jobs:
         run: PYTHONPATH=backend python backend/v2/validation/evaluate_protein_only_ablation.py
       - name: Run multi-structure robustness audit
         run: PYTHONPATH=backend python backend/v2/validation/evaluate_shape_robustness.py
+      - name: Export representative 4F5U map
+        run: PYTHONPATH=backend python backend/v2/validation/export_representative_case.py
       - uses: actions/upload-artifact@v4
         with:
           name: interfacescout-validation
@@ -30,3 +32,4 @@ jobs:
             v2_strict_validation.json
             protein_only_ablation.json
             shape_robustness.json
+            representative_4F5U_anionic.json
