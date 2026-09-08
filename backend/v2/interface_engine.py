@@ -6,6 +6,7 @@ import importlib
 import urllib.request
 from typing import Any, Dict, Optional
 
+from .chemistry_freeze import apply_publication_chemistry
 from .coarse_patch import build_coarse_patches, PATCH_SCALE_A
 from .gnm import solve_gnm
 from .prepare import prepare_pdb_text
@@ -14,7 +15,9 @@ from .surface_modes import get_surface_mode
 
 
 def _load_v1():
-    return importlib.import_module("main")
+    module = importlib.import_module("main")
+    apply_publication_chemistry(module)
+    return module
 
 
 def _obtain_pdb_text(pdb_id: Optional[str], pdb_text: Optional[str]) -> str:
@@ -72,7 +75,7 @@ def analyze_interface_v2(
 
     return {
         "engine": "InterfaceScout V2",
-        "version": "2.3.0-coarse-rin",
+        "version": "2.3.1-publication-chemistry",
         "scope": {
             "prediction_unit": "coarse protein surface region / interface patch",
             "predicts_absolute_adsorption_free_energy": False,
@@ -97,7 +100,7 @@ def analyze_interface_v2(
         "structure_preparation": prep_report,
         "method": {
             "core_question": "Where on the native folded protein is a plausible material-contact region under the defined surface chemistry and environment?",
-            "chemistry_source": "frozen InterfaceScout V1 compatibility channel",
+            "chemistry_source": "frozen InterfaceScout compatibility channel with V2 publication chemistry corrections",
             "accessibility_source": "V1 side-chain relative solvent accessibility",
             "patch_radius_A": PATCH_SCALE_A,
             "patch_radius_basis": "frozen V1 8 A patch scale; not adsorption-label fitted",
@@ -133,6 +136,8 @@ def analyze_interface_v2(
             "Experimental interface labels are not inputs to patch construction or ranking.",
             "Patch membership is intentionally coarse; individual residues are not claimed as precise adsorption contacts.",
             "Patch growth is non-transitive to prevent surface percolation into unrealistically large regions.",
+            "The V2 publication chemistry corrects H-bond-donor-surface semantics by excluding protonated Lys/Arg from protein-side acceptor eligibility.",
+            "Numerical literature Ebase values inherited from V1 remain metadata only and never change V2 ranking.",
             "GNM is excluded from patch ranking and is retained only as native-state dynamic context.",
             "RIN is excluded from patch prediction and is used only to characterize the structural-network location of a predicted patch.",
             "Multiple Pareto-optimal patches are allowed because protein adsorption may have alternative plausible encounter interfaces.",
