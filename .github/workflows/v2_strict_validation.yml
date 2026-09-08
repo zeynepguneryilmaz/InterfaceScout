@@ -25,8 +25,6 @@ jobs:
         run: PYTHONPATH=backend python backend/v2/validation/evaluate_strict.py
       - name: Run geometry-matched baselines
         run: PYTHONPATH=backend python backend/v2/validation/evaluate_matched_baselines.py
-      - name: Run protein-only material-blind ablation
-        run: PYTHONPATH=backend python backend/v2/validation/evaluate_protein_only_ablation.py
       - name: Run multi-structure robustness audit
         run: PYTHONPATH=backend python backend/v2/validation/evaluate_shape_robustness.py
       - name: Export representative 4F5U map
@@ -37,6 +35,5 @@ jobs:
           path: |
             v2_strict_validation.json
             matched_baselines.json
-            protein_only_ablation.json
             shape_robustness.json
             representative_4F5U_anionic.json
