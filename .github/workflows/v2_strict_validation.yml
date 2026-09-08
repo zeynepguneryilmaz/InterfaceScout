@@ -1,13 +1,10 @@
-name: V2 strict validation
+name: Publication benchmark validation
 on:
   push:
     paths:
       - '.github/workflows/v2_strict_validation.yml'
-      - 'backend/v2/protein_only.py'
-      - 'backend/v2/rin.py'
-      - 'backend/v2/gnm.py'
-      - 'backend/v2/validation/evaluate_protein_only_ablation.py'
-      - 'backend/v2/validation/benchmark_strict.json'
+      - 'backend/main.py'
+      - 'backend/v2/**'
   workflow_dispatch:
 
 jobs:
@@ -20,9 +17,17 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install -r backend/requirements.txt
-      - name: Run protein-only material-blind ablation
-        run: PYTHONPATH=backend python backend/v2/validation/evaluate_protein_only_ablation.py
+      - name: Run publication benchmark
+        run: PYTHONPATH=backend python backend/v2/validation/evaluate_extended.py
+      - name: Download benchmark PDB snapshots
+        run: |
+          mkdir -p PDB
+          for id in 4F5S 2VUF 2CBA 2OED 1TGU 1SUV 3ECA 1JNJ 1CLL; do
+            curl -fsSL "https://files.rcsb.org/download/${id}.pdb" -o "PDB/${id}.pdb"
+          done
       - uses: actions/upload-artifact@v4
         with:
-          name: protein-only-ablation
-          path: protein_only_ablation.json
+          name: publication-benchmark-package
+          path: |
+            v2_extended_validation.json
+            PDB/*.pdb
