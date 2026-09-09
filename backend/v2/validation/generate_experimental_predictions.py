@@ -1,16 +1,17 @@
-"""Generate InterfaceScout predictions for experimental benchmark cases without reading ground-truth labels.
+"""Generate blinded InterfaceScout predictions for the final experimental benchmark.
 
 Only the following manifest fields are permitted to enter prediction:
     id, protein, pdb_id, chain, surface, pH
 
-Experimental residue/region labels, evidence tiers, DOI metadata, and all
-comparison fields are intentionally ignored. The resulting raw InterfaceScout
-outputs are written before any experimental comparison is performed.
+Experimental contact labels, evidence tiers, DOI metadata and comparison fields
+are never passed to the predictor. Raw predictions and exact PDB inputs are
+written before any experimental comparison is performed.
 """
 from __future__ import annotations
 
 import csv
 import json
+import urllib.request
 from pathlib import Path
 
 from v2.interface_engine import analyze_interface_v2
@@ -22,9 +23,10 @@ from v2.model_settings import (
     MULTISCALE_RADII_A,
     COARSE_PATCH_RADIUS_A,
 )
+from v2.prepare import prepare_pdb_text
 
 HERE = Path(__file__).resolve().parent
-DEFAULT_MANIFEST = HERE / "benchmark_strict.json"
+DEFAULT_MANIFEST = HERE / "benchmark_experimental_final.json"
 OUTDIR = Path("experimental_predictions")
 
 ALLOWED_INPUT_FIELDS = ("id", "protein", "pdb_id", "chain", "surface", "pH")
@@ -32,6 +34,11 @@ ALLOWED_INPUT_FIELDS = ("id", "protein", "pdb_id", "chain", "surface", "pH")
 
 def prediction_input(case: dict) -> dict:
     return {k: case.get(k) for k in ALLOWED_INPUT_FIELDS}
+
+
+def _fetch_pdb(pdb_id: str) -> str:
+    with urllib.request.urlopen(f"https://files.rcsb.org/download/{pdb_id}.pdb", timeout=60) as response:
+        return response.read().decode("utf-8", errors="replace")
 
 
 def flatten_patch(case_id: str, patch: dict) -> dict:
@@ -62,11 +69,14 @@ def main(manifest_path: Path = DEFAULT_MANIFEST) -> None:
     OUTDIR.mkdir(parents=True, exist_ok=True)
     raw_dir = OUTDIR / "raw"
     csv_dir = OUTDIR / "patch_csv"
-    raw_dir.mkdir(exist_ok=True)
-    csv_dir.mkdir(exist_ok=True)
+    pdb_full_dir = OUTDIR / "pdb" / "full_rcsb"
+    pdb_prepared_dir = OUTDIR / "pdb" / "prepared_for_analysis"
+    for directory in (raw_dir, csv_dir, pdb_full_dir, pdb_prepared_dir):
+        directory.mkdir(parents=True, exist_ok=True)
 
     generated = []
     all_patch_rows = []
+    pdb_rows = []
 
     for full_case in manifest.get("cases", []):
         case = prediction_input(full_case)
@@ -75,9 +85,18 @@ def main(manifest_path: Path = DEFAULT_MANIFEST) -> None:
             raise ValueError(f"Missing prediction inputs for {case.get('id')}: {missing}")
 
         print(f"PREDICT {case['id']}", flush=True)
+
+        # Archive the exact coordinate input independently of ground truth.
+        pdb_text = _fetch_pdb(str(case["pdb_id"]))
+        prepared, prep_report = prepare_pdb_text(pdb_text, chain=case.get("chain"))
+        full_path = pdb_full_dir / f"{case['id']}_{case['pdb_id']}.pdb"
+        prepared_path = pdb_prepared_dir / f"{case['id']}_{case['pdb_id']}_prepared.pdb"
+        full_path.write_text(pdb_text, encoding="utf-8")
+        prepared_path.write_text(prepared, encoding="utf-8")
+
         pred = analyze_interface_v2(
             surface=str(case["surface"]),
-            pdb_id=str(case["pdb_id"]),
+            pdb_text=pdb_text,
             chain=case.get("chain"),
             pH=float(case["pH"]),
             ionic_mM=150.0,
@@ -95,6 +114,9 @@ def main(manifest_path: Path = DEFAULT_MANIFEST) -> None:
                 "multiscale_radii_A": list(MULTISCALE_RADII_A),
                 "coarse_patch_radius_A": COARSE_PATCH_RADIUS_A,
             },
+            "structure_preparation": prep_report,
+            "archived_full_pdb": str(full_path.as_posix()),
+            "archived_prepared_pdb": str(prepared_path.as_posix()),
             "interfacescout_output": pred,
         }
         (raw_dir / f"{case['id']}.json").write_text(
@@ -108,6 +130,15 @@ def main(manifest_path: Path = DEFAULT_MANIFEST) -> None:
                 w = csv.DictWriter(fh, fieldnames=list(patch_rows[0]))
                 w.writeheader(); w.writerows(patch_rows)
 
+        pdb_rows.append({
+            "case_id": case["id"],
+            "protein": case.get("protein"),
+            "pdb_id": case["pdb_id"],
+            "requested_chain": case.get("chain"),
+            "selected_chain": prep_report.get("selected_chain"),
+            "full_pdb": str(full_path.as_posix()),
+            "prepared_pdb": str(prepared_path.as_posix()),
+        })
         generated.append({
             **case,
             "model_version": pred.get("version"),
@@ -125,6 +156,10 @@ def main(manifest_path: Path = DEFAULT_MANIFEST) -> None:
         with (OUTDIR / "all_predicted_patches.csv").open("w", newline="", encoding="utf-8-sig") as fh:
             w = csv.DictWriter(fh, fieldnames=list(all_patch_rows[0]))
             w.writeheader(); w.writerows(all_patch_rows)
+    if pdb_rows:
+        with (OUTDIR / "pdb_manifest.csv").open("w", newline="", encoding="utf-8-sig") as fh:
+            w = csv.DictWriter(fh, fieldnames=list(pdb_rows[0]))
+            w.writeheader(); w.writerows(pdb_rows)
 
     metadata = {
         "stage": "prediction_only",
