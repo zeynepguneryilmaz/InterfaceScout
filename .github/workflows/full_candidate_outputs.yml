@@ -1,0 +1,47 @@
+name: InterfaceScout full blinded candidate outputs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/full_candidate_outputs.yml'
+      - 'backend/v2/validation/generate_full_candidate_outputs.py'
+      - 'backend/v2/validation/candidate_prediction_panel_2026.json'
+      - 'backend/v2/**.py'
+      - 'backend/main.py'
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          pip install -r backend/requirements-publication-lock.txt
+          pip install matplotlib
+      - name: Generate full blinded outputs
+        working-directory: backend
+        env:
+          MPLBACKEND: Agg
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from v2.validation.generate_full_candidate_outputs import main
+          main(Path('v2/validation/candidate_prediction_panel_2026.json'))
+          PY
+      - name: Package
+        working-directory: backend
+        run: |
+          tar -czf InterfaceScout_Full_Blinded_Candidate_Outputs_13.tar.gz full_candidate_outputs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-full-blinded-candidate-outputs-13
+          path: |
+            backend/full_candidate_outputs
+            backend/InterfaceScout_Full_Blinded_Candidate_Outputs_13.tar.gz
+          if-no-files-found: error
