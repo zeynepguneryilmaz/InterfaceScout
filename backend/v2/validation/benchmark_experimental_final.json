@@ -1,0 +1,229 @@
+{
+  "policy": {
+    "purpose": "held-out experimental localization benchmark after model parameter selection",
+    "prediction_blinding": "experimental contact labels are unavailable to the predictor and are read only after raw InterfaceScout predictions have been saved",
+    "primary_inclusion": "folded full proteins interacting with real material surfaces or nanoparticles with direct experimental protein-side localization and an interpretable native/folded structural model",
+    "secondary_inclusion": "direct experimental localization is available, but adsorption-induced structural change or structural-model mismatch makes native-PDB localization less clean",
+    "excluded_from_primary": [
+      "MD-only or simulation-only contact maps",
+      "adsorption amount alone",
+      "DLS/zeta/CD/FTIR alone",
+      "activity-only orientation inference",
+      "peptide/phage-display systems",
+      "intrinsically disordered proteins",
+      "systems dominated by major unfolding when a native-PDB contact comparison is not interpretable"
+    ],
+    "model_settings_locked_before_scoring": {
+      "sasa_points_per_atom": 200,
+      "sasa_probe_A": 1.4,
+      "scrsa_threshold": 0.05,
+      "multiscale_radii_A": [6.0, 9.0],
+      "coarse_patch_radius_A": 8.0
+    }
+  },
+  "cases": [
+    {
+      "id": "bsa_silica",
+      "analysis_set": "primary",
+      "protein": "Bovine serum albumin",
+      "pdb_id": "4F5S",
+      "chain": "A",
+      "surface": "silica",
+      "pH": 8.0,
+      "gt_kind": "ranges",
+      "gt_ranges": [[196, 383]],
+      "tier": "B-region",
+      "evidence": "limited proteolysis plus mass spectrometry; Domain II was identified as the silica-facing region",
+      "journal": "Journal of Colloid and Interface Science",
+      "year": 2005,
+      "doi": "10.1016/j.jcis.2005.03.064",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/16009213/",
+      "notes": "Broad domain-level ground truth; intended for regional rather than exact-residue scoring."
+    },
+    {
+      "id": "hsa_paa_fe3o4",
+      "analysis_set": "primary",
+      "protein": "Human serum albumin",
+      "pdb_id": "2VUF",
+      "chain": "A",
+      "surface": "paa_fe3o4",
+      "pH": 6.2,
+      "gt_kind": "ranges",
+      "gt_ranges": [[373, 389], [403, 410], [414, 428]],
+      "tier": "B-peptide",
+      "evidence": "EDC cross-linking coupled with MALDI-MS identified three HSA peptides adjacent to PAA-coated Fe3O4 nanoparticles; the study mapped the peptides on PDB 2VUF",
+      "journal": "Analytical Chemistry",
+      "year": 2011,
+      "doi": "10.1021/ac201889j",
+      "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3180867/",
+      "notes": "HSA was adsorbed overnight in deionized water; pH 6.2 is the MES cross-linking/capture condition. The pH-specific InterfaceScout comparison therefore represents the capture condition and is interpreted with this limitation. CD showed negligible secondary-structure change after adsorption."
+    },
+    {
+      "id": "hcaii_silica_ph63",
+      "analysis_set": "primary",
+      "protein": "Human carbonic anhydrase II",
+      "pdb_id": "2CBA",
+      "chain": "A",
+      "surface": "silica",
+      "pH": 6.3,
+      "gt_kind": "exact",
+      "gt_exact": [10],
+      "tier": "A-anchor",
+      "evidence": "site-directed fluorescent labeling/orientation experiment identified the region around position 10 as a dominant silica-contact anchor at pH 6.3",
+      "journal": "Biophysical Journal",
+      "year": 2005,
+      "doi": "10.1529/biophysj.104.054809",
+      "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC1305500/",
+      "notes": "Anchor-level rather than complete-contact-set ground truth."
+    },
+    {
+      "id": "hcaii_silica_ph83",
+      "analysis_set": "primary",
+      "protein": "Human carbonic anhydrase II",
+      "pdb_id": "2CBA",
+      "chain": "A",
+      "surface": "silica",
+      "pH": 8.3,
+      "gt_kind": "exact",
+      "gt_exact": [37],
+      "tier": "A-anchor",
+      "evidence": "site-directed fluorescent labeling/orientation experiment showed increased contribution of the region around position 37 at higher pH",
+      "journal": "Biophysical Journal",
+      "year": 2005,
+      "doi": "10.1529/biophysj.104.054809",
+      "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC1305500/",
+      "notes": "Same protein as the pH 6.3 condition; counted once in unique-protein summaries."
+    },
+    {
+      "id": "ubiquitin_citrate_au",
+      "analysis_set": "primary",
+      "protein": "Human ubiquitin",
+      "pdb_id": "1UBQ",
+      "chain": "A",
+      "surface": "citrate_au",
+      "pH": 7.7,
+      "gt_kind": "ranges",
+      "gt_ranges": [[2, 3], [15, 18]],
+      "tier": "A-NMR-site",
+      "evidence": "solution NMR chemical-shift perturbation localized the AuNP interaction site to the Q2-I3 and L15-E18 surface regions",
+      "journal": "Nano Letters",
+      "year": 2010,
+      "doi": "10.1021/nl101746v",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/20698623/",
+      "notes": "Residue-level NMR localization; replaces the previously considered GB3 case."
+    },
+    {
+      "id": "b2m_mpa_au",
+      "analysis_set": "primary",
+      "protein": "Human beta-2-microglobulin",
+      "pdb_id": "1JNJ",
+      "chain": "A",
+      "surface": "mpa_au",
+      "pH": 7.0,
+      "gt_kind": "exact",
+      "gt_exact": [3, 30, 31, 33, 36, 37, 55, 56, 57, 61],
+      "tier": "A-NMR-site",
+      "evidence": "15N NMR chemical-shift perturbations on MPA-AuNPs localized the preferential interaction to the N-terminal/BC-loop/DE-loop surface region",
+      "journal": "Journal of Materials Chemistry B",
+      "year": 2018,
+      "doi": "10.1039/C8TB01129J",
+      "source_url": "https://pubs.rsc.org/en/content/articlelanding/2018/tb/c8tb01129j",
+      "notes": "NMR samples were prepared in 50 mM HEPES at pH 7. MPA-AuNPs were the condition in which beta2m remained essentially stably dissolved; strongly unfolding MHA-AuNP conditions are excluded."
+    },
+    {
+      "id": "asparaginase_alumoh",
+      "analysis_set": "primary",
+      "protein": "E. coli L-asparaginase II",
+      "pdb_id": "3ECA",
+      "chain": "A,B,C,D",
+      "surface": "alumoh",
+      "pH": 7.5,
+      "gt_kind": "equivalent_chain_ranges",
+      "gt_ranges": [[250, 310]],
+      "tier": "B-region",
+      "evidence": "solid-state NMR chemical-shift perturbation identified the largest perturbations in the Ala250-Lys310 negatively charged surface region while preserving the folded tetramer",
+      "journal": "npj Vaccines",
+      "year": 2019,
+      "doi": "10.1038/s41541-019-0115-7",
+      "source_url": "https://www.nature.com/articles/s41541-019-0115-7",
+      "notes": "3ECA is the structure used by the experimental study. The homotetramer is retained. Equivalent-subunit scoring accepts the experimentally mapped residue-number region on any symmetry-equivalent chain rather than requiring all four subunits to contact simultaneously."
+    },
+    {
+      "id": "transferrin_ps",
+      "analysis_set": "secondary",
+      "protein": "Human transferrin",
+      "pdb_id": "1SUV",
+      "chain": "C,E",
+      "surface": "polystyrene",
+      "pH": 7.4,
+      "gt_kind": "ranges",
+      "gt_ranges": [[140, 160], [480, 500]],
+      "tier": "B-region",
+      "evidence": "limited proteolysis plus LC-MS/MS showed reduced accessibility in residues 140-160 and 480-500 on PS nanoparticles",
+      "journal": "Analytical Chemistry",
+      "year": 2019,
+      "doi": "10.1021/acs.analchem.9b00482",
+      "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6613589/",
+      "notes": "The experimental paper maps affected peptides onto PDB 1SUV; chains C and E are the N- and C-lobes of one transferrin molecule. This is secondary because 1SUV is a 7.5-A receptor-bound structural model and adsorption also alters transferrin structure."
+    },
+    {
+      "id": "catalase_ps",
+      "analysis_set": "secondary",
+      "protein": "Bovine catalase",
+      "pdb_id": "1TGU",
+      "chain": "A,B,C,D",
+      "surface": "polystyrene",
+      "pH": 7.4,
+      "gt_kind": "equivalent_chain_ranges",
+      "gt_ranges": [[350, 380]],
+      "tier": "B-region",
+      "evidence": "limited proteolysis with trypsin/chymotrypsin plus LC-MS/MS showed decreased accessibility in residues 350-380 on PS nanoparticles",
+      "journal": "Analytical Chemistry",
+      "year": 2019,
+      "doi": "10.1021/acs.analchem.9b00482",
+      "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6613589/",
+      "notes": "The experimental paper maps the affected region on the 1TGU tetramer. Equivalent-subunit scoring is used. This is secondary because additional regions became more accessible and catalase activity changed, indicating adsorption-induced structural perturbation."
+    }
+  ],
+  "pending_or_excluded": [
+    {
+      "protein": "Fibrinogen",
+      "status": "pending-specialized-scorer",
+      "reason": "high-quality region/domain evidence exists for alphaC versus D/E region engagement on hydrophilic/hydrophobic surfaces, but a chain/domain-aware scorer and defensible mapping from the experimental surface chemistry to an InterfaceScout channel are required before scoring",
+      "doi": "10.1016/j.actbio.2017.03.002"
+    },
+    {
+      "protein": "IgG",
+      "status": "pending-orientation-scorer",
+      "reason": "experimental evidence is primarily molecular-face/orientation level and should not be forced into residue-overlap metrics"
+    },
+    {
+      "protein": "Lysozyme",
+      "status": "pending-residue-freeze",
+      "reason": "AAL/MS studies provide high-resolution adsorption orientation, but the exact residue-level ground-truth list must be extracted and frozen before blind scoring"
+    },
+    {
+      "protein": "RNase A",
+      "status": "secondary-only",
+      "reason": "residue-level adsorption mapping exists, but substantial adsorption-induced unfolding/activity loss complicates a native-PDB primary benchmark"
+    },
+    {
+      "protein": "Myoglobin",
+      "status": "secondary-only",
+      "reason": "oxidative footprinting identifies two silica adsorption sites, but the adsorbed state shows a large loss of alpha-helical structure, weakening native-PDB interpretation",
+      "doi": "10.1007/s00216-014-8188-7"
+    },
+    {
+      "protein": "Acylphosphatase",
+      "status": "pending-condition-audit",
+      "reason": "NMR/proteomics directly identifies a two-alpha-helix silica interface, but the exact adsorption-condition pH and residue-boundary mapping should be frozen from the primary/SI before running the blinded predictor",
+      "doi": "10.1021/la401985d"
+    },
+    {
+      "protein": "Cytochrome c",
+      "status": "pending-residue-freeze",
+      "reason": "experimental MS footprinting on MPA-AuNPs is high quality, but the exact experimental residue list must be extracted independently of the simulation results before blind scoring",
+      "doi": "10.1021/acsnano.9b01622"
+    }
+  ]
+}
