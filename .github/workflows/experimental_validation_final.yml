@@ -8,6 +8,7 @@ on:
       - 'backend/v2/validation/benchmark_experimental_final.json'
       - 'backend/v2/validation/generate_experimental_predictions.py'
       - 'backend/v2/validation/compare_experimental_predictions_v2.py'
+      - 'backend/v2/validation/summarize_experimental_validation.py'
       - 'backend/v2/model_settings.py'
       - 'backend/v2/**.py'
   workflow_dispatch:
@@ -43,6 +44,9 @@ jobs:
           from v2.validation.compare_experimental_predictions_v2 import main
           main(Path('v2/validation/benchmark_experimental_final.json'))
           PY
+      - name: Build evidence-resolution-matched summary
+        working-directory: backend
+        run: python -m v2.validation.summarize_experimental_validation
       - name: Package outputs
         working-directory: backend
         run: |
@@ -51,7 +55,7 @@ jobs:
           cp -r experimental_comparison experimental_validation_package/
           cp v2/validation/benchmark_experimental_final.json experimental_validation_package/benchmark_manifest.json
           cp v2/model_settings.py experimental_validation_package/model_settings.py
-          printf 'Prediction labels visible to predictor: NO\nModel SASA points/atom: 200\nModel multiscale radii: 6/9 A\nCoarse patch radius: 8 A\n' > experimental_validation_package/README.txt
+          printf 'Prediction labels visible to predictor: NO\nModel SASA points/atom: 200\nModel multiscale radii: 6/9 A\nCoarse patch radius: 8 A\nBroad regional evidence is summarized with rank/hit metrics rather than interpreted as exact-residue recovery.\n' > experimental_validation_package/README.txt
       - uses: actions/upload-artifact@v4
         with:
           name: interfacescout-final-experimental-validation
