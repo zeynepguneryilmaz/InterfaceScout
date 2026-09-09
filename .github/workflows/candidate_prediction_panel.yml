@@ -1,0 +1,47 @@
+name: InterfaceScout blinded candidate prediction panel
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/candidate_prediction_panel.yml'
+      - 'backend/v2/validation/candidate_prediction_panel_2026.json'
+      - 'backend/v2/validation/generate_experimental_predictions.py'
+      - 'backend/v2/model_settings.py'
+      - 'backend/v2/**.py'
+  workflow_dispatch:
+
+jobs:
+  predict:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install -r backend/requirements-publication-lock.txt
+      - name: Generate blinded candidate predictions only
+        working-directory: backend
+        env:
+          INTERFACESCOUT_VALIDATION_CANONICAL_ONLY: '1'
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from v2.validation.generate_experimental_predictions import main
+          main(Path('v2/validation/candidate_prediction_panel_2026.json'))
+          PY
+      - name: Package prediction-only outputs
+        working-directory: backend
+        run: |
+          mkdir -p candidate_prediction_package
+          cp -r experimental_predictions candidate_prediction_package/
+          cp v2/validation/candidate_prediction_panel_2026.json candidate_prediction_package/prediction_manifest.json
+          cp v2/model_settings.py candidate_prediction_package/model_settings.py
+          printf 'Stage: prediction only, before experimental GT freeze/comparison.\nGround-truth labels visible to predictor: NO\nModel SASA points/atom: 200\nModel multiscale radii: 6/9 A\nCoarse patch radius: 8 A\n' > candidate_prediction_package/README.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-blinded-candidate-predictions
+          path: backend/candidate_prediction_package
+          if-no-files-found: error
