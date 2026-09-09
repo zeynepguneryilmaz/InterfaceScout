@@ -1,15 +1,17 @@
-"""Compare previously generated InterfaceScout predictions with experimental ground truth.
+"""Compare frozen InterfaceScout predictions with experimental ground truth.
 
-This is stage 2 of the experimental validation workflow. It never reruns or
-modifies the predictor. It reads frozen raw prediction JSON files created by
-``generate_experimental_predictions.py`` and only then exposes experimental
-residue/region labels from the benchmark manifest.
+Stage 2 never reruns or modifies the predictor. It reads raw prediction JSON
+files generated without access to experimental labels and only then exposes the
+locked benchmark ground truth.
 
 Ground-truth resolution is respected:
 - exact / anchor evidence: exact overlap plus distance-based proximity;
 - regional evidence: overlap recall/precision plus distance-based proximity;
-- orientation/domain evidence is intentionally not forced into residue metrics
-  and requires a case-specific scorer before inclusion.
+- equivalent_chain_ranges: a sequence-defined region on a homooligomer is
+  scored against each symmetry-equivalent chain separately and the best matching
+  chain is retained; the predictor is not required to contact every copy;
+- orientation/domain evidence requires a dedicated scorer and is not forced
+  into residue-overlap metrics.
 """
 from __future__ import annotations
 
@@ -26,10 +28,11 @@ import numpy as np
 from Bio.PDB import PDBParser
 from Bio.PDB.Polypeptide import is_aa
 
+from v2.model_settings import COARSE_PATCH_RADIUS_A
 from v2.prepare import prepare_pdb_text
 
 HERE = Path(__file__).resolve().parent
-DEFAULT_MANIFEST = HERE / "benchmark_strict.json"
+DEFAULT_MANIFEST = HERE / "benchmark_experimental_final.json"
 PRED_DIR = Path("experimental_predictions")
 OUTDIR = Path("experimental_comparison")
 PROXIMITY_THRESHOLDS_A = (5.0, 8.0)
@@ -58,23 +61,37 @@ def _resseq(key: str) -> int:
     return int(str(key).split(":")[1])
 
 
-def _gt_keys(coords: Dict[str, np.ndarray], case: dict) -> List[str]:
-    kind = case.get("gt_kind")
+def _chain(key: str) -> str:
+    return str(key).split(":", 1)[0]
+
+
+def _keys_for_ranges(keys: Iterable[str], ranges: List[List[int]]) -> List[str]:
     out = []
+    for key in keys:
+        n = _resseq(key)
+        if any(int(a) <= n <= int(b) for a, b in ranges):
+            out.append(key)
+    return sorted(out)
+
+
+def _gt_groups(coords: Dict[str, np.ndarray], case: dict) -> List[dict]:
+    kind = case.get("gt_kind")
     if kind == "exact":
         wanted = {int(x) for x in case.get("gt_exact", [])}
-        for k in coords:
-            if _resseq(k) in wanted:
-                out.append(k)
-    elif kind == "ranges":
-        ranges = [(int(a), int(b)) for a, b in case.get("gt_ranges", [])]
-        for k in coords:
-            n = _resseq(k)
-            if any(a <= n <= b for a, b in ranges):
-                out.append(k)
-    else:
-        raise ValueError(f"Unsupported residue-level gt_kind={kind!r} for {case.get('id')}")
-    return sorted(out)
+        keys = sorted(k for k in coords if _resseq(k) in wanted)
+        return [{"group": "all", "keys": keys}]
+    if kind == "ranges":
+        keys = _keys_for_ranges(coords.keys(), case.get("gt_ranges", []))
+        return [{"group": "all", "keys": keys}]
+    if kind == "equivalent_chain_ranges":
+        ranges = case.get("gt_ranges", [])
+        groups = []
+        for chain_id in sorted({_chain(k) for k in coords}):
+            keys = _keys_for_ranges((k for k in coords if _chain(k) == chain_id), ranges)
+            if keys:
+                groups.append({"group": chain_id, "keys": keys})
+        return groups
+    raise ValueError(f"Unsupported residue-level gt_kind={kind!r} for {case.get('id')}")
 
 
 def _members(patch: dict, coords: Dict[str, np.ndarray]) -> List[str]:
@@ -118,17 +135,40 @@ def _patch_metrics(patch: dict, gt: List[str], coords: Dict[str, np.ndarray]) ->
     }
 
 
-def _union_topk_metrics(patches: List[dict], gt: List[str], coords: Dict[str, np.ndarray], k: int) -> dict:
+def _metric_choice_key(m: dict) -> tuple:
+    meddist = m.get("median_gt_to_patch_A")
+    meddist = float(meddist) if meddist is not None and math.isfinite(float(meddist)) else 1e12
+    return (
+        float(m.get("near_8A_recall", 0.0)),
+        float(m.get("near_5A_recall", 0.0)),
+        float(m.get("overlap_recall", 0.0)),
+        float(m.get("overlap_precision", 0.0)),
+        -meddist,
+    )
+
+
+def _best_group_metrics(patch: dict, gt_groups: List[dict], coords: Dict[str, np.ndarray]) -> dict:
+    candidates = []
+    for group in gt_groups:
+        m = _patch_metrics(patch, group["keys"], coords)
+        m["matched_gt_group"] = group["group"]
+        m["n_gt_in_matched_group"] = len(group["keys"])
+        candidates.append(m)
+    if not candidates:
+        raise RuntimeError("No experimental ground-truth groups mapped to the prepared structure")
+    return max(candidates, key=_metric_choice_key)
+
+
+def _union_topk_metrics(patches: List[dict], gt_groups: List[dict], coords: Dict[str, np.ndarray], k: int) -> dict:
     selected = patches[:k]
     members = sorted({m for p in selected for m in _members(p, coords)})
-    synthetic = {"members": members, "center_key": None}
-    metrics = _patch_metrics(synthetic, gt, coords)
+    metrics = _best_group_metrics({"members": members, "center_key": None}, gt_groups, coords)
     metrics["k"] = k
     metrics["n_patches_used"] = len(selected)
     return metrics
 
 
-def _surface_null(pred: dict, gt: List[str], coords: Dict[str, np.ndarray], patch_radius_A: float = 8.0) -> dict:
+def _surface_null(pred: dict, gt_groups: List[dict], coords: Dict[str, np.ndarray], patch_radius_A: float = COARSE_PATCH_RADIUS_A) -> dict:
     surface = [k for k in pred.get("diagnostics", {}).get("surface_residue_keys", []) if k in coords]
     if not surface:
         return {"n_null_centers": 0}
@@ -139,9 +179,10 @@ def _surface_null(pred: dict, gt: List[str], coords: Dict[str, np.ndarray], patc
     recalls = []
     for center in surface:
         members = [k for k in surface if float(np.linalg.norm(coords[center]-coords[k])) <= patch_radius_A and float(np.dot(normals[center], normals[k])) > 0.0]
-        m = _patch_metrics({"members": members}, gt, coords)
+        m = _best_group_metrics({"members": members}, gt_groups, coords)
         recalls.append(float(m["near_8A_recall"]))
     return {
+        "patch_radius_A": float(patch_radius_A),
         "n_null_centers": len(recalls),
         "median_near_8A_recall": float(np.median(recalls)) if recalls else None,
         "q90_near_8A_recall": float(np.percentile(recalls, 90)) if recalls else None,
@@ -156,16 +197,21 @@ def compare_case(case: dict) -> dict:
     envelope = json.loads(pred_path.read_text(encoding="utf-8"))
     pred = envelope["interfacescout_output"]
 
-    raw = _fetch_pdb(case["pdb_id"])
-    prepared, prep = prepare_pdb_text(raw, chain=case.get("chain"))
+    prepared_path = envelope.get("archived_prepared_pdb")
+    if prepared_path and Path(prepared_path).exists():
+        prepared = Path(prepared_path).read_text(encoding="utf-8")
+        prep = envelope.get("structure_preparation", {})
+    else:
+        raw = _fetch_pdb(case["pdb_id"])
+        prepared, prep = prepare_pdb_text(raw, chain=case.get("chain"))
     coords = _ca_map(prepared)
-    gt = _gt_keys(coords, case)
-    if not gt:
+    gt_groups = [g for g in _gt_groups(coords, case) if g["keys"]]
+    if not gt_groups:
         raise RuntimeError(f"No experimental GT residues map to prepared PDB for {case['id']}")
 
     patches = pred.get("patches", [])
-    patch_metrics = [_patch_metrics(p, gt, coords) for p in patches]
-    topk = {str(k): _union_topk_metrics(patches, gt, coords, k) for k in TOP_K}
+    patch_metrics = [_best_group_metrics(p, gt_groups, coords) for p in patches]
+    topk = {str(k): _union_topk_metrics(patches, gt_groups, coords, k) for k in TOP_K}
     primary = [m for m in patch_metrics if int(m.get("pareto_front") or 999) == 1]
 
     def best(rows: Iterable[dict], field: str):
@@ -174,6 +220,7 @@ def compare_case(case: dict) -> dict:
 
     return {
         "id": case["id"],
+        "analysis_set": case.get("analysis_set", "primary"),
         "protein": case.get("protein"),
         "pdb_id": case.get("pdb_id"),
         "chain": prep.get("selected_chain"),
@@ -183,8 +230,9 @@ def compare_case(case: dict) -> dict:
         "gt_kind": case.get("gt_kind"),
         "experimental_evidence": case.get("evidence"),
         "doi": case.get("doi"),
-        "n_gt_residues_in_structure": len(gt),
-        "gt_keys": gt,
+        "source_url": case.get("source_url"),
+        "n_gt_groups": len(gt_groups),
+        "gt_groups": gt_groups,
         "prediction_file": str(pred_path),
         "prediction_generated_without_gt": bool(envelope.get("ground_truth_visible_to_predictor") is False),
         "n_predicted_patches": len(patches),
@@ -196,7 +244,7 @@ def compare_case(case: dict) -> dict:
         "best_any_overlap_recall": best(patch_metrics, "overlap_recall"),
         "best_any_near_5A_recall": best(patch_metrics, "near_5A_recall"),
         "best_any_near_8A_recall": best(patch_metrics, "near_8A_recall"),
-        "matched_surface_null": _surface_null(pred, gt, coords),
+        "matched_surface_null": _surface_null(pred, gt_groups, coords),
         "patch_metrics": patch_metrics,
         "notes": case.get("notes"),
     }
@@ -236,7 +284,7 @@ def main(manifest_path: Path = DEFAULT_MANIFEST) -> None:
     patch_rows = []
     summary_rows = []
     for case in manifest.get("cases", []):
-        if case.get("gt_kind") not in {"exact", "ranges"}:
+        if case.get("gt_kind") not in {"exact", "ranges", "equivalent_chain_ranges"}:
             print(f"SKIP_NONRESIDUE {case.get('id')} gt_kind={case.get('gt_kind')}", flush=True)
             continue
         print(f"COMPARE {case['id']}", flush=True)
@@ -245,40 +293,37 @@ def main(manifest_path: Path = DEFAULT_MANIFEST) -> None:
         (per_case_dir / f"{case['id']}_comparison.json").write_text(json.dumps(r, indent=2, sort_keys=True), encoding="utf-8")
         for p in r["patch_metrics"]:
             patch_rows.append({
-                "case_id": r["id"], "protein": r["protein"], "tier": r["tier"],
+                "case_id": r["id"], "analysis_set": r["analysis_set"], "protein": r["protein"], "tier": r["tier"],
                 "display_rank": p.get("display_rank"), "pareto_front": p.get("pareto_front"),
-                "center_key": p.get("center_key"), "n_members": p.get("n_members"),
-                "overlap_n": p.get("overlap_n"), "overlap_recall": p.get("overlap_recall"),
-                "overlap_precision": p.get("overlap_precision"), "near_5A_recall": p.get("near_5A_recall"),
-                "near_8A_recall": p.get("near_8A_recall"), "min_gt_to_patch_A": p.get("min_gt_to_patch_A"),
-                "center_min_gt_A": p.get("center_min_gt_A"),
+                "center_key": p.get("center_key"), "matched_gt_group": p.get("matched_gt_group"),
+                "n_members": p.get("n_members"), "overlap_n": p.get("overlap_n"),
+                "overlap_recall": p.get("overlap_recall"), "overlap_precision": p.get("overlap_precision"),
+                "near_5A_recall": p.get("near_5A_recall"), "near_8A_recall": p.get("near_8A_recall"),
+                "min_gt_to_patch_A": p.get("min_gt_to_patch_A"), "center_min_gt_A": p.get("center_min_gt_A"),
             })
         summary_rows.append({
-            "case_id": r["id"], "protein": r["protein"], "pdb_id": r["pdb_id"], "surface": r["surface"],
-            "pH": r["pH"], "tier": r["tier"], "gt_kind": r["gt_kind"],
-            "n_gt": r["n_gt_residues_in_structure"], "n_patches": r["n_predicted_patches"],
-            "top1_overlap_recall": r["topk"]["1"]["overlap_recall"],
-            "top3_overlap_recall": r["topk"]["3"]["overlap_recall"],
-            "top5_overlap_recall": r["topk"]["5"]["overlap_recall"],
-            "top1_near_5A_recall": r["topk"]["1"]["near_5A_recall"],
-            "top3_near_5A_recall": r["topk"]["3"]["near_5A_recall"],
-            "top5_near_5A_recall": r["topk"]["5"]["near_5A_recall"],
-            "top1_near_8A_recall": r["topk"]["1"]["near_8A_recall"],
-            "top3_near_8A_recall": r["topk"]["3"]["near_8A_recall"],
-            "top5_near_8A_recall": r["topk"]["5"]["near_8A_recall"],
-            "best_primary_overlap_recall": r["best_primary_overlap_recall"],
-            "best_primary_near_8A_recall": r["best_primary_near_8A_recall"],
+            "case_id": r["id"], "analysis_set": r["analysis_set"], "protein": r["protein"], "pdb_id": r["pdb_id"], "surface": r["surface"],
+            "pH": r["pH"], "tier": r["tier"], "gt_kind": r["gt_kind"], "n_gt_groups": r["n_gt_groups"],
+            "n_patches": r["n_predicted_patches"], "top1_overlap_recall": r["topk"]["1"]["overlap_recall"],
+            "top3_overlap_recall": r["topk"]["3"]["overlap_recall"], "top5_overlap_recall": r["topk"]["5"]["overlap_recall"],
+            "top1_near_5A_recall": r["topk"]["1"]["near_5A_recall"], "top3_near_5A_recall": r["topk"]["3"]["near_5A_recall"],
+            "top5_near_5A_recall": r["topk"]["5"]["near_5A_recall"], "top1_near_8A_recall": r["topk"]["1"]["near_8A_recall"],
+            "top3_near_8A_recall": r["topk"]["3"]["near_8A_recall"], "top5_near_8A_recall": r["topk"]["5"]["near_8A_recall"],
+            "best_primary_overlap_recall": r["best_primary_overlap_recall"], "best_primary_near_8A_recall": r["best_primary_near_8A_recall"],
             "null_median_near_8A_recall": r["matched_surface_null"].get("median_near_8A_recall"),
-            "prediction_generated_without_gt": r["prediction_generated_without_gt"],
-            "doi": r["doi"],
+            "prediction_generated_without_gt": r["prediction_generated_without_gt"], "doi": r["doi"], "source_url": r["source_url"],
         })
 
+    primary = [r for r in results if r.get("analysis_set") == "primary"]
+    secondary = [r for r in results if r.get("analysis_set") == "secondary"]
     payload = {
         "stage": "comparison_only_after_frozen_predictions",
         "prediction_directory": str(PRED_DIR),
         "proximity_thresholds_A": list(PROXIMITY_THRESHOLDS_A),
         "top_k": list(TOP_K),
-        "summary": _summary(results),
+        "summary_primary": _summary(primary),
+        "summary_secondary": _summary(secondary),
+        "summary_all": _summary(results),
         "results": results,
     }
     (OUTDIR / "experimental_comparison.json").write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
@@ -292,7 +337,7 @@ def main(manifest_path: Path = DEFAULT_MANIFEST) -> None:
             w = csv.DictWriter(fh, fieldnames=list(patch_rows[0]))
             w.writeheader(); w.writerows(patch_rows)
 
-    print("COMPARISON_SUMMARY " + json.dumps(payload["summary"], sort_keys=True), flush=True)
+    print("COMPARISON_SUMMARY " + json.dumps(payload["summary_primary"], sort_keys=True), flush=True)
 
 
 if __name__ == "__main__":
