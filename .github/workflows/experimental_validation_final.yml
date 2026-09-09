@@ -1,0 +1,59 @@
+name: InterfaceScout final blinded experimental validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/experimental_validation_final.yml'
+      - 'backend/v2/validation/benchmark_experimental_final.json'
+      - 'backend/v2/validation/generate_experimental_predictions.py'
+      - 'backend/v2/validation/compare_experimental_predictions_v2.py'
+      - 'backend/v2/model_settings.py'
+      - 'backend/v2/**.py'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install -r backend/requirements-publication-lock.txt
+      - name: Generate blinded predictions
+        working-directory: backend
+        env:
+          INTERFACESCOUT_VALIDATION_CANONICAL_ONLY: '1'
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from v2.validation.generate_experimental_predictions import main
+          main(Path('v2/validation/benchmark_experimental_final.json'))
+          PY
+      - name: Compare saved predictions with experimental ground truth
+        working-directory: backend
+        env:
+          INTERFACESCOUT_VALIDATION_CANONICAL_ONLY: '1'
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from v2.validation.compare_experimental_predictions_v2 import main
+          main(Path('v2/validation/benchmark_experimental_final.json'))
+          PY
+      - name: Package outputs
+        working-directory: backend
+        run: |
+          mkdir -p experimental_validation_package
+          cp -r experimental_predictions experimental_validation_package/
+          cp -r experimental_comparison experimental_validation_package/
+          cp v2/validation/benchmark_experimental_final.json experimental_validation_package/benchmark_manifest.json
+          cp v2/model_settings.py experimental_validation_package/model_settings.py
+          printf 'Prediction labels visible to predictor: NO\nModel SASA points/atom: 200\nModel multiscale radii: 6/9 A\nCoarse patch radius: 8 A\n' > experimental_validation_package/README.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-final-experimental-validation
+          path: backend/experimental_validation_package
+          if-no-files-found: error
