@@ -1,0 +1,53 @@
+name: InterfaceScout blinded experimental validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      manifest_path:
+        description: "Benchmark manifest path under backend/v2/validation"
+        required: true
+        default: "benchmark_strict.json"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r backend/requirements-publication-lock.txt
+      - name: Generate blinded predictions
+        working-directory: backend
+        env:
+          INTERFACESCOUT_VALIDATION_CANONICAL_ONLY: "1"
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from v2.validation.generate_experimental_predictions import main
+          main(Path("v2/validation/${{ inputs.manifest_path }}"))
+          PY
+      - name: Compare frozen predictions with experimental ground truth
+        working-directory: backend
+        env:
+          INTERFACESCOUT_VALIDATION_CANONICAL_ONLY: "1"
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from v2.validation.compare_experimental_predictions import main
+          main(Path("v2/validation/${{ inputs.manifest_path }}"))
+          PY
+      - name: Package outputs
+        working-directory: backend
+        run: |
+          mkdir -p experimental_validation_package
+          cp -r experimental_predictions experimental_validation_package/
+          cp -r experimental_comparison experimental_validation_package/
+          cp "v2/validation/${{ inputs.manifest_path }}" experimental_validation_package/benchmark_manifest.json
+          cp v2/model_settings.py experimental_validation_package/model_settings.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-experimental-validation
+          path: backend/experimental_validation_package
+          if-no-files-found: error
