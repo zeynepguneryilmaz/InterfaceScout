@@ -1,8 +1,8 @@
-"""Geometry-matched baseline evaluation on the frozen experimental manifest.
+"""Geometry-matched baseline evaluation on the external experimental manifest.
 
 B1-B4 use the same exposed-residue coordinates, 8 A non-transitive same-face
-patch geometry, redundancy suppression, and top-k prediction budget. Only the
-center-ranking signal changes. B5 is the full InterfaceScout V2 display rank.
+coarse-patch geometry, redundancy suppression, and top-k prediction budget.
+Only the center-ranking signal changes. B5 is the full InterfaceScout V2 rank.
 Experimental labels are applied only after predictions are generated.
 """
 from __future__ import annotations
@@ -22,12 +22,14 @@ from v2.chemistry_freeze import apply_publication_chemistry
 from v2.geometry import build_surface_geometry, ca_distance, same_face
 from v2.gnm import solve_gnm
 from v2.interface_engine import analyze_interface_v2
+from v2.model_settings import COARSE_PATCH_RADIUS_A, MULTISCALE_RADII_A
 from v2.prepare import prepare_pdb_text
 from v2.surface_modes import get_surface_mode
 
 HERE = Path(__file__).resolve().parent
 MANIFEST = HERE / "benchmark_strict.json"
-PATCH_A = 8.0
+PATCH_A = COARSE_PATCH_RADIUS_A
+SINGLE_RADIUS_A = MULTISCALE_RADII_A[1]
 
 
 def fetch_pdb(pid: str) -> str:
@@ -76,7 +78,6 @@ def patch_members(center: str, geometry: dict) -> List[str]:
 
 
 def topk_metric(rows: List[dict], gt: List[str], coords: Dict[str, np.ndarray], surface_keys: set[str], k: int, near_A: float) -> dict:
-    """Score the union of the top-k candidate patches, as prespecified."""
     selected = rows[:k]
     union_members = {m for p in selected for m in p.get("members", []) if m in coords}
     gset = set(gt)
@@ -128,12 +129,13 @@ def evaluate(case: dict) -> dict:
     surface_keys = set(surface)
     chem_rows = {str(r["key"]): r for r in channel.get("residues", [])}
     center_rows = {str(r["center_key"]): r for r in channel.get("patch_centers", [])}
+    outer_tag = f"{int(SINGLE_RADIUS_A)}A"
 
     signals = {
         "B1_scRSA": {key: float(r.get("scrsa", 0.0)) for key, r in surface.items()},
         "B2_membership": {key: (1.0 if key in chem_rows and float(chem_rows[key].get("local_score", 0.0)) > 0 else 0.0) for key in surface},
         "B3_local_compatibility": {key: float(chem_rows.get(key, {}).get("local_score", 0.0)) for key in surface},
-        "B4_single_radius_8A": {key: float(center_rows.get(key, {}).get("density_8A_norm", 0.0)) for key in surface},
+        "B4_single_radius_9A": {key: float(center_rows.get(key, {}).get(f"density_{outer_tag}_norm", 0.0)) for key in surface},
     }
 
     variants = {}
@@ -155,7 +157,7 @@ def evaluate(case: dict) -> dict:
 
 
 def summarize_group(rows: List[dict]) -> dict:
-    variants = ["B1_scRSA", "B2_membership", "B3_local_compatibility", "B4_single_radius_8A", "B5_InterfaceScout"]
+    variants = ["B1_scRSA", "B2_membership", "B3_local_compatibility", "B4_single_radius_9A", "B5_InterfaceScout"]
     summary = {}
     for name in variants:
         summary[name] = {}
@@ -179,7 +181,7 @@ def main() -> None:
         print("RUN_MATCHED", case["id"], flush=True)
         rows.append(evaluate(case))
     payload = {
-        "design": "geometry- and prediction-budget-matched center-ranking baselines; top-k metrics use the union of the top-k patches",
+        "design": "geometry- and prediction-budget-matched center-ranking baselines; B4 uses the selected outer 9 A aggregation scale and top-k metrics use the union of the top-k patches",
         "enrichment_background": "all exposed surface residues",
         "results": rows,
         "summary": summarize_group(rows),
