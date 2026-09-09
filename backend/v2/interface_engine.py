@@ -12,6 +12,15 @@ import numpy as np
 from .chemistry_freeze import apply_publication_chemistry
 from .coarse_patch import build_coarse_patches, PATCH_SCALE_A
 from .gnm import extract_ca_nodes, solve_gnm
+from .model_settings import (
+    MODEL_VERSION,
+    SASA_POINTS,
+    SASA_PROBE_A,
+    SC_RSA_THRESHOLD,
+    MULTISCALE_RADII_A,
+    COARSE_PATCH_RADIUS_A,
+    PARAMETER_SELECTION,
+)
 from .prepare import prepare_pdb_text
 from .rin import build_rin, annotate_rin_percentiles, summarize_patch_rin
 from .surface_modes import get_surface_mode
@@ -34,12 +43,7 @@ def _obtain_pdb_text(pdb_id: Optional[str], pdb_text: Optional[str]) -> str:
 
 
 def _geometry_only_gnm(prepared: str, cutoff_A: float) -> dict:
-    """Return only the GNM fields required by coarse-patch geometry.
-
-    Used in canonical-only validation because GNM correlations are descriptive
-    and excluded from membership/ranking. Normal InterfaceScout runs still call
-    the full solve_gnm implementation.
-    """
+    """Return only the GNM fields required by coarse-patch geometry."""
     nodes = extract_ca_nodes(prepared)
     n = len(nodes)
     return {
@@ -102,7 +106,7 @@ def analyze_interface_v2(
 
     return {
         "engine": "InterfaceScout V2",
-        "version": "2.3.1-publication-chemistry",
+        "version": MODEL_VERSION,
         "scope": {
             "prediction_unit": "coarse protein surface region / interface patch",
             "predicts_absolute_adsorption_free_energy": False,
@@ -127,11 +131,17 @@ def analyze_interface_v2(
         "structure_preparation": prep_report,
         "method": {
             "core_question": "Where on the native folded protein is a plausible material-contact region under the defined surface chemistry and environment?",
-            "chemistry_source": "frozen InterfaceScout compatibility channel with V2 publication chemistry corrections",
-            "accessibility_source": "V1 side-chain relative solvent accessibility",
+            "chemistry_source": "InterfaceScout compatibility channel with publication chemistry corrections",
+            "accessibility_source": "side-chain relative solvent accessibility",
+            "sasa_probe_A": SASA_PROBE_A,
+            "sasa_points_per_atom": SASA_POINTS,
+            "scrsa_threshold": SC_RSA_THRESHOLD,
+            "multiscale_radii_A": list(MULTISCALE_RADII_A),
+            "multiscale_radius_basis": "selected on an independent adsorption-label-free development panel before external experimental validation",
+            "parameter_selection": PARAMETER_SELECTION,
             "patch_radius_A": PATCH_SCALE_A,
-            "patch_radius_basis": "frozen V1 8 A patch scale; not adsorption-label fitted",
-            "patch_definition": "non-transitive local surface neighbourhood around a V1 chemistry-patch maximum",
+            "patch_radius_basis": "separate 8 A structural neighbourhood rule; not equated to the selected outer multiscale aggregation radius",
+            "patch_definition": "non-transitive local surface neighbourhood around a chemistry-patch maximum",
             "orientation": "coarse outward C-alpha face consistency",
             "ranking": "Pareto fronts across chemistry support, accessibility, patch coherence and orientation coherence; no weighted sum",
             "dynamics": "unweighted C-alpha GNM; downstream descriptive context only",
@@ -162,9 +172,11 @@ def analyze_interface_v2(
         },
         "method_notes": [
             "Experimental interface labels are not inputs to patch construction or ranking.",
+            "SASA sampling density and the 6/9 A multiscale pair were selected before external experimental validation on a separate label-free development panel.",
+            "The 8 A coarse-patch radius is a separate structural-neighbourhood rule and was not selected by the 6/9 A multiscale analysis.",
             "Patch membership is intentionally coarse; individual residues are not claimed as precise adsorption contacts.",
             "Patch growth is non-transitive to prevent surface percolation into unrealistically large regions.",
-            "The V2 publication chemistry corrects H-bond-donor-surface semantics by excluding protonated Lys/Arg from protein-side acceptor eligibility.",
+            "The V2 publication chemistry excludes protonated Lys/Arg from protein-side acceptor eligibility for H-bond-donor surfaces.",
             "Numerical literature Ebase values inherited from V1 remain metadata only and never change V2 ranking.",
             "GNM is excluded from patch ranking and is retained only as native-state dynamic context.",
             "RIN is excluded from patch prediction and is used only to characterize the structural-network location of a predicted patch.",
