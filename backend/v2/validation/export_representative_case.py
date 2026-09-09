@@ -1,4 +1,4 @@
-"""Export a representative publication-engine map for Figure 4.
+"""Export an illustrative InterfaceScout map for a representative protein.
 
 The case is illustrative, not an external-validation case: equine serum albumin
 (PDB 4F5U, chain A), pH 7.4, generic anionic interface chemistry.
@@ -11,6 +11,7 @@ import urllib.request
 import main as v1
 from v2.chemistry_freeze import apply_publication_chemistry
 from v2.interface_engine import analyze_interface_v2
+from v2.model_settings import MULTISCALE_RADII_A
 from v2.prepare import prepare_pdb_text
 
 PDB_ID = "4F5U"
@@ -32,6 +33,9 @@ def main() -> None:
     chem = v1_out["chemistries"][CHEMISTRY]
     residue_by_key = {str(r["key"]): r for r in v1_out["surface_residues"]}
     chem_by_key = {str(r["key"]): r for r in chem["residues"]}
+    inner, outer = MULTISCALE_RADII_A
+    inner_tag = f"{int(inner)}A"
+    outer_tag = f"{int(outer)}A"
 
     surface_rows = []
     for key, r in residue_by_key.items():
@@ -44,14 +48,15 @@ def main() -> None:
             "scrsa": r["scrsa"],
             "local_score": c.get("local_score", 0.0),
             "propensity": c.get("propensity", 0.0),
-            "density_5A": c.get("patch_density_5A", 0.0),
-            "density_8A": c.get("patch_density_8A", 0.0),
+            f"density_{inner_tag}": c.get(f"patch_density_{inner_tag}", 0.0),
+            f"density_{outer_tag}": c.get(f"patch_density_{outer_tag}", 0.0),
             "persistence": c.get("multiscale_persistence", 0.0),
         })
 
     v2_out = analyze_interface_v2(surface="anionic", pdb_text=raw, chain=CHAIN, pH=PH)
     payload = {
         "case": {"pdb_id": PDB_ID, "chain": CHAIN, "pH": PH, "surface_mode": "anionic"},
+        "method": {"multiscale_radii_A": list(MULTISCALE_RADII_A), "coarse_patch_radius_A": v2_out["method"]["patch_radius_A"]},
         "summary": {
             "n_residues": v1_out["stats"]["n_residues"],
             "n_surface_residues": v1_out["stats"]["n_surface_res"],
