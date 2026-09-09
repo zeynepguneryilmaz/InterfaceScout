@@ -13,13 +13,13 @@
     {"id":"gb3_citrate_au_candidate","protein":"GB3 domain","pdb_id":"2OED","chain":"A","surface":"citrate_au","pH":6.4},
     {"id":"b2m_mpa_au_candidate","protein":"Human beta-2-microglobulin","pdb_id":"1JNJ","chain":"A","surface":"mpa_au","pH":7.0},
     {"id":"asparaginase_alumoh_candidate","protein":"E. coli L-asparaginase II","pdb_id":"3ECA","chain":"A,B,C,D","surface":"alumoh","pH":7.5},
-    {"id":"vitronectin_hx_hap_candidate","protein":"Human vitronectin hemopexin-like domain","pdb_id":"7TXR","chain":"A","surface":"hydroxyapatite","pH":6.5}
+    {"id":"vitronectin_hx_hap_candidate","protein":"Human vitronectin hemopexin-like domain","pdb_id":"7TXR","chain":"A","surface":"hydroxyapatite","pH":6.5},
+    {"id":"fibrinogen_silica_candidate","protein":"Human fibrinogen","pdb_id":"3GHG","chain":"A,B,C,D,E,F","surface":"silica","pH":8.0},
+    {"id":"igg1_silica_candidate","protein":"Intact human IgG1","pdb_id":"1HZH","chain":"H,K,L,M","surface":"silica","pH":6.2}
   ],
   "held_before_prediction": [
-    {"protein":"Fibrinogen","reason":"domain/orientation scorer and defensible chain mapping must be frozen before prediction"},
-    {"protein":"IgG1","reason":"experimental construct/PDB mapping must be frozen before prediction"},
     {"protein":"Transferrin","reason":"published penicillamine-Au chemistry has no direct frozen InterfaceScout surface mode"},
     {"protein":"DP-1 / alternate 15th candidate","reason":"reviewer-safe experimental structure/PDB mapping not yet established"}
   ],
-  "condition_audit_note": "The silica pH values for HSA, cytochrome c, RNase A, HEWL and AcP are working prediction conditions and must be checked against the primary-paper/SI adsorption buffers before those cases are admitted to quantitative experimental scoring. Their raw outputs are archived separately so any condition correction is explicit rather than silently overwritten."
+  "condition_audit_note": "The silica pH values for HSA, cytochrome c, RNase A, HEWL and AcP are working prediction conditions and must be checked against the primary-paper/SI adsorption buffers before those cases are admitted to quantitative experimental scoring. Fibrinogen and IgG1 are orientation/domain-level validation candidates and are not intended for exact-residue scoring. Their raw outputs are archived separately so any condition correction or exclusion is explicit rather than silently overwritten."
 }
