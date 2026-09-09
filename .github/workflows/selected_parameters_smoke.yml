@@ -1,0 +1,64 @@
+name: InterfaceScout selected-parameter smoke test
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'backend/v2/model_settings.py'
+      - 'backend/v2/chemistry_freeze.py'
+      - 'backend/v2/interface_engine.py'
+      - 'backend/v2/__init__.py'
+      - '.github/workflows/selected_parameters_smoke.yml'
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - run: pip install -r backend/requirements-publication-lock.txt
+      - name: Verify selected parameters in live V2 output
+        working-directory: backend
+        env:
+          INTERFACESCOUT_VALIDATION_CANONICAL_ONLY: '1'
+        run: |
+          python - <<'PY'
+          import json
+          import urllib.request
+          from v2.interface_engine import analyze_interface_v2
+          from v2.model_settings import MODEL_VERSION
+
+          raw = urllib.request.urlopen('https://files.rcsb.org/download/1CRN.pdb', timeout=30).read().decode()
+          out = analyze_interface_v2(surface='anionic', pdb_text=raw, chain='A', pH=7.4)
+          assert out['version'] == MODEL_VERSION
+          assert out['method']['sasa_points_per_atom'] == 200
+          assert out['method']['sasa_probe_A'] == 1.40
+          assert out['method']['scrsa_threshold'] == 0.05
+          assert out['method']['multiscale_radii_A'] == [6.0, 9.0]
+          assert out['method']['patch_radius_A'] == 8.0
+          chem = out['surface_mode']['chemistry']
+          # Inspect the underlying V1 chemistry payload through a direct load.
+          import main as v1
+          from v2.chemistry_freeze import apply_publication_chemistry
+          from v2.prepare import prepare_pdb_text
+          apply_publication_chemistry(v1)
+          prepared, _ = prepare_pdb_text(raw, chain='A')
+          req = v1.AnalyzeRequest(pdb_text=prepared, chain=None, env=v1.EnvParams(pH=7.4, ionic=150.0, temp=298.0))
+          base = v1.analyze(req)
+          centers = base['chemistries'][chem]['patch_centers']
+          if centers:
+              first = centers[0]
+              assert 'density_6A_norm' in first
+              assert 'density_9A_norm' in first
+              assert 'density_5A_norm' not in first
+              assert 'density_8A_norm' not in first
+          print(json.dumps({
+              'version': out['version'],
+              'sasa_points': out['method']['sasa_points_per_atom'],
+              'multiscale_radii_A': out['method']['multiscale_radii_A'],
+              'coarse_patch_radius_A': out['method']['patch_radius_A'],
+              'n_patches': out['n_patches'],
+          }, indent=2))
+          PY
