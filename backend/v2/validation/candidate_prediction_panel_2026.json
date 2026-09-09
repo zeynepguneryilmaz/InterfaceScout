@@ -1,0 +1,25 @@
+{
+  "stage": "prediction_only_pre_gt_freeze",
+  "purpose": "InterfaceScout outputs generated before opening/finalizing experimental contact labels for the reviewer-audited unique-protein panel",
+  "blinding": "Only id, protein, pdb_id, chain, surface and pH enter the predictor. No experimental contact residue/peptide/domain labels are stored in this file.",
+  "cases": [
+    {"id":"hsa_silica_candidate","protein":"Human serum albumin","pdb_id":"1AO6","chain":"A","surface":"silica","pH":7.4},
+    {"id":"hcaii_silica_candidate","protein":"Human carbonic anhydrase II","pdb_id":"2CBA","chain":"A","surface":"silica","pH":6.3},
+    {"id":"cytc_silica_candidate","protein":"Horse heart cytochrome c","pdb_id":"1HRC","chain":"A","surface":"silica","pH":7.0},
+    {"id":"rnasea_silica_candidate","protein":"Bovine ribonuclease A","pdb_id":"7RSA","chain":"A","surface":"silica","pH":7.0},
+    {"id":"hewl_silica_candidate","protein":"Hen egg-white lysozyme","pdb_id":"1LYZ","chain":"A","surface":"silica","pH":7.0},
+    {"id":"acp_silica_candidate","protein":"Horse acylphosphatase","pdb_id":"1APS","chain":"A","surface":"silica","pH":7.0},
+    {"id":"ubiquitin_citrate_au_candidate","protein":"Human ubiquitin","pdb_id":"1UBQ","chain":"A","surface":"citrate_au","pH":7.7},
+    {"id":"gb3_citrate_au_candidate","protein":"GB3 domain","pdb_id":"2OED","chain":"A","surface":"citrate_au","pH":6.4},
+    {"id":"b2m_mpa_au_candidate","protein":"Human beta-2-microglobulin","pdb_id":"1JNJ","chain":"A","surface":"mpa_au","pH":7.0},
+    {"id":"asparaginase_alumoh_candidate","protein":"E. coli L-asparaginase II","pdb_id":"3ECA","chain":"A,B,C,D","surface":"alumoh","pH":7.5},
+    {"id":"vitronectin_hx_hap_candidate","protein":"Human vitronectin hemopexin-like domain","pdb_id":"7TXR","chain":"A","surface":"hydroxyapatite","pH":6.5}
+  ],
+  "held_before_prediction": [
+    {"protein":"Fibrinogen","reason":"domain/orientation scorer and defensible chain mapping must be frozen before prediction"},
+    {"protein":"IgG1","reason":"experimental construct/PDB mapping must be frozen before prediction"},
+    {"protein":"Transferrin","reason":"published penicillamine-Au chemistry has no direct frozen InterfaceScout surface mode"},
+    {"protein":"DP-1 / alternate 15th candidate","reason":"reviewer-safe experimental structure/PDB mapping not yet established"}
+  ],
+  "condition_audit_note": "The silica pH values for HSA, cytochrome c, RNase A, HEWL and AcP are working prediction conditions and must be checked against the primary-paper/SI adsorption buffers before those cases are admitted to quantitative experimental scoring. Their raw outputs are archived separately so any condition correction is explicit rather than silently overwritten."
+}
