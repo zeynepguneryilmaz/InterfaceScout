@@ -1,11 +1,9 @@
-"""Standalone FastAPI surface for InterfaceScout V2 coarse biointerface prediction.
+"""Canonical InterfaceScout web application.
 
-Run from repository root with:
-    uvicorn backend.v2.api:app --reload
-
-V1 remains served by backend/main.py and is not modified by this module.
+This is the single user-facing application used for the publication version.
+The internal implementation modules are kept separate only for code organization;
+no legacy/version choice is exposed to users.
 """
-
 from __future__ import annotations
 
 import sys
@@ -13,20 +11,24 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 _BACKEND = Path(__file__).resolve().parents[1]
+_ROOT = _BACKEND.parent
+_FRONTEND = _ROOT / "frontend"
 if str(_BACKEND) not in sys.path:
     sys.path.insert(0, str(_BACKEND))
 
-from . import V2_VERSION
 from .interface_engine import analyze_interface_v2
+from .model_settings import MODEL_VERSION
 from .surface_modes import SURFACE_MODES
 
-app = FastAPI(title="InterfaceScout V2", version=V2_VERSION)
+PUBLIC_VERSION = "1.0-publication"
+app = FastAPI(title="InterfaceScout", version=PUBLIC_VERSION)
 
 
-class V2AnalyzeRequest(BaseModel):
+class AnalyzeRequest(BaseModel):
     surface: str
     pdb_id: Optional[str] = None
     pdb_text: Optional[str] = None
@@ -36,18 +38,18 @@ class V2AnalyzeRequest(BaseModel):
     temp_K: float = Field(298.0, gt=0.0)
 
 
-@app.get("/v2/health")
+@app.get("/health")
 def health():
     return {
         "status": "ok",
-        "engine": "InterfaceScout V2 coarse interface predictor",
-        "version": V2_VERSION,
-        "v1_modified": False,
+        "engine": "InterfaceScout",
+        "version": PUBLIC_VERSION,
+        "model_version": MODEL_VERSION,
         "benchmark_fitted_weights": False,
     }
 
 
-@app.get("/v2/surfaces")
+@app.get("/surfaces")
 def surfaces():
     return {
         key: {
@@ -59,10 +61,10 @@ def surfaces():
     }
 
 
-@app.post("/v2/analyze")
-def analyze(req: V2AnalyzeRequest):
+@app.post("/analyze")
+def analyze(req: AnalyzeRequest):
     try:
-        return analyze_interface_v2(
+        out = analyze_interface_v2(
             surface=req.surface,
             pH=req.pH,
             ionic_mM=req.ionic_mM,
@@ -71,9 +73,14 @@ def analyze(req: V2AnalyzeRequest):
             pdb_text=req.pdb_text,
             chain=req.chain,
         )
-    except KeyError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except ValueError as exc:
+        out["engine"] = "InterfaceScout"
+        out["public_version"] = PUBLIC_VERSION
+        return out
+    except (KeyError, ValueError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"V2 analysis failed: {exc}") from exc
+        raise HTTPException(status_code=500, detail=f"InterfaceScout analysis failed: {exc}") from exc
+
+
+if _FRONTEND.exists():
+    app.mount("/", StaticFiles(directory=str(_FRONTEND), html=True), name="frontend")
