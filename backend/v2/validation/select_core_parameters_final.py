@@ -1,7 +1,7 @@
-"""Final independent parameter-selection run using a clean, adsorption-label-free structural panel.
+"""Canonical adsorption-label-free parameter-selection run.
 
-This wrapper reuses the consensus selection implementation while replacing three
-ligand-bound development structures with unliganded/native alternatives.
+The publication development panel contains eight structurally diverse proteins
+and is independent of the external experimental adsorption benchmark.
 """
 from v2.validation import select_core_parameters_consensus as base
 
