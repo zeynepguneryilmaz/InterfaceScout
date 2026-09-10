@@ -4,7 +4,7 @@ The public InterfaceScout application does not ask for or expose material names.
 This module exists only so archived and reproducible experimental-validation
 manifests can map the experimentally studied interface to the appropriate
 canonical surface-chemistry channel. No numerical material weights are used.
-""
+"""
 
 from __future__ import annotations
 
