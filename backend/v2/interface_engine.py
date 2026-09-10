@@ -1,22 +1,18 @@
 """InterfaceScout protein-side surface-chemistry mapping engine.
 
 A single analysis prepares the protein and computes solvent exposure once, then
-returns every canonical surface-chemistry map plus optional structural-context
-maps. Material names are not part of the public model. Structural-context maps
-never enter patch construction or ranking.
+returns every canonical surface-chemistry map. Material names, GNM dynamics and
+residue-interaction-network descriptors are not part of the public model.
 """
 from __future__ import annotations
 
 import importlib
-import os
 import urllib.request
 from typing import Any, Dict, Optional
 
-import numpy as np
-
 from .chemistry_freeze import apply_publication_chemistry
 from .coarse_patch import build_coarse_patches, PATCH_SCALE_A
-from .gnm import extract_ca_nodes, solve_gnm
+from .geometry import extract_ca_nodes
 from .model_settings import (
     MODEL_VERSION,
     SASA_POINTS,
@@ -26,11 +22,8 @@ from .model_settings import (
     PARAMETER_SELECTION,
 )
 from .prepare import prepare_pdb_text
-from .rin import build_rin, annotate_rin_percentiles, summarize_patch_rin
 from .surface_modes import get_surface_mode
 
-# Public labels describe generalized surface chemistry rather than named materials.
-# The second item is the frozen internal chemistry key retained for reproducibility.
 PUBLIC_MAP_SPECS = [
     ("anionic", "anionic", "Anionic surface", "Negatively charged surface chemistry, including exposed anionic or carboxylate-rich groups."),
     ("cationic", "cationic", "Cationic surface", "Positively charged surface chemistry, including protonated amine-rich groups."),
@@ -64,19 +57,6 @@ def _obtain_pdb_text(pdb_id: Optional[str], pdb_text: Optional[str]) -> str:
         return response.read().decode("utf-8", errors="replace")
 
 
-def _geometry_only_gnm(prepared: str, cutoff_A: float) -> dict:
-    nodes = extract_ca_nodes(prepared)
-    n = len(nodes)
-    return {
-        "cutoff_A": float(cutoff_A),
-        "n_nodes": n,
-        "nodes": nodes,
-        "index": {x["key"]: i for i, x in enumerate(nodes)},
-        "correlation_matrix": np.zeros((n, n), dtype=float),
-        "residue_metrics": {},
-    }
-
-
 def _prepare_shared_context(
     *,
     pH: float,
@@ -85,7 +65,6 @@ def _prepare_shared_context(
     pdb_id: Optional[str],
     pdb_text: Optional[str],
     chain: Optional[str],
-    gnm_cutoff_A: float,
 ) -> dict:
     if not (0.0 <= float(pH) <= 14.0):
         raise ValueError("pH must be between 0 and 14")
@@ -107,28 +86,18 @@ def _prepare_shared_context(
     if hasattr(core_result, "body"):
         raise RuntimeError("Unexpected HTTP response object returned by the chemistry core")
 
-    canonical_only = os.environ.get("INTERFACESCOUT_VALIDATION_CANONICAL_ONLY") == "1"
-    gnm = _geometry_only_gnm(prepared, float(gnm_cutoff_A)) if canonical_only else solve_gnm(prepared, cutoff_A=float(gnm_cutoff_A))
-
+    ca_nodes = extract_ca_nodes(prepared)
     surface_keys = [str(r["key"]) for r in core_result.get("surface_residues", []) if r.get("key")]
-    if canonical_only:
-        rin = {"cutoff_A": None, "n_nodes": 0, "n_edges": 0, "residue_metrics": {}}
-    else:
-        rin = annotate_rin_percentiles(build_rin(prepared), surface_keys)
-
     return {
         "prepared": prepared,
         "prep_report": prep_report,
         "core_result": core_result,
-        "canonical_only": canonical_only,
-        "gnm": gnm,
-        "rin": rin,
+        "ca_nodes": ca_nodes,
         "surface_keys": surface_keys,
     }
 
 
 def _residue_rows(channel: dict) -> list[dict]:
-    """Expose the residue-level chemistry fields needed for inspection/overlay."""
     rows = []
     for row in channel.get("residues", []):
         key = row.get("key")
@@ -150,15 +119,11 @@ def _residue_rows(channel: dict) -> list[dict]:
 
 def _build_map(context: dict, public_key: str, internal_key: str, label: str, description: str) -> dict:
     core_result = context["core_result"]
-    patches = build_coarse_patches(v1_result=core_result, chemistry=internal_key, gnm=context["gnm"])
-
-    if context["canonical_only"]:
-        for patch in patches:
-            patch["rin_context"] = {"status": "disabled_in_canonical_only_validation"}
-    else:
-        for patch in patches:
-            patch["rin_context"] = summarize_patch_rin(patch.get("members", []), context["rin"])
-
+    patches = build_coarse_patches(
+        v1_result=core_result,
+        chemistry=internal_key,
+        ca_nodes=context["ca_nodes"],
+    )
     channel = core_result.get("chemistries", {}).get(internal_key, {})
     primary = [p for p in patches if int(p.get("pareto_front", 999)) == 1]
     return {
@@ -174,91 +139,7 @@ def _build_map(context: dict, public_key: str, internal_key: str, label: str, de
     }
 
 
-def _range(rows: list[dict]) -> tuple[float | None, float | None]:
-    vals = [float(r["value"]) for r in rows if r.get("value") is not None and np.isfinite(float(r["value"]))]
-    return (min(vals), max(vals)) if vals else (None, None)
-
-
-def _build_property_maps(context: dict) -> dict:
-    if context["canonical_only"]:
-        return {
-            "available": False,
-            "effect_on_prediction": False,
-            "reason": "Structural-context calculations are disabled in canonical-only validation mode.",
-            "order": [],
-            "maps": {},
-        }
-
-    surface = set(context["surface_keys"])
-    gnm_metrics = context["gnm"].get("residue_metrics", {})
-    rin_metrics = context["rin"].get("residue_metrics", {})
-
-    gnm_rows = [{
-        "key": key,
-        "chain": m["chain"],
-        "res_seq": int(m["res_seq"]),
-        "icode": m.get("icode", ""),
-        "res_name": m["res_name"],
-        "value": float(m["normalized_fluctuation"]),
-        "surface": key in surface,
-    } for key, m in gnm_metrics.items()]
-
-    def rin_rows(field: str, percentile_field: str) -> list[dict]:
-        return [{
-            "key": key,
-            "chain": m["chain"],
-            "res_seq": int(m["res_seq"]),
-            "icode": m.get("icode", ""),
-            "res_name": m["res_name"],
-            "value": float(m[field]),
-            "surface": key in surface,
-            "surface_percentile": m.get(percentile_field),
-        } for key, m in rin_metrics.items()]
-
-    definitions = {
-        "gnm_fluctuation": {
-            "label": "GNM fluctuation",
-            "description": "Normalized native-state Cα fluctuation. Values >1 indicate above-average mobility within the analyzed protein.",
-            "value_label": "normalized fluctuation",
-            "rows": gnm_rows,
-        },
-        "rin_degree": {
-            "label": "RIN degree",
-            "description": "Normalized residue degree in the 4.5 Å heavy-atom contact network; higher values indicate more direct structural contacts.",
-            "value_label": "normalized degree",
-            "rows": rin_rows("degree_normalized", "degree_normalized_percentile_surface"),
-        },
-        "rin_betweenness": {
-            "label": "RIN betweenness",
-            "description": "Normalized betweenness centrality; higher values indicate residues lying on more shortest network paths.",
-            "value_label": "betweenness",
-            "rows": rin_rows("betweenness", "betweenness_percentile_surface"),
-        },
-        "rin_closeness": {
-            "label": "RIN closeness",
-            "description": "Closeness centrality; higher values indicate shorter network distance to the rest of the protein.",
-            "value_label": "closeness",
-            "rows": rin_rows("closeness", "closeness_percentile_surface"),
-        },
-    }
-    for item in definitions.values():
-        lo, hi = _range(item["rows"])
-        item["min_value"] = lo
-        item["max_value"] = hi
-        item["effect_on_prediction"] = False
-        item["role"] = "descriptive structural context only"
-
-    return {
-        "available": True,
-        "effect_on_prediction": False,
-        "order": ["gnm_fluctuation", "rin_degree", "rin_betweenness", "rin_closeness"],
-        "maps": definitions,
-        "gnm": {"cutoff_A": context["gnm"]["cutoff_A"]},
-        "rin": {"cutoff_A": context["rin"]["cutoff_A"]},
-    }
-
-
-def _shared_response(context: dict, *, pdb_id: Optional[str], pH: float, ionic_mM: float, temp_K: float, gnm_cutoff_A: float) -> dict:
+def _shared_response(context: dict, *, pdb_id: Optional[str], pH: float, ionic_mM: float, temp_K: float) -> dict:
     return {
         "engine": "InterfaceScout",
         "version": MODEL_VERSION,
@@ -270,8 +151,6 @@ def _shared_response(context: dict, *, pdb_id: Optional[str], pH: float, ionic_m
             "models_adsorption_induced_unfolding": False,
             "benchmark_fitted_weights": False,
             "residue_precision_claim": False,
-            "rin_changes_patch_prediction": False,
-            "gnm_changes_patch_prediction": False,
         },
         "input": {
             "pdb_id": (pdb_id or "").strip().upper() or None,
@@ -292,19 +171,15 @@ def _shared_response(context: dict, *, pdb_id: Optional[str], pH: float, ionic_m
             "patch_definition": "non-transitive local surface neighbourhood around a chemistry-patch maximum",
             "orientation": "coarse outward C-alpha face consistency",
             "ranking": "Pareto fronts across chemistry support, accessibility, patch coherence and orientation coherence; no weighted sum",
-            "gnm_cutoff_A": float(gnm_cutoff_A),
-            "rin_heavy_atom_cutoff_A": context["rin"]["cutoff_A"],
             "single_pass_all_maps": True,
         },
         "diagnostics": {
             "n_surface_residues": len(context["surface_keys"]),
             "surface_residue_keys": context["surface_keys"],
-            "canonical_only_validation": context["canonical_only"],
         },
         "method_notes": [
             "All single-channel chemistry maps use the same prepared structure and environmental conditions.",
             "Experimental interface labels are not inputs to patch construction or ranking.",
-            "GNM and RIN are excluded from patch prediction/ranking and retained only as structural context.",
             "Multi-chemistry composite views are derived overlays of canonical single-channel maps; they do not introduce fitted material weights or constitute a separately validated combined score.",
         ],
     }
@@ -318,9 +193,8 @@ def analyze_all_maps(
     pdb_id: Optional[str] = None,
     pdb_text: Optional[str] = None,
     chain: Optional[str] = None,
-    gnm_cutoff_A: float = 7.3,
 ) -> Dict[str, Any]:
-    """Compute all public chemistry maps and structural-context maps in one run."""
+    """Compute all public chemistry maps in one run."""
     context = _prepare_shared_context(
         pH=pH,
         ionic_mM=ionic_mM,
@@ -328,7 +202,6 @@ def analyze_all_maps(
         pdb_id=pdb_id,
         pdb_text=pdb_text,
         chain=chain,
-        gnm_cutoff_A=gnm_cutoff_A,
     )
 
     available = context["core_result"].get("chemistries", {})
@@ -336,13 +209,12 @@ def analyze_all_maps(
     maps = {public: _build_map(context, public, internal, label, desc) for public, internal, label, desc in specs}
     order = [spec[0] for spec in specs]
 
-    out = _shared_response(context, pdb_id=pdb_id, pH=pH, ionic_mM=ionic_mM, temp_K=temp_K, gnm_cutoff_A=gnm_cutoff_A)
+    out = _shared_response(context, pdb_id=pdb_id, pH=pH, ionic_mM=ionic_mM, temp_K=temp_K)
     out.update({
         "n_maps": len(order),
         "map_order": order,
         "initial_map": order[0] if order else None,
         "maps": maps,
-        "structural_context": _build_property_maps(context),
         "composite_policy": {
             "type": "derived_overlay",
             "validated_as_combined_model": False,
@@ -365,7 +237,12 @@ def analyze_interface_v2(
     chain: Optional[str] = None,
     gnm_cutoff_A: float = 7.3,
 ) -> Dict[str, Any]:
-    """Internal compatibility wrapper retained for frozen validation scripts."""
+    """Internal compatibility wrapper retained for frozen validation scripts.
+
+    gnm_cutoff_A remains accepted only so archived validation calls do not break;
+    it has no effect on the current model.
+    """
+    _ = gnm_cutoff_A
     mode = get_surface_mode(surface)
     context = _prepare_shared_context(
         pH=pH,
@@ -374,12 +251,11 @@ def analyze_interface_v2(
         pdb_id=pdb_id,
         pdb_text=pdb_text,
         chain=chain,
-        gnm_cutoff_A=gnm_cutoff_A,
     )
     internal = mode.chemistry
     spec = next((x for x in PUBLIC_MAP_SPECS if x[1] == internal), (internal, internal, internal.replace("_", " ").title(), ""))
     map_payload = _build_map(context, *spec)
-    out = _shared_response(context, pdb_id=pdb_id, pH=pH, ionic_mM=ionic_mM, temp_K=temp_K, gnm_cutoff_A=gnm_cutoff_A)
+    out = _shared_response(context, pdb_id=pdb_id, pH=pH, ionic_mM=ionic_mM, temp_K=temp_K)
     out.update({
         "input": {**out["input"], "surface": mode.key, "primary_chemistry": internal},
         "n_patches": map_payload["n_patches"],
