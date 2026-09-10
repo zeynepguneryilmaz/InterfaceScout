@@ -34,16 +34,12 @@ jobs:
           required = {'anionic','cationic','hydrophobic','pi_carbon','hbond_donor','hbond_acceptor','oxide','calcium_phosphate','metal_coord','soft_metal_sulfur','phosphate'}
           assert required == set(out['maps'])
           assert 'surface_presets' not in out
+          assert 'structural_context' not in out
+          assert 'gnm_cutoff_A' not in out['method']
+          assert 'rin_heavy_atom_cutoff_A' not in out['method']
           assert out['maps']['anionic']['n_patches'] > 0
           assert 'residues' in out['maps']['anionic']
           assert out['composite_policy']['validated_as_combined_model'] is False
-
-          structural = out['structural_context']
-          assert structural['available'] is True
-          assert structural['effect_on_prediction'] is False
-          assert set(structural['order']) == {'gnm_fluctuation','rin_degree','rin_betweenness','rin_closeness'}
-          assert structural['maps']['gnm_fluctuation']['rows']
-          assert structural['maps']['rin_betweenness']['rows']
 
           # Internal material wrapper remains only for frozen validation scripts.
           one = analyze_interface_v2(surface='silica', pdb_text=raw, chain='A', pH=7.4)
