@@ -3,7 +3,7 @@ set -e
 HERE="$(cd "$(dirname "$0")" && pwd)"
 BACKEND="$HERE/backend"
 
-if [ ! -f "$BACKEND/v2/api.py" ] || [ ! -f "$HERE/frontend/index.html" ]; then
+if [ ! -f "$BACKEND/app.py" ] || [ ! -f "$HERE/frontend/index.html" ]; then
   echo "InterfaceScout files are incomplete." >&2
   exit 1
 fi
@@ -22,6 +22,6 @@ fi
 cd "$BACKEND"
 # shellcheck disable=SC1091
 source .venv/bin/activate
-nohup python -m uvicorn v2.api:app --host 127.0.0.1 --port 8000 >/tmp/interfacescout.log 2>&1 &
+nohup python -m uvicorn app:app --host 127.0.0.1 --port 8000 >/tmp/interfacescout.log 2>&1 &
 sleep 2
 command -v xdg-open >/dev/null 2>&1 && xdg-open "http://localhost:8000" >/dev/null 2>&1 || true
