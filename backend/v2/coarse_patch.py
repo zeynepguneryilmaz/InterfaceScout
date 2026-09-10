@@ -1,22 +1,17 @@
-"""Weight-free coarse interface patch construction for InterfaceScout V2.
+"""Weight-free coarse interface patch construction for InterfaceScout.
 
-V2 predicts *surface regions*, not residue affinities. Experimental adsorption
-labels never enter this module.
+InterfaceScout predicts coarse protein surface regions, not atomistic contacts or
+residue affinities. Experimental adsorption labels never enter this module.
 
 Construction logic
 ------------------
-1. Frozen V1 chemistry maps provide local patch-persistence values.
-2. Candidate centres are local maxima on the exposed protein surface at the
-   already-frozen 8 A V1 patch scale.
-3. A V2 patch is the non-transitive 8 A surface neighbourhood of one local
-   maximum, restricted to the same coarse outward-facing hemisphere.
-4. Chemistry, accessibility and local surface organization define/rank patches.
-5. GNM dynamics are reported only as downstream descriptive context.
-6. Patches are compared by Pareto dominance; no empirical weighted sum is used.
-
-The non-transitive definition is deliberate. Connected-component growth can
-percolate through a protein surface and turn a local biointerface hypothesis
-into an unrealistically large fraction of the protein.
+1. Frozen chemistry maps provide local patch-persistence values.
+2. Candidate centres are local maxima on the exposed protein surface.
+3. A patch is the non-transitive 8 A surface neighbourhood of one local maximum,
+   restricted to the same coarse outward-facing hemisphere.
+4. Chemistry support, accessibility, local surface organization and orientation
+   coherence define/rank patches.
+5. Patches are compared by Pareto dominance; no empirical weighted sum is used.
 """
 
 from __future__ import annotations
@@ -33,25 +28,11 @@ from .geometry import (
     patch_diameter_A,
 )
 
-PATCH_SCALE_A = 8.0  # inherited from the frozen V1 multiscale patch definition
-
-
-def _pair_values(keys: List[str], matrix: np.ndarray, index: Dict[str, int]) -> List[float]:
-    vals: List[float] = []
-    for i in range(len(keys)):
-        if keys[i] not in index:
-            continue
-        ii = index[keys[i]]
-        for j in range(i + 1, len(keys)):
-            if keys[j] not in index:
-                continue
-            jj = index[keys[j]]
-            vals.append(float(matrix[ii, jj]))
-    return vals
+PATCH_SCALE_A = 8.0
 
 
 def _local_maxima(channel: dict, geometry: dict) -> List[dict]:
-    """Select nonredundant V1 patch maxima without benchmark-fitted thresholds."""
+    """Select nonredundant chemistry-patch maxima without fitted thresholds."""
     rows = [
         r for r in channel.get("patch_centers", [])
         if r.get("center_key") in geometry["coords"]
@@ -91,7 +72,7 @@ def _patch_around_center(center: dict, chemistry_rows: Dict[str, dict], geometry
     return {"center": ckey, "center_row": center, "members": members, "seeds": seeds}
 
 
-def _patch_descriptors(patch: dict, geometry: dict, gnm: dict) -> dict:
+def _patch_descriptors(patch: dict, geometry: dict) -> dict:
     members = list(patch["members"])
     seeds = list(patch["seeds"])
     center = patch["center_row"]
@@ -100,10 +81,6 @@ def _patch_descriptors(patch: dict, geometry: dict, gnm: dict) -> dict:
     patch_coherence = float(center.get("multiscale_persistence", 0.0)) / 100.0
     access_vals = [float(geometry["scrsa"].get(k, 0.0)) for k in members]
     accessibility = float(np.mean(access_vals)) if access_vals else 0.0
-
-    pair_corr = _pair_values(members, gnm["correlation_matrix"], gnm["index"])
-    dynamic_coupling = float(np.mean(np.abs(pair_corr))) if pair_corr else 0.0
-    dynamic_signed = float(np.mean(pair_corr)) if pair_corr else 0.0
     orientation = patch_orientation_coherence(members, geometry)
 
     meta = geometry["meta"]
@@ -129,15 +106,11 @@ def _patch_descriptors(patch: dict, geometry: dict, gnm: dict) -> dict:
         "mean_accessibility": accessibility,
         "patch_coherence": patch_coherence,
         "orientation_coherence": orientation,
-        "dynamic_coupling_abs": dynamic_coupling,
-        "dynamic_coupling_signed": dynamic_signed,
-        "spatial_coherence": "fixed 8 A local neighbourhood around a V1 patch maximum",
-        "dynamic_role": "descriptive only; excluded from patch membership and ranking",
+        "spatial_coherence": "fixed 8 A local neighbourhood around a chemistry-patch maximum",
     }
 
 
 def _dominates(a: dict, b: dict) -> bool:
-    # Only prediction-defining descriptors enter ranking. GNM is downstream.
     fields = (
         "chemistry_support",
         "mean_accessibility",
@@ -178,12 +151,12 @@ def assign_pareto_fronts(patches: List[dict]) -> List[dict]:
     return patches
 
 
-def build_coarse_patches(*, v1_result: dict, chemistry: str, gnm: dict) -> List[dict]:
+def build_coarse_patches(*, v1_result: dict, chemistry: str, ca_nodes: List[dict]) -> List[dict]:
     channel = v1_result.get("chemistries", {}).get(chemistry)
     if not channel:
         raise ValueError(f"Unknown or unavailable chemistry channel: {chemistry}")
 
-    geometry = build_surface_geometry(v1_result, gnm)
+    geometry = build_surface_geometry(v1_result, ca_nodes)
     chemistry_rows = {
         str(r["key"]): r
         for r in channel.get("residues", [])
@@ -194,5 +167,5 @@ def build_coarse_patches(*, v1_result: dict, chemistry: str, gnm: dict) -> List[
 
     maxima = _local_maxima(channel, geometry)
     raw_patches = [_patch_around_center(c, chemistry_rows, geometry) for c in maxima]
-    patches = [_patch_descriptors(p, geometry, gnm) for p in raw_patches]
+    patches = [_patch_descriptors(p, geometry) for p in raw_patches]
     return assign_pareto_fronts(patches)
