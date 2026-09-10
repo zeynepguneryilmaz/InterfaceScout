@@ -2,7 +2,7 @@
 set -e
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 BACKEND="$ROOT/backend"
-if [ ! -f "$BACKEND/v2/api.py" ] || [ ! -f "$ROOT/frontend/index.html" ]; then
+if [ ! -f "$BACKEND/app.py" ] || [ ! -f "$ROOT/frontend/index.html" ]; then
   echo "ERROR: InterfaceScout files are incomplete." >&2
   exit 1
 fi
