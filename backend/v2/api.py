@@ -15,9 +15,8 @@ _FRONTEND = _ROOT / "frontend"
 if str(_BACKEND) not in sys.path:
     sys.path.insert(0, str(_BACKEND))
 
-from .interface_engine import analyze_all_maps
+from .interface_engine import PUBLIC_MAP_SPECS, analyze_all_maps
 from .model_settings import MODEL_VERSION
-from .surface_modes import SURFACE_MODES
 
 PUBLIC_VERSION = "1.0-publication"
 app = FastAPI(title="InterfaceScout", version=PUBLIC_VERSION)
@@ -30,7 +29,6 @@ class AnalyzeRequest(BaseModel):
     pH: float = Field(7.4, ge=0.0, le=14.0)
     ionic_mM: float = Field(150.0, ge=0.0)
     temp_K: float = Field(298.0, gt=0.0)
-    initial_surface: Optional[str] = None
 
 
 @app.get("/health")
@@ -41,20 +39,17 @@ def health():
         "version": PUBLIC_VERSION,
         "model_version": MODEL_VERSION,
         "single_pass_all_maps": True,
+        "material_presets": False,
         "benchmark_fitted_weights": False,
     }
 
 
-@app.get("/surfaces")
-def surfaces():
-    return {
-        key: {
-            "label": mode.label,
-            "primary_chemistry": mode.chemistry,
-            "description": mode.description,
-        }
-        for key, mode in sorted(SURFACE_MODES.items())
-    }
+@app.get("/chemistries")
+def chemistries():
+    return [
+        {"key": public_key, "label": label, "description": description}
+        for public_key, _internal_key, label, description in PUBLIC_MAP_SPECS
+    ]
 
 
 @app.post("/analyze")
@@ -67,7 +62,6 @@ def analyze(req: AnalyzeRequest):
             pdb_id=req.pdb_id,
             pdb_text=req.pdb_text,
             chain=req.chain,
-            initial_surface=req.initial_surface,
         )
         out["public_version"] = PUBLIC_VERSION
         return out
