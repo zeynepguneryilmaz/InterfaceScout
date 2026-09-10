@@ -30,7 +30,7 @@ jobs:
       - run: python -m pip install -r backend/requirements-publication-lock.txt
       - name: Compile all Python files
         run: python -m compileall -q backend
-      - name: Frontend JavaScript syntax
+      - name: Frontend JavaScript syntax and export hooks
         shell: bash
         run: |
           python - <<'PY'
@@ -40,6 +40,12 @@ jobs:
           blocks = re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>', html, flags=re.S)
           inline = '\n'.join(block for block in blocks if block.strip())
           assert inline, 'No inline JavaScript found'
+          assert 'function exportExcel()' in html
+          assert 'function exportCurrentPdb()' in html
+          assert 'propensity_0_100' in html
+          assert 'REMARK 900 INTERFACESCOUT B-FACTOR TRACK' in html
+          assert 'exportJson' not in html
+          assert 'exportCsv' not in html
           Path('frontend-inline-check.js').write_text(inline, encoding='utf-8')
           PY
           node --check frontend-inline-check.js
