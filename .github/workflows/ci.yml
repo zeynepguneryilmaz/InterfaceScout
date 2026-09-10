@@ -13,7 +13,7 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install -r backend/requirements-publication-lock.txt
-      - name: Smoke test canonical app and model
+      - name: Smoke test single-pass all-map analysis
         working-directory: backend
         env:
           INTERFACESCOUT_VALIDATION_CANONICAL_ONLY: '1'
@@ -21,15 +21,26 @@ jobs:
           python - <<'PY'
           import urllib.request
           from app import app
-          from v2.interface_engine import analyze_interface_v2
+          from v2.interface_engine import analyze_all_maps, analyze_interface_v2
 
           assert app.title == 'InterfaceScout'
           raw = urllib.request.urlopen('https://files.rcsb.org/download/1CRN.pdb', timeout=30).read().decode()
-          out = analyze_interface_v2(surface='anionic', pdb_text=raw, chain='A', pH=7.4)
+
+          out = analyze_all_maps(pdb_text=raw, chain='A', pH=7.4, initial_surface='silica')
           assert out['method']['sasa_points_per_atom'] == 200
           assert out['method']['scrsa_threshold'] == 0.05
           assert out['method']['multiscale_radii_A'] == [6.0, 9.0]
           assert out['method']['patch_radius_A'] == 8.0
-          assert out['n_patches'] > 0
-          print('InterfaceScout smoke test passed')
+          assert out['method']['single_pass_all_maps'] is True
+          assert out['initial_map'] == 'anionic'
+          assert out['n_maps'] >= 11
+          required = {'anionic','cationic','hydrophobic','pi_carbon','hbond_donor','hbond_acceptor','oxide','hydroxyapatite','metal_coord','gold','phosphate'}
+          assert required.issubset(out['maps'])
+          assert out['maps']['anionic']['n_patches'] > 0
+
+          # Keep the single-material wrapper used by validation scripts compatible.
+          one = analyze_interface_v2(surface='silica', pdb_text=raw, chain='A', pH=7.4)
+          assert one['surface_mode']['chemistry'] == 'anionic'
+          assert one['n_patches'] == out['maps']['anionic']['n_patches']
+          print('InterfaceScout all-map smoke test passed')
           PY
