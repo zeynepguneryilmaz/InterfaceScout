@@ -1,15 +1,18 @@
-"""Geometry utilities for coarse InterfaceScout V2 interface patches.
+"""Geometry utilities for coarse InterfaceScout interface patches.
 
-The goal is not atomistic docking.  We only ask whether residues belong to the
+The goal is not atomistic docking. We only ask whether residues belong to the
 same exposed protein face and can plausibly participate in one coarse contact
-region.  No adsorption benchmark labels are used here.
+region. No adsorption benchmark labels are used here.
 """
 
 from __future__ import annotations
 
-from typing import Dict, Iterable
+from io import StringIO
+from typing import Dict, Iterable, List
 
 import numpy as np
+from Bio.PDB import PDBParser
+from Bio.PDB.Polypeptide import is_aa
 
 
 def _unit(v: np.ndarray) -> np.ndarray:
@@ -19,18 +22,49 @@ def _unit(v: np.ndarray) -> np.ndarray:
     return np.asarray(v, dtype=float) / n
 
 
-def build_surface_geometry(v1_result: dict, gnm: dict) -> dict:
+def _residue_key(chain_id: str, residue) -> str:
+    seq = int(residue.id[1])
+    icode = str(residue.id[2]).strip()
+    return f"{chain_id}:{seq}:{icode}"
+
+
+def extract_ca_nodes(pdb_text: str) -> List[dict]:
+    """Extract standard-amino-acid C-alpha coordinates from the first PDB model."""
+    parser = PDBParser(QUIET=True)
+    structure = parser.get_structure("interfacescout_geometry", StringIO(pdb_text))
+    model = next(structure.get_models(), None)
+    if model is None:
+        raise ValueError("No model found in prepared structure")
+
+    nodes: List[dict] = []
+    for chain in model:
+        for residue in chain:
+            if not is_aa(residue, standard=True) or "CA" not in residue:
+                continue
+            nodes.append(
+                {
+                    "key": _residue_key(str(chain.id), residue),
+                    "chain": str(chain.id),
+                    "res_seq": int(residue.id[1]),
+                    "icode": str(residue.id[2]).strip(),
+                    "res_name": str(residue.resname).strip(),
+                    "coord": np.asarray(residue["CA"].coord, dtype=float),
+                }
+            )
+    if len(nodes) < 1:
+        raise ValueError("No standard-amino-acid C-alpha coordinates found")
+    return nodes
+
+
+def build_surface_geometry(v1_result: dict, ca_nodes: List[dict]) -> dict:
     """Return C-alpha coordinates and coarse outward directions for surface residues.
 
-    The outward direction is a deliberately coarse face descriptor: the vector
-    from the protein C-alpha centroid to the residue C-alpha position.  For the
-    folded/globular proteins in the primary validation scope this is stable,
-    transparent, and parameter-free.  It is not claimed to be a molecular
-    surface normal for highly concave or intrinsically disordered structures.
+    The outward direction is the vector from the protein C-alpha centroid to the
+    residue C-alpha position. It is a coarse face descriptor rather than a true
+    molecular-surface normal.
     """
-    nodes = gnm["nodes"]
-    node_by_key = {str(n["key"]): n for n in nodes}
-    protein_centroid = np.mean(np.vstack([n["coord"] for n in nodes]), axis=0)
+    node_by_key = {str(n["key"]): n for n in ca_nodes}
+    protein_centroid = np.mean(np.vstack([n["coord"] for n in ca_nodes]), axis=0)
 
     surface_rows = {
         str(r["key"]): r
@@ -71,17 +105,12 @@ def ca_distance(key_a: str, key_b: str, geometry: dict) -> float:
 
 
 def same_face(key_a: str, key_b: str, geometry: dict) -> bool:
-    """Co-facing rule with no fitted angular coefficient.
-
-    Positive dot product means the two coarse outward directions lie in the same
-    hemisphere (<90 degrees apart).  This is used as a permissive geometric gate,
-    not as a score.
-    """
+    """Return whether two coarse outward directions lie in the same hemisphere."""
     return float(np.dot(geometry["normals"][key_a], geometry["normals"][key_b])) > 0.0
 
 
 def patch_orientation_coherence(keys: Iterable[str], geometry: dict) -> float:
-    """Resultant length of unit outward directions; descriptive range 0..1."""
+    """Resultant length of unit outward directions; range 0..1."""
     valid = [k for k in keys if k in geometry["normals"]]
     if not valid:
         return 0.0
