@@ -1,9 +1,10 @@
-"""Categorical material-to-chemistry mapping for InterfaceScout V2.
+"""Validation-only material-to-chemistry mapping.
 
-Unlike the retired V2-alpha surface profiles, these mappings contain no fitted
-or hand-tuned numeric weights. They only select the primary frozen V1 chemistry
-channel used to seed coarse interface patches.
-"""
+The public InterfaceScout application does not ask for or expose material names.
+This module exists only so archived and reproducible experimental-validation
+manifests can map the experimentally studied interface to the appropriate
+canonical surface-chemistry channel. No numerical material weights are used.
+""
 
 from __future__ import annotations
 
@@ -19,28 +20,23 @@ class SurfaceMode:
 
 
 SURFACE_MODES = {
-    "silica": SurfaceMode("silica", "Silica / deprotonated silanol-rich", "anionic", "Primary electrostatic compatibility with a negatively charged silica surface under neutral/basic conditions."),
-    "citrate_au": SurfaceMode("citrate_au", "Citrate-coated gold", "anionic", "Primary protein-side compatibility with the negatively charged citrate corona."),
-    "paa_fe3o4": SurfaceMode("paa_fe3o4", "PAA-coated iron oxide", "anionic", "Primary compatibility with exposed anionic carboxylate groups of PAA."),
-    "mpa_au": SurfaceMode("mpa_au", "MPA-coated gold", "anionic", "Primary compatibility with the negatively charged mercaptopropionate coating."),
-    "polystyrene": SurfaceMode("polystyrene", "Polystyrene", "hydrophobic", "Primary compatibility with a nonpolar polymer surface."),
-    "alumoh": SurfaceMode("alumoh", "Aluminum hydroxide / alum", "cationic", "Primary compatibility with a positively charged hydroxide-rich surface in the benchmark condition."),
-    "fe3o4": SurfaceMode("fe3o4", "Iron oxide", "oxide", "Primary compatibility with a metal-oxide interface."),
-    "hydroxyapatite": SurfaceMode("hydroxyapatite", "Hydroxyapatite", "hydroxyapatite", "Primary compatibility with calcium-phosphate-rich hydroxyapatite."),
-    "calcium_fluoride": SurfaceMode(
-        "calcium_fluoride",
-        "Calcium fluoride nanoparticle",
-        "cationic",
-        "Primary protein-side compatibility with exposed calcium-rich sites; used categorically for CaF2 systems where experiments identify acidic protein regions contacting surface Ca2+ sites. No numeric material weight is assigned.",
-    ),
-    "hydrophobic": SurfaceMode("hydrophobic", "Generic hydrophobic surface", "hydrophobic", "Generic nonpolar surface mode."),
-    "anionic": SurfaceMode("anionic", "Generic anionic surface", "anionic", "Generic negatively charged surface mode."),
-    "cationic": SurfaceMode("cationic", "Generic cationic surface", "cationic", "Generic positively charged surface mode."),
+    "silica": SurfaceMode("silica", "Silica / deprotonated silanol-rich", "anionic", "Validation mapping to the anionic surface-chemistry channel."),
+    "citrate_au": SurfaceMode("citrate_au", "Citrate-coated gold", "anionic", "Validation mapping to the anionic coating chemistry."),
+    "paa_fe3o4": SurfaceMode("paa_fe3o4", "PAA-coated iron oxide", "anionic", "Validation mapping to exposed anionic PAA chemistry."),
+    "mpa_au": SurfaceMode("mpa_au", "MPA-coated gold", "anionic", "Validation mapping to the anionic mercaptopropionate coating chemistry."),
+    "polystyrene": SurfaceMode("polystyrene", "Polystyrene", "hydrophobic", "Validation mapping to the hydrophobic surface-chemistry channel."),
+    "alumoh": SurfaceMode("alumoh", "Aluminum hydroxide / alum", "cationic", "Validation mapping to the cationic surface-chemistry channel for the reported condition."),
+    "fe3o4": SurfaceMode("fe3o4", "Iron oxide", "oxide", "Validation mapping to the metal-oxide surface-chemistry channel."),
+    "hydroxyapatite": SurfaceMode("hydroxyapatite", "Hydroxyapatite", "hydroxyapatite", "Validation mapping to calcium/phosphate charged-site chemistry."),
+    "calcium_fluoride": SurfaceMode("calcium_fluoride", "Calcium fluoride nanoparticle", "cationic", "Validation mapping to the cationic channel for experiments implicating acidic protein regions contacting exposed calcium-rich sites."),
+    "hydrophobic": SurfaceMode("hydrophobic", "Generic hydrophobic surface", "hydrophobic", "Generic validation mapping."),
+    "anionic": SurfaceMode("anionic", "Generic anionic surface", "anionic", "Generic validation mapping."),
+    "cationic": SurfaceMode("cationic", "Generic cationic surface", "cationic", "Generic validation mapping."),
 }
 
 
 def get_surface_mode(key: str) -> SurfaceMode:
     k = (key or "").strip().lower()
     if k not in SURFACE_MODES:
-        raise ValueError(f"Unknown surface mode {key!r}. Available: {', '.join(sorted(SURFACE_MODES))}")
+        raise ValueError(f"Unknown validation surface mapping {key!r}. Available: {', '.join(sorted(SURFACE_MODES))}")
     return SURFACE_MODES[k]
