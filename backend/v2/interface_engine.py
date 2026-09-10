@@ -1,8 +1,8 @@
 """InterfaceScout coarse protein-material interface prediction engine.
 
 The public analysis path prepares the protein and computes solvent exposure once,
-then derives all chemistry maps from that shared state. A single run therefore
-supports instant switching among chemistry maps in the user interface.
+then derives all chemistry maps plus auxiliary structural-context maps from that
+shared state. Structural-context maps never enter patch construction or ranking.
 """
 from __future__ import annotations
 
@@ -69,6 +69,7 @@ def _geometry_only_gnm(prepared: str, cutoff_A: float) -> dict:
         "nodes": nodes,
         "index": {x["key"]: i for i, x in enumerate(nodes)},
         "correlation_matrix": np.zeros((n, n), dtype=float),
+        "residue_metrics": {},
     }
 
 
@@ -107,7 +108,7 @@ def _prepare_shared_context(
 
     surface_keys = [str(r["key"]) for r in core_result.get("surface_residues", []) if r.get("key")]
     if canonical_only:
-        rin = {"cutoff_A": None, "n_nodes": 0, "n_edges": 0}
+        rin = {"cutoff_A": None, "n_nodes": 0, "n_edges": 0, "residue_metrics": {}}
     else:
         rin = annotate_rin_percentiles(build_rin(prepared), surface_keys)
 
@@ -156,6 +157,107 @@ def _build_map(context: dict, chemistry: str) -> dict:
         "n_pareto_primary_patches": len(primary),
         "primary_patches": primary,
         "patches": patches,
+    }
+
+
+def _range(rows: list[dict]) -> tuple[float | None, float | None]:
+    vals = [float(r["value"]) for r in rows if r.get("value") is not None and np.isfinite(float(r["value"]))]
+    return (min(vals), max(vals)) if vals else (None, None)
+
+
+def _build_property_maps(context: dict) -> dict:
+    """Build residue-level structural-context maps that do not affect prediction."""
+    if context["canonical_only"]:
+        return {
+            "available": False,
+            "effect_on_prediction": False,
+            "reason": "Structural-context calculations are disabled in canonical-only validation mode.",
+            "order": [],
+            "maps": {},
+        }
+
+    surface = set(context["surface_keys"])
+    gnm_metrics = context["gnm"].get("residue_metrics", {})
+    rin_metrics = context["rin"].get("residue_metrics", {})
+
+    gnm_rows = []
+    for key, m in gnm_metrics.items():
+        gnm_rows.append({
+            "key": key,
+            "chain": m["chain"],
+            "res_seq": int(m["res_seq"]),
+            "icode": m.get("icode", ""),
+            "res_name": m["res_name"],
+            "value": float(m["normalized_fluctuation"]),
+            "surface": key in surface,
+            "contact_degree": int(m.get("contact_degree", 0)),
+        })
+
+    def rin_rows(field: str, percentile_field: str) -> list[dict]:
+        rows = []
+        for key, m in rin_metrics.items():
+            rows.append({
+                "key": key,
+                "chain": m["chain"],
+                "res_seq": int(m["res_seq"]),
+                "icode": m.get("icode", ""),
+                "res_name": m["res_name"],
+                "value": float(m[field]),
+                "surface": key in surface,
+                "surface_percentile": m.get(percentile_field),
+            })
+        return rows
+
+    degree_rows = rin_rows("degree_normalized", "degree_normalized_percentile_surface")
+    bet_rows = rin_rows("betweenness", "betweenness_percentile_surface")
+    close_rows = rin_rows("closeness", "closeness_percentile_surface")
+
+    definitions = {
+        "gnm_fluctuation": {
+            "label": "GNM fluctuation",
+            "description": "Normalized native-state C-alpha fluctuation from the unweighted Gaussian Network Model. Values >1 indicate above-average mobility within the analyzed protein.",
+            "value_label": "normalized fluctuation",
+            "rows": gnm_rows,
+        },
+        "rin_degree": {
+            "label": "RIN degree",
+            "description": "Normalized residue degree in the 4.5 Å heavy-atom contact network; higher values indicate more direct structural contacts.",
+            "value_label": "normalized degree",
+            "rows": degree_rows,
+        },
+        "rin_betweenness": {
+            "label": "RIN betweenness",
+            "description": "Normalized betweenness centrality in the residue interaction network; higher values indicate residues lying on more shortest network paths.",
+            "value_label": "betweenness",
+            "rows": bet_rows,
+        },
+        "rin_closeness": {
+            "label": "RIN closeness",
+            "description": "Closeness centrality in the residue interaction network; higher values indicate shorter network distance to the rest of the protein.",
+            "value_label": "closeness",
+            "rows": close_rows,
+        },
+    }
+    for item in definitions.values():
+        lo, hi = _range(item["rows"])
+        item["min_value"] = lo
+        item["max_value"] = hi
+        item["effect_on_prediction"] = False
+        item["role"] = "descriptive structural context only"
+
+    return {
+        "available": True,
+        "effect_on_prediction": False,
+        "order": ["gnm_fluctuation", "rin_degree", "rin_betweenness", "rin_closeness"],
+        "maps": definitions,
+        "gnm": {
+            "cutoff_A": context["gnm"]["cutoff_A"],
+            "interpretation": "GNM fluctuation and patch dynamic coupling are descriptive only; neither changes patch membership or Pareto rank.",
+        },
+        "rin": {
+            "cutoff_A": context["rin"]["cutoff_A"],
+            "interpretation": "RIN degree, betweenness and closeness describe structural-network context only; none changes patch membership or Pareto rank.",
+        },
     }
 
 
@@ -238,7 +340,7 @@ def analyze_all_maps(
     initial_surface: Optional[str] = None,
     gnm_cutoff_A: float = 7.3,
 ) -> Dict[str, Any]:
-    """Compute every publication chemistry map from one shared protein analysis."""
+    """Compute all chemistry maps and structural-context maps from one shared analysis."""
     context = _prepare_shared_context(
         pH=pH,
         ionic_mM=ionic_mM,
@@ -273,6 +375,7 @@ def analyze_all_maps(
         "map_order": order,
         "initial_map": initial_map,
         "maps": maps,
+        "structural_context": _build_property_maps(context),
         "surface_presets": {
             key: {
                 "label": mode.label,
