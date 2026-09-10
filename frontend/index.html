@@ -6,21 +6,9 @@
 <title>InterfaceScout</title>
 <link rel="icon" href="/favicon.png" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.1.0/3Dmol-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-:root{--bg:#f6f8fb;--card:#fff;--line:#dfe4ec;--text:#172033;--muted:#667085;--blue:#2563eb;--purple:#6d28d9;--red:#b42318;--soft:#f5f3ff}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--text)}
-header{height:68px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 22px}
-.brand{display:flex;align-items:center;gap:11px}.brand img{width:42px;height:42px;border-radius:10px}.brand h1{font-size:20px;margin:0}.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}.status{font-size:12px;color:var(--muted)}
-.wrap{display:grid;grid-template-columns:310px minmax(0,1fr);min-height:calc(100vh - 68px)}
-aside{background:#fff;border-right:1px solid var(--line);padding:16px}.section{margin-bottom:18px}.section h3,.groupTitle{font-size:11px;letter-spacing:1.1px;text-transform:uppercase;color:var(--blue);margin:0 0 9px}.field{margin-bottom:9px}.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}.input{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:7px;background:#fff}.row{display:grid;grid-template-columns:1fr 1fr;gap:7px}.btn{width:100%;padding:9px 10px;border:0;border-radius:7px;background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;font-weight:700;cursor:pointer}.btn.secondary{background:#fff;color:var(--text);border:1px solid var(--line);font-weight:600}.btn:disabled{opacity:.45}.drop{border:1px dashed #aeb7c5;border-radius:7px;padding:11px;text-align:center;font-size:12px;color:var(--muted);cursor:pointer}.note{font-size:12px;line-height:1.45;background:#f8fafc;border:1px solid var(--line);padding:9px;border-radius:7px;color:var(--muted)}
-main{display:grid;grid-template-rows:minmax(350px,52vh) auto}.viewerWrap{position:relative;background:#edf1f6;border-bottom:1px solid var(--line);overflow:hidden}#viewer{width:100%;height:100%}
-.viewerTools{position:absolute;right:12px;top:12px;z-index:12;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:calc(100% - 24px)}.viewerTool{border:1px solid rgba(148,163,184,.75);background:rgba(255,255,255,.94);color:var(--text);border-radius:7px;padding:7px 9px;font-size:11px;font-weight:650;cursor:pointer;box-shadow:0 2px 8px rgba(15,23,42,.06)}.viewerTool:hover{border-color:var(--purple)}.viewerTool.on{border-color:var(--purple);background:var(--soft);color:var(--purple)}
-.viewerHint{position:absolute;right:12px;bottom:12px;z-index:11;background:rgba(23,32,51,.86);color:#fff;border-radius:7px;padding:6px 8px;font-size:10px;pointer-events:none}.legend{position:absolute;left:12px;bottom:12px;z-index:11;background:rgba(255,255,255,.96);border:1px solid var(--line);padding:8px 10px;border-radius:7px;font-size:11px;display:none;max-width:min(440px,calc(100% - 24px))}.loading{position:absolute;inset:0;background:rgba(255,255,255,.84);display:none;align-items:center;justify-content:center;font-weight:700;color:var(--blue);z-index:20}
-.results{padding:14px 16px 20px;overflow:auto}.mapTabs,.checks{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.mapTab,.check{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 9px;font-size:11px;cursor:pointer}.mapTab.on,.check.on{border-color:var(--purple);background:var(--soft);color:var(--purple);font-weight:700}.headline{display:flex;justify-content:space-between;gap:20px}.headline h2{margin:0;font-size:18px}.headline p{margin:4px 0 0;color:var(--muted);font-size:12px}.metrics{display:flex;gap:8px;flex-wrap:wrap}.metric{background:#fff;border:1px solid var(--line);border-radius:7px;padding:7px 10px;min-width:104px;text-align:center}.metric b{display:block;font-size:17px;color:var(--purple)}.metric span{font-size:9px;color:var(--muted)}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:10px;margin-top:12px}.patch{background:#fff;border:1px solid var(--line);border-radius:9px;padding:11px;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s}.patch:hover{border-color:#a5b4fc;box-shadow:0 4px 14px rgba(15,23,42,.07);transform:translateY(-1px)}.patch.primary{border-color:#a5b4fc;background:#fafaff}.patch.focused{outline:2px solid var(--purple);outline-offset:1px}.patch h4{margin:0 0 5px;font-size:14px}.badges{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}.badge{font-size:10px;padding:3px 6px;border-radius:999px;background:#eef2ff;color:#4338ca}.members{font-size:10px;line-height:1.45;color:var(--muted);margin-top:6px;white-space:normal}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:7px}.kv{background:#f8fafc;border-radius:6px;padding:6px}.kv b{display:block;font-size:12px}.kv span{font-size:9px;color:var(--muted)}
-table{width:100%;border-collapse:collapse;background:#fff;margin-top:12px;font-size:12px}th,td{padding:7px;border-bottom:1px solid #edf0f4;text-align:left}th{font-size:10px;text-transform:uppercase;color:var(--muted);background:#f8fafc}.patchRow{cursor:pointer}.patchRow:hover{background:#fafaff}.error{margin-top:8px;color:var(--red);font-size:12px}
-@media(max-width:900px){.wrap{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid var(--line)}main{grid-template-rows:500px auto}.grid{grid-template-columns:1fr 1fr}.viewerHint{display:none}}
+:root{--bg:#f6f8fb;--card:#fff;--line:#dfe4ec;--text:#172033;--muted:#667085;--blue:#2563eb;--purple:#6d28d9;--red:#b42318;--soft:#f5f3ff}*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--text)}header{height:68px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 22px}.brand{display:flex;align-items:center;gap:11px}.brand img{width:42px;height:42px;border-radius:10px}.brand h1{font-size:20px;margin:0}.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}.status{font-size:12px;color:var(--muted)}.wrap{display:grid;grid-template-columns:310px minmax(0,1fr);min-height:calc(100vh - 68px)}aside{background:#fff;border-right:1px solid var(--line);padding:16px}.section{margin-bottom:18px}.section h3,.groupTitle{font-size:11px;letter-spacing:1.1px;text-transform:uppercase;color:var(--blue);margin:0 0 9px}.field{margin-bottom:9px}.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}.input{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:7px;background:#fff}.row{display:grid;grid-template-columns:1fr 1fr;gap:7px}.btn{width:100%;padding:9px 10px;border:0;border-radius:7px;background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;font-weight:700;cursor:pointer}.btn.secondary{background:#fff;color:var(--text);border:1px solid var(--line);font-weight:600}.btn:disabled{opacity:.45}.drop{border:1px dashed #aeb7c5;border-radius:7px;padding:11px;text-align:center;font-size:12px;color:var(--muted);cursor:pointer}.note{font-size:12px;line-height:1.45;background:#f8fafc;border:1px solid var(--line);padding:9px;border-radius:7px;color:var(--muted)}main{display:grid;grid-template-rows:minmax(350px,52vh) auto}.viewerWrap{position:relative;background:#edf1f6;border-bottom:1px solid var(--line);overflow:hidden}#viewer{width:100%;height:100%}.viewerTools{position:absolute;right:12px;top:12px;z-index:12;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:calc(100% - 24px)}.viewerTool{border:1px solid rgba(148,163,184,.75);background:rgba(255,255,255,.94);color:var(--text);border-radius:7px;padding:7px 9px;font-size:11px;font-weight:650;cursor:pointer;box-shadow:0 2px 8px rgba(15,23,42,.06)}.viewerTool:hover{border-color:var(--purple)}.viewerTool.on{border-color:var(--purple);background:var(--soft);color:var(--purple)}.viewerHint{position:absolute;right:12px;bottom:12px;z-index:11;background:rgba(23,32,51,.86);color:#fff;border-radius:7px;padding:6px 8px;font-size:10px;pointer-events:none}.legend{position:absolute;left:12px;bottom:12px;z-index:11;background:rgba(255,255,255,.96);border:1px solid var(--line);padding:8px 10px;border-radius:7px;font-size:11px;display:none;max-width:min(440px,calc(100% - 24px))}.loading{position:absolute;inset:0;background:rgba(255,255,255,.84);display:none;align-items:center;justify-content:center;font-weight:700;color:var(--blue);z-index:20}.results{padding:14px 16px 20px;overflow:auto}.mapTabs,.checks{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.mapTab,.check{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 9px;font-size:11px;cursor:pointer}.mapTab.on,.check.on{border-color:var(--purple);background:var(--soft);color:var(--purple);font-weight:700}.headline{display:flex;justify-content:space-between;gap:20px}.headline h2{margin:0;font-size:18px}.headline p{margin:4px 0 0;color:var(--muted);font-size:12px}.metrics{display:flex;gap:8px;flex-wrap:wrap}.metric{background:#fff;border:1px solid var(--line);border-radius:7px;padding:7px 10px;min-width:104px;text-align:center}.metric b{display:block;font-size:17px;color:var(--purple)}.metric span{font-size:9px;color:var(--muted)}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:10px;margin-top:12px}.patch{background:#fff;border:1px solid var(--line);border-radius:9px;padding:11px;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s}.patch:hover{border-color:#a5b4fc;box-shadow:0 4px 14px rgba(15,23,42,.07);transform:translateY(-1px)}.patch.primary{border-color:#a5b4fc;background:#fafaff}.patch.focused{outline:2px solid var(--purple);outline-offset:1px}.patch h4{margin:0 0 5px;font-size:14px}.badges{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}.badge{font-size:10px;padding:3px 6px;border-radius:999px;background:#eef2ff;color:#4338ca}.members{font-size:10px;line-height:1.45;color:var(--muted);margin-top:6px;white-space:normal}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:7px}.kv{background:#f8fafc;border-radius:6px;padding:6px}.kv b{display:block;font-size:12px}.kv span{font-size:9px;color:var(--muted)}table{width:100%;border-collapse:collapse;background:#fff;margin-top:12px;font-size:12px}th,td{padding:7px;border-bottom:1px solid #edf0f4;text-align:left}th{font-size:10px;text-transform:uppercase;color:var(--muted);background:#f8fafc}.patchRow{cursor:pointer}.patchRow:hover{background:#fafaff}.error{margin-top:8px;color:var(--red);font-size:12px}@media(max-width:900px){.wrap{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid var(--line)}main{grid-template-rows:500px auto}.grid{grid-template-columns:1fr 1fr}.viewerHint{display:none}}
 </style>
 </head>
 <body>
@@ -30,275 +18,55 @@ table{width:100%;border-collapse:collapse;background:#fff;margin-top:12px;font-s
   <div class="section"><h3>1 · Protein</h3><div class="field"><label>PDB ID</label><div class="row" style="grid-template-columns:1fr 80px"><input class="input" id="pdbId" value="4F5S"><button class="btn secondary" onclick="fetchPdb()">Fetch</button></div></div><div class="drop" onclick="document.getElementById('file').click()">or load a local PDB file<input type="file" id="file" accept=".pdb" style="display:none" onchange="loadFile(event)"></div><div class="field" style="margin-top:8px"><label>Chain (optional)</label><input class="input" id="chain" placeholder="e.g., A"></div></div>
   <div class="section"><h3>2 · Solution</h3><div class="row"><div class="field"><label>pH</label><input class="input" id="pH" type="number" step="0.1" value="7.4"></div><div class="field"><label>Ionic strength (mM)</label><input class="input" id="ionic" type="number" value="150"></div></div><div class="field"><label>Temperature (K)</label><input class="input" id="temp" type="number" value="298"></div></div>
   <button class="btn" id="run" onclick="analyze()" disabled>Analyze</button>
-  <div class="row" style="margin-top:7px"><button class="btn secondary" id="jsonBtn" disabled onclick="exportJson()">Export all JSON</button><button class="btn secondary" id="csvBtn" disabled onclick="exportCsv()">Export current CSV</button></div>
-  <div class="note" style="margin-top:9px">InterfaceScout calculates every single-channel surface-chemistry map in one run. Select two or more chemistry classes after analysis to create a <b>Composite overlay</b>. No material-specific weights are assumed.</div>
+  <div class="section" style="margin-top:14px"><h3>3 · Export</h3><button class="btn secondary" id="excelBtn" disabled onclick="exportExcel()">Download complete Excel</button><button class="btn secondary" style="margin-top:7px" id="pdbBtn" disabled onclick="exportCurrentPdb()">Download current B-factor PDB</button><div class="note" style="margin-top:8px">Excel contains all maps, residue values, patch metrics, and run/method settings. Each PDB writes the displayed map's 0–100 residue propensity into the PDB B-factor field.</div></div>
+  <div class="note">InterfaceScout calculates every single-channel surface-chemistry map in one run. Select two or more chemistry classes after analysis to create a <b>Composite overlay</b>. No material-specific weights are assumed.</div>
   <div class="error" id="error"></div>
 </aside>
 <main>
-  <section class="viewerWrap">
-    <div id="viewer"></div>
-    <div class="viewerTools" aria-label="3D viewer controls">
-      <button class="viewerTool" id="resetViewBtn" onclick="resetView()" title="Return to the complete protein">Home / all</button>
-      <button class="viewerTool on" id="repCartoon" onclick="setRepresentation('cartoon')">Cartoon</button>
-      <button class="viewerTool" id="repSurface" onclick="setRepresentation('surface')">Surface</button>
-      <button class="viewerTool" id="repBoth" onclick="setRepresentation('both')">Cartoon + surface</button>
-    </div>
-    <div class="legend" id="legend"></div>
-    <div class="viewerHint" id="viewerHint">Drag: rotate · wheel: zoom · hover: residue · Esc: all</div>
-    <div class="loading" id="loading">Calculating surface-chemistry maps…</div>
-  </section>
+  <section class="viewerWrap"><div id="viewer"></div><div class="viewerTools" aria-label="3D viewer controls"><button class="viewerTool" onclick="resetView()">Home / all</button><button class="viewerTool on" id="repCartoon" onclick="setRepresentation('cartoon')">Cartoon</button><button class="viewerTool" id="repSurface" onclick="setRepresentation('surface')">Surface</button><button class="viewerTool" id="repBoth" onclick="setRepresentation('both')">Cartoon + surface</button></div><div class="legend" id="legend"></div><div class="viewerHint">Drag: rotate · wheel: zoom · hover: residue · Esc: all</div><div class="loading" id="loading">Calculating surface-chemistry maps…</div></section>
   <section class="results" id="results"><div class="note">Load a protein and click <b>Analyze</b>. You can then inspect any chemistry map or combine multiple chemistry classes without recalculating.</div></section>
 </main>
 </div>
 <script>
-let pdbText=null,data=null,viewer=null,activeType='chemistry',activeMap=null,selected=new Set();
+let pdbText=null,data=null,viewer=null,activeType='chemistry',activeMap=null,selected=new Set(),structureName='protein';
 let representation='cartoon',focusedPatchRank=null,hoverLabel=null;
 const PATCH_COLORS=['#6d28d9','#2563eb','#059669','#d97706','#dc2626','#0891b2'];
-const $=id=>document.getElementById(id);
-const esc=x=>String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-const num=x=>Number.isFinite(+x)?(+x):null;
-const fmt=x=>num(x)===null?'—':(+x).toFixed(3);
-
-function initViewer(){
-  if(!viewer&&window.$3Dmol)viewer=$3Dmol.createViewer($('viewer'),{backgroundColor:'#edf1f6'});
-}
-
-function clearHoverLabel(){
-  if(viewer&&hoverLabel){try{viewer.removeLabel(hoverLabel);}catch(e){}hoverLabel=null;}
-}
-
-function bindResidueHover(){
-  if(!viewer||typeof viewer.setHoverable!=='function')return;
-  viewer.setHoverable({},true,
-    function(atom,v){
-      if(!atom)return;
-      clearHoverLabel();
-      const resn=atom.resn||atom.resName||'Residue';
-      const resi=atom.resi??atom.resSeq??'';
-      const chain=atom.chain||'—';
-      hoverLabel=v.addLabel(`${resn} ${resi} · chain ${chain}`,{
-        position:{x:atom.x,y:atom.y,z:atom.z},
-        backgroundColor:'#172033',backgroundOpacity:.92,fontColor:'#ffffff',fontSize:12,
-        borderThickness:0,padding:5,inFront:true
-      });
-      v.render();
-    },
-    function(atom,v){clearHoverLabel();v.render();}
-  );
-}
-
-function syncRepresentationButtons(){
-  [['repCartoon','cartoon'],['repSurface','surface'],['repBoth','both']].forEach(([id,mode])=>{
-    const el=$(id);if(el)el.classList.toggle('on',representation===mode);
-  });
-}
-
-function removeSurfaces(){
-  if(viewer&&typeof viewer.removeAllSurfaces==='function')viewer.removeAllSurfaces();
-}
-
-function addSurface(selection,style){
-  if(!viewer||!window.$3Dmol||!$3Dmol.SurfaceType)return;
-  try{
-    const result=viewer.addSurface($3Dmol.SurfaceType.VDW,style,selection||{});
-    if(result&&typeof result.then==='function')result.then(()=>viewer&&viewer.render()).catch(()=>{});
-  }catch(e){console.warn('Surface rendering unavailable:',e);}
-}
-
-function baseRepresentation(){
-  if(!viewer)return;
-  if(representation==='cartoon'||representation==='both')viewer.setStyle({},{cartoon:{color:'#cbd5e1'}});
-  else viewer.setStyle({},{});
-  removeSurfaces();
-  if(representation==='surface'||representation==='both'){
-    addSurface({}, {color:'#dbe3ed',opacity:representation==='both' ? .42 : .78});
-  }
-}
-
-function rebuildViewer(preserveView=false){
-  initViewer();
-  if(!viewer||!pdbText)return;
-  const oldView=preserveView&&typeof viewer.getView==='function'?viewer.getView():null;
-  clearHoverLabel();
-  viewer.clear();
-  viewer.addModel(pdbText,'pdb');
-  baseRepresentation();
-  bindResidueHover();
-  if(oldView&&typeof viewer.setView==='function')viewer.setView(oldView);
-  else viewer.zoomTo();
-}
-
-function baseStructure(){
-  rebuildViewer(false);
-  if(viewer)viewer.render();
-}
-
-function resetAnalysisForNewProtein(){
-  data=null;activeType='chemistry';activeMap=null;selected=new Set();focusedPatchRank=null;
-  $('jsonBtn').disabled=true;$('csvBtn').disabled=true;$('legend').style.display='none';
-  $('results').innerHTML='<div class="note">Protein loaded. Click <b>Analyze</b> to calculate the surface-chemistry maps.</div>';
-}
-
-async function startup(){
-  try{let h=await fetch('/health');let x=await h.json();$('status').textContent=`${x.engine} · chemistry-based`;$('run').disabled=false;}
-  catch(e){$('status').textContent='Backend unavailable';}
-}
-
-async function fetchPdb(){
-  let id=$('pdbId').value.trim().toUpperCase();if(!id)return;setLoading(true);
-  try{
-    let r=await fetch(`https://files.rcsb.org/download/${id}.pdb`);if(!r.ok)throw new Error('PDB not found');
-    pdbText=await r.text();resetAnalysisForNewProtein();baseStructure();$('error').textContent='';
-  }catch(e){$('error').textContent=e.message;}finally{setLoading(false);}
-}
-
-function loadFile(e){
-  let f=e.target.files[0];if(!f)return;let rd=new FileReader();
-  rd.onload=()=>{pdbText=rd.result;resetAnalysisForNewProtein();baseStructure();};rd.readAsText(f);
-}
-
-function setLoading(v){$('loading').style.display=v?'flex':'none';}
-
-async function analyze(){
-  if(!pdbText){$('error').textContent='Load a PDB structure first.';return;}
-  setLoading(true);$('error').textContent='';
-  try{
-    let body={pdb_text:pdbText,chain:$('chain').value.trim()||null,pH:+$('pH').value,ionic_mM:+$('ionic').value,temp_K:+$('temp').value};
-    let r=await fetch('/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    let x=await r.json();if(!r.ok)throw new Error(x.detail||'Analysis failed');
-    data=x;activeType='chemistry';activeMap=x.initial_map;selected=new Set([activeMap]);focusedPatchRank=null;
-    $('jsonBtn').disabled=false;$('csvBtn').disabled=false;render();
-  }catch(e){$('error').textContent=e.message;}finally{setLoading(false);}
-}
-
-function chemistryTabs(){
-  return `<div class="groupTitle">Surface chemistry maps</div><div class="mapTabs">${data.map_order.map(k=>`<button class="mapTab ${activeType==='chemistry'&&activeMap===k?'on':''}" onclick="openChem('${k}')">${esc(data.maps[k].label)}</button>`).join('')}</div><div class="groupTitle">Combine chemistry classes</div><div class="checks">${data.map_order.map(k=>`<button class="check ${selected.has(k)?'on':''}" onclick="toggleChem('${k}')">${selected.has(k)?'✓ ':''}${esc(data.maps[k].label)}</button>`).join('')}<button class="mapTab ${activeType==='composite'?'on':''}" onclick="openComposite()">Composite overlay</button></div>`;
-}
-
-function render(){
-  if(!data)return;
-  let body=activeType==='chemistry'?renderChem(data.maps[activeMap]):renderComposite();
-  $('results').innerHTML=chemistryTabs()+body;
-  paintCurrent(true);
-  syncFocusedUI();
-}
-
-function openChem(k){activeType='chemistry';activeMap=k;focusedPatchRank=null;if(!selected.size)selected.add(k);render();}
-function toggleChem(k){selected.has(k)?selected.delete(k):selected.add(k);focusedPatchRank=null;if(selected.size>=2){activeType='composite';activeMap=null;}render();}
-function openComposite(){if(selected.size<2){$('error').textContent='Select at least two chemistry classes for a composite overlay.';return;}activeType='composite';activeMap=null;focusedPatchRank=null;$('error').textContent='';render();}
-
-function compactMembers(p){
-  const rs=p.member_residues||[];
-  const shown=rs.slice(0,12).map(r=>`${r.res_name||''}${r.res_seq||''}${r.chain?` ${r.chain}`:''}`);
-  return shown.join(' · ')+(rs.length>12?` · +${rs.length-12} more`:'' );
-}
-
-function renderChem(m){
-  let inp=data.input;
-  return `<div class="headline"><div><h2>${esc(m.label)}</h2><p>${esc(m.description)} · pH ${inp.pH} · ${inp.ionic_mM} mM</p></div><div class="metrics"><div class="metric"><b>${m.n_patches}</b><span>PATCHES</span></div><div class="metric"><b>${m.n_pareto_primary_patches}</b><span>PARETO FRONT 1</span></div><div class="metric"><b>6/9 Å</b><span>AGGREGATION</span></div></div></div><div class="note" style="margin-top:10px">Click any patch card or table row to focus the complete patch. Hover any residue in the 3D viewer to see its residue name, number, and chain. Use <b>Home / all</b> or press <b>Esc</b> to return to the full protein.</div><div class="cards">${(m.patches||[]).slice(0,10).map(card).join('')}</div>${patchTable(m.patches||[])}`;
-}
-
-function card(p){
-  let c=p.center_residue||{};
-  return `<div class="patch ${+p.pareto_front===1?'primary':''}" data-patch-rank="${p.display_rank}" onclick="focusPatch(${p.display_rank})" title="Focus patch ${p.display_rank}"><h4>#${p.display_rank} · ${esc(c.res_name||'')}${esc(c.res_seq||'')} ${esc(c.chain||'')}</h4><div class="badges"><span class="badge">Pareto front ${p.pareto_front}</span><span class="badge">${p.n_members} residues</span></div><div class="members"><b>Residues:</b> ${esc(compactMembers(p))}</div><div class="grid"><div class="kv"><b>${fmt(p.chemistry_support)}</b><span>chemistry support</span></div><div class="kv"><b>${fmt(p.mean_accessibility)}</b><span>accessibility</span></div><div class="kv"><b>${fmt(p.patch_coherence)}</b><span>coherence</span></div><div class="kv"><b>${fmt(p.orientation_coherence)}</b><span>orientation</span></div></div></div>`;
-}
-
-function patchTable(ps){
-  return `<table><thead><tr><th>Rank</th><th>Center</th><th>Front</th><th>Members</th><th>Chemistry</th><th>Accessibility</th><th>Coherence</th><th>Orientation</th></tr></thead><tbody>${ps.map(p=>{let c=p.center_residue||{};return `<tr class="patchRow" data-patch-rank="${p.display_rank}" onclick="focusPatch(${p.display_rank})" title="Focus patch ${p.display_rank}"><td>${p.display_rank}</td><td>${esc(c.res_name||'')}${esc(c.res_seq||'')} ${esc(c.chain||'')}</td><td>${p.pareto_front}</td><td>${p.n_members}</td><td>${fmt(p.chemistry_support)}</td><td>${fmt(p.mean_accessibility)}</td><td>${fmt(p.patch_coherence)}</td><td>${fmt(p.orientation_coherence)}</td></tr>`}).join('')}</tbody></table>`;
-}
-
-function compositeRows(){
-  let keys=[...selected],all=new Map();
-  keys.forEach(k=>(data.maps[k].residues||[]).forEach(r=>{
-    let v=num(r.propensity);if(v===null)v=num(r.multiscale_persistence);if(v===null)v=0;
-    let x=all.get(r.key)||{...r,value:0,channels:[],dominant:null};
-    if(v>0)x.channels.push({key:k,label:data.maps[k].label,value:v});
-    if(v>x.value){x.value=v;x.dominant=k;}all.set(r.key,x);
-  }));
-  return [...all.values()].map(r=>({...r,n_channels:r.channels.length})).sort((a,b)=>b.value-a.value);
-}
-
-function renderComposite(){
-  let rows=compositeRows(),labels=[...selected].map(k=>data.maps[k].label);
-  return `<div class="headline"><div><h2>Composite chemistry overlay</h2><p>${esc(labels.join(' + '))}</p></div><div class="metrics"><div class="metric"><b>${selected.size}</b><span>CHEMISTRY CLASSES</span></div><div class="metric"><b>max</b><span>RESIDUE RULE</span></div></div></div><div class="note" style="margin-top:10px"><b>Derived overlay, not a separately validated combined score.</b> Each residue takes the maximum normalized support among the selected canonical chemistry maps; a residue is never double-counted. The dominant channel and number of supporting channels remain visible. No unknown surface-composition weights are assumed. Hover residues in the 3D view for identity; use the representation controls without recalculating.</div><table><thead><tr><th>Residue</th><th>Composite support</th><th>Supporting channels</th><th>Dominant chemistry</th></tr></thead><tbody>${rows.filter(r=>r.value>0).slice(0,150).map(r=>`<tr><td>${esc(r.res_name||'')}${esc(r.res_seq||'')} ${esc(r.chain||'')}</td><td>${fmt(r.value)}</td><td>${r.n_channels}</td><td>${r.dominant?esc(data.maps[r.dominant].label):'—'}</td></tr>`).join('')}</tbody></table>`;
-}
-
-function residueSelection(r){return {chain:r.chain,resi:r.res_seq};}
-function patchSelection(p){
-  const sels=(p?.member_residues||[]).map(residueSelection);
-  if(!sels.length&&p?.center_residue)return residueSelection(p.center_residue);
-  if(sels.length===1)return sels[0];
-  return {or:sels};
-}
-
-function currentFocusedPatch(){
-  if(activeType!=='chemistry'||focusedPatchRank===null||!data)return null;
-  return (data.maps[activeMap].patches||[]).find(p=>+p.display_rank===+focusedPatchRank)||null;
-}
-
-function syncFocusedUI(){
-  document.querySelectorAll('[data-patch-rank]').forEach(el=>el.classList.toggle('focused',focusedPatchRank!==null&&+el.dataset.patchRank===+focusedPatchRank));
-}
-
-function paintCurrent(preserveView=true){
-  rebuildViewer(preserveView);
-  if(!viewer||!data){if(viewer)viewer.render();return;}
-  if(activeType==='chemistry'){
-    let ps=data.maps[activeMap].patches||[];
-    ps.slice(0,8).forEach((p,i)=>{
-      const color=PATCH_COLORS[i%PATCH_COLORS.length];
-      (p.member_residues||[]).forEach(r=>viewer.addStyle(residueSelection(r),{stick:{color,radius:.24},sphere:{color,radius:.40}}));
-    });
-    const focused=currentFocusedPatch();
-    if(focused&&(representation==='surface'||representation==='both')){
-      const idx=Math.max(0,(ps||[]).findIndex(p=>+p.display_rank===+focused.display_rank));
-      addSurface(patchSelection(focused),{color:PATCH_COLORS[idx%PATCH_COLORS.length],opacity:.96});
-    }
-    const focusText=focused?`<br><b>Focused patch #${focused.display_rank}</b> · ${focused.n_members} residues`:'<br>Click a patch to focus all member residues.';
-    $('legend').innerHTML=`<b>${esc(data.maps[activeMap].label)}</b><br>Canonical patch ranks${focusText}<br>Hover a residue for identity.`;
-  }else{
-    let rows=compositeRows().filter(r=>r.value>0),mx=Math.max(...rows.map(r=>r.value),1);
-    rows.forEach(r=>{let t=Math.max(0,Math.min(1,r.value/mx)),c=`hsl(${260-220*t},75%,50%)`;viewer.addStyle(residueSelection(r),{stick:{color:c,radius:.24},sphere:{color:c,radius:.38}});});
-    $('legend').innerHTML='<b>Composite overlay</b><br>Higher support = warmer color<br>Hover a residue for identity.';
-  }
-  $('legend').style.display='block';
-  viewer.render();
-  syncFocusedUI();
-}
-
-function focusPatch(rank){
-  if(activeType!=='chemistry'||!viewer)return;
-  let p=(data.maps[activeMap].patches||[]).find(x=>+x.display_rank===+rank);if(!p)return;
-  focusedPatchRank=+rank;
-  paintCurrent(true);
-  try{viewer.zoomTo(patchSelection(p),450);viewer.render();}catch(e){console.warn('Patch focus unavailable:',e);}
-  syncFocusedUI();
-}
-
-function resetView(){
-  focusedPatchRank=null;
-  paintCurrent(false);
-  if(viewer){viewer.zoomTo();viewer.render();}
-  syncFocusedUI();
-}
-
-function setRepresentation(mode){
-  if(!['cartoon','surface','both'].includes(mode))return;
-  representation=mode;syncRepresentationButtons();paintCurrent(true);
-}
-
-function exportJson(){download('interfacescout_all_results.json',JSON.stringify(data,null,2),'application/json');}
-function exportCsv(){
-  let rows=activeType==='chemistry'?(data.maps[activeMap].patches||[]).map(p=>({rank:p.display_rank,center:p.center_key,pareto_front:p.pareto_front,n_members:p.n_members,chemistry_support:p.chemistry_support,accessibility:p.mean_accessibility,coherence:p.patch_coherence,orientation:p.orientation_coherence})):compositeRows();
-  if(!rows.length)return;let cols=Object.keys(rows[0]).filter(k=>typeof rows[0][k]!=='object');
-  let csv=[cols.join(','),...rows.map(r=>cols.map(c=>JSON.stringify(r[c]??'')).join(','))].join('\n');
-  download(`interfacescout_${activeType}_${activeMap||'composite'}.csv`,csv,'text/csv');
-}
-function download(n,t,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type}));a.download=n;a.click();URL.revokeObjectURL(a.href);}
-
-document.addEventListener('keydown',e=>{if(e.key==='Escape')resetView();});
-window.addEventListener('resize',()=>{if(viewer&&typeof viewer.resize==='function')viewer.resize();});
-startup();syncRepresentationButtons();baseStructure();
+const $=id=>document.getElementById(id);const esc=x=>String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));const num=x=>Number.isFinite(+x)?(+x):null;const fmt=x=>num(x)===null?'—':(+x).toFixed(3);const safe=x=>String(x||'protein').replace(/[^A-Za-z0-9._-]+/g,'_').replace(/^_+|_+$/g,'')||'protein';
+function initViewer(){if(!viewer&&window.$3Dmol)viewer=$3Dmol.createViewer($('viewer'),{backgroundColor:'#edf1f6'});}function clearHoverLabel(){if(viewer&&hoverLabel){try{viewer.removeLabel(hoverLabel)}catch(e){}hoverLabel=null}}
+function bindResidueHover(){if(!viewer||typeof viewer.setHoverable!=='function')return;viewer.setHoverable({},true,(atom,v)=>{if(!atom)return;clearHoverLabel();hoverLabel=v.addLabel(`${atom.resn||'Residue'} ${atom.resi??''} · chain ${atom.chain||'—'}`,{position:{x:atom.x,y:atom.y,z:atom.z},backgroundColor:'#172033',backgroundOpacity:.92,fontColor:'#fff',fontSize:12,borderThickness:0,padding:5,inFront:true});v.render()},(atom,v)=>{clearHoverLabel();v.render()})}
+function syncRepresentationButtons(){[['repCartoon','cartoon'],['repSurface','surface'],['repBoth','both']].forEach(([id,m])=>{let e=$(id);if(e)e.classList.toggle('on',representation===m)})}function removeSurfaces(){if(viewer&&typeof viewer.removeAllSurfaces==='function')viewer.removeAllSurfaces()}function addSurface(sel,style){if(!viewer||!window.$3Dmol||!$3Dmol.SurfaceType)return;try{let r=viewer.addSurface($3Dmol.SurfaceType.VDW,style,sel||{});if(r&&typeof r.then==='function')r.then(()=>viewer&&viewer.render()).catch(()=>{})}catch(e){console.warn(e)}}
+function baseRepresentation(){if(!viewer)return;if(representation==='cartoon'||representation==='both')viewer.setStyle({},{cartoon:{color:'#cbd5e1'}});else viewer.setStyle({},{});removeSurfaces();if(representation==='surface'||representation==='both')addSurface({},{color:'#dbe3ed',opacity:representation==='both'?.42:.78})}
+function rebuildViewer(preserve=false){initViewer();if(!viewer||!pdbText)return;let old=preserve&&typeof viewer.getView==='function'?viewer.getView():null;clearHoverLabel();viewer.clear();viewer.addModel(pdbText,'pdb');baseRepresentation();bindResidueHover();if(old&&typeof viewer.setView==='function')viewer.setView(old);else viewer.zoomTo()}function baseStructure(){rebuildViewer(false);if(viewer)viewer.render()}
+function resetAnalysisForNewProtein(){data=null;activeType='chemistry';activeMap=null;selected=new Set();focusedPatchRank=null;$('excelBtn').disabled=true;$('pdbBtn').disabled=true;$('legend').style.display='none';$('results').innerHTML='<div class="note">Protein loaded. Click <b>Analyze</b> to calculate the surface-chemistry maps.</div>'}
+async function startup(){try{let h=await fetch('/health'),x=await h.json();$('status').textContent=`${x.engine} · chemistry-based`;$('run').disabled=false}catch(e){$('status').textContent='Backend unavailable'}}
+async function fetchPdb(){let id=$('pdbId').value.trim().toUpperCase();if(!id)return;setLoading(true);try{let r=await fetch(`https://files.rcsb.org/download/${id}.pdb`);if(!r.ok)throw new Error('PDB not found');pdbText=await r.text();structureName=id;resetAnalysisForNewProtein();baseStructure();$('error').textContent=''}catch(e){$('error').textContent=e.message}finally{setLoading(false)}}
+function loadFile(e){let f=e.target.files[0];if(!f)return;let rd=new FileReader();rd.onload=()=>{pdbText=rd.result;structureName=f.name.replace(/\.pdb$/i,'')||'protein';resetAnalysisForNewProtein();baseStructure()};rd.readAsText(f)}function setLoading(v){$('loading').style.display=v?'flex':'none'}
+async function analyze(){if(!pdbText){$('error').textContent='Load a PDB structure first.';return}setLoading(true);$('error').textContent='';try{let body={pdb_text:pdbText,chain:$('chain').value.trim()||null,pH:+$('pH').value,ionic_mM:+$('ionic').value,temp_K:+$('temp').value};let r=await fetch('/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),x=await r.json();if(!r.ok)throw new Error(x.detail||'Analysis failed');data=x;activeType='chemistry';activeMap=x.initial_map;selected=new Set([activeMap]);focusedPatchRank=null;$('excelBtn').disabled=false;$('pdbBtn').disabled=false;render()}catch(e){$('error').textContent=e.message}finally{setLoading(false)}}
+function chemistryTabs(){return `<div class="groupTitle">Surface chemistry maps</div><div class="mapTabs">${data.map_order.map(k=>`<button class="mapTab ${activeType==='chemistry'&&activeMap===k?'on':''}" onclick="openChem('${k}')">${esc(data.maps[k].label)}</button>`).join('')}</div><div class="groupTitle">Combine chemistry classes</div><div class="checks">${data.map_order.map(k=>`<button class="check ${selected.has(k)?'on':''}" onclick="toggleChem('${k}')">${selected.has(k)?'✓ ':''}${esc(data.maps[k].label)}</button>`).join('')}<button class="mapTab ${activeType==='composite'?'on':''}" onclick="openComposite()">Composite overlay</button></div>`}
+function render(){if(!data)return;$('results').innerHTML=chemistryTabs()+(activeType==='chemistry'?renderChem(data.maps[activeMap]):renderComposite());$('pdbBtn').textContent=activeType==='chemistry'?'Download current B-factor PDB':'Download composite B-factor PDB';paintCurrent(true);syncFocusedUI()}
+function openChem(k){activeType='chemistry';activeMap=k;focusedPatchRank=null;if(!selected.size)selected.add(k);render()}function toggleChem(k){selected.has(k)?selected.delete(k):selected.add(k);focusedPatchRank=null;if(selected.size>=2){activeType='composite';activeMap=null}render()}function openComposite(){if(selected.size<2){$('error').textContent='Select at least two chemistry classes for a composite overlay.';return}activeType='composite';activeMap=null;focusedPatchRank=null;$('error').textContent='';render()}
+function compactMembers(p){let rs=p.member_residues||[],shown=rs.slice(0,12).map(r=>`${r.res_name||''}${r.res_seq||''}${r.chain?` ${r.chain}`:''}`);return shown.join(' · ')+(rs.length>12?` · +${rs.length-12} more`:'')}
+function renderChem(m){let i=data.input;return `<div class="headline"><div><h2>${esc(m.label)}</h2><p>${esc(m.description)} · pH ${i.pH} · ${i.ionic_mM} mM</p></div><div class="metrics"><div class="metric"><b>${m.n_patches}</b><span>PATCHES</span></div><div class="metric"><b>${m.n_pareto_primary_patches}</b><span>PARETO FRONT 1</span></div><div class="metric"><b>6/9 Å</b><span>AGGREGATION</span></div></div></div><div class="note" style="margin-top:10px">Click a patch to focus it. Hover a residue for identity. The PDB export writes this map's normalized residue propensity to the B-factor field.</div><div class="cards">${(m.patches||[]).slice(0,10).map(card).join('')}</div>${patchTable(m.patches||[])}`}
+function card(p){let c=p.center_residue||{};return `<div class="patch ${+p.pareto_front===1?'primary':''}" data-patch-rank="${p.display_rank}" onclick="focusPatch(${p.display_rank})"><h4>#${p.display_rank} · ${esc(c.res_name||'')}${esc(c.res_seq||'')} ${esc(c.chain||'')}</h4><div class="badges"><span class="badge">Pareto front ${p.pareto_front}</span><span class="badge">${p.n_members} residues</span></div><div class="members"><b>Residues:</b> ${esc(compactMembers(p))}</div><div class="grid"><div class="kv"><b>${fmt(p.chemistry_support)}</b><span>chemistry support</span></div><div class="kv"><b>${fmt(p.mean_accessibility)}</b><span>accessibility</span></div><div class="kv"><b>${fmt(p.patch_coherence)}</b><span>coherence</span></div><div class="kv"><b>${fmt(p.orientation_coherence)}</b><span>orientation</span></div></div></div>`}
+function patchTable(ps){return `<table><thead><tr><th>Rank</th><th>Center</th><th>Front</th><th>Members</th><th>Chemistry</th><th>Accessibility</th><th>Coherence</th><th>Orientation</th></tr></thead><tbody>${ps.map(p=>{let c=p.center_residue||{};return `<tr class="patchRow" data-patch-rank="${p.display_rank}" onclick="focusPatch(${p.display_rank})"><td>${p.display_rank}</td><td>${esc(c.res_name||'')}${esc(c.res_seq||'')} ${esc(c.chain||'')}</td><td>${p.pareto_front}</td><td>${p.n_members}</td><td>${fmt(p.chemistry_support)}</td><td>${fmt(p.mean_accessibility)}</td><td>${fmt(p.patch_coherence)}</td><td>${fmt(p.orientation_coherence)}</td></tr>`}).join('')}</tbody></table>`}
+function compositeRows(){let keys=[...selected],all=new Map();keys.forEach(k=>(data.maps[k].residues||[]).forEach(r=>{let v=num(r.propensity);if(v===null)v=num(r.multiscale_persistence);if(v===null)v=0;let x=all.get(r.key)||{...r,value:0,channels:[],dominant:null};if(v>0)x.channels.push({key:k,label:data.maps[k].label,value:v});if(v>x.value){x.value=v;x.dominant=k}all.set(r.key,x)}));return [...all.values()].map(r=>({...r,n_channels:r.channels.length})).sort((a,b)=>b.value-a.value)}
+function renderComposite(){let rows=compositeRows(),labels=[...selected].map(k=>data.maps[k].label);return `<div class="headline"><div><h2>Composite chemistry overlay</h2><p>${esc(labels.join(' + '))}</p></div><div class="metrics"><div class="metric"><b>${selected.size}</b><span>CHEMISTRY CLASSES</span></div><div class="metric"><b>max</b><span>RESIDUE RULE</span></div></div></div><div class="note" style="margin-top:10px"><b>Derived overlay, not a separately validated combined score.</b> Composite B-factor export writes the displayed maximum-support overlay to the B-factor field and labels the file as composite.</div><table><thead><tr><th>Residue</th><th>Composite support</th><th>Supporting channels</th><th>Dominant chemistry</th></tr></thead><tbody>${rows.filter(r=>r.value>0).slice(0,150).map(r=>`<tr><td>${esc(r.res_name||'')}${esc(r.res_seq||'')} ${esc(r.chain||'')}</td><td>${fmt(r.value)}</td><td>${r.n_channels}</td><td>${r.dominant?esc(data.maps[r.dominant].label):'—'}</td></tr>`).join('')}</tbody></table>`}
+function residueSelection(r){return {chain:r.chain,resi:r.res_seq}}function patchSelection(p){let s=(p?.member_residues||[]).map(residueSelection);if(!s.length&&p?.center_residue)return residueSelection(p.center_residue);return s.length===1?s[0]:{or:s}}function currentFocusedPatch(){if(activeType!=='chemistry'||focusedPatchRank===null||!data)return null;return (data.maps[activeMap].patches||[]).find(p=>+p.display_rank===+focusedPatchRank)||null}function syncFocusedUI(){document.querySelectorAll('[data-patch-rank]').forEach(e=>e.classList.toggle('focused',focusedPatchRank!==null&&+e.dataset.patchRank===+focusedPatchRank))}
+function paintCurrent(preserve=true){rebuildViewer(preserve);if(!viewer||!data){if(viewer)viewer.render();return}if(activeType==='chemistry'){let ps=data.maps[activeMap].patches||[];ps.slice(0,8).forEach((p,i)=>{let color=PATCH_COLORS[i%PATCH_COLORS.length];(p.member_residues||[]).forEach(r=>viewer.addStyle(residueSelection(r),{stick:{color,radius:.24},sphere:{color,radius:.40}}))});let f=currentFocusedPatch();if(f&&(representation==='surface'||representation==='both')){let idx=Math.max(0,ps.findIndex(p=>+p.display_rank===+f.display_rank));addSurface(patchSelection(f),{color:PATCH_COLORS[idx%PATCH_COLORS.length],opacity:.96})}$('legend').innerHTML=`<b>${esc(data.maps[activeMap].label)}</b><br>Canonical patch ranks${f?`<br><b>Focused patch #${f.display_rank}</b> · ${f.n_members} residues`:'<br>Click a patch to focus.'}<br>Hover a residue for identity.`}else{let rows=compositeRows().filter(r=>r.value>0),mx=Math.max(...rows.map(r=>r.value),1);rows.forEach(r=>{let t=Math.max(0,Math.min(1,r.value/mx)),c=`hsl(${260-220*t},75%,50%)`;viewer.addStyle(residueSelection(r),{stick:{color:c,radius:.24},sphere:{color:c,radius:.38}})});$('legend').innerHTML='<b>Composite overlay</b><br>Higher support = warmer color<br>Hover a residue for identity.'}$('legend').style.display='block';viewer.render();syncFocusedUI()}
+function focusPatch(rank){if(activeType!=='chemistry'||!viewer)return;let p=(data.maps[activeMap].patches||[]).find(x=>+x.display_rank===+rank);if(!p)return;focusedPatchRank=+rank;paintCurrent(true);try{viewer.zoomTo(patchSelection(p),450);viewer.render()}catch(e){}syncFocusedUI()}function resetView(){focusedPatchRank=null;paintCurrent(false);if(viewer){viewer.zoomTo();viewer.render()}syncFocusedUI()}function setRepresentation(m){if(!['cartoon','surface','both'].includes(m))return;representation=m;syncRepresentationButtons();paintCurrent(true)}
+function flattenObject(obj,prefix='',rows=[]){if(obj===null||obj===undefined){rows.push({Parameter:prefix,Value:''});return rows}if(Array.isArray(obj)){rows.push({Parameter:prefix,Value:obj.map(v=>typeof v==='object'?JSON.stringify(v):v).join('; ')});return rows}if(typeof obj==='object'){Object.entries(obj).forEach(([k,v])=>flattenObject(v,prefix?`${prefix}.${k}`:k,rows));return rows}rows.push({Parameter:prefix,Value:obj});return rows}
+function residueWorkbookRows(){let all=new Map();data.map_order.forEach(k=>(data.maps[k].residues||[]).forEach(r=>{let x=all.get(r.key)||{ResidueKey:r.key,Chain:r.chain,ResidueNumber:r.res_seq,InsertionCode:r.icode||'',ResidueName:r.res_name,scRSA:r.scrsa};x[`${k}_local_score`]=r.local_score;x[`${k}_propensity_0_100`]=r.propensity;x[`${k}_multiscale_persistence`]=r.multiscale_persistence;all.set(r.key,x)}));return [...all.values()].sort((a,b)=>String(a.Chain).localeCompare(String(b.Chain))||(+a.ResidueNumber)-(+b.ResidueNumber)||String(a.InsertionCode).localeCompare(String(b.InsertionCode)))}
+function patchWorkbookRows(){let rows=[];data.map_order.forEach(k=>{let m=data.maps[k];(m.patches||[]).forEach(p=>rows.push({MapKey:k,MapLabel:m.label,DisplayRank:p.display_rank,ParetoFront:p.pareto_front,Classification:p.classification||'',CenterKey:p.center_key,MemberCount:p.n_members,ChemistrySeedCount:p.n_chemistry_seeds,Chains:(p.chains||[]).join(';'),ResidueSpanMin:p.residue_span_min,ResidueSpanMax:p.residue_span_max,Diameter_A:p.diameter_A,ChemistrySupport:p.chemistry_support,MeanAccessibility:p.mean_accessibility,PatchCoherence:p.patch_coherence,OrientationCoherence:p.orientation_coherence,Members:(p.members||[]).join(';'),ChemistrySeeds:(p.seed_members||[]).join(';')}))});return rows}
+function patchMemberRows(){let rows=[];data.map_order.forEach(k=>{let m=data.maps[k];(m.patches||[]).forEach(p=>{let seeds=new Set(p.seed_members||[]);(p.member_residues||[]).forEach(r=>rows.push({MapKey:k,MapLabel:m.label,PatchRank:p.display_rank,ParetoFront:p.pareto_front,ResidueKey:r.key||'',Chain:r.chain,ResidueNumber:r.res_seq,InsertionCode:r.icode||'',ResidueName:r.res_name,IsChemistrySeed:seeds.has(r.key)}))})});return rows}
+function setSheetWidths(ws,rows,max=28){if(!rows.length)return;let keys=Object.keys(rows[0]);ws['!cols']=keys.map(k=>({wch:Math.min(max,Math.max(k.length+2,...rows.slice(0,200).map(r=>String(r[k]??'').length+1)))}));ws['!autofilter']={ref:ws['!ref']}}
+function addJsonSheet(wb,name,rows){let ws=XLSX.utils.json_to_sheet(rows.length?rows:[{Info:'No data'}]);setSheetWidths(ws,rows.length?rows:[{Info:'No data'}]);XLSX.utils.book_append_sheet(wb,ws,name)}
+function exportExcel(){if(!data)return;if(!window.XLSX){$('error').textContent='Excel export library is unavailable.';return}let wb=XLSX.utils.book_new();let run=[{Parameter:'engine',Value:data.engine},{Parameter:'model_version',Value:data.version},{Parameter:'public_version',Value:data.public_version||''},...flattenObject(data.input,'input'),...flattenObject(data.structure_preparation,'structure_preparation'),...flattenObject(data.method,'method'),...flattenObject(data.scope,'scope'),...flattenObject(data.diagnostics,'diagnostics'),...flattenObject(data.composite_policy,'composite_policy')];addJsonSheet(wb,'Run_Method',run);let defs=data.map_order.map(k=>{let m=data.maps[k];return {MapKey:k,MapLabel:m.label,Description:m.description,InternalChemistryKey:m.internal_chemistry_key,PatchCount:m.n_patches,ParetoFront1Count:m.n_pareto_primary_patches}});addJsonSheet(wb,'Map_Definitions',defs);addJsonSheet(wb,'Residue_Values',residueWorkbookRows());addJsonSheet(wb,'Patches',patchWorkbookRows());addJsonSheet(wb,'Patch_Members',patchMemberRows());if(selected.size>=2){let cr=compositeRows().map(r=>({ResidueKey:r.key,Chain:r.chain,ResidueNumber:r.res_seq,InsertionCode:r.icode||'',ResidueName:r.res_name,CompositeSupport:r.value,SupportingChannelCount:r.n_channels,DominantChemistry:r.dominant||'',SupportingChemistries:r.channels.map(c=>c.key).join(';')}));addJsonSheet(wb,'Composite_Selected',cr)}XLSX.writeFile(wb,`InterfaceScout_${safe(structureName)}_all_results.xlsx`,{compression:true})}
+function bfactorRows(){if(activeType==='chemistry'){return {label:data.maps[activeMap].label,key:activeMap,kind:'canonical propensity',rows:(data.maps[activeMap].residues||[]).map(r=>({...r,value:num(r.propensity)??0}))}}return {label:[...selected].map(k=>data.maps[k].label).join(' + '),key:'composite_overlay',kind:'derived composite overlay',rows:compositeRows()}}
+function pdbLookup(rows){let m=new Map();rows.forEach(r=>{let key=`${String(r.chain||'').trim()}|${parseInt(r.res_seq,10)}|${String(r.icode||'').trim()}`;let v=Math.max(0,Math.min(100,num(r.value)??0));m.set(key,v)});return m}
+function rewriteBfactorPdb(rows,label,kind){let lookup=pdbLookup(rows),lines=pdbText.replace(/\r/g,'').split('\n'),out=lines.map(line=>{if(!/^(ATOM  |HETATM)/.test(line))return line;let padded=line.padEnd(66,' '),chain=padded.slice(21,22).trim(),resi=parseInt(padded.slice(22,26).trim(),10),icode=padded.slice(26,27).trim(),v=lookup.get(`${chain}|${resi}|${icode}`)??0,b=Number(v).toFixed(2).padStart(6,' ');return padded.slice(0,60)+b+padded.slice(66)});let remarks=[`REMARK 900 INTERFACESCOUT B-FACTOR TRACK`,`REMARK 900 MAP: ${label}`,`REMARK 900 FIELD: ${kind}; NORMALIZED RANGE 0-100`,`REMARK 900 B-FACTOR VALUES ARE INTERFACESCOUT SCORES, NOT EXPERIMENTAL CRYSTALLOGRAPHIC B-FACTORS`];return remarks.concat(out).join('\n')}
+function exportCurrentPdb(){if(!data||!pdbText)return;let t=bfactorRows(),txt=rewriteBfactorPdb(t.rows,t.label,t.kind),name=`InterfaceScout_${safe(structureName)}_${safe(t.key)}_Bfactor.pdb`;downloadText(name,txt,'chemical/x-pdb')}
+function downloadText(n,t,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type}));a.download=n;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')resetView()});window.addEventListener('resize',()=>{if(viewer&&typeof viewer.resize==='function')viewer.resize()});startup();syncRepresentationButtons();baseStructure();
 </script>
 </body>
 </html>
