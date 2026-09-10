@@ -1,0 +1,35 @@
+name: InterfaceScout CI
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r backend/requirements-publication-lock.txt
+      - name: Smoke test canonical app and model
+        working-directory: backend
+        env:
+          INTERFACESCOUT_VALIDATION_CANONICAL_ONLY: '1'
+        run: |
+          python - <<'PY'
+          import urllib.request
+          from app import app
+          from v2.interface_engine import analyze_interface_v2
+
+          assert app.title == 'InterfaceScout'
+          raw = urllib.request.urlopen('https://files.rcsb.org/download/1CRN.pdb', timeout=30).read().decode()
+          out = analyze_interface_v2(surface='anionic', pdb_text=raw, chain='A', pH=7.4)
+          assert out['method']['sasa_points_per_atom'] == 200
+          assert out['method']['scrsa_threshold'] == 0.05
+          assert out['method']['multiscale_radii_A'] == [6.0, 9.0]
+          assert out['method']['patch_radius_A'] == 8.0
+          assert out['n_patches'] > 0
+          print('InterfaceScout smoke test passed')
+          PY
