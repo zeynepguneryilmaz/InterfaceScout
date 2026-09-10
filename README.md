@@ -1,555 +1,154 @@
 # InterfaceScout
 
-**Residue-level protein-surface chemistry and multiscale compatibility mapping.**
+InterfaceScout is an open-source, deterministic framework for locating **plausible protein-side material-contact regions** from a protein structure, a generalized material surface chemistry, and solution conditions.
 
-InterfaceScout is an open-source, deterministic computational framework for analyzing the solvent-exposed surface of protein structures and identifying residue- and patch-level compatibility with generic classes of material surface chemistry.
+It is designed as a lightweight screening and interpretation tool for protein–material studies. InterfaceScout does **not** predict adsorption free energy, adsorption capacity, a unique orientation, or an atomically exact contact map.
 
-From a protein structure and user-defined solution conditions, InterfaceScout combines side-chain relative solvent accessibility, curated residue–chemistry interaction classes, mechanism-specific ionization-state availability, and multiscale spatial aggregation to generate interpretable protein-side compatibility maps.
+## What the program does
 
-Optional Poisson–Boltzmann electrostatic potential can additionally be calculated using PDB2PQR/PROPKA and APBS when the required external programs are available. Electrostatic potential is retained as an auxiliary descriptor rather than a primary scoring term.
+For an input protein structure, InterfaceScout:
 
-Spatially enriched compatibility regions are identified using a fixed multiscale formulation at complementary **5 Å and 8 Å aggregation scales**. These radii describe local and extended residue neighborhoods and are not interpreted as universal intermolecular interaction cutoffs.
+1. calculates side-chain solvent accessibility using Shrake–Rupley SASA;
+2. identifies solvent-exposed residues (`scRSA >= 0.05`);
+3. assigns chemistry-compatible residue classes for the selected material interface;
+4. applies pH-dependent ionization-state availability where required;
+5. aggregates compatible residues at **6 and 9 Å** spatial scales;
+6. constructs non-transitive **8 Å coarse interface patches** around local chemistry maxima;
+7. ranks patches by Pareto dominance across chemistry support, accessibility, patch coherence, and orientation coherence.
 
-The framework supports eleven generalized interfacial chemistry classes:
+GNM and residue-interaction-network descriptors are reported only as structural context. They do not change patch membership or ranking. Literature interaction-energy values and optional APBS electrostatics are also auxiliary descriptors only.
 
-- cationic
-- anionic
-- hydrogen-bond donor
-- hydrogen-bond acceptor
-- π / carbon-like
-- hydrophobic
-- oxide
-- hydroxyapatite / Ca²⁺
-- transition-metal coordination
-- gold
-- phosphate
+## Supported material-interface modes
 
-InterfaceScout provides a protein-centered description of chemically compatible surface motifs and spatially persistent residue neighborhoods that can support the interpretation of protein–material interactions across chemically distinct interfaces.
+The user selects the generalized interface chemistry that best represents the experimental material:
 
-**No machine learning, empirical fitting, or optimization against experimental adsorption data is used.**
+- silica / deprotonated silanol-rich
+- citrate-coated gold
+- MPA-coated gold
+- PAA-coated iron oxide
+- polystyrene
+- aluminum hydroxide
+- iron oxide
+- hydroxyapatite
+- calcium fluoride
+- generic hydrophobic
+- generic anionic
+- generic cationic
 
-The application runs locally on your computer and opens in your web browser at:
+These modes select a predefined chemistry channel; no fitted material-specific numeric weight is applied.
+
+## Installation and use
+
+### Windows
+
+Double-click:
+
+`run_local.bat`
+
+### macOS / Linux
+
+First run:
+
+```bash
+bash run_local.sh
+```
+
+Later runs:
+
+```bash
+bash start.sh
+```
+
+or, on macOS:
+
+```bash
+./start.command
+```
+
+The application opens locally at:
 
 `http://localhost:8000`
 
-Protein analysis is performed locally. An internet connection is required only for tasks such as initial software installation or fetching a structure directly from the Protein Data Bank.
+## Inputs
 
----
+The interface accepts:
 
-## What's in this folder
+- a PDB ID or local PDB file;
+- an optional chain selection;
+- material-interface mode;
+- pH;
+- ionic strength;
+- temperature.
+
+## Outputs
+
+InterfaceScout reports ranked coarse interface patches. For each patch, the output includes:
+
+- patch center and member residues;
+- Pareto front and display rank;
+- chemistry support;
+- mean solvent accessibility;
+- multiscale patch coherence;
+- orientation coherence;
+- optional structural-network context.
+
+Results can be exported as JSON, CSV, or a PDB file in which patch ranking is encoded in the B-factor field for visualization.
+
+### How to interpret the ranking
+
+**Pareto front 1** identifies primary plausible interface candidates. Lower display rank indicates a stronger ordering within the reported patch list.
+
+Patch membership is intentionally coarse. Agreement with experimental data should therefore be evaluated at the same resolution as the experiment: exact residue overlap for residue-resolved measurements, and spatial/region overlap for regional or orientation-level measurements.
+
+## Canonical model settings
+
+- SASA probe radius: **1.40 Å**
+- Shrake–Rupley sampling: **200 points/atom**
+- surface threshold: **scRSA >= 0.05**
+- multiscale aggregation: **6 and 9 Å**
+- coarse patch radius: **8 Å**
+- weighted empirical fitting: **none**
+
+The 6/9 Å aggregation pair was selected on an adsorption-label-free development panel before external experimental evaluation. Experimental adsorption labels were not used to tune the model.
+
+## Validation and reproducibility
+
+Scripts and machine-readable files used for parameter sensitivity and external experimental evaluation are kept under:
+
+`backend/v2/validation/`
+
+The development/sensitivity panel and the external experimental-validation panel are separate. The repository preserves prediction-first evaluation records so that experimental interface labels are not used to construct or rank patches.
+
+## Repository structure
 
 ```text
 InterfaceScout/
 ├── backend/
-│   ├── main.py               Python analysis engine
-│   └── requirements.txt      Core Python dependencies
+│   ├── main.py              internal chemistry/SASA kernel used by InterfaceScout
+│   ├── requirements.txt
+│   └── v2/                  canonical InterfaceScout implementation
 ├── frontend/
-│   ├── index.html            Browser-based user interface
-│   ├── logo.png              In-app logo
-│   └── favicon.png           Browser-tab icon
-├── run_local.bat             Setup + daily launcher (Windows)
-├── run_local.sh              First-time setup (macOS / Linux)
-├── start.command             Daily launcher (macOS)
-├── start.sh                  Daily launcher (Linux)
-├── interfacescout.ico        Windows Desktop icon
-├── interfacescout.png        Linux/macOS launcher artwork
+│   ├── index.html
+│   ├── logo.png
+│   └── favicon.png
+├── run_local.bat
+├── run_local.sh
+├── start.sh
+├── start.command
 ├── LICENSE
-└── README.md                 This file
+└── README.md
 ```
 
-**Keep these files together in the same InterfaceScout folder.**
+The `v2` directory name is retained only as an internal development path. The public software is a single application named **InterfaceScout**; users do not select between software versions.
 
-The launcher files are expected to remain next to the `backend/` and `frontend/` directories. On Windows, `run_local.bat` serves both as the first-time setup script and the subsequent launcher.
+## Scope
 
----
+InterfaceScout answers the question:
 
-## Requirements
+> Given a folded protein structure, solution condition, and generalized interface chemistry, which exposed protein surface regions are plausible candidates for material contact?
 
-- **Python 3.11 or 3.12** with SSL support
-- An internet connection during initial setup
-- An internet connection when fetching structures directly from the Protein Data Bank
-- Supported operating systems:
-  - **Windows 10/11**
-  - **macOS** — Intel or Apple Silicon
-  - **Linux**
-
-PDB2PQR/PROPKA and APBS are used only for optional electrostatic descriptors. The canonical InterfaceScout compatibility calculation does not require APBS electrostatic potential to rank residues or multiscale hotspots. The setup scripts attempt to configure APBS when supported, but failure to install APBS does not prevent the canonical analysis from running.
-
----
-
-## Windows
-
-1. **Double-click `run_local.bat`** the first time.
-
-   The setup installs the required Python components, prepares the local environment, creates an InterfaceScout Desktop launcher where supported, and starts the application.
-
-2. On later runs, use the **InterfaceScout Desktop icon** or run `run_local.bat` again. The launcher detects the existing environment and starts immediately without reinstalling dependencies.
-
-3. The application opens at:
-
-   `http://localhost:8000`
-
-> To force a clean Python-environment reinstall, delete the local virtual-environment folder and run the setup script again.
->
-> If Windows SmartScreen displays a warning for the `.bat` file, choose **More info → Run anyway**.
->
-> If startup fails, inspect the startup log generated by the launcher.
-
----
-
-## macOS
-
-1. Run `run_local.sh` once:
-
-   ```bash
-   bash run_local.sh
-   ```
-
-2. On later runs, double-click the generated **`InterfaceScout.command`** on your Desktop. This Desktop launcher points back to the real `start.command` in the InterfaceScout folder, so the project folder is located reliably.
-
-3. The backend starts locally and the application opens in your browser.
-
-> macOS Gatekeeper may request confirmation the first time a downloaded launcher is opened. Right-click the launcher, choose **Open**, and confirm if needed.
-
----
-
-## Linux
-
-1. Run:
-
-   ```bash
-   bash run_local.sh
-   ```
-
-2. On later runs, use the generated InterfaceScout launcher or:
-
-   ```bash
-   bash start.sh
-   ```
-
-> Some desktop environments require downloaded `.desktop` launchers to be explicitly marked as trusted.
-
----
-
-## Using InterfaceScout
-
-1. Enter a PDB ID, for example **`4F5S`**, and click **Fetch**, or upload a local PDB file.
-
-2. Optionally select a protein chain.
-
-3. Define the solution conditions:
-
-   - **pH**
-   - **ionic strength** (mM)
-   - **temperature** (K)
-
-4. Click **Analyze Protein Surface**.
-
-5. Explore:
-
-   - residue-level surface-feature mapping
-   - chemistry-specific compatibility maps
-   - favorable residue propensity
-   - separately reported repulsive compatibility
-   - 5/8 Å multiscale-persistence maps
-   - optional electrostatic descriptors
-
-6. Inspect the three-dimensional protein representation and residue-level result tables.
-
-7. Export results as:
-
-   - **CSV** — a comprehensive residue-level table containing the calculated structural descriptors, surface-feature flags, and chemistry-specific favorable, repulsive, and multiscale-patch quantities for the analyzed chain(s)
-   - **PDB** — the currently displayed chemistry/map is written into the PDB **B-factor field** on a 0–100 scale so the exported structure can be recolored by B-factor in external molecular viewers
-
-There is no user-adjustable canonical patch-radius parameter in the publication-frozen model.
-
----
-
-## Analysis workflow
-
-InterfaceScout analyzes the protein structure independently of an explicit atomistic material model.
-
-The canonical workflow includes:
-
-1. protein structure parsing
-2. side-chain solvent-accessibility calculation
-3. surface-residue selection
-4. assignment of generalized residue–surface chemistry classes
-5. mechanism-specific ionization-state evaluation
-6. residue-level compatibility scoring
-7. multiscale spatial aggregation at 5 Å and 8 Å
-8. optional electrostatic descriptor calculation
-9. three-dimensional visualization and machine-readable export
-
-Material characterization is used only at the interpretation stage to determine which generalized chemistry maps are relevant to a particular experimental interface.
-
-Experimental adsorption measurements are **not** used to calculate or fit the InterfaceScout compatibility maps.
-
----
-
-## Side-chain solvent accessibility
-
-Solvent-accessible surface area is calculated using the **Shrake–Rupley algorithm**.
-
-The publication-frozen calculation uses:
-
-- solvent probe radius: **1.40 Å**
-- Shrake–Rupley sampling: **200 points per atom**
-- side-chain relative solvent accessibility:
-
-  `scRSA = side-chain SASA / residue-specific reference side-chain ASA`
-
-- canonical surface-inclusion threshold:
-
-  `scRSA ≥ 0.05`
-
-For glycine, Cα is used as the side-chain exposure surrogate because glycine does not contain a side-chain heavy atom.
-
-The raw scRSA value is retained as a structural descriptor, whereas the compatibility calculation uses a bounded exposure contribution.
-
----
-
-## Surface-feature mapping
-
-InterfaceScout identifies chemically relevant features presented by solvent-accessible protein residues, including:
-
-- positive charge
-- negative charge
-- hydrogen-bond donor capability
-- hydrogen-bond acceptor capability
-- hydrophobic character
-- aromatic character
-- metal-coordinating groups
-- thiol groups
-- carboxyl-containing groups
-- amine-containing groups
-
-These features can be inspected directly on the three-dimensional protein structure.
-
-Surface-feature mapping is descriptive and should not be interpreted as a binding-site probability.
-
----
-
-## Surface-chemistry compatibility mapping
-
-InterfaceScout evaluates exposed residues against eleven generalized classes of interfacial chemistry:
-
-| Surface chemistry | Representative interaction motifs |
-| --- | --- |
-| Cationic | electrostatic complementarity and hydrogen bonding |
-| Anionic | electrostatic complementarity and hydrogen bonding |
-| H-bond donor | hydrogen-bond complementarity |
-| H-bond acceptor | hydrogen-bond complementarity |
-| π / carbon-like | π–π and cation–π interactions |
-| Hydrophobic | nonpolar and hydrophobic contacts |
-| Oxide | carboxylate-mediated and hydrogen-bonding interactions |
-| Hydroxyapatite / Ca²⁺ | Ca²⁺ coordination and related interactions |
-| Transition-metal coordination | His/Cys/Asp/Glu/Met coordination motifs |
-| Gold | sulfur-containing residue interactions |
-| Phosphate | electrostatic and hydrogen-bond interactions |
-
-Residue–chemistry assignments are curated from established interaction mechanisms in the literature.
-
-Historical literature-derived interaction-strength values are retained as **mechanistic metadata** where applicable. Their numerical magnitudes are not multiplied into the canonical InterfaceScout propensity score.
-
----
-
-## Residue-level compatibility propensity
-
-For residue *i* and chemistry class *c*, the canonical favorable local score is:
-
-`L_i,c = I_i,c × scRSA_i × f_state,i,c(pH)`
-
-where:
-
-- `I_i,c` is the binary chemistry-class membership of residue *i*
-- `scRSA_i` describes side-chain solvent exposure
-- `f_state,i,c(pH)` is the availability of the ionization state required by the corresponding interaction mechanism
-
-Within each chemistry class and solution condition, favorable scores are normalized to the largest favorable value:
-
-`P_i,c = 100 × L_i,c / max(L_c,fav)`
-
-The resulting propensity is a **within-map relative ranking**.
-
-It is not:
-
-- an adsorption free energy
-- an equilibrium constant
-- an adsorption probability
-- an absolute binding affinity
-- a material-specific adsorption capacity
-- a value that can be directly compared numerically between different chemistry classes
-
-Repulsive residue–chemistry assignments are normalized and reported separately from favorable propensity.
-
----
-
-## pH-dependent state availability
-
-For mechanisms requiring a defined protonation state, InterfaceScout uses standard Henderson–Hasselbalch relationships.
-
-For a protonated basic group:
-
-`f+ = 1 / [1 + 10^(pH − pKa)]`
-
-For a deprotonated acidic group:
-
-`f− = 1 / [1 + 10^(pKa − pH)]`
-
-Mechanisms that do not require a defined ionization state use:
-
-`f_state = 1`
-
-Mixed mechanisms are not assigned arbitrary pH-dependent energetic weights.
-
-For example, histidine in the combined π/carbon class can participate through both neutral π-associated interactions and protonated cation–π interactions. Therefore, its protonated fraction is reported as auxiliary condition-dependent information rather than being imposed as a multiplier on the combined π/carbon propensity.
-
-Residues can additionally be flagged as ionization-sensitive when the selected pH lies close to their reference side-chain pKa.
-
----
-
-## Multiscale spatial persistence
-
-InterfaceScout does not use a single universal patch radius.
-
-Spatial compatibility is evaluated independently at two complementary aggregation scales:
-
-- **5 Å** — local chemical neighborhood
-- **8 Å** — extended local neighborhood
-
-For candidate patch center *i*, chemistry *c*, and radius *R*:
-
-`D_i,c(R) = Σ_j:dij≤R L_j,c`
-
-Only favorable compatible residues contribute to the patch-density calculation.
-
-Each radius-specific map is normalized independently:
-
-`D̃_i,c(R) = D_i,c(R) / max_k D_k,c(R)`
-
-The canonical multiscale-persistence score is:
-
-`M_i,c = 100 × min[D̃_i,c(5 Å), D̃_i,c(8 Å)]`
-
-A region therefore receives a high persistence score only when compatible-residue enrichment is retained at **both spatial scales**.
-
-The 5 Å and 8 Å values are spatial aggregation scales, not universal direct-contact cutoffs for hydrogen bonding, coordination, π interactions, hydrophobic interactions, or electrostatics.
-
-The frozen radius pair was selected from a developmental geometric robustness analysis performed independently of the experimental adsorption measurements.
-
-Alternative radius pairs were evaluated to assess the sensitivity of hotspot identity and spatial coherence to the aggregation scale. The selected 5/8 Å formulation provides complementary local and extended-local information while reducing dependence on a single geometric neighborhood definition.
-
----
-
-## Electrostatic descriptor
-
-When PDB2PQR/PROPKA and APBS are available, InterfaceScout can additionally calculate a residue-resolved electrostatic descriptor.
-
-Condition-specific protonation states and atomic charges can be assigned using **PDB2PQR / PROPKA**, and electrostatic potential can be calculated using **APBS** and the Poisson–Boltzmann equation.
-
-For each residue, electrostatic potential is summarized over solvent-exposed side-chain atoms.
-
-For charged surface-chemistry classes, the electrostatic sign can be reported as complementary, opposing, or neutral relative to the selected interface chemistry.
-
-**Electrostatic potential is an auxiliary descriptor only.**
-
-It is not multiplied into:
-
-- residue-level compatibility propensity
-- radius-specific patch density
-- multiscale-persistence ranking
-
-This separation prevents APBS grid, dielectric, or numerical choices from determining canonical hotspot identity.
-
----
-
-## Local three-dimensional context
-
-InterfaceScout can report local residue-neighborhood statistics as descriptive structural information.
-
-The local-context descriptor is **not multiplied into the canonical compatibility score**.
-
-Spatial clustering is already represented by the multiscale patch layer; including an additional local-context multiplier in the primary score would partially double-count residue aggregation.
-
----
-
-## Literature-informed interaction metadata
-
-Literature-derived residue–surface interaction strengths can be retained in the output as mechanistic metadata.
-
-These values document:
-
-- interaction type
-- favorable or repulsive assignment
-- approximate literature-supported interaction strength where available
-- chemical rationale for residue–surface compatibility
-
-Their numerical magnitudes are **not used as primary ranking weights**.
-
-This avoids treating interaction energies derived from chemically different experimental or computational systems as directly commensurate quantities.
-
----
-
-## Interpretation
-
-InterfaceScout is intended as a lightweight, interpretable, protein-centered pre-screening and experimental-interpretation framework.
-
-A suitable question for the framework is:
-
-> Given this protein, solution condition, and class of interface chemistry, which solvent-exposed residues and spatial regions are chemically plausible candidates for interaction?
-
-InterfaceScout does **not** calculate:
-
-- quantitative adsorption capacity
-- adsorption free energy
-- equilibrium surface coverage
-- a unique adsorption orientation
-- an exact protein–material contact geometry
-- adsorption-induced conformational rearrangement
-- pH-dependent conformational ensembles
-- material porosity or pore accessibility
-- interfacial hydration
-- mass-transfer limitations
-- nanoparticle dispersion or aggregation
-
-These material- and system-level variables must be assessed separately.
-
-InterfaceScout outputs should therefore be interpreted as **protein-side compatibility hypotheses**, not direct quantitative predictions of adsorption magnitude.
-
----
-
-
-## Export behavior
-
-The CSV export is analysis-wide for the selected chain or chain set. It contains the calculated residue-level structural descriptors, surface exposure quantities, ionization descriptors, auxiliary electrostatic values when available, surface-feature membership, and chemistry-specific favorable, repulsive, and patch-level quantities.
-
-The PDB export follows the **current view**:
-
-- the selected chain is the only chain exported; if `ALL` is analyzed, all analyzed chains are retained
-- the selected surface-chemistry class is retained
-- the active display mode is retained: residue propensity, 5/8 Å multiscale persistence, or repulsion propensity
-- the displayed 0–100 value is written into the standard PDB **B-factor field**
-- residues without a non-zero value in the selected map receive `0.00`
-
-This makes the exported PDB directly usable for B-factor-based coloring in molecular-visualization software.
-
-
-## Theory and references
-
-The **Theory** section in the application documents:
-
-- side-chain relative solvent accessibility
-- residue–chemistry class assignments
-- mechanism-specific state availability
-- favorable and repulsive compatibility channels
-- within-map normalization
-- 5/8 Å multiscale spatial persistence
-- optional APBS electrostatic descriptors
-- descriptive local-context information
-- literature-informed mechanistic metadata
-- model scope and limitations
-- literature sources supporting the chemistry assignments
-
----
-
-## Reproducibility
-
-The canonical InterfaceScout configuration is deterministic.
-
-For the same:
-
-- protein coordinates
-- selected chain
-- solution conditions
-- software version
-- chemistry definitions
-- and numerical settings
-
-the canonical residue and multiscale-persistence maps are reproducible.
-
-The publication-frozen configuration uses:
-
-- `scRSA threshold = 0.05`
-- `Shrake–Rupley probe = 1.40 Å`
-- `Shrake–Rupley sampling = 200 points/atom`
-- `multiscale radii = 5 Å and 8 Å`
-- `temperature default = 298 K`
-
-No experimental adsorption values enter the primary calculation.
-
----
-
-## Example: bovine serum albumin
-
-For bovine serum albumin analyses associated with the InterfaceScout publication, the designated BSA crystal structure is:
-
-`PDB ID: 4F5S`
-
-Chain A is used as the primary structural copy, while chain B can be used as a crystallographic structural-replicate check.
-
-Residue identities and hotspot positions obtained from different albumin structures should not be transferred directly between PDB entries without rerunning the analysis.
-
----
-
-## Security note
-
-InterfaceScout is open source and runs as a local application.
-
-Launcher scripts are plain-text files and can be inspected directly.
-
-Because downloaded launcher scripts are not digitally signed, Windows SmartScreen or antivirus software may occasionally display a warning.
-
-Typical options are:
-
-- **SmartScreen:** More info → Run anyway
-- **Downloaded ZIP blocked:** Properties → Unblock
-- **Antivirus warning:** inspect the flagged file before restoring or allowing it
-
----
-
-## Troubleshooting
-
-### Backend not found
-
-Keep the launcher files in the expected InterfaceScout directory structure so that they can locate both `backend/main.py` and `frontend/index.html`.
-
-### Python environment not found
-
-Run the first-time setup script before using the daily launcher. On Windows, `run_local.bat` performs both setup and later launches.
-
-### Browser did not open
-
-Open:
-
-`http://localhost:8000`
-
-manually.
-
-### APBS not found
-
-The canonical InterfaceScout compatibility analysis can still run without APBS.
-
-APBS is required only when optional electrostatic descriptors are requested.
-
-### PDB2PQR / PROPKA not found
-
-The primary compatibility framework can still operate using the canonical residue-class and state-availability formulation. PDB2PQR/PROPKA are associated with optional structure-preparation and electrostatic-descriptor workflows.
-
-### Port 8000 is already in use
-
-Close the program currently using port 8000 or change the local server configuration.
-
----
+It does not model material porosity, interfacial hydration, mass transfer, nanoparticle aggregation, adsorption-induced unfolding, equilibrium coverage, or quantitative affinity.
 
 ## Citation
 
-If you use InterfaceScout in your research, please cite the associated InterfaceScout publication.
-
-Software repository:
-
-`https://github.com/zeynepguneryilmaz/InterfaceScout`
-
----
-
-*InterfaceScout · protein-surface chemistry · residue-level compatibility mapping · side-chain relative solvent accessibility · Shrake–Rupley SASA · mechanism-specific ionization · multiscale spatial persistence · optional APBS electrostatics*
+If you use InterfaceScout in published work, please cite the associated InterfaceScout publication after publication details become available.
