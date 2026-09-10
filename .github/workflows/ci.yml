@@ -28,6 +28,8 @@ jobs:
           python-version: ${{ matrix.python }}
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -r backend/requirements-publication-lock.txt
+      - name: Compile all Python files
+        run: python -m compileall -q backend
       - name: Import and analysis smoke test
         working-directory: backend
         shell: bash
@@ -35,6 +37,10 @@ jobs:
           python - <<'PY'
           from app import app
           from v2.interface_engine import analyze_all_maps, PUBLIC_MAP_SPECS
+          import v2.validation.generate_experimental_predictions
+          import v2.validation.compare_experimental_predictions_v2
+          import v2.validation.summarize_experimental_validation
+          import v2.validation.select_core_parameters_final
 
           pdb = '''ATOM      1  N   ALA A   1       0.000   0.000   0.000  1.00 20.00           N\nATOM      2  CA  ALA A   1       1.458   0.000   0.000  1.00 20.00           C\nATOM      3  C   ALA A   1       2.100   1.300   0.000  1.00 20.00           C\nATOM      4  O   ALA A   1       1.500   2.350   0.000  1.00 20.00           O\nATOM      5  CB  ALA A   1       1.900  -0.800   1.200  1.00 20.00           C\nATOM      6  N   LYS A   2       3.350   1.250   0.000  1.00 20.00           N\nATOM      7  CA  LYS A   2       4.050   2.450   0.000  1.00 20.00           C\nATOM      8  C   LYS A   2       5.500   2.100   0.000  1.00 20.00           C\nATOM      9  O   LYS A   2       6.050   1.050   0.000  1.00 20.00           O\nATOM     10  CB  LYS A   2       3.450   3.500   0.950  1.00 20.00           C\nATOM     11  CG  LYS A   2       4.100   4.850   0.700  1.00 20.00           C\nATOM     12  CD  LYS A   2       3.500   5.900   1.650  1.00 20.00           C\nATOM     13  CE  LYS A   2       4.100   7.250   1.350  1.00 20.00           C\nATOM     14  NZ  LYS A   2       3.500   8.250   2.250  1.00 20.00           N\nATOM     15  N   ASP A   3       6.100   3.050   0.000  1.00 20.00           N\nATOM     16  CA  ASP A   3       7.500   2.850   0.000  1.00 20.00           C\nATOM     17  C   ASP A   3       8.050   4.200   0.000  1.00 20.00           C\nATOM     18  O   ASP A   3       7.350   5.150   0.000  1.00 20.00           O\nATOM     19  CB  ASP A   3       8.100   2.000   1.100  1.00 20.00           C\nATOM     20  CG  ASP A   3       9.550   1.650   0.850  1.00 20.00           C\nATOM     21  OD1 ASP A   3      10.200   2.450   0.150  1.00 20.00           O\nATOM     22  OD2 ASP A   3      10.000   0.600   1.350  1.00 20.00           O\nTER\nEND\n'''
           assert app.title == 'InterfaceScout'
