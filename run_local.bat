@@ -13,7 +13,7 @@ if not exist "%ROOT%frontend\index.html" (
 )
 set "PYEXE="
 for %%P in (python py) do (
-  %%P -c "import sys,ssl; raise SystemExit(0 if (3,10) ^<= sys.version_info[:2] ^<= (3,12) else 1)" >nul 2>&1
+  %%P -c "import sys,ssl; raise SystemExit(0 if sys.version_info[:2] in [(3,10),(3,11),(3,12)] else 1)" >nul 2>&1
   if not errorlevel 1 if not defined PYEXE set "PYEXE=%%P"
 )
 if not defined PYEXE (
