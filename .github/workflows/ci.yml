@@ -13,34 +13,41 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install -r backend/requirements-publication-lock.txt
-      - name: Smoke test single-pass all-map analysis
+      - name: Smoke test chemistry-only public workflow
         working-directory: backend
-        env:
-          INTERFACESCOUT_VALIDATION_CANONICAL_ONLY: '1'
         run: |
           python - <<'PY'
           import urllib.request
           from app import app
-          from v2.interface_engine import analyze_all_maps, analyze_interface_v2
+          from v2.interface_engine import analyze_all_maps, analyze_interface_v2, PUBLIC_MAP_SPECS
 
           assert app.title == 'InterfaceScout'
           raw = urllib.request.urlopen('https://files.rcsb.org/download/1CRN.pdb', timeout=30).read().decode()
 
-          out = analyze_all_maps(pdb_text=raw, chain='A', pH=7.4, initial_surface='silica')
+          out = analyze_all_maps(pdb_text=raw, chain='A', pH=7.4)
           assert out['method']['sasa_points_per_atom'] == 200
           assert out['method']['scrsa_threshold'] == 0.05
           assert out['method']['multiscale_radii_A'] == [6.0, 9.0]
           assert out['method']['patch_radius_A'] == 8.0
           assert out['method']['single_pass_all_maps'] is True
-          assert out['initial_map'] == 'anionic'
-          assert out['n_maps'] >= 11
-          required = {'anionic','cationic','hydrophobic','pi_carbon','hbond_donor','hbond_acceptor','oxide','hydroxyapatite','metal_coord','gold','phosphate'}
-          assert required.issubset(out['maps'])
+          assert out['n_maps'] == len(PUBLIC_MAP_SPECS) == 11
+          required = {'anionic','cationic','hydrophobic','pi_carbon','hbond_donor','hbond_acceptor','oxide','calcium_phosphate','metal_coord','soft_metal_sulfur','phosphate'}
+          assert required == set(out['maps'])
+          assert 'surface_presets' not in out
           assert out['maps']['anionic']['n_patches'] > 0
+          assert 'residues' in out['maps']['anionic']
+          assert out['composite_policy']['validated_as_combined_model'] is False
 
-          # Keep the single-material wrapper used by validation scripts compatible.
+          structural = out['structural_context']
+          assert structural['available'] is True
+          assert structural['effect_on_prediction'] is False
+          assert set(structural['order']) == {'gnm_fluctuation','rin_degree','rin_betweenness','rin_closeness'}
+          assert structural['maps']['gnm_fluctuation']['rows']
+          assert structural['maps']['rin_betweenness']['rows']
+
+          # Internal material wrapper remains only for frozen validation scripts.
           one = analyze_interface_v2(surface='silica', pdb_text=raw, chain='A', pH=7.4)
-          assert one['surface_mode']['chemistry'] == 'anionic'
+          assert one['input']['primary_chemistry'] == 'anionic'
           assert one['n_patches'] == out['maps']['anionic']['n_patches']
-          print('InterfaceScout all-map smoke test passed')
+          print('InterfaceScout chemistry-only smoke test passed')
           PY
