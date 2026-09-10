@@ -1,14 +1,10 @@
-"""InterfaceScout V2 coarse protein-material biointerface predictor.
+"""InterfaceScout protein-material biointerface predictor.
 
-V2 predicts plausible coarse protein surface regions from material-interaction
-chemistry, solvent exposure, pH-dependent state availability, multiscale spatial
-aggregation, and coarse surface geometry. It does not predict adsorption free
-energy, adsorption amount, or a unique atomistic orientation.
+The public package exposes one canonical InterfaceScout model. Internal modules
+remain separated only for implementation and reproducibility.
 """
 
-from .model_settings import MODEL_VERSION as V2_VERSION
-from .interface_engine import analyze_interface_v2
+from .model_settings import MODEL_VERSION
+from .interface_engine import analyze_interface_v2 as analyze_interface
 
-analyze_v2 = analyze_interface_v2
-
-__all__ = ["V2_VERSION", "analyze_interface_v2", "analyze_v2"]
+__all__ = ["MODEL_VERSION", "analyze_interface"]
