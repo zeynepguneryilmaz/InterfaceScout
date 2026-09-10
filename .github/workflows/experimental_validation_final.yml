@@ -1,16 +1,21 @@
-name: InterfaceScout final blinded experimental validation
+name: InterfaceScout final prediction-first experimental evaluation
 
 on:
   push:
     branches: [main]
     paths:
       - '.github/workflows/experimental_validation_final.yml'
+      - 'backend/main.py'
       - 'backend/v2/validation/benchmark_experimental_final.json'
       - 'backend/v2/validation/generate_experimental_predictions.py'
       - 'backend/v2/validation/compare_experimental_predictions_v2.py'
       - 'backend/v2/validation/summarize_experimental_validation.py'
       - 'backend/v2/model_settings.py'
-      - 'backend/v2/**.py'
+      - 'backend/v2/interface_engine.py'
+      - 'backend/v2/coarse_patch.py'
+      - 'backend/v2/geometry.py'
+      - 'backend/v2/prepare.py'
+      - 'backend/v2/surface_modes.py'
   workflow_dispatch:
 
 jobs:
@@ -24,10 +29,8 @@ jobs:
           python-version: '3.11'
       - name: Install dependencies
         run: pip install -r backend/requirements-publication-lock.txt
-      - name: Generate blinded predictions
+      - name: Generate prediction-first outputs
         working-directory: backend
-        env:
-          INTERFACESCOUT_VALIDATION_CANONICAL_ONLY: '1'
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -36,8 +39,6 @@ jobs:
           PY
       - name: Compare saved predictions with experimental ground truth
         working-directory: backend
-        env:
-          INTERFACESCOUT_VALIDATION_CANONICAL_ONLY: '1'
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -55,9 +56,9 @@ jobs:
           cp -r experimental_comparison experimental_validation_package/
           cp v2/validation/benchmark_experimental_final.json experimental_validation_package/benchmark_manifest.json
           cp v2/model_settings.py experimental_validation_package/model_settings.py
-          printf 'Prediction labels visible to predictor: NO\nModel SASA points/atom: 200\nModel multiscale radii: 6/9 A\nCoarse patch radius: 8 A\nBroad regional evidence is summarized with rank/hit metrics rather than interpreted as exact-residue recovery.\n' > experimental_validation_package/README.txt
+          printf 'Experimental labels visible to predictor: NO\nModel SASA points/atom: 200\nModel multiscale radii: 6/9 A\nCoarse patch radius: 8 A\nEvidence is evaluated at its experimental resolution.\n' > experimental_validation_package/README.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: interfacescout-final-experimental-validation
+          name: interfacescout-final-experimental-evaluation
           path: backend/experimental_validation_package
           if-no-files-found: error
