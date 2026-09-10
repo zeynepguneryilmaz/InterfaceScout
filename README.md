@@ -2,7 +2,7 @@
 
 InterfaceScout is an open-source, deterministic framework for locating **plausible protein-side contact regions for generalized surface chemistries** from a protein structure and solution conditions.
 
-A single analysis prepares the protein once and generates every supported surface-chemistry map. Users can inspect individual chemistry maps, combine multiple chemistry classes as a derived overlay, and view GNM/RIN structural-context maps without rerunning the calculation.
+A single analysis prepares the protein once and generates every supported surface-chemistry map. Users can inspect individual chemistry maps or combine multiple chemistry classes as a derived overlay without rerunning the calculation.
 
 InterfaceScout does **not** predict adsorption free energy, adsorption capacity, a unique adsorption orientation, or an atomically exact contact map.
 
@@ -16,10 +16,9 @@ For one protein structure, InterfaceScout:
 4. generates all canonical surface-chemistry maps from the same prepared structure;
 5. aggregates compatible residues at **6 and 9 Å**;
 6. constructs non-transitive **8 Å coarse interface patches** around local chemistry maxima on the same outward-facing protein surface;
-7. ranks each single-channel map by Pareto dominance across chemistry support, accessibility, patch coherence, and orientation coherence;
-8. calculates GNM and residue-interaction-network descriptors as separate structural context.
+7. ranks each single-channel map by Pareto dominance across chemistry support, accessibility, patch coherence, and orientation coherence.
 
-There is no material catalogue and no material-specific fitted weight.
+There is no material catalogue, no material-specific fitted weight, and no GNM/RIN term in prediction or output.
 
 ## Surface-chemistry maps
 
@@ -55,17 +54,6 @@ This avoids inventing unknown fractions such as `70% hydrophobic + 30% anionic`.
 
 **Important:** single-channel chemistry maps are the canonical prediction outputs. The Composite chemistry overlay is a derived exploratory visualization and is **not a separately validated combined model or binding-affinity score**.
 
-## Structural-context maps
-
-The same run also provides separate maps for:
-
-- **GNM fluctuation** — normalized native-state Cα mobility;
-- **RIN degree** — local connectivity in the 4.5 Å heavy-atom residue interaction network;
-- **RIN betweenness** — participation in shortest network paths;
-- **RIN closeness** — network proximity to the rest of the protein.
-
-These maps help interpret whether a predicted surface region is relatively mobile, rigid, locally connected, or network-central. **GNM and RIN do not alter patch membership or Pareto ranking.**
-
 ## How to interpret a chemistry-map result
 
 **Pareto front 1** contains the primary plausible interface candidates for that chemistry class. Display rank orders patches for inspection.
@@ -90,10 +78,8 @@ No material name is required.
 - ranked coarse patches for each chemistry map
 - residue-level chemistry support used for map inspection/composite overlays
 - Composite chemistry overlay for any user-selected set of two or more chemistry classes
-- GNM fluctuation map
-- RIN degree, betweenness, and closeness maps
 - complete JSON export
-- CSV export for the currently displayed chemistry, composite, or structural-context view
+- CSV export for the currently displayed chemistry or composite view
 
 ## Canonical settings
 
