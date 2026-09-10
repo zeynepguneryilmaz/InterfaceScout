@@ -2,7 +2,7 @@
 
 InterfaceScout is an open-source, deterministic framework for locating **plausible protein-side contact regions for generalized surface chemistries** from a protein structure and solution conditions.
 
-A single analysis prepares the protein once and generates every supported surface-chemistry map. Users can inspect individual chemistry maps or combine multiple chemistry classes as a derived overlay without rerunning the calculation.
+A single analysis prepares the protein once and generates every supported surface-chemistry map. Users can inspect individual maps or combine multiple chemistry classes as a derived overlay without rerunning the calculation.
 
 InterfaceScout does **not** predict adsorption free energy, adsorption capacity, a unique adsorption orientation, or an atomically exact contact map.
 
@@ -18,11 +18,11 @@ For one protein structure, InterfaceScout:
 6. constructs non-transitive **8 Å coarse interface patches** around local chemistry maxima on the same outward-facing protein surface;
 7. ranks each single-channel map by Pareto dominance across chemistry support, accessibility, patch coherence, and orientation coherence.
 
-There is no material catalogue, no material-specific fitted weight, and no GNM/RIN term in prediction or output.
+There is no material catalogue, no material-specific fitted weight, and no GNM/RIN/APBS term in prediction or output.
 
 ## Surface-chemistry maps
 
-One calculation generates these generalized chemistry classes:
+One calculation generates:
 
 - **Anionic surface**
 - **Cationic surface**
@@ -36,50 +36,40 @@ One calculation generates these generalized chemistry classes:
 - **Soft-metal sulfur affinity**
 - **Phosphate-rich surface**
 
-A user should select and interpret the chemistry class or classes that are justified by the known surface composition, functional groups, charge state, coating, spectroscopy, or other experimental characterization of the interface under study.
-
-A real interface may contain more than one chemistry. For example, a heterogeneous or functionalized surface can simultaneously expose charged, hydrophobic, hydrogen-bonding, aromatic, or coordinating groups. InterfaceScout therefore does not force a surface into one material label.
+The chemistry class or classes should be selected according to experimentally supported surface composition, functional groups, charge state, coating, spectroscopy, or other interface characterization. A real interface may contain more than one chemistry; InterfaceScout therefore does not force the system into a named-material category.
 
 ## Combining multiple surface chemistries
 
-After analysis, select two or more chemistry classes to create a **Composite chemistry overlay**.
+After analysis, two or more chemistry classes can be selected to create a **Composite chemistry overlay**. This is deliberately not a fitted material score. For each residue, the overlay takes the **maximum normalized support** among the selected canonical maps, avoids double counting, and retains the dominant and supporting chemistry channels.
 
-The composite is deliberately not a fitted material score. For each residue, the default overlay takes the **maximum normalized support** among the selected canonical chemistry maps. A residue that is supported by more than one chemistry is not counted repeatedly. The interface also preserves:
+The composite avoids inventing unknown fractions such as `70% hydrophobic + 30% anionic`. If quantitative surface-composition fractions are independently known, they remain external experimental information.
 
-- the number of selected chemistry channels supporting the residue;
-- the dominant chemistry channel at that residue;
-- the underlying individual chemistry maps.
+**Single-channel maps are the canonical prediction outputs. The Composite chemistry overlay is a derived exploratory visualization, not a separately validated combined model or binding-affinity score.**
 
-This avoids inventing unknown fractions such as `70% hydrophobic + 30% anionic`. If quantitative surface-composition fractions are independently known, they should be treated as external experimental information rather than silently inferred by InterfaceScout.
+## How to interpret results
 
-**Important:** single-channel chemistry maps are the canonical prediction outputs. The Composite chemistry overlay is a derived exploratory visualization and is **not a separately validated combined model or binding-affinity score**.
+**Pareto front 1** contains the primary plausible interface candidates for a chemistry class. Display rank orders patches for inspection.
 
-## How to interpret a chemistry-map result
+Each patch reports its center and member residues, chemistry support, mean accessibility, multiscale patch coherence, and orientation coherence. Patch membership is intentionally coarse: InterfaceScout localizes plausible protein-side surface regions rather than asserting that every member residue is an atomically exact adsorption contact.
 
-**Pareto front 1** contains the primary plausible interface candidates for that chemistry class. Display rank orders patches for inspection.
+Experimental comparison should match evidence resolution. Residue-resolved evidence can be compared by direct overlap and spatial proximity; peptide, helix, region, domain, or molecular-face evidence should be evaluated at the corresponding regional resolution. Scores and ranks are meaningful within a chemistry map and are not quantitative affinities between chemistry classes.
 
-Each patch reports its center and member residues together with chemistry support, mean accessibility, multiscale patch coherence, and orientation coherence. Patch membership is intentionally coarse: InterfaceScout is intended to localize a plausible protein-side surface region, not claim every member residue as an atomically exact adsorption contact.
+## Inputs and outputs
 
-Comparison with experiments should match the experimental resolution. Residue-resolved experiments can be compared by direct residue overlap and spatial proximity; peptide/helix/domain-level evidence should be compared at the corresponding regional resolution. Scores and ranks are meaningful within a chemistry map and should not be interpreted as quantitative affinities between different chemistry classes.
-
-## Inputs
-
+Inputs:
 - PDB ID or local PDB file
-- optional protein chain
+- optional protein chain or comma-separated chains
 - pH
 - ionic strength
 - temperature
 
-No material name is required.
-
-## Outputs
-
+Outputs:
 - all canonical single-channel chemistry maps
-- ranked coarse patches for each chemistry map
-- residue-level chemistry support used for map inspection/composite overlays
-- Composite chemistry overlay for any user-selected set of two or more chemistry classes
+- ranked coarse patches for every chemistry map
+- residue-level chemistry support
+- user-selected Composite chemistry overlay
 - complete JSON export
-- CSV export for the currently displayed chemistry or composite view
+- CSV export for the displayed chemistry or composite view
 
 ## Canonical settings
 
@@ -90,17 +80,39 @@ No material name is required.
 - coarse patch radius: **8 Å**
 - empirical fitted weights: **none**
 
-The 6/9 Å pair was selected on a separate adsorption-label-free development panel before external experimental evaluation. Experimental adsorption labels were not used to tune the model.
+The 200-point SASA setting and 6/9 Å aggregation pair were selected on a separate adsorption-label-free development panel before external experimental evaluation. Experimental adsorption labels were not used to tune the prediction model.
 
 ## Installation
 
+InterfaceScout supports **Python 3.10, 3.11, and 3.12**. The publication build is continuously smoke-tested on Linux, macOS, and Windows through GitHub Actions.
+
 ### Windows
 
-Double-click `run_local.bat`.
+Double-click:
 
-### macOS / Linux
+```text
+run_local.bat
+```
 
-First run:
+The launcher validates Python, creates the local virtual environment when needed, installs the runtime dependencies, starts InterfaceScout, and opens the browser.
+
+### macOS
+
+First setup:
+
+```bash
+bash run_local.sh
+```
+
+Later runs can use:
+
+```bash
+bash start.command
+```
+
+### Linux
+
+First setup:
 
 ```bash
 bash run_local.sh
@@ -112,19 +124,47 @@ Later runs:
 bash start.sh
 ```
 
-On macOS, `start.command` can also be used.
-
-The application opens locally at `http://localhost:8000`.
+The application is served locally at `http://localhost:8000`.
 
 ## Validation and reproducibility
 
-Publication-related sensitivity and external-validation resources are stored under `backend/v2/validation/`. The directory name reflects development history only; there is one public application, **InterfaceScout**.
+The live application uses `backend/app.py`. Publication reproducibility resources are kept separately under `backend/v2/validation/`; the `v2` directory name is retained only as provenance of the frozen publication implementation and is not a user-selectable version.
 
-The development/sensitivity panel and external experimental-validation panel are separate. Prediction-first records are retained so experimental interface labels are not used to construct or rank patches.
+Two independent workflows are retained:
+- **parameter selection:** the adsorption-label-free eight-protein development panel;
+- **prediction-first experimental evaluation:** saved predictions are generated without experimental localization labels, followed by a separate ground-truth comparison stage.
+
+The validation-only material-to-chemistry mapping is not exposed by the public application and assigns no numerical material weights.
+
+## Repository structure
+
+```text
+InterfaceScout/
+├── backend/
+│   ├── app.py
+│   ├── main.py
+│   ├── requirements.txt
+│   ├── requirements-publication-lock.txt
+│   └── v2/
+│       ├── api.py
+│       ├── interface_engine.py
+│       ├── coarse_patch.py
+│       ├── geometry.py
+│       ├── model_settings.py
+│       ├── prepare.py
+│       └── validation/
+├── frontend/
+│   └── index.html
+├── run_local.bat
+├── run_local.sh
+├── start.sh
+├── start.command
+└── README.md
+```
 
 ## Scope
 
-InterfaceScout addresses the question:
+InterfaceScout addresses:
 
 > Given a folded protein structure and solution condition, which exposed protein surface regions are plausible candidates for contact with one or more defined surface-chemistry classes?
 
@@ -132,4 +172,4 @@ It does not model material porosity, interfacial hydration, mass transfer, nanop
 
 ## Citation
 
-If you use InterfaceScout in published work, please cite the associated InterfaceScout publication when the publication details become available.
+If you use InterfaceScout in published work, please cite the associated InterfaceScout publication when publication details become available.
