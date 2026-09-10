@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'backend/main.py'
+      - 'backend/v2/__init__.py'
       - 'backend/v2/model_settings.py'
       - 'backend/v2/chemistry_freeze.py'
       - 'backend/v2/validation/select_core_parameters_consensus.py'
