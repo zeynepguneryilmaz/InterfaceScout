@@ -1,4 +1,4 @@
-"""Structure-preparation helpers for InterfaceScout V2."""
+"""Structure-preparation helpers for InterfaceScout."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ def _parse_chain_selection(chain: str | None) -> set[str] | None:
 
 
 class FirstModelHeavyAtomSelect(Select):
-    """Keep model 0, selected chain(s), standard amino acids, and heavy atoms."""
+    """Keep model 0, selected chain(s), standard protein residues, and heavy atoms."""
 
     def __init__(self, chain: str | None = None):
         super().__init__()
@@ -32,8 +32,7 @@ class FirstModelHeavyAtomSelect(Select):
         return 1 if str(chain.id) in self.chains else 0
 
     def accept_residue(self, residue):
-        hetflag = str(residue.id[0]).strip()
-        return 1 if hetflag == "" else 0
+        return 1 if str(residue.id[0]).strip() == "" else 0
 
     def accept_atom(self, atom):
         element = (getattr(atom, "element", "") or "").strip().upper()
@@ -42,20 +41,14 @@ class FirstModelHeavyAtomSelect(Select):
 
 
 def prepare_pdb_text(pdb_text: str, chain: str | None = None) -> Tuple[str, dict]:
-    """Normalize an input PDB for V2.
+    """Normalize a PDB input for the canonical InterfaceScout analysis.
 
-    Policy:
-    - first structural model only;
-    - one or more selected chains if supplied (e.g. ``A`` or ``C,E``);
-    - remove explicit hydrogens;
-    - remove hetero residues from the current coarse protein patch engine.
-
-    Hetero removal is a structural-preparation simplification, not a claim that
-    cofactors are irrelevant to adsorption.  Systems whose native interface
-    depends directly on a retained cofactor require a dedicated future policy.
+    Policy: first structural model only; selected chain(s) when supplied;
+    explicit hydrogens and hetero residues removed. The hetero-residue rule is
+    a structural simplification, not a claim that cofactors are irrelevant.
     """
     parser = PDBParser(QUIET=True)
-    structure = parser.get_structure("v2_input", StringIO(pdb_text))
+    structure = parser.get_structure("interfacescout_input", StringIO(pdb_text))
     models = list(structure.get_models())
     if not models:
         raise ValueError("No structural model found in PDB input")
