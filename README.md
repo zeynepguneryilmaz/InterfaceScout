@@ -52,6 +52,8 @@ The composite avoids inventing unknown fractions such as `70% hydrophobic + 30% 
 
 Each patch reports its center and member residues, chemistry support, mean accessibility, multiscale patch coherence, and orientation coherence. Patch membership is intentionally coarse: InterfaceScout localizes plausible protein-side surface regions rather than asserting that every member residue is an atomically exact adsorption contact.
 
+Patch cards and table rows can be clicked to focus the complete patch in the 3D viewer. Residues can be inspected by hover, and the structure can be viewed as cartoon, molecular surface, or cartoon plus surface. `Home / all` or `Esc` returns to the full-protein view.
+
 Experimental comparison should match evidence resolution. Residue-resolved evidence can be compared by direct overlap and spatial proximity; peptide, helix, region, domain, or molecular-face evidence should be evaluated at the corresponding regional resolution. Scores and ranks are meaningful within a chemistry map and are not quantitative affinities between chemistry classes.
 
 ## Inputs and outputs
@@ -68,8 +70,28 @@ Outputs:
 - ranked coarse patches for every chemistry map
 - residue-level chemistry support
 - user-selected Composite chemistry overlay
-- complete JSON export
-- CSV export for the displayed chemistry or composite view
+- one **Excel workbook** containing run/method settings, map definitions, residue-level values for all chemistry maps, all patch metrics, and detailed patch membership
+- one downloadable **B-factor PDB track for the currently displayed chemistry map**; selecting another map and downloading again produces its corresponding PDB
+- an optional B-factor PDB for the displayed Composite overlay
+
+### Excel workbook
+
+The workbook contains:
+
+- `Run_Method`: input conditions, model settings, structure-preparation information, scope, diagnostics, and composite-policy metadata
+- `Map_Definitions`: map keys, labels, descriptions, and patch counts
+- `Residue_Values`: residue identity and `scRSA`, plus `local_score`, normalized `propensity`, and `multiscale_persistence` for every chemistry map
+- `Patches`: all ranked patch-level descriptors and member/seed residue lists
+- `Patch_Members`: one row per residue per patch for direct filtering and analysis
+- `Composite_Selected`: added when two or more chemistry maps are selected at the time of export
+
+### B-factor PDB tracks
+
+For a canonical single-channel map, the downloadable PDB writes the map's **normalized residue propensity (0–100)** into the standard PDB B-factor field for every atom of that residue. Residues without map support are written as `0.00`.
+
+The file contains `REMARK 900` records stating that these values are InterfaceScout scores and **not experimental crystallographic B-factors**. This makes the file directly usable as a residue-property track in molecular-visualization software that can color by B-factor.
+
+For a Composite overlay, the exported B-factor track contains the displayed maximum-support composite value and is explicitly named and annotated as a derived composite overlay rather than a canonical single-channel prediction.
 
 ## Canonical settings
 
