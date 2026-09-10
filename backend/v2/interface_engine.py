@@ -1,4 +1,4 @@
-"""InterfaceScout V2: coarse, weight-free protein-material interface prediction."""
+"""Canonical InterfaceScout coarse protein-material interface prediction engine."""
 
 from __future__ import annotations
 
@@ -26,7 +26,8 @@ from .rin import build_rin, annotate_rin_percentiles, summarize_patch_rin
 from .surface_modes import get_surface_mode
 
 
-def _load_v1():
+def _load_core():
+    """Load the shared residue-chemistry/SASA core used by InterfaceScout."""
     module = importlib.import_module("main")
     apply_publication_chemistry(module)
     return module
@@ -43,7 +44,6 @@ def _obtain_pdb_text(pdb_id: Optional[str], pdb_text: Optional[str]) -> str:
 
 
 def _geometry_only_gnm(prepared: str, cutoff_A: float) -> dict:
-    """Return only the GNM fields required by coarse-patch geometry."""
     nodes = extract_ca_nodes(prepared)
     n = len(nodes)
     return {
@@ -78,21 +78,21 @@ def analyze_interface_v2(
     raw = _obtain_pdb_text(pdb_id, pdb_text)
     prepared, prep_report = prepare_pdb_text(raw, chain=chain)
 
-    v1 = _load_v1()
-    request = v1.AnalyzeRequest(
+    core = _load_core()
+    request = core.AnalyzeRequest(
         pdb_text=prepared,
         chain=None,
-        env=v1.EnvParams(pH=float(pH), ionic=float(ionic_mM), temp=float(temp_K)),
+        env=core.EnvParams(pH=float(pH), ionic=float(ionic_mM), temp=float(temp_K)),
     )
-    v1_result = v1.analyze(request)
-    if hasattr(v1_result, "body"):
-        raise RuntimeError("Unexpected HTTP response object returned by V1 analyze()")
+    core_result = core.analyze(request)
+    if hasattr(core_result, "body"):
+        raise RuntimeError("Unexpected HTTP response object returned by the analysis core")
 
     canonical_only = os.environ.get("INTERFACESCOUT_VALIDATION_CANONICAL_ONLY") == "1"
     gnm = _geometry_only_gnm(prepared, float(gnm_cutoff_A)) if canonical_only else solve_gnm(prepared, cutoff_A=float(gnm_cutoff_A))
-    patches = build_coarse_patches(v1_result=v1_result, chemistry=mode.chemistry, gnm=gnm)
+    patches = build_coarse_patches(v1_result=core_result, chemistry=mode.chemistry, gnm=gnm)
 
-    surface_keys = [str(r["key"]) for r in v1_result.get("surface_residues", []) if r.get("key")]
+    surface_keys = [str(r["key"]) for r in core_result.get("surface_residues", []) if r.get("key")]
     if canonical_only:
         rin = {"cutoff_A": None, "n_nodes": 0, "n_edges": 0}
         for patch in patches:
@@ -105,7 +105,7 @@ def analyze_interface_v2(
     pareto_primary = [p for p in patches if int(p.get("pareto_front", 999)) == 1]
 
     return {
-        "engine": "InterfaceScout V2",
+        "engine": "InterfaceScout",
         "version": MODEL_VERSION,
         "scope": {
             "prediction_unit": "coarse protein surface region / interface patch",
@@ -131,7 +131,7 @@ def analyze_interface_v2(
         "structure_preparation": prep_report,
         "method": {
             "core_question": "Where on the native folded protein is a plausible material-contact region under the defined surface chemistry and environment?",
-            "chemistry_source": "InterfaceScout compatibility channel with publication chemistry corrections",
+            "chemistry_source": "InterfaceScout compatibility channel with publication-frozen chemistry definitions",
             "accessibility_source": "side-chain relative solvent accessibility",
             "sasa_probe_A": SASA_PROBE_A,
             "sasa_points_per_atom": SASA_POINTS,
@@ -176,8 +176,8 @@ def analyze_interface_v2(
             "The 8 A coarse-patch radius is a separate structural-neighbourhood rule and was not selected by the 6/9 A multiscale analysis.",
             "Patch membership is intentionally coarse; individual residues are not claimed as precise adsorption contacts.",
             "Patch growth is non-transitive to prevent surface percolation into unrealistically large regions.",
-            "The V2 publication chemistry excludes protonated Lys/Arg from protein-side acceptor eligibility for H-bond-donor surfaces.",
-            "Numerical literature Ebase values inherited from V1 remain metadata only and never change V2 ranking.",
+            "The publication-frozen chemistry excludes protonated Lys/Arg from protein-side acceptor eligibility for H-bond-donor surfaces.",
+            "Numerical literature interaction-strength values retained by the shared core remain metadata only and never change InterfaceScout ranking.",
             "GNM is excluded from patch ranking and is retained only as native-state dynamic context.",
             "RIN is excluded from patch prediction and is used only to characterize the structural-network location of a predicted patch.",
             "Canonical-only validation may skip GNM/RIN numerical descriptors because they do not affect patch membership or ranking.",
