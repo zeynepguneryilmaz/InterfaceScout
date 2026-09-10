@@ -1,8 +1,9 @@
-"""InterfaceScout coarse protein-material interface prediction engine.
+"""InterfaceScout protein-side surface-chemistry mapping engine.
 
-The public analysis path prepares the protein and computes solvent exposure once,
-then derives all chemistry maps plus auxiliary structural-context maps from that
-shared state. Structural-context maps never enter patch construction or ranking.
+A single analysis prepares the protein and computes solvent exposure once, then
+returns every canonical surface-chemistry map plus optional structural-context
+maps. Material names are not part of the public model. Structural-context maps
+never enter patch construction or ranking.
 """
 from __future__ import annotations
 
@@ -26,21 +27,25 @@ from .model_settings import (
 )
 from .prepare import prepare_pdb_text
 from .rin import build_rin, annotate_rin_percentiles, summarize_patch_rin
-from .surface_modes import SURFACE_MODES, get_surface_mode
+from .surface_modes import get_surface_mode
 
-MAP_ORDER = [
-    "anionic",
-    "cationic",
-    "hydrophobic",
-    "pi_carbon",
-    "hbond_donor",
-    "hbond_acceptor",
-    "oxide",
-    "hydroxyapatite",
-    "metal_coord",
-    "gold",
-    "phosphate",
+# Public labels describe generalized surface chemistry rather than named materials.
+# The second item is the frozen internal chemistry key retained for reproducibility.
+PUBLIC_MAP_SPECS = [
+    ("anionic", "anionic", "Anionic surface", "Negatively charged surface chemistry, including exposed anionic or carboxylate-rich groups."),
+    ("cationic", "cationic", "Cationic surface", "Positively charged surface chemistry, including protonated amine-rich groups."),
+    ("hydrophobic", "hydrophobic", "Hydrophobic surface", "Nonpolar surface chemistry supporting hydrophobic contacts."),
+    ("pi_carbon", "pi_carbon", "π / aromatic surface", "Aromatic or graphitic-like surface chemistry supporting π-associated and cation–π contacts."),
+    ("hbond_donor", "hbond_donor", "H-bond donor surface", "Surface groups capable of donating hydrogen bonds to exposed protein side chains."),
+    ("hbond_acceptor", "hbond_acceptor", "H-bond acceptor surface", "Surface groups capable of accepting hydrogen bonds from exposed protein side chains."),
+    ("oxide", "oxide", "Metal-oxide surface", "Oxide-like surface chemistry represented by the frozen carboxylate-compatible oxide channel."),
+    ("calcium_phosphate", "hydroxyapatite", "Calcium/phosphate charged sites", "Calcium- and phosphate-rich charged surface sites with complementary protein-side interactions."),
+    ("metal_coord", "metal_coord", "Transition-metal coordination", "Accessible transition-metal sites supporting coordination by exposed protein side chains."),
+    ("soft_metal_sulfur", "gold", "Soft-metal sulfur affinity", "Soft-metal-like surface affinity dominated by accessible sulfur-containing side chains."),
+    ("phosphate", "phosphate", "Phosphate-rich surface", "Phosphate-rich surface chemistry supporting electrostatic and hydrogen-bond interactions."),
 ]
+
+PUBLIC_TO_INTERNAL = {public: internal for public, internal, _label, _description in PUBLIC_MAP_SPECS}
 
 
 def _load_core():
@@ -60,7 +65,6 @@ def _obtain_pdb_text(pdb_id: Optional[str], pdb_text: Optional[str]) -> str:
 
 
 def _geometry_only_gnm(prepared: str, cutoff_A: float) -> dict:
-    """Return only the GNM fields required by coarse-patch geometry."""
     nodes = extract_ca_nodes(prepared)
     n = len(nodes)
     return {
@@ -113,7 +117,6 @@ def _prepare_shared_context(
         rin = annotate_rin_percentiles(build_rin(prepared), surface_keys)
 
     return {
-        "raw": raw,
         "prepared": prepared,
         "prep_report": prep_report,
         "core_result": core_result,
@@ -124,9 +127,30 @@ def _prepare_shared_context(
     }
 
 
-def _build_map(context: dict, chemistry: str) -> dict:
+def _residue_rows(channel: dict) -> list[dict]:
+    """Expose the residue-level chemistry fields needed for inspection/overlay."""
+    rows = []
+    for row in channel.get("residues", []):
+        key = row.get("key")
+        if not key:
+            continue
+        rows.append({
+            "key": str(key),
+            "chain": row.get("chain"),
+            "res_seq": row.get("res_seq"),
+            "icode": row.get("icode", ""),
+            "res_name": row.get("res_name"),
+            "scrsa": row.get("scrsa", row.get("scrsa_raw")),
+            "local_score": row.get("local_score"),
+            "propensity": row.get("propensity"),
+            "multiscale_persistence": row.get("multiscale_persistence"),
+        })
+    return rows
+
+
+def _build_map(context: dict, public_key: str, internal_key: str, label: str, description: str) -> dict:
     core_result = context["core_result"]
-    patches = build_coarse_patches(v1_result=core_result, chemistry=chemistry, gnm=context["gnm"])
+    patches = build_coarse_patches(v1_result=core_result, chemistry=internal_key, gnm=context["gnm"])
 
     if context["canonical_only"]:
         for patch in patches:
@@ -135,28 +159,18 @@ def _build_map(context: dict, chemistry: str) -> dict:
         for patch in patches:
             patch["rin_context"] = summarize_patch_rin(patch.get("members", []), context["rin"])
 
-    chemistry_meta = core_result.get("chemistries", {}).get(chemistry, {})
+    channel = core_result.get("chemistries", {}).get(internal_key, {})
     primary = [p for p in patches if int(p.get("pareto_front", 999)) == 1]
-    presets = [
-        {
-            "key": mode.key,
-            "label": mode.label,
-            "description": mode.description,
-        }
-        for mode in SURFACE_MODES.values()
-        if mode.chemistry == chemistry
-    ]
-
     return {
-        "key": chemistry,
-        "label": chemistry_meta.get("label", chemistry.replace("_", " ").title()),
-        "surface_group": chemistry_meta.get("surface_group", ""),
-        "description": chemistry_meta.get("description", ""),
-        "material_presets": presets,
+        "key": public_key,
+        "label": label,
+        "description": description,
+        "internal_chemistry_key": internal_key,
         "n_patches": len(patches),
         "n_pareto_primary_patches": len(primary),
         "primary_patches": primary,
         "patches": patches,
+        "residues": _residue_rows(channel),
     }
 
 
@@ -166,7 +180,6 @@ def _range(rows: list[dict]) -> tuple[float | None, float | None]:
 
 
 def _build_property_maps(context: dict) -> dict:
-    """Build residue-level structural-context maps that do not affect prediction."""
     if context["canonical_only"]:
         return {
             "available": False,
@@ -180,42 +193,32 @@ def _build_property_maps(context: dict) -> dict:
     gnm_metrics = context["gnm"].get("residue_metrics", {})
     rin_metrics = context["rin"].get("residue_metrics", {})
 
-    gnm_rows = []
-    for key, m in gnm_metrics.items():
-        gnm_rows.append({
+    gnm_rows = [{
+        "key": key,
+        "chain": m["chain"],
+        "res_seq": int(m["res_seq"]),
+        "icode": m.get("icode", ""),
+        "res_name": m["res_name"],
+        "value": float(m["normalized_fluctuation"]),
+        "surface": key in surface,
+    } for key, m in gnm_metrics.items()]
+
+    def rin_rows(field: str, percentile_field: str) -> list[dict]:
+        return [{
             "key": key,
             "chain": m["chain"],
             "res_seq": int(m["res_seq"]),
             "icode": m.get("icode", ""),
             "res_name": m["res_name"],
-            "value": float(m["normalized_fluctuation"]),
+            "value": float(m[field]),
             "surface": key in surface,
-            "contact_degree": int(m.get("contact_degree", 0)),
-        })
-
-    def rin_rows(field: str, percentile_field: str) -> list[dict]:
-        rows = []
-        for key, m in rin_metrics.items():
-            rows.append({
-                "key": key,
-                "chain": m["chain"],
-                "res_seq": int(m["res_seq"]),
-                "icode": m.get("icode", ""),
-                "res_name": m["res_name"],
-                "value": float(m[field]),
-                "surface": key in surface,
-                "surface_percentile": m.get(percentile_field),
-            })
-        return rows
-
-    degree_rows = rin_rows("degree_normalized", "degree_normalized_percentile_surface")
-    bet_rows = rin_rows("betweenness", "betweenness_percentile_surface")
-    close_rows = rin_rows("closeness", "closeness_percentile_surface")
+            "surface_percentile": m.get(percentile_field),
+        } for key, m in rin_metrics.items()]
 
     definitions = {
         "gnm_fluctuation": {
             "label": "GNM fluctuation",
-            "description": "Normalized native-state C-alpha fluctuation from the unweighted Gaussian Network Model. Values >1 indicate above-average mobility within the analyzed protein.",
+            "description": "Normalized native-state Cα fluctuation. Values >1 indicate above-average mobility within the analyzed protein.",
             "value_label": "normalized fluctuation",
             "rows": gnm_rows,
         },
@@ -223,19 +226,19 @@ def _build_property_maps(context: dict) -> dict:
             "label": "RIN degree",
             "description": "Normalized residue degree in the 4.5 Å heavy-atom contact network; higher values indicate more direct structural contacts.",
             "value_label": "normalized degree",
-            "rows": degree_rows,
+            "rows": rin_rows("degree_normalized", "degree_normalized_percentile_surface"),
         },
         "rin_betweenness": {
             "label": "RIN betweenness",
-            "description": "Normalized betweenness centrality in the residue interaction network; higher values indicate residues lying on more shortest network paths.",
+            "description": "Normalized betweenness centrality; higher values indicate residues lying on more shortest network paths.",
             "value_label": "betweenness",
-            "rows": bet_rows,
+            "rows": rin_rows("betweenness", "betweenness_percentile_surface"),
         },
         "rin_closeness": {
             "label": "RIN closeness",
-            "description": "Closeness centrality in the residue interaction network; higher values indicate shorter network distance to the rest of the protein.",
+            "description": "Closeness centrality; higher values indicate shorter network distance to the rest of the protein.",
             "value_label": "closeness",
-            "rows": close_rows,
+            "rows": rin_rows("closeness", "closeness_percentile_surface"),
         },
     }
     for item in definitions.values():
@@ -250,14 +253,8 @@ def _build_property_maps(context: dict) -> dict:
         "effect_on_prediction": False,
         "order": ["gnm_fluctuation", "rin_degree", "rin_betweenness", "rin_closeness"],
         "maps": definitions,
-        "gnm": {
-            "cutoff_A": context["gnm"]["cutoff_A"],
-            "interpretation": "GNM fluctuation and patch dynamic coupling are descriptive only; neither changes patch membership or Pareto rank.",
-        },
-        "rin": {
-            "cutoff_A": context["rin"]["cutoff_A"],
-            "interpretation": "RIN degree, betweenness and closeness describe structural-network context only; none changes patch membership or Pareto rank.",
-        },
+        "gnm": {"cutoff_A": context["gnm"]["cutoff_A"]},
+        "rin": {"cutoff_A": context["rin"]["cutoff_A"]},
     }
 
 
@@ -285,31 +282,19 @@ def _shared_response(context: dict, *, pdb_id: Optional[str], pH: float, ionic_m
         },
         "structure_preparation": context["prep_report"],
         "method": {
-            "core_question": "Where on the native folded protein are plausible material-contact regions under the defined chemistry and environment?",
-            "chemistry_source": "InterfaceScout publication-frozen compatibility channels",
             "accessibility_source": "side-chain relative solvent accessibility",
             "sasa_probe_A": SASA_PROBE_A,
             "sasa_points_per_atom": SASA_POINTS,
             "scrsa_threshold": SC_RSA_THRESHOLD,
             "multiscale_radii_A": list(MULTISCALE_RADII_A),
-            "multiscale_radius_basis": "selected on an independent adsorption-label-free development panel before external experimental validation",
             "parameter_selection": PARAMETER_SELECTION,
             "patch_radius_A": PATCH_SCALE_A,
-            "patch_radius_basis": "separate 8 A structural neighbourhood rule; not equated to the selected outer multiscale aggregation radius",
             "patch_definition": "non-transitive local surface neighbourhood around a chemistry-patch maximum",
             "orientation": "coarse outward C-alpha face consistency",
             "ranking": "Pareto fronts across chemistry support, accessibility, patch coherence and orientation coherence; no weighted sum",
-            "dynamics": "unweighted C-alpha GNM; downstream descriptive context only",
             "gnm_cutoff_A": float(gnm_cutoff_A),
-            "rin": "heavy-atom-contact residue interaction network; downstream structural-network context only",
             "rin_heavy_atom_cutoff_A": context["rin"]["cutoff_A"],
             "single_pass_all_maps": True,
-        },
-        "network": {
-            "n_rin_nodes": context["rin"]["n_nodes"],
-            "n_rin_edges": context["rin"]["n_edges"],
-            "rin_cutoff_A": context["rin"]["cutoff_A"],
-            "interpretation": "RIN centrality/context is descriptive and is not used to improve or tune interface localization.",
         },
         "diagnostics": {
             "n_surface_residues": len(context["surface_keys"]),
@@ -317,14 +302,10 @@ def _shared_response(context: dict, *, pdb_id: Optional[str], pH: float, ionic_m
             "canonical_only_validation": context["canonical_only"],
         },
         "method_notes": [
-            "All chemistry maps in one analysis share the same prepared structure, SASA/scRSA calculation, pH state calculation, GNM and RIN context.",
+            "All single-channel chemistry maps use the same prepared structure and environmental conditions.",
             "Experimental interface labels are not inputs to patch construction or ranking.",
-            "SASA sampling density and the 6/9 A multiscale pair were selected before external experimental validation on a separate label-free development panel.",
-            "The 8 A coarse-patch radius is a separate structural-neighbourhood rule and was not selected by the 6/9 A multiscale analysis.",
-            "Patch membership is intentionally coarse; individual residues are not claimed as precise adsorption contacts.",
-            "Patch growth is non-transitive to prevent surface percolation into unrealistically large regions.",
-            "GNM and RIN are excluded from patch prediction/ranking and retained only as native-state context.",
-            "Multiple Pareto-optimal patches are allowed because protein adsorption may have alternative plausible encounter interfaces.",
+            "GNM and RIN are excluded from patch prediction/ranking and retained only as structural context.",
+            "Multi-chemistry composite views are derived overlays of canonical single-channel maps; they do not introduce fitted material weights or constitute a separately validated combined score.",
         ],
     }
 
@@ -337,10 +318,9 @@ def analyze_all_maps(
     pdb_id: Optional[str] = None,
     pdb_text: Optional[str] = None,
     chain: Optional[str] = None,
-    initial_surface: Optional[str] = None,
     gnm_cutoff_A: float = 7.3,
 ) -> Dict[str, Any]:
-    """Compute all chemistry maps and structural-context maps from one shared analysis."""
+    """Compute all public chemistry maps and structural-context maps in one run."""
     context = _prepare_shared_context(
         pH=pH,
         ionic_mM=ionic_mM,
@@ -352,37 +332,23 @@ def analyze_all_maps(
     )
 
     available = context["core_result"].get("chemistries", {})
-    order = [key for key in MAP_ORDER if key in available]
-    order.extend(key for key in available if key not in order)
-    maps = {chemistry: _build_map(context, chemistry) for chemistry in order}
+    specs = [spec for spec in PUBLIC_MAP_SPECS if spec[1] in available]
+    maps = {public: _build_map(context, public, internal, label, desc) for public, internal, label, desc in specs}
+    order = [spec[0] for spec in specs]
 
-    initial_map = order[0] if order else None
-    if initial_surface:
-        mode = get_surface_mode(initial_surface)
-        if mode.chemistry in maps:
-            initial_map = mode.chemistry
-
-    out = _shared_response(
-        context,
-        pdb_id=pdb_id,
-        pH=pH,
-        ionic_mM=ionic_mM,
-        temp_K=temp_K,
-        gnm_cutoff_A=gnm_cutoff_A,
-    )
+    out = _shared_response(context, pdb_id=pdb_id, pH=pH, ionic_mM=ionic_mM, temp_K=temp_K, gnm_cutoff_A=gnm_cutoff_A)
     out.update({
         "n_maps": len(order),
         "map_order": order,
-        "initial_map": initial_map,
+        "initial_map": order[0] if order else None,
         "maps": maps,
         "structural_context": _build_property_maps(context),
-        "surface_presets": {
-            key: {
-                "label": mode.label,
-                "chemistry": mode.chemistry,
-                "description": mode.description,
-            }
-            for key, mode in sorted(SURFACE_MODES.items())
+        "composite_policy": {
+            "type": "derived_overlay",
+            "validated_as_combined_model": False,
+            "default_residue_rule": "maximum normalized support across selected canonical chemistry maps",
+            "double_counting": False,
+            "weights": "none unless externally known surface composition is supplied in a future explicit model extension",
         },
     })
     return out
@@ -399,7 +365,7 @@ def analyze_interface_v2(
     chain: Optional[str] = None,
     gnm_cutoff_A: float = 7.3,
 ) -> Dict[str, Any]:
-    """Compatibility wrapper returning one material-selected map for validation scripts."""
+    """Internal compatibility wrapper retained for frozen validation scripts."""
     mode = get_surface_mode(surface)
     context = _prepare_shared_context(
         pH=pH,
@@ -410,28 +376,12 @@ def analyze_interface_v2(
         chain=chain,
         gnm_cutoff_A=gnm_cutoff_A,
     )
-    map_payload = _build_map(context, mode.chemistry)
-    out = _shared_response(
-        context,
-        pdb_id=pdb_id,
-        pH=pH,
-        ionic_mM=ionic_mM,
-        temp_K=temp_K,
-        gnm_cutoff_A=gnm_cutoff_A,
-    )
+    internal = mode.chemistry
+    spec = next((x for x in PUBLIC_MAP_SPECS if x[1] == internal), (internal, internal, internal.replace("_", " ").title(), ""))
+    map_payload = _build_map(context, *spec)
+    out = _shared_response(context, pdb_id=pdb_id, pH=pH, ionic_mM=ionic_mM, temp_K=temp_K, gnm_cutoff_A=gnm_cutoff_A)
     out.update({
-        "input": {
-            **out["input"],
-            "surface": mode.key,
-            "surface_label": mode.label,
-            "primary_chemistry": mode.chemistry,
-        },
-        "surface_mode": {
-            "key": mode.key,
-            "label": mode.label,
-            "chemistry": mode.chemistry,
-            "description": mode.description,
-        },
+        "input": {**out["input"], "surface": mode.key, "primary_chemistry": internal},
         "n_patches": map_payload["n_patches"],
         "n_pareto_primary_patches": map_payload["n_pareto_primary_patches"],
         "primary_patches": map_payload["primary_patches"],
