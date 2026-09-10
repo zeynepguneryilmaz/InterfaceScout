@@ -1,9 +1,4 @@
-"""Canonical InterfaceScout web application.
-
-This is the single user-facing application used for the publication version.
-The internal implementation modules are kept separate only for code organization;
-no legacy/version choice is exposed to users.
-"""
+"""Canonical InterfaceScout web application."""
 from __future__ import annotations
 
 import sys
@@ -20,7 +15,7 @@ _FRONTEND = _ROOT / "frontend"
 if str(_BACKEND) not in sys.path:
     sys.path.insert(0, str(_BACKEND))
 
-from .interface_engine import analyze_interface_v2
+from .interface_engine import analyze_all_maps
 from .model_settings import MODEL_VERSION
 from .surface_modes import SURFACE_MODES
 
@@ -29,13 +24,13 @@ app = FastAPI(title="InterfaceScout", version=PUBLIC_VERSION)
 
 
 class AnalyzeRequest(BaseModel):
-    surface: str
     pdb_id: Optional[str] = None
     pdb_text: Optional[str] = None
     chain: Optional[str] = None
     pH: float = Field(7.4, ge=0.0, le=14.0)
     ionic_mM: float = Field(150.0, ge=0.0)
     temp_K: float = Field(298.0, gt=0.0)
+    initial_surface: Optional[str] = None
 
 
 @app.get("/health")
@@ -45,6 +40,7 @@ def health():
         "engine": "InterfaceScout",
         "version": PUBLIC_VERSION,
         "model_version": MODEL_VERSION,
+        "single_pass_all_maps": True,
         "benchmark_fitted_weights": False,
     }
 
@@ -64,16 +60,15 @@ def surfaces():
 @app.post("/analyze")
 def analyze(req: AnalyzeRequest):
     try:
-        out = analyze_interface_v2(
-            surface=req.surface,
+        out = analyze_all_maps(
             pH=req.pH,
             ionic_mM=req.ionic_mM,
             temp_K=req.temp_K,
             pdb_id=req.pdb_id,
             pdb_text=req.pdb_text,
             chain=req.chain,
+            initial_surface=req.initial_surface,
         )
-        out["engine"] = "InterfaceScout"
         out["public_version"] = PUBLIC_VERSION
         return out
     except (KeyError, ValueError) as exc:
