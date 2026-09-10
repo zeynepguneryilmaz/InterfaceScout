@@ -1,8 +1,12 @@
-name: InterfaceScout final core parameter selection
+name: InterfaceScout final parameter selection
 
 on:
   push:
     paths:
+      - 'backend/main.py'
+      - 'backend/v2/model_settings.py'
+      - 'backend/v2/chemistry_freeze.py'
+      - 'backend/v2/validation/select_core_parameters_consensus.py'
       - 'backend/v2/validation/select_core_parameters_final.py'
       - '.github/workflows/core_parameter_selection_final.yml'
   workflow_dispatch:
@@ -10,20 +14,20 @@ on:
 jobs:
   select:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11.9'
+          python-version: '3.11'
       - run: pip install -r backend/requirements-publication-lock.txt
-      - name: Run final independent parameter selection
+      - name: Run adsorption-label-free parameter selection
         working-directory: backend
-        env:
-          INTERFACESCOUT_VALIDATION_CANONICAL_ONLY: '1'
         run: python -m v2.validation.select_core_parameters_final
       - uses: actions/upload-artifact@v4
         with:
-          name: interfacescout-core-parameter-selection-final
+          name: interfacescout-final-parameter-selection
           path: |
             backend/core_parameter_selection_consensus.json
             backend/selection_pdbs
+          if-no-files-found: error
