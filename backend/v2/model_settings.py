@@ -1,6 +1,7 @@
-"""InterfaceScout V2 model settings fixed before external experimental validation."""
+"""InterfaceScout model settings fixed before external experimental validation."""
 from __future__ import annotations
 
+# Frozen computational model identifier used for reproducibility.
 MODEL_VERSION = "2.4.0-selected-parameters"
 
 # Surface exposure
