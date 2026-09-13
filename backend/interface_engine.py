@@ -1,19 +1,17 @@
-"""InterfaceScout protein-side surface-chemistry mapping engine.
+"""InterfaceScout analysis engine.
 
-A single analysis prepares the protein and computes solvent exposure once, then
-returns every canonical surface-chemistry map. Material names, GNM dynamics and
-residue-interaction-network descriptors are not part of the public model.
+A single analysis prepares the protein, computes solvent exposure once, and
+returns every canonical surface-chemistry map used by the public application.
 """
 from __future__ import annotations
 
-import importlib
 import urllib.request
 from typing import Any, Dict, Optional
 
-from .chemistry_freeze import apply_publication_chemistry
-from .coarse_patch import build_coarse_patches, PATCH_SCALE_A
-from .geometry import extract_ca_nodes
-from .model_settings import (
+import core
+from coarse_patch import build_coarse_patches, PATCH_SCALE_A
+from geometry import extract_ca_nodes
+from model_settings import (
     MODEL_VERSION,
     SASA_POINTS,
     SASA_PROBE_A,
@@ -21,8 +19,7 @@ from .model_settings import (
     MULTISCALE_RADII_A,
     PARAMETER_SELECTION,
 )
-from .prepare import prepare_pdb_text
-from .surface_modes import get_surface_mode
+from prepare import prepare_pdb_text
 
 PUBLIC_MAP_SPECS = [
     ("anionic", "anionic", "Anionic surface", "Negatively charged surface chemistry, including exposed anionic or carboxylate-rich groups."),
@@ -31,20 +28,12 @@ PUBLIC_MAP_SPECS = [
     ("pi_carbon", "pi_carbon", "π / aromatic surface", "Aromatic or graphitic-like surface chemistry supporting π-associated and cation–π contacts."),
     ("hbond_donor", "hbond_donor", "H-bond donor surface", "Surface groups capable of donating hydrogen bonds to exposed protein side chains."),
     ("hbond_acceptor", "hbond_acceptor", "H-bond acceptor surface", "Surface groups capable of accepting hydrogen bonds from exposed protein side chains."),
-    ("oxide", "oxide", "Metal-oxide surface", "Oxide-like surface chemistry represented by the frozen carboxylate-compatible oxide channel."),
+    ("oxide", "oxide", "Metal-oxide surface", "Oxide-like surface chemistry represented by the carboxylate-compatible oxide channel."),
     ("calcium_phosphate", "hydroxyapatite", "Calcium/phosphate charged sites", "Calcium- and phosphate-rich charged surface sites with complementary protein-side interactions."),
     ("metal_coord", "metal_coord", "Transition-metal coordination", "Accessible transition-metal sites supporting coordination by exposed protein side chains."),
     ("soft_metal_sulfur", "gold", "Soft-metal sulfur affinity", "Soft-metal-like surface affinity dominated by accessible sulfur-containing side chains."),
     ("phosphate", "phosphate", "Phosphate-rich surface", "Phosphate-rich surface chemistry supporting electrostatic and hydrogen-bond interactions."),
 ]
-
-PUBLIC_TO_INTERNAL = {public: internal for public, internal, _label, _description in PUBLIC_MAP_SPECS}
-
-
-def _load_core():
-    module = importlib.import_module("main")
-    apply_publication_chemistry(module)
-    return module
 
 
 def _obtain_pdb_text(pdb_id: Optional[str], pdb_text: Optional[str]) -> str:
@@ -76,7 +65,6 @@ def _prepare_shared_context(
     raw = _obtain_pdb_text(pdb_id, pdb_text)
     prepared, prep_report = prepare_pdb_text(raw, chain=chain)
 
-    core = _load_core()
     request = core.AnalyzeRequest(
         pdb_text=prepared,
         chain=None,
@@ -222,45 +210,5 @@ def analyze_all_maps(
             "double_counting": False,
             "weights": "none unless externally known surface composition is supplied in a future explicit model extension",
         },
-    })
-    return out
-
-
-def analyze_interface_v2(
-    *,
-    surface: str,
-    pH: float = 7.4,
-    ionic_mM: float = 150.0,
-    temp_K: float = 298.0,
-    pdb_id: Optional[str] = None,
-    pdb_text: Optional[str] = None,
-    chain: Optional[str] = None,
-    gnm_cutoff_A: float = 7.3,
-) -> Dict[str, Any]:
-    """Internal compatibility wrapper retained for frozen validation scripts.
-
-    gnm_cutoff_A remains accepted only so archived validation calls do not break;
-    it has no effect on the current model.
-    """
-    _ = gnm_cutoff_A
-    mode = get_surface_mode(surface)
-    context = _prepare_shared_context(
-        pH=pH,
-        ionic_mM=ionic_mM,
-        temp_K=temp_K,
-        pdb_id=pdb_id,
-        pdb_text=pdb_text,
-        chain=chain,
-    )
-    internal = mode.chemistry
-    spec = next((x for x in PUBLIC_MAP_SPECS if x[1] == internal), (internal, internal, internal.replace("_", " ").title(), ""))
-    map_payload = _build_map(context, *spec)
-    out = _shared_response(context, pdb_id=pdb_id, pH=pH, ionic_mM=ionic_mM, temp_K=temp_K)
-    out.update({
-        "input": {**out["input"], "surface": mode.key, "primary_chemistry": internal},
-        "n_patches": map_payload["n_patches"],
-        "n_pareto_primary_patches": map_payload["n_pareto_primary_patches"],
-        "primary_patches": map_payload["primary_patches"],
-        "patches": map_payload["patches"],
     })
     return out

@@ -1,26 +1,11 @@
-"""Weight-free coarse interface patch construction for InterfaceScout.
-
-InterfaceScout predicts coarse protein surface regions, not atomistic contacts or
-residue affinities. Experimental adsorption labels never enter this module.
-
-Construction logic
-------------------
-1. Frozen chemistry maps provide local patch-persistence values.
-2. Candidate centres are local maxima on the exposed protein surface.
-3. A patch is the non-transitive 8 A surface neighbourhood of one local maximum,
-   restricted to the same coarse outward-facing hemisphere.
-4. Chemistry support, accessibility, local surface organization and orientation
-   coherence define/rank patches.
-5. Patches are compared by Pareto dominance; no empirical weighted sum is used.
-"""
-
+"""Coarse protein-surface patch construction for InterfaceScout."""
 from __future__ import annotations
 
 from typing import Dict, List
 
 import numpy as np
 
-from .geometry import (
+from geometry import (
     build_surface_geometry,
     ca_distance,
     same_face,
@@ -32,7 +17,6 @@ PATCH_SCALE_A = 8.0
 
 
 def _local_maxima(channel: dict, geometry: dict) -> List[dict]:
-    """Select nonredundant chemistry-patch maxima without fitted thresholds."""
     rows = [
         r for r in channel.get("patch_centers", [])
         if r.get("center_key") in geometry["coords"]
