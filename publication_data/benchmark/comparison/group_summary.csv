@@ -1,3 +1,0 @@
-﻿group,n_conditions,n_unique_proteins,n_top3_near_8A_hits,n_top5_near_8A_hits,n_top5_direct_overlap_hits,median_first_near_8A_position_among_hits,median_top5_near_8A_recall
-primary,7,6,7,7,4,2.0,0.8
-secondary,2,2,0,0,0,10.5,0.0

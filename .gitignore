@@ -12,8 +12,8 @@ env/
 *.log
 startup_log.txt
 
-# Local publication-reproduction working directories
-# The audited, generated package is kept under repository-root publication_data/.
+# Locally generated validation/reproduction data
+publication_data/
 backend/selection_pdbs/
 backend/experimental_predictions/
 backend/experimental_comparison/
