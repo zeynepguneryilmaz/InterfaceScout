@@ -1,0 +1,55 @@
+name: InterfaceScout publication reproducibility
+
+on:
+  push:
+    branches:
+      - main
+      - publication-reproducibility-cleanup
+    paths:
+      - 'backend/main.py'
+      - 'backend/requirements-publication-lock.txt'
+      - 'backend/v2/**'
+      - '.github/workflows/publication_reproducibility.yml'
+      - 'README.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  reproduce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install frozen publication dependencies
+        run: pip install -r backend/requirements-publication-lock.txt
+      - name: Reproduce publication package
+        working-directory: backend
+        run: python -m v2.validation.reproduce_publication
+      - name: Show verification
+        run: cat publication_data/verification.json
+      - name: Commit generated publication data
+        if: github.ref == 'refs/heads/publication-reproducibility-cleanup'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add publication_data
+          if git diff --cached --quiet; then
+            echo "Publication data already up to date."
+          else
+            git commit -m "Generate frozen publication data [skip ci]"
+            git pull --rebase origin publication-reproducibility-cleanup
+            git push origin HEAD:publication-reproducibility-cleanup
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: interfacescout-publication-data
+          path: publication_data
+          if-no-files-found: error

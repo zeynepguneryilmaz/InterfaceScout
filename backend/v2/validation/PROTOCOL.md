@@ -1,36 +1,117 @@
-# InterfaceScout external-evaluation protocol
+# InterfaceScout publication validation protocol
 
-This protocol separates parameter selection from experimental evaluation and prevents experimental interface labels from entering prediction.
+This protocol keeps parameter selection separate from literature-derived experimental evaluation and makes the publication results reproducible from the repository.
 
-## Ground-truth inclusion
-A benchmark case must use a folded protein, a real solid/material or nanoparticle interface, and experimental protein-side localization at residue, peptide/segment, domain, or molecular-face level. Adsorption amount alone, DLS alone, CD/FTIR alone, activity-only inference, simulation-only contact maps, and systems dominated by major adsorption-induced unfolding are not treated as primary localization ground truth.
+## 1. Development panel
 
-The analyzed coordinate model must represent the experimentally relevant oligomeric state as closely as possible. Structural mismatches or unresolved experimentally implicated regions must be recorded rather than silently treated as prediction failures or successes.
+Numerical settings are selected on an adsorption-label-free structural panel. The final panel is:
 
-## Evidence resolution
-- **Tier A:** exact residue or residue-anchor evidence.
-- **Tier B:** experimentally localized peptide, segment, loop, helix, or broader region.
-- **Tier C:** experimentally supported domain or molecular-face orientation.
+- 1CRN, chain A — crambin
+- 1R69, chain A — phage 434 repressor N-terminal domain
+- 1SHG, chain A — alpha-spectrin SH3 domain
+- 2PPN, chain A — native FKBP12
+- 4AKE, chain A — unligated adenylate kinase
+- 1OMP, chain A — unliganded maltodextrin-binding protein
+- 1TIM, chains A,B — triosephosphate isomerase dimer
+- 5CSC, chain B — open citrate synthase
 
-Comparisons must match the resolution of the experimental evidence. Exact-residue metrics are not used to overinterpret region- or orientation-level evidence.
+No material identity, adsorption amount, experimental contact residue, or experimental orientation is used in this stage.
 
-## Parameter-selection separation
-The external benchmark is not used to choose model parameters. Before external experimental evaluation, the numerical parameters requiring empirical selection were examined on a separate adsorption-label-free structural panel: PDB **1CRN, 1R69, 1SHG, 2PPN, 4AKE, 1OMP, 1TIM, and 5CSC**.
+### Shrake–Rupley sampling
 
-- Shrake–Rupley sampling density: **200 points/atom**, selected against a 1000-points/atom numerical reference.
-- Multiscale aggregation pair: **6/9 Å**, selected by equal consensus comparison across predefined candidate radius pairs without experimental adsorption labels.
+Sampling densities of 100, 200, 500, and 1000 points per atom are compared with 1000 points per atom as the numerical reference. The selected setting is the smallest tested value that satisfies all predefined convergence criteria:
 
-The solvent probe radius is **1.40 Å**, the operational exposure threshold is **scRSA ≥ 0.05**, and coarse patches use a separate **8 Å non-transitive same-face neighborhood**.
+- median exposed-residue Jaccard ≥ 0.98;
+- worst-case exposed-residue Jaccard ≥ 0.95;
+- median scRSA mean absolute error ≤ 0.01;
+- median Top-10 hotspot Jaccard ≥ 0.90.
 
-## Prediction-first experimental evaluation
-Prediction input is restricted to the protein/structure identifier, analyzed chain(s), surface-chemistry mapping required for the experimental system, and solution pH. Experimental localization labels, evidence tiers, DOI metadata, and comparison outcomes are not passed to the prediction function.
+This procedure selects **200 points per atom**.
 
-Predictions are saved before the comparison stage loads experimental ground truth. The candidate-panel manifest and the ground-truth manifest are retained separately so that this ordering is auditable.
+### Multiscale radii
 
-## Evaluation
-For residue- or anchor-resolved evidence, evaluation can report direct overlap, first-hit rank, and prespecified Cα spatial proximity (for example ≤5 Å and ≤8 Å). For peptide/segment/region evidence, interpretation is performed at regional resolution. Broad regions are not presented as equivalent to exact-residue recovery. Orientation/domain evidence is kept separate unless an explicit mapping rule is available.
+Candidate radius pairs are 5/7, 5/8, 5/9, 5/10, 6/8, 6/9, 6/10, 7/9, 7/10, and 8/10 Å. Every candidate is compared with every other candidate across the development proteins and chemistry maps.
 
-InterfaceScout reports multiple candidate patches because a protein surface can contain more than one chemically plausible contact face. Results therefore should not be collapsed into a single universal "accuracy" value across heterogeneous evidence types.
+Pairs are ordered lexicographically by:
 
-## No post-evaluation retuning
-External experimental labels must not be used to alter the publication settings or chemistry definitions. Any post-evaluation change to the prediction-defining model requires a new held-out evaluation.
+1. highest 10th-percentile Top-5 hotspot-set consensus;
+2. highest median Top-5 consensus;
+3. highest median Top-10 consensus;
+4. lowest median outer-neighborhood fraction;
+5. smaller outer and then inner radius as final deterministic tie-breakers.
+
+This procedure selects **6/9 Å**. The separate **8 Å** radius used to construct a candidate patch is a fixed structural neighborhood scale, not a fitted outer aggregation radius.
+
+## 2. Literature-derived benchmark
+
+A benchmark case must provide experimental information about the protein-side region associated with a material interface. Evidence can be reported as:
+
+- an individual residue or anchor;
+- a localized residue set;
+- a peptide or sequence segment;
+- a broader protein region.
+
+The comparison is interpreted at the spatial resolution supported by the original experiment. Broad regional evidence is not treated as an atomically exact contact map.
+
+The final benchmark contains seven primary conditions across six proteins and two secondary challenge cases. The exact benchmark manifest is `benchmark_experimental_final.json`.
+
+## 3. Prediction-first ordering
+
+Only these fields enter prediction:
+
+- case identifier;
+- protein/PDB identifier;
+- selected chain or chains;
+- validation-only surface-to-chemistry mapping;
+- pH.
+
+Experimental localization residues or regions, DOI metadata, evidence descriptions, and comparison outcomes are not passed to the predictor.
+
+The workflow is:
+
+1. download and archive the exact PDB input;
+2. prepare the selected coordinate model;
+3. save the prepared PDB snapshot;
+4. generate and save InterfaceScout predictions;
+5. only then load the independently encoded experimental annotation;
+6. calculate direct-overlap, 5 Å, and 8 Å spatial comparisons.
+
+The prepared PDB snapshot saved during prediction is reused by the comparison stage so that prediction and scoring operate on exactly the same coordinates.
+
+## 4. Comparison metrics
+
+Each metric answers a different practical question.
+
+- **Direct-overlap recall**: whether the same experimentally annotated residues occur in the candidate set.
+- **Near-5 Å recall**: whether the candidate set reaches the same immediate local neighborhood.
+- **Near-8 Å recall**: whether it reaches the same patch-scale protein surface region. The 8 Å criterion matches the structural scale used to construct an InterfaceScout candidate patch.
+- **First-hit position**: the first displayed candidate with nonzero recovery under a stated criterion.
+- **Cumulative Top-3 / Top-5 recall**: recovery after combining the residues from a small, reproducible shortlist of candidates.
+
+Pareto-front assignment defines the multiobjective priority class. The deterministic within-front order provides a reproducible sequence for inspection.
+
+## 5. Geometry reference
+
+The matched geometry-only reference applies the same 8 Å same-face construction to solvent-exposed centers without chemistry filtering. It provides structural context for the spatial opportunity available on the exposed protein surface.
+
+## 6. Frozen publication settings
+
+- SASA points per atom: 200
+- SASA probe: 1.40 Å
+- scRSA exposure threshold: 0.05
+- multiscale aggregation: 6 and 9 Å
+- candidate-patch radius: 8 Å
+- material-specific fitted weights: none
+
+Any future change to a prediction-defining setting should be treated as a new model version and evaluated separately.
+
+## 7. Reproduction
+
+From the repository root:
+
+```bash
+cd backend
+python -m v2.validation.reproduce_publication
+```
+
+The command regenerates the development and benchmark outputs under `publication_data/` and writes `publication_data/verification.json`. A successful publication reproduction reports zero verification mismatches.

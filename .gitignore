@@ -8,20 +8,22 @@ __pycache__/
 venv/
 env/
 
-# Runtime/log artifacts
+# Runtime / log artifacts
 *.log
 startup_log.txt
 
-# OS/editor artifacts
+# Local publication-reproduction working directories
+# The audited, generated package is kept under repository-root publication_data/.
+backend/selection_pdbs/
+backend/experimental_predictions/
+backend/experimental_comparison/
+backend/core_parameter_selection_consensus.json
+
+# OS / editor artifacts
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
-
-# Local validation outputs
-validation/*.json
-validation/*.csv
-validation/*.zip
 
 # Temporary files
 *.tmp

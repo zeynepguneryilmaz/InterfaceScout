@@ -1,26 +1,14 @@
-"""Compare saved blinded InterfaceScout predictions with audited experimental ground truth.
+"""Compare saved prediction-first InterfaceScout outputs with experimental localization.
 
-Predictions are never regenerated here. This stage reads the previously saved
-InterfaceScout output and only then loads experimental localization labels.
-
-Supported experimental ground-truth forms
------------------------------------------
-exact
-    One residue-number set on the selected structural model.
-ranges
-    One or more residue-number ranges on the selected structural model.
-equivalent_chain_ranges
-    Homooligomeric residue-number regions that may occur on any symmetry-equivalent
-    subunit. Each chain is scored as an alternative experimental realization; the best
-    matching chain is reported for a prediction instead of incorrectly requiring all
-    symmetry-equivalent copies to be contacted simultaneously.
+Predictions are never regenerated in this stage. The comparison reuses the exact
+prepared PDB snapshot archived during prediction and only then loads the experimental
+annotation from the final benchmark manifest.
 """
 from __future__ import annotations
 
 import csv
 import json
 import math
-import urllib.request
 from io import StringIO
 from pathlib import Path
 from statistics import median
@@ -31,7 +19,6 @@ from Bio.PDB import PDBParser
 from Bio.PDB.Polypeptide import is_aa
 
 from v2.model_settings import COARSE_PATCH_RADIUS_A
-from v2.prepare import prepare_pdb_text
 
 HERE = Path(__file__).resolve().parent
 DEFAULT_MANIFEST = HERE / "benchmark_experimental_final.json"
@@ -39,11 +26,6 @@ PRED_DIR = Path("experimental_predictions")
 OUTDIR = Path("experimental_comparison")
 PROXIMITY_THRESHOLDS_A = (5.0, 8.0)
 TOP_K = (1, 3, 5, 10)
-
-
-def _fetch_pdb(pid: str) -> str:
-    with urllib.request.urlopen(f"https://files.rcsb.org/download/{pid}.pdb", timeout=60) as r:
-        return r.read().decode("utf-8", errors="replace")
 
 
 def _ca_map(prepared_pdb: str) -> Dict[str, np.ndarray]:
@@ -86,9 +68,8 @@ def _gt_realizations(coords: Dict[str, np.ndarray], case: dict) -> List[dict]:
         return [{"label": "single", "keys": keys}]
     if kind == "equivalent_chain_ranges":
         ranges = case.get("gt_ranges", [])
-        chains = sorted({_parts(k)[0] for k in coords})
         rows = []
-        for chain in chains:
+        for chain in sorted({_parts(k)[0] for k in coords}):
             keys = _ranges_keys(coords, ranges, chain=chain)
             if keys:
                 rows.append({"label": f"chain_{chain}", "keys": keys})
@@ -158,6 +139,7 @@ def _union_topk_metrics(patches: List[dict], realizations: List[dict], coords: D
     metrics = _choose_realization({"members": members, "center_key": None}, realizations, coords)
     metrics["k"] = k
     metrics["n_patches_used"] = len(selected)
+    metrics["member_keys"] = members
     return metrics
 
 
@@ -196,17 +178,19 @@ def compare_case(case: dict) -> dict:
     envelope = json.loads(pred_path.read_text(encoding="utf-8"))
     pred = envelope["interfacescout_output"]
 
-    raw = _fetch_pdb(case["pdb_id"])
-    prepared, prep = prepare_pdb_text(raw, chain=case.get("chain"))
+    prepared_path = Path(envelope["archived_prepared_pdb"])
+    if not prepared_path.exists():
+        raise FileNotFoundError(f"Prepared PDB snapshot missing: {prepared_path}")
+    prepared = prepared_path.read_text(encoding="utf-8")
     coords = _ca_map(prepared)
     realizations = _gt_realizations(coords, case)
     if not realizations or not any(r["keys"] for r in realizations):
-        raise RuntimeError(f"No experimental GT residues map to prepared PDB for {case['id']}")
+        raise RuntimeError(f"No experimental residues map to prepared PDB for {case['id']}")
 
     patches = pred.get("patches", [])
     patch_metrics = [_choose_realization(p, realizations, coords) for p in patches]
     topk = {str(k): _union_topk_metrics(patches, realizations, coords, k) for k in TOP_K}
-    primary = [m for m in patch_metrics if int(m.get("pareto_front") or 999) == 1]
+    front1 = [m for m in patch_metrics if int(m.get("pareto_front") or 999) == 1]
 
     def best(rows: Iterable[dict], field: str):
         vals = [float(r[field]) for r in rows if r.get(field) is not None]
@@ -217,22 +201,23 @@ def compare_case(case: dict) -> dict:
         "analysis_set": case.get("analysis_set", "primary"),
         "protein": case.get("protein"),
         "pdb_id": case.get("pdb_id"),
-        "chain": prep.get("selected_chain"),
+        "chain": envelope.get("structure_preparation", {}).get("selected_chain"),
         "surface": case.get("surface"),
         "pH": case.get("pH"),
-        "tier": case.get("tier"),
+        "evidence_resolution": case.get("evidence_resolution"),
         "gt_kind": case.get("gt_kind"),
         "experimental_evidence": case.get("evidence"),
         "doi": case.get("doi"),
+        "prepared_pdb": str(prepared_path),
         "gt_realizations": [{"label": r["label"], "n_residues": len(r["keys"]), "keys": r["keys"]} for r in realizations],
         "prediction_file": str(pred_path),
         "prediction_generated_without_gt": bool(envelope.get("ground_truth_visible_to_predictor") is False),
         "n_predicted_patches": len(patches),
-        "n_primary_patches": len(primary),
+        "n_front1_patches": len(front1),
         "topk": topk,
-        "best_primary_overlap_recall": best(primary, "overlap_recall"),
-        "best_primary_near_5A_recall": best(primary, "near_5A_recall"),
-        "best_primary_near_8A_recall": best(primary, "near_8A_recall"),
+        "best_primary_overlap_recall": best(front1, "overlap_recall"),
+        "best_primary_near_5A_recall": best(front1, "near_5A_recall"),
+        "best_primary_near_8A_recall": best(front1, "near_8A_recall"),
         "best_any_overlap_recall": best(patch_metrics, "overlap_recall"),
         "best_any_near_5A_recall": best(patch_metrics, "near_5A_recall"),
         "best_any_near_8A_recall": best(patch_metrics, "near_8A_recall"),
@@ -281,20 +266,23 @@ def main(manifest_path: Path = DEFAULT_MANIFEST) -> None:
         print(f"COMPARE {case['id']}", flush=True)
         r = compare_case(case)
         results.append(r)
-        (per_case_dir / f"{case['id']}_comparison.json").write_text(json.dumps(r, indent=2, sort_keys=True), encoding="utf-8")
+        (per_case_dir / f"{case['id']}_comparison.json").write_text(
+            json.dumps(r, indent=2, sort_keys=True), encoding="utf-8"
+        )
         for p in r["patch_metrics"]:
             patch_rows.append({
-                "case_id": r["id"], "analysis_set": r["analysis_set"], "protein": r["protein"], "tier": r["tier"],
-                "display_rank": p.get("display_rank"), "pareto_front": p.get("pareto_front"),
-                "center_key": p.get("center_key"), "gt_realization": p.get("gt_realization"),
-                "n_members": p.get("n_members"), "overlap_n": p.get("overlap_n"),
-                "overlap_recall": p.get("overlap_recall"), "overlap_precision": p.get("overlap_precision"),
-                "near_5A_recall": p.get("near_5A_recall"), "near_8A_recall": p.get("near_8A_recall"),
-                "min_gt_to_patch_A": p.get("min_gt_to_patch_A"), "center_min_gt_A": p.get("center_min_gt_A"),
+                "case_id": r["id"], "analysis_set": r["analysis_set"], "protein": r["protein"],
+                "evidence_resolution": r["evidence_resolution"], "display_rank": p.get("display_rank"),
+                "pareto_front": p.get("pareto_front"), "center_key": p.get("center_key"),
+                "gt_realization": p.get("gt_realization"), "n_members": p.get("n_members"),
+                "overlap_n": p.get("overlap_n"), "overlap_recall": p.get("overlap_recall"),
+                "overlap_precision": p.get("overlap_precision"), "near_5A_recall": p.get("near_5A_recall"),
+                "near_8A_recall": p.get("near_8A_recall"), "min_gt_to_patch_A": p.get("min_gt_to_patch_A"),
+                "center_min_gt_A": p.get("center_min_gt_A"),
             })
         summary_rows.append({
             "case_id": r["id"], "analysis_set": r["analysis_set"], "protein": r["protein"], "pdb_id": r["pdb_id"],
-            "surface": r["surface"], "pH": r["pH"], "tier": r["tier"], "gt_kind": r["gt_kind"],
+            "surface": r["surface"], "pH": r["pH"], "evidence_resolution": r["evidence_resolution"], "gt_kind": r["gt_kind"],
             "n_patches": r["n_predicted_patches"],
             "top1_overlap_recall": r["topk"]["1"]["overlap_recall"],
             "top3_overlap_recall": r["topk"]["3"]["overlap_recall"],
@@ -305,28 +293,28 @@ def main(manifest_path: Path = DEFAULT_MANIFEST) -> None:
             "top1_near_8A_recall": r["topk"]["1"]["near_8A_recall"],
             "top3_near_8A_recall": r["topk"]["3"]["near_8A_recall"],
             "top5_near_8A_recall": r["topk"]["5"]["near_8A_recall"],
-            "top1_gt_realization": r["topk"]["1"].get("gt_realization"),
-            "best_primary_overlap_recall": r["best_primary_overlap_recall"],
-            "best_primary_near_8A_recall": r["best_primary_near_8A_recall"],
+            "best_front1_near_8A_recall": r["best_primary_near_8A_recall"],
             "null_median_near_8A_recall": r["matched_surface_null"].get("median_near_8A_recall"),
-            "prediction_generated_without_gt": r["prediction_generated_without_gt"],
-            "doi": r["doi"],
+            "null_q90_near_8A_recall": r["matched_surface_null"].get("q90_near_8A_recall"),
+            "prediction_generated_without_gt": r["prediction_generated_without_gt"], "doi": r["doi"],
         })
 
     primary = [r for r in results if r["analysis_set"] == "primary"]
     secondary = [r for r in results if r["analysis_set"] == "secondary"]
     payload = {
-        "stage": "comparison_only_after_saved_blinded_predictions",
+        "stage": "comparison_after_saved_predictions",
         "prediction_directory": str(PRED_DIR),
         "comparison_tolerances_A": list(PROXIMITY_THRESHOLDS_A),
-        "comparison_tolerances_are_not_model_radii": True,
+        "comparison_scale_note": "5 A is a stricter local-neighborhood criterion; 8 A matches the coarse InterfaceScout patch scale.",
         "top_k": list(TOP_K),
         "summary_all": _summary(results),
         "summary_primary": _summary(primary),
         "summary_secondary": _summary(secondary),
         "results": results,
     }
-    (OUTDIR / "experimental_comparison.json").write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+    (OUTDIR / "experimental_comparison.json").write_text(
+        json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8"
+    )
 
     if summary_rows:
         with (OUTDIR / "comparison_summary.csv").open("w", newline="", encoding="utf-8-sig") as fh:
@@ -337,7 +325,10 @@ def main(manifest_path: Path = DEFAULT_MANIFEST) -> None:
             w = csv.DictWriter(fh, fieldnames=list(patch_rows[0]))
             w.writeheader(); w.writerows(patch_rows)
 
-    print("COMPARISON_SUMMARY " + json.dumps({"primary": payload["summary_primary"], "secondary": payload["summary_secondary"]}, sort_keys=True), flush=True)
+    print(
+        "COMPARISON_SUMMARY " + json.dumps({"primary": payload["summary_primary"], "secondary": payload["summary_secondary"]}, sort_keys=True),
+        flush=True,
+    )
 
 
 if __name__ == "__main__":

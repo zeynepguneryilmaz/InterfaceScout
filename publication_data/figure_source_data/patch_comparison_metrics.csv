@@ -1,0 +1,773 @@
+﻿case_id,analysis_set,protein,evidence_resolution,display_rank,pareto_front,center_key,gt_realization,n_members,overlap_n,overlap_recall,overlap_precision,near_5A_recall,near_8A_recall,min_gt_to_patch_A,center_min_gt_A
+bsa_silica,primary,Bovine serum albumin,broader_region,1,1,A:184:,single,9,0,0.0,0.0,0.0,0.0,11.7269238876247,13.980008267940065
+bsa_silica,primary,Bovine serum albumin,broader_region,2,1,A:373:,single,7,7,0.03723404255319149,1.0,0.07446808510638298,0.1276595744680851,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,3,1,A:578:,single,10,0,0.0,0.0,0.0,0.0,32.737108811995064,37.08648060919355
+bsa_silica,primary,Bovine serum albumin,broader_region,4,1,A:4:,single,6,0,0.0,0.0,0.0,0.0,9.517873292966557,15.103883815496152
+bsa_silica,primary,Bovine serum albumin,broader_region,5,1,A:56:,single,7,0,0.0,0.0,0.0,0.0,15.604807081277805,20.30132387775846
+bsa_silica,primary,Bovine serum albumin,broader_region,6,1,A:515:,single,8,0,0.0,0.0,0.0,0.0,23.76047323852698,29.985689813796647
+bsa_silica,primary,Bovine serum albumin,broader_region,7,1,A:313:,single,6,6,0.031914893617021274,1.0,0.047872340425531915,0.11702127659574468,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,8,1,A:471:,single,4,0,0.0,0.0,0.0,0.0,12.428017658819845,17.557556627998895
+bsa_silica,primary,Bovine serum albumin,broader_region,9,1,A:319:,single,7,7,0.03723404255319149,1.0,0.05319148936170213,0.09042553191489362,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,10,1,A:1:,single,3,0,0.0,0.0,0.0,0.0,14.908263348951447,19.862082451310542
+bsa_silica,primary,Bovine serum albumin,broader_region,11,2,A:133:,single,12,0,0.0,0.0,0.0,0.0,13.99084531030843,18.58075586300181
+bsa_silica,primary,Bovine serum albumin,broader_region,12,2,A:79:,single,7,0,0.0,0.0,0.0,0.0,18.715136255935555,21.766509741859988
+bsa_silica,primary,Bovine serum albumin,broader_region,13,2,A:521:,single,8,0,0.0,0.0,0.0,0.0,23.697221878769124,26.15467609465475
+bsa_silica,primary,Bovine serum albumin,broader_region,14,2,A:476:,single,9,0,0.0,0.0,0.0,0.015957446808510637,7.054007756101111,9.648278983354057
+bsa_silica,primary,Bovine serum albumin,broader_region,15,2,A:505:,single,8,0,0.0,0.0,0.0,0.0,28.472010841295404,31.97764649573132
+bsa_silica,primary,Bovine serum albumin,broader_region,16,2,A:542:,single,9,0,0.0,0.0,0.0,0.0,25.017011592835154,30.337696040536517
+bsa_silica,primary,Bovine serum albumin,broader_region,17,2,A:493:,single,8,0,0.0,0.0,0.0,0.0,17.155614569140738,23.0325174034177
+bsa_silica,primary,Bovine serum albumin,broader_region,18,2,A:189:,single,9,0,0.0,0.0,0.0,0.010638297872340425,5.06537315105647,10.401325849781845
+bsa_silica,primary,Bovine serum albumin,broader_region,19,2,A:431:,single,8,0,0.0,0.0,0.0,0.0,14.787683001239637,18.41767380618229
+bsa_silica,primary,Bovine serum albumin,broader_region,20,2,A:310:,single,8,8,0.0425531914893617,1.0,0.0851063829787234,0.1276595744680851,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,21,2,A:115:,single,5,0,0.0,0.0,0.0,0.0,20.878693599855136,21.911668766315398
+bsa_silica,primary,Bovine serum albumin,broader_region,22,2,A:536:,single,8,0,0.0,0.0,0.0,0.0,21.612176246327095,27.388869516851003
+bsa_silica,primary,Bovine serum albumin,broader_region,23,2,A:65:,single,8,0,0.0,0.0,0.0,0.0,8.019892277098608,10.646004692079453
+bsa_silica,primary,Bovine serum albumin,broader_region,24,2,A:124:,single,8,0,0.0,0.0,0.0,0.0,21.010366083748373,26.499436992304386
+bsa_silica,primary,Bovine serum albumin,broader_region,25,2,A:194:,single,7,2,0.010638297872340425,0.2857142857142857,0.026595744680851064,0.05319148936170213,0.0,5.41795509848125
+bsa_silica,primary,Bovine serum albumin,broader_region,26,2,A:378:,single,8,8,0.0425531914893617,1.0,0.05851063829787234,0.0797872340425532,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,27,2,A:49:,single,6,0,0.0,0.0,0.0,0.0,12.973078497773043,15.248594074992686
+bsa_silica,primary,Bovine serum albumin,broader_region,28,2,A:572:,single,9,0,0.0,0.0,0.0,0.0,40.267559167081295,43.45828860129613
+bsa_silica,primary,Bovine serum albumin,broader_region,29,2,A:418:,single,5,0,0.0,0.0,0.0,0.0,16.29324788601623,20.500797839999024
+bsa_silica,primary,Bovine serum albumin,broader_region,30,2,A:61:,single,5,0,0.0,0.0,0.0,0.0,14.283188452244016,17.707803171712644
+bsa_silica,primary,Bovine serum albumin,broader_region,31,2,A:552:,single,8,0,0.0,0.0,0.0,0.0,33.36627049247168,38.72211061954036
+bsa_silica,primary,Bovine serum albumin,broader_region,32,2,A:279:,single,6,6,0.031914893617021274,1.0,0.06914893617021277,0.11170212765957446,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,33,2,A:358:,single,7,7,0.03723404255319149,1.0,0.06382978723404255,0.10638297872340426,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,34,3,A:444:,single,13,0,0.0,0.0,0.005319148936170213,0.02127659574468085,4.7080030646486435,10.42799685521537
+bsa_silica,primary,Bovine serum albumin,broader_region,35,3,A:273:,single,8,8,0.0425531914893617,1.0,0.07446808510638298,0.1595744680851064,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,36,3,A:85:,single,7,0,0.0,0.0,0.0,0.0,18.31772573619337,21.029065447918178
+bsa_silica,primary,Bovine serum albumin,broader_region,37,3,A:547:,single,9,0,0.0,0.0,0.0,0.0,28.54821899989152,31.02599983440832
+bsa_silica,primary,Bovine serum albumin,broader_region,38,3,A:231:,single,7,7,0.03723404255319149,1.0,0.07446808510638298,0.1595744680851064,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,39,3,A:269:,single,6,6,0.031914893617021274,1.0,0.05851063829787234,0.14361702127659576,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,40,3,A:11:,single,10,0,0.0,0.0,0.0,0.02127659574468085,6.390186608623439,8.603104208173548
+bsa_silica,primary,Bovine serum albumin,broader_region,41,3,A:558:,single,8,0,0.0,0.0,0.0,0.0,37.95210726043913,40.365897878253094
+bsa_silica,primary,Bovine serum albumin,broader_region,42,3,A:396:,single,7,0,0.0,0.0,0.0,0.0,15.275721776067721,20.621479127018592
+bsa_silica,primary,Bovine serum albumin,broader_region,43,3,A:499:,single,8,0,0.0,0.0,0.0,0.0,28.670328019218477,31.958725718143544
+bsa_silica,primary,Bovine serum albumin,broader_region,44,3,A:179:,single,8,0,0.0,0.0,0.0,0.0,16.02538890516824,21.364924753209827
+bsa_silica,primary,Bovine serum albumin,broader_region,45,3,A:168:,single,6,0,0.0,0.0,0.0,0.0,17.109824068065215,22.696552410825554
+bsa_silica,primary,Bovine serum albumin,broader_region,46,3,A:145:,single,7,0,0.0,0.0,0.0,0.015957446808510637,6.011591507636162,8.863721476787553
+bsa_silica,primary,Bovine serum albumin,broader_region,47,3,A:172:,single,7,0,0.0,0.0,0.0,0.0,22.851515176503565,28.38581820580829
+bsa_silica,primary,Bovine serum albumin,broader_region,48,4,A:211:,single,9,9,0.047872340425531915,1.0,0.09042553191489362,0.2074468085106383,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,49,4,A:236:,single,7,7,0.03723404255319149,1.0,0.09042553191489362,0.16489361702127658,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,50,4,A:463:,single,10,0,0.0,0.0,0.0,0.0,9.408705312081274,12.77835187967861
+bsa_silica,primary,Bovine serum albumin,broader_region,51,4,A:490:,single,7,0,0.0,0.0,0.0,0.0,9.852275699531814,14.780658991236725
+bsa_silica,primary,Bovine serum albumin,broader_region,52,4,A:526:,single,10,0,0.0,0.0,0.0,0.0,19.15245424219997,25.154023248743073
+bsa_silica,primary,Bovine serum albumin,broader_region,53,4,A:386:,single,8,1,0.005319148936170213,0.125,0.010638297872340425,0.02127659574468085,0.0,5.5125476999117184
+bsa_silica,primary,Bovine serum albumin,broader_region,54,4,A:264:,single,8,8,0.0425531914893617,1.0,0.07446808510638298,0.12234042553191489,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,55,4,A:242:,single,6,6,0.031914893617021274,1.0,0.0851063829787234,0.16489361702127658,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,56,4,A:101:,single,8,0,0.0,0.0,0.0,0.010638297872340425,7.757493358097568,11.668984536174017
+bsa_silica,primary,Bovine serum albumin,broader_region,57,4,A:119:,single,9,0,0.0,0.0,0.0,0.0,22.522447327084727,25.957091343102626
+bsa_silica,primary,Bovine serum albumin,broader_region,58,4,A:43:,single,9,0,0.0,0.0,0.0,0.0,9.917084687502527,13.055550471926049
+bsa_silica,primary,Bovine serum albumin,broader_region,59,4,A:353:,single,8,8,0.0425531914893617,1.0,0.0797872340425532,0.1595744680851064,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,60,4,A:94:,single,8,0,0.0,0.0,0.0,0.0,11.686698156663452,17.16920841738014
+bsa_silica,primary,Bovine serum albumin,broader_region,61,4,A:324:,single,8,8,0.0425531914893617,1.0,0.06382978723404255,0.11170212765957446,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,62,4,A:508:,single,7,0,0.0,0.0,0.0,0.0,34.330162799631964,35.73940426583092
+bsa_silica,primary,Bovine serum albumin,broader_region,63,4,A:410:,single,7,0,0.0,0.0,0.0,0.0,17.709342547962567,18.192149767840245
+bsa_silica,primary,Bovine serum albumin,broader_region,64,4,A:365:,single,10,10,0.05319148936170213,1.0,0.0797872340425532,0.14361702127659576,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,65,4,A:221:,single,9,9,0.047872340425531915,1.0,0.11170212765957446,0.21808510638297873,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,66,4,A:284:,single,10,9,0.047872340425531915,0.9,0.05851063829787234,0.10638297872340426,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,67,4,A:485:,single,7,0,0.0,0.0,0.0,0.005319148936170213,7.0108931149658575,8.035778451218
+bsa_silica,primary,Bovine serum albumin,broader_region,68,4,A:303:,single,6,6,0.031914893617021274,1.0,0.0425531914893617,0.09042553191489362,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,69,4,A:566:,single,10,0,0.0,0.0,0.0,0.0,41.45732555797018,45.13997702864952
+bsa_silica,primary,Bovine serum albumin,broader_region,70,4,A:17:,single,7,0,0.0,0.0,0.0,0.010638297872340425,6.390186608623439,12.110396175803702
+bsa_silica,primary,Bovine serum albumin,broader_region,71,4,A:336:,single,6,6,0.031914893617021274,1.0,0.0797872340425532,0.14361702127659576,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,72,5,A:206:,single,9,9,0.047872340425531915,1.0,0.05851063829787234,0.10106382978723404,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,73,5,A:391:,single,10,0,0.0,0.0,0.0,0.005319148936170213,6.802442310647354,13.042432460396103
+bsa_silica,primary,Bovine serum albumin,broader_region,74,5,A:196:,single,6,4,0.02127659574468085,0.6666666666666666,0.031914893617021274,0.06914893617021277,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,75,5,A:257:,single,10,10,0.05319148936170213,1.0,0.09042553191489362,0.17553191489361702,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,76,5,A:139:,single,9,0,0.0,0.0,0.0,0.0,10.311104331916132,14.329224713201874
+bsa_silica,primary,Bovine serum albumin,broader_region,77,5,A:76:,single,6,0,0.0,0.0,0.0,0.0,15.04651618088814,19.171157549414062
+bsa_silica,primary,Bovine serum albumin,broader_region,78,5,A:347:,single,9,7,0.03723404255319149,0.7777777777777778,0.06914893617021277,0.1276595744680851,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,79,5,A:38:,single,8,0,0.0,0.0,0.0,0.0,15.718206231422144,19.562609534025466
+bsa_silica,primary,Bovine serum albumin,broader_region,80,5,A:70:,single,8,0,0.0,0.0,0.0,0.0,8.019892277098608,10.207246277244979
+bsa_silica,primary,Bovine serum albumin,broader_region,81,5,A:289:,single,8,8,0.0425531914893617,1.0,0.05319148936170213,0.1276595744680851,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,82,5,A:424:,single,7,0,0.0,0.0,0.0,0.0,14.93864240650263,15.980986187638486
+bsa_silica,primary,Bovine serum albumin,broader_region,83,5,A:248:,single,4,4,0.02127659574468085,1.0,0.05851063829787234,0.09042553191489362,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,84,6,A:455:,single,9,0,0.0,0.0,0.0,0.015957446808510637,6.453379213078291,9.281160335729952
+bsa_silica,primary,Bovine serum albumin,broader_region,85,6,A:450:,single,10,2,0.010638297872340425,0.2,0.026595744680851064,0.06914893617021277,0.0,6.019835740580298
+bsa_silica,primary,Bovine serum albumin,broader_region,86,6,A:160:,single,8,0,0.0,0.0,0.0,0.0,8.81662067564611,12.970934895870707
+bsa_silica,primary,Bovine serum albumin,broader_region,87,6,A:107:,single,6,0,0.0,0.0,0.0,0.0,9.505756291935235,12.266164618698328
+bsa_silica,primary,Bovine serum albumin,broader_region,88,6,A:339:,single,6,4,0.02127659574468085,0.6666666666666666,0.031914893617021274,0.0797872340425532,0.0,0.0
+bsa_silica,primary,Bovine serum albumin,broader_region,89,7,A:330:,single,9,9,0.047872340425531915,1.0,0.12234042553191489,0.2393617021276596,0.0,0.0
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,1,1,A:478:,single,7,0,0.0,0.0,0.0,0.0,10.468455069037391,15.53113276961125
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,2,1,A:239:,single,10,0,0.0,0.0,0.0,0.0,21.864323477185255,27.514521965026823
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,3,1,A:524:,single,8,0,0.0,0.0,0.0,0.075,6.2274226803324915,9.478623560563287
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,4,1,A:354:,single,8,0,0.0,0.0,0.0,0.075,7.417476951472349,10.36610413065527
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,5,1,A:519:,single,8,0,0.0,0.0,0.0,0.025,7.623221776592237,11.518176529150741
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,6,1,A:567:,single,9,0,0.0,0.0,0.0,0.0,21.6816704530642,25.276839814389568
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,7,1,A:124:,single,9,0,0.0,0.0,0.0,0.0,28.17984662659685,31.7644756541428
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,8,1,A:472:,single,4,0,0.0,0.0,0.0,0.025,7.051608031178252,7.051608031178252
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,9,1,A:54:,single,8,0,0.0,0.0,0.0,0.0,40.319264352832825,47.585776878893014
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,10,1,A:49:,single,7,0,0.0,0.0,0.0,0.0,38.252246668534106,43.28565288630899
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,11,1,A:129:,single,6,0,0.0,0.0,0.0,0.0,32.570455966351346,37.260163711204974
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,12,1,A:542:,single,7,0,0.0,0.0,0.0,0.0,8.67683930775803,12.188260091555188
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,13,1,A:314:,single,6,0,0.0,0.0,0.0,0.0,13.194300661707672,15.709224379306695
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,14,1,A:560:,single,7,0,0.0,0.0,0.0,0.0,20.314031670456487,26.257151152274886
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,15,1,A:359:,single,7,0,0.0,0.0,0.0,0.025,7.417476951472349,11.946649031418021
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,16,1,A:563:,single,5,0,0.0,0.0,0.0,0.0,24.909713524379324,30.200826208868797
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,17,1,A:63:,single,8,0,0.0,0.0,0.0,0.0,39.078344946096784,45.64511293467937
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,18,2,A:193:,single,10,0,0.0,0.0,0.0,0.0,11.801035817350163,14.70398641816293
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,19,2,A:68:,single,11,0,0.0,0.0,0.0,0.0,29.721973760747186,36.60960386176106
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,20,2,A:162:,single,10,0,0.0,0.0,0.0,0.0,25.681169016001952,29.289641036972263
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,21,2,A:244:,single,8,0,0.0,0.0,0.0,0.0,25.063070053371693,28.113757012543832
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,22,2,A:438:,single,9,0,0.0,0.0,0.0,0.05,5.3375662260421795,8.124392403147862
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,23,2,A:195:,single,4,0,0.0,0.0,0.0,0.0,13.304195479982404,14.583221884856957
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,24,2,A:465:,single,7,0,0.0,0.0,0.0,0.025,7.325333792071727,10.795567339841332
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,25,2,A:233:,single,7,0,0.0,0.0,0.0,0.0,24.95267195743322,28.621899570152955
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,26,2,A:539:,single,8,0,0.0,0.0,0.0,0.0,8.293313285066718,10.529614804970866
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,27,2,A:535:,single,10,0,0.0,0.0,0.0,0.05,5.881264509875117,9.223659772635182
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,28,2,A:134:,single,10,0,0.0,0.0,0.0,0.0,23.880708404099593,29.681218285179366
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,29,2,A:273:,single,6,0,0.0,0.0,0.0,0.0,23.08466321723275,29.327433868744965
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,30,2,A:494:,single,9,1,0.025,0.1111111111111111,0.05,0.15,0.0,5.575137376972822
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,31,2,A:510:,single,8,0,0.0,0.0,0.0,0.0,14.333078740416992,18.666231231785495
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,32,2,A:188:,single,9,0,0.0,0.0,0.0,0.0,12.757457934977205,16.32302334887918
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,33,2,A:59:,single,7,0,0.0,0.0,0.0,0.0,45.463118487531496,50.42919411303664
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,34,2,A:420:,single,7,5,0.125,0.7142857142857143,0.2,0.325,0.0,0.0
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,35,2,A:514:,single,7,0,0.0,0.0,0.0,0.0,17.225928573919244,20.41025028581335
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,36,2,A:442:,single,6,0,0.0,0.0,0.0,0.025,7.606112205654755,8.631556663013024
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,37,2,A:306:,single,8,0,0.0,0.0,0.0,0.025,7.588186185191637,8.28746510538019
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,38,2,A:371:,single,7,0,0.0,0.0,0.025,0.1,3.771815127226453,5.7191760506224725
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,39,2,A:375:,single,6,5,0.125,0.8333333333333334,0.2,0.275,0.0,0.0
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,40,2,A:116:,single,5,0,0.0,0.0,0.0,0.0,14.6623107637346,18.912398035736736
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,41,2,A:319:,single,10,0,0.0,0.0,0.0,0.0,13.646479326635058,15.261598431805822
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,42,2,A:324:,single,7,0,0.0,0.0,0.0,0.0,14.532895666103226,18.901587742359478
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,43,2,A:172:,single,5,0,0.0,0.0,0.0,0.0,30.82232255872844,35.56417502842197
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,44,3,A:432:,single,8,2,0.05,0.25,0.15,0.275,0.0,6.552945026154943
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,45,3,A:210:,single,10,0,0.0,0.0,0.0,0.0,17.540172826161086,19.605186729842067
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,46,3,A:507:,single,7,0,0.0,0.0,0.0,0.0,10.614581018878603,11.872938692594712
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,47,3,A:340:,single,8,0,0.0,0.0,0.0,0.025,7.606112205654755,10.33615870363382
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,48,3,A:43:,single,10,0,0.0,0.0,0.0,0.0,29.080197022387807,34.48148445767121
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,49,3,A:167:,single,7,0,0.0,0.0,0.0,0.0,27.972824099683766,33.07268766577316
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,50,3,A:411:,single,6,4,0.1,0.6666666666666666,0.2,0.325,0.0,3.7697781324373008
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,51,3,A:279:,single,7,0,0.0,0.0,0.0,0.0,32.32884276602241,35.651428147274515
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,52,3,A:555:,single,9,0,0.0,0.0,0.0,0.0,14.979358794303636,19.24069101683446
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,53,3,A:366:,single,10,0,0.0,0.0,0.0,0.0,8.323453973875392,11.752573395910629
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,54,3,A:547:,single,9,0,0.0,0.0,0.0,0.0,9.669475014224398,14.020582831972861
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,55,4,A:198:,single,6,0,0.0,0.0,0.0,0.0,10.341013788979602,14.51330970548913
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,56,4,A:73:,single,11,0,0.0,0.0,0.0,0.0,31.438822307539102,34.89636632891059
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,57,4,A:204:,single,7,0,0.0,0.0,0.0,0.0,17.14444491342346,21.93947702662343
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,58,4,A:10:,single,12,0,0.0,0.0,0.0,0.0,32.28035660224503,38.9759482497679
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,59,4,A:183:,single,9,0,0.0,0.0,0.0,0.0,13.717129776231117,17.49954241483844
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,60,4,A:270:,single,7,0,0.0,0.0,0.0,0.0,23.93106840480063,30.87992325763433
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,61,4,A:142:,single,8,0,0.0,0.0,0.0,0.0,15.862879304984745,18.621222784478235
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,62,4,A:482:,single,8,0,0.0,0.0,0.0,0.025,7.8756346703817695,12.360054975750868
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,63,4,A:529:,single,8,1,0.025,0.125,0.075,0.225,0.0,7.51965959888437
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,64,4,A:336:,single,9,0,0.0,0.0,0.0,0.0,11.444292843496612,16.248714781499817
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,65,4,A:487:,single,7,0,0.0,0.0,0.0,0.025,5.973595276450096,11.338364652206412
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,66,4,A:380:,single,8,7,0.175,0.875,0.25,0.375,0.0,0.0
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,67,4,A:448:,single,8,0,0.0,0.0,0.0,0.025,7.252462986758496,10.064518859774939
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,68,4,A:282:,single,7,0,0.0,0.0,0.0,0.0,30.704437302533677,36.17140013857731
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,69,4,A:299:,single,7,0,0.0,0.0,0.0,0.0,17.85067834099006,22.212800837570967
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,70,4,A:156:,single,9,0,0.0,0.0,0.0,0.0,24.136510481810934,26.582864689479504
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,71,5,A:388:,single,10,5,0.125,0.5,0.15,0.225,0.0,0.0
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,72,5,A:303:,single,6,0,0.0,0.0,0.0,0.0,9.788258876127095,15.744770386371563
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,73,5,A:425:,single,7,6,0.15,0.8571428571428571,0.225,0.325,0.0,0.0
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,74,5,A:228:,single,7,0,0.0,0.0,0.0,0.0,16.326440837735653,22.02020325311342
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,75,5,A:216:,single,11,0,0.0,0.0,0.0,0.0,13.576797463580322,19.367496798196143
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,76,5,A:287:,single,11,0,0.0,0.0,0.0,0.0,25.484772893061145,29.783826948242258
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,77,5,A:38:,single,8,0,0.0,0.0,0.0,0.0,25.43381849772521,31.86715538376869
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,78,5,A:113:,single,5,0,0.0,0.0,0.0,0.0,13.470670852060781,15.72561747670311
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,79,5,A:454:,single,6,0,0.0,0.0,0.0,0.0,10.084550235259027,11.591390099029253
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,80,5,A:21:,single,8,0,0.0,0.0,0.0,0.0,24.018496140465125,30.685665599581437
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,81,6,A:103:,single,10,0,0.0,0.0,0.0,0.0,20.0019085595817,22.83167590961083
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,82,6,A:178:,single,12,0,0.0,0.0,0.0,0.0,21.012882568429557,25.85787285385603
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,83,6,A:260:,single,11,0,0.0,0.0,0.0,0.0,28.186307499004624,33.81393020276409
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,84,6,A:15:,single,8,0,0.0,0.0,0.0,0.0,33.81647538646267,39.42455879255286
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,85,6,A:94:,single,8,0,0.0,0.0,0.0,0.0,29.721973760747186,36.00034438019373
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,86,6,A:32:,single,9,0,0.0,0.0,0.0,0.0,13.53317865396949,20.76899267871138
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,87,7,A:405:,single,7,5,0.125,0.7142857142857143,0.2,0.25,0.0,0.0
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,88,7,A:399:,single,8,0,0.0,0.0,0.05,0.1,3.7993453001288056,5.860677314589163
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,89,8,A:254:,single,7,0,0.0,0.0,0.0,0.0,30.800280689186256,30.800280689186256
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,1,1,A:219:,single,9,0,0.0,0.0,0.0,0.0,29.65228418697655,32.07251581883494
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,2,1,A:11:,single,11,1,1.0,0.09090909090909091,1.0,1.0,0.0,3.831333201768623
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,3,1,A:37:,single,5,0,0.0,0.0,0.0,0.0,30.831327696529097,35.34865227339611
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,4,1,A:180:,single,6,0,0.0,0.0,0.0,0.0,37.43198453612175,37.923273277532054
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,5,2,A:110:,single,8,0,0.0,0.0,0.0,0.0,24.533686142030074,29.25491551686634
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,6,2,A:172:,single,10,0,0.0,0.0,0.0,0.0,19.1498325781773,24.791274234934416
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,7,2,A:258:,single,11,0,0.0,0.0,0.0,0.0,32.56433462497561,37.20161371051552
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,8,2,A:81:,single,8,0,0.0,0.0,0.0,0.0,38.122902604147434,41.29980131650707
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,9,2,A:113:,single,8,0,0.0,0.0,0.0,0.0,20.362406902028575,23.678687716626893
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,10,2,A:44:,single,8,0,0.0,0.0,0.0,0.0,38.122902604147434,42.098670147969706
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,11,2,A:225:,single,5,0,0.0,0.0,0.0,0.0,20.651212814908263,25.90318291654331
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,12,2,A:87:,single,8,0,0.0,0.0,0.0,0.0,35.74577723982068,39.7201301582238
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,13,2,A:165:,single,5,0,0.0,0.0,0.0,0.0,23.011859756729837,27.81059050585328
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,14,2,A:128:,single,7,0,0.0,0.0,0.0,0.0,30.547691295525514,36.48437342437431
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,15,2,A:233:,single,9,0,0.0,0.0,0.0,0.0,14.515754269728275,18.493168244223696
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,16,2,A:74:,single,6,0,0.0,0.0,0.0,0.0,35.9490602082568,41.19495942824689
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,17,2,A:185:,single,4,0,0.0,0.0,0.0,0.0,35.742843544090725,35.742843544090725
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,18,2,A:253:,single,5,0,0.0,0.0,0.0,0.0,24.735392014485864,30.539268656821836
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,19,2,A:100:,single,5,0,0.0,0.0,0.0,0.0,17.992350088658394,21.025809076737257
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,20,3,A:17:,single,10,0,0.0,0.0,0.0,1.0,7.511813583053652,12.963633265476984
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,21,3,A:49:,single,5,0,0.0,0.0,0.0,0.0,38.41191804698366,39.63789171029465
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,22,3,A:57:,single,9,0,0.0,0.0,0.0,0.0,29.90115992329943,34.46585242493985
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,23,3,A:25:,single,7,0,0.0,0.0,0.0,0.0,16.423239951789025,21.591056693011627
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,24,3,A:158:,single,6,0,0.0,0.0,0.0,0.0,32.05317616323735,34.03828266576933
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,25,3,A:242:,single,5,0,0.0,0.0,0.0,0.0,14.302737324330817,15.507684799507187
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,26,3,A:132:,single,6,0,0.0,0.0,0.0,0.0,27.539411341859477,29.170494933601397
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,27,3,A:250:,single,5,0,0.0,0.0,0.0,0.0,19.15893651596298,22.472191069521045
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,28,3,A:188:,single,5,0,0.0,0.0,0.0,0.0,34.887298721169564,40.123303535605736
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,29,3,A:53:,single,5,0,0.0,0.0,0.0,0.0,38.426462490525346,42.84324784484863
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,30,4,A:149:,single,6,0,0.0,0.0,0.0,0.0,25.02464296521956,29.34177186222403
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,31,4,A:195:,single,5,0,0.0,0.0,0.0,0.0,24.716990695998653,29.384877852154624
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,32,4,A:200:,single,3,0,0.0,0.0,0.0,0.0,15.876325682601342,15.876325682601342
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,33,5,A:213:,single,6,0,0.0,0.0,0.0,0.0,32.25470487113809,34.0131072631754
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,34,5,A:64:,single,4,0,0.0,0.0,0.0,0.0,8.444992590283618,15.122499517409578
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,35,6,A:67:,single,6,0,0.0,0.0,0.0,0.0,19.446011457797088,24.53278025325124
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,1,1,A:219:,single,9,0,0.0,0.0,0.0,0.0,26.40995745667222,32.02719299605793
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,2,1,A:172:,single,10,0,0.0,0.0,0.0,0.0,36.717305118009,43.282679278253546
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,3,1,A:110:,single,8,0,0.0,0.0,0.0,1.0,5.519984427739764,10.066409649638258
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,4,1,A:258:,single,11,0,0.0,0.0,0.0,1.0,6.225809989484451,9.746974179763754
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,5,1,A:81:,single,8,0,0.0,0.0,0.0,0.0,18.49611780452257,23.438107099841616
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,6,1,A:44:,single,8,0,0.0,0.0,0.0,0.0,12.24214298963574,16.90719835461031
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,7,1,A:225:,single,5,0,0.0,0.0,0.0,0.0,34.47769783288099,36.519686763481154
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,8,1,A:37:,single,5,1,1.0,0.2,1.0,1.0,0.0,0.0
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,9,1,A:180:,single,6,0,0.0,0.0,0.0,0.0,30.834029561152313,35.28175062681548
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,10,2,A:113:,single,8,0,0.0,0.0,0.0,0.0,11.445520986401144,18.127218665404687
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,11,2,A:87:,single,8,0,0.0,0.0,0.0,0.0,25.01461709365721,29.274076838783007
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,12,2,A:49:,single,5,0,0.0,0.0,0.0,0.0,25.676603454674567,27.02131268047302
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,13,2,A:165:,single,5,0,0.0,0.0,0.0,0.0,40.54592156125029,42.832272922247085
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,14,2,A:128:,single,7,0,0.0,0.0,0.0,0.0,32.555578168469815,33.512814339775026
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,15,2,A:23:,single,7,0,0.0,0.0,0.0,0.0,21.99462719651948,24.558362981274662
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,16,2,A:233:,single,9,0,0.0,0.0,0.0,0.0,37.395917921095624,43.781691847143705
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,17,2,A:74:,single,6,0,0.0,0.0,0.0,0.0,36.06565279571339,38.817312511501505
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,18,2,A:185:,single,4,0,0.0,0.0,0.0,0.0,24.764630409674204,25.780416046996702
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,19,2,A:11:,single,11,0,0.0,0.0,0.0,0.0,26.75961816654837,33.682020675161084
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,20,2,A:132:,single,6,0,0.0,0.0,0.0,0.0,29.00112178516293,34.38742358064206
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,21,2,A:18:,single,6,0,0.0,0.0,0.0,0.0,28.71148529649215,32.511286312141614
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,22,2,A:253:,single,5,0,0.0,0.0,0.0,0.0,8.434945324115775,13.380053257050394
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,23,2,A:53:,single,5,0,0.0,0.0,0.0,0.0,30.84667186147857,37.645488189032115
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,24,2,A:100:,single,5,0,0.0,0.0,0.0,0.0,23.315827826636646,29.110749115580212
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,25,3,A:57:,single,9,0,0.0,0.0,0.0,0.0,35.58003105306253,40.6046157100826
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,26,3,A:158:,single,6,0,0.0,0.0,0.0,0.0,31.67696881482596,36.716320603515214
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,27,3,A:242:,single,5,0,0.0,0.0,0.0,0.0,28.200775148676268,31.509727978109137
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,28,3,A:250:,single,5,0,0.0,0.0,0.0,0.0,11.788161309863733,14.538042654283595
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,29,3,A:188:,single,5,0,0.0,0.0,0.0,0.0,16.547185456433496,21.475135285305836
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,30,3,A:195:,single,5,0,0.0,0.0,0.0,0.0,12.776511492240113,15.851575684235522
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,31,3,A:200:,single,3,0,0.0,0.0,0.0,0.0,23.356736071558153,26.573114606131277
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,32,4,A:149:,single,6,0,0.0,0.0,0.0,0.0,20.24567742562262,23.69445471267644
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,33,5,A:213:,single,6,0,0.0,0.0,0.0,0.0,11.41759316835998,14.844673989472787
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,34,5,A:64:,single,4,0,0.0,0.0,0.0,0.0,32.558819507089346,32.726485039842025
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,35,6,A:67:,single,6,0,0.0,0.0,0.0,0.0,28.85286050949596,33.247746580240815
+ubiquitin_citrate_au,primary,Human ubiquitin,localized_residue_region,1,1,A:55:,single,11,0,0.0,0.0,0.16666666666666666,0.3333333333333333,3.811527680353725,9.056413848568827
+ubiquitin_citrate_au,primary,Human ubiquitin,localized_residue_region,2,1,A:7:,single,9,0,0.0,0.0,0.0,0.0,9.85623970718692,13.137438975444605
+ubiquitin_citrate_au,primary,Human ubiquitin,localized_residue_region,3,1,A:73:,single,7,0,0.0,0.0,0.0,0.0,17.79755142281994,22.779799999844144
+ubiquitin_citrate_au,primary,Human ubiquitin,localized_residue_region,4,1,A:65:,single,7,1,0.16666666666666666,0.14285714285714285,0.5,0.8333333333333334,0.0,5.266783489460355
+ubiquitin_citrate_au,primary,Human ubiquitin,localized_residue_region,5,1,A:51:,single,6,0,0.0,0.0,0.0,0.0,12.130496634960293,16.33291653032607
+ubiquitin_citrate_au,primary,Human ubiquitin,localized_residue_region,6,2,A:18:,single,6,2,0.3333333333333333,0.3333333333333333,0.8333333333333334,1.0,0.0,0.0
+ubiquitin_citrate_au,primary,Human ubiquitin,localized_residue_region,7,2,A:31:,single,11,0,0.0,0.0,0.0,0.16666666666666666,7.623695692464942,11.39154699401985
+ubiquitin_citrate_au,primary,Human ubiquitin,localized_residue_region,8,2,A:44:,single,9,0,0.0,0.0,0.0,0.0,10.938157078596813,12.960251994864427
+ubiquitin_citrate_au,primary,Human ubiquitin,localized_residue_region,9,2,A:25:,single,7,0,0.0,0.0,0.0,0.5,5.468036747127445,9.161828075144934
+ubiquitin_citrate_au,primary,Human ubiquitin,localized_residue_region,10,2,A:14:,single,5,2,0.3333333333333333,0.4,0.8333333333333334,1.0,0.0,3.7966551912026145
+ubiquitin_citrate_au,primary,Human ubiquitin,localized_residue_region,11,2,A:60:,single,5,0,0.0,0.0,0.0,0.0,8.12959103264702,11.741060630505732
+b2m_mpa_au,primary,Human beta-2-microglobulin,localized_residue_set,1,1,A:17:,single,10,0,0.0,0.0,0.0,0.0,18.364403922225897,23.37919510515199
+b2m_mpa_au,primary,Human beta-2-microglobulin,localized_residue_set,2,1,A:3:,single,8,2,0.2,0.25,0.4,0.5,0.0,0.0
+b2m_mpa_au,primary,Human beta-2-microglobulin,localized_residue_set,3,1,A:56:,single,11,4,0.4,0.36363636363636365,0.4,0.7,0.0,0.0
+b2m_mpa_au,primary,Human beta-2-microglobulin,localized_residue_set,4,1,A:43:,single,6,0,0.0,0.0,0.0,0.0,9.016761816418702,14.841260469591289
+b2m_mpa_au,primary,Human beta-2-microglobulin,localized_residue_set,5,2,A:76:,single,9,0,0.0,0.0,0.0,0.0,12.61650540212361,18.671258358692917
+b2m_mpa_au,primary,Human beta-2-microglobulin,localized_residue_set,6,2,A:87:,single,9,0,0.0,0.0,0.1,0.5,3.8412859053627204,10.25008606611166
+b2m_mpa_au,primary,Human beta-2-microglobulin,localized_residue_set,7,2,A:6:,single,6,0,0.0,0.0,0.2,0.4,3.8308928771896693,6.894836938813012
+b2m_mpa_au,primary,Human beta-2-microglobulin,localized_residue_set,8,2,A:99:,single,5,0,0.0,0.0,0.0,0.0,19.0359488364714,23.356757221354798
+b2m_mpa_au,primary,Human beta-2-microglobulin,localized_residue_set,9,2,A:33:,single,5,2,0.2,0.4,0.5,0.9,0.0,0.0
+b2m_mpa_au,primary,Human beta-2-microglobulin,localized_residue_set,10,3,A:93:,single,7,0,0.0,0.0,0.1,0.2,4.873530589560022,10.00761194035669
+b2m_mpa_au,primary,Human beta-2-microglobulin,localized_residue_set,11,3,A:11:,single,11,0,0.0,0.0,0.0,0.0,11.122537322367915,16.089102136117155
+b2m_mpa_au,primary,Human beta-2-microglobulin,localized_residue_set,12,3,A:50:,single,7,0,0.0,0.0,0.0,0.2,7.620565985468172,11.479642674647197
+b2m_mpa_au,primary,Human beta-2-microglobulin,localized_residue_set,13,4,A:46:,single,9,0,0.0,0.0,0.1,0.2,3.8161521032868575,10.569088528155428
+b2m_mpa_au,primary,Human beta-2-microglobulin,localized_residue_set,14,5,A:65:,single,11,0,0.0,0.0,0.1,0.7,3.8156514311061893,8.611617374053402
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,1,1,A:320:,chain_A,7,0,0.0,0.0,0.0,0.11475409836065574,5.283064483306476,5.283064483306476
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,2,1,B:320:,chain_B,7,0,0.0,0.0,0.0,0.14754098360655737,5.274819801011491,5.274819801011491
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,3,1,C:208:,chain_C,6,0,0.0,0.0,0.0,0.0,8.775136613874766,10.500312519968046
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,4,1,C:22:,chain_A,10,0,0.0,0.0,0.01639344262295082,0.04918032786885246,4.353326671805245,8.545769624322844
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,5,1,D:208:,chain_D,5,0,0.0,0.0,0.0,0.0,10.052017226541954,10.540129617936994
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,6,1,A:315:,chain_A,6,0,0.0,0.0,0.0,0.11475409836065574,5.187964125187513,8.102931915044866
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,7,1,A:282:,chain_A,10,6,0.09836065573770492,0.6,0.14754098360655737,0.29508196721311475,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,8,1,D:62:,chain_B,6,0,0.0,0.0,0.0,0.03278688524590164,5.207842180199081,9.277555379653695
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,9,1,C:252:,chain_C,8,6,0.09836065573770492,0.75,0.13114754098360656,0.18032786885245902,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,10,1,C:282:,chain_C,10,6,0.09836065573770492,0.6,0.14754098360655737,0.3114754098360656,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,11,1,B:282:,chain_B,10,6,0.09836065573770492,0.6,0.14754098360655737,0.29508196721311475,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,12,1,C:287:,chain_C,6,6,0.09836065573770492,1.0,0.13114754098360656,0.3114754098360656,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,13,1,D:287:,chain_D,6,6,0.09836065573770492,1.0,0.13114754098360656,0.29508196721311475,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,14,1,B:287:,chain_B,6,6,0.09836065573770492,1.0,0.13114754098360656,0.29508196721311475,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,15,1,A:311:,chain_A,4,0,0.0,0.0,0.01639344262295082,0.06557377049180328,3.8642754731686955,3.8642754731686955
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,16,1,D:312:,chain_D,4,0,0.0,0.0,0.01639344262295082,0.09836065573770492,3.8790680910021056,5.419345959315518
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,17,1,B:312:,chain_B,4,0,0.0,0.0,0.01639344262295082,0.09836065573770492,3.8369081041338977,5.337445965351803
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,18,1,C:312:,chain_C,4,0,0.0,0.0,0.01639344262295082,0.09836065573770492,3.88032091643547,5.410392388594072
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,19,1,A:158:,chain_A,3,0,0.0,0.0,0.0,0.04918032786885246,7.563531319452622,7.7681301129399065
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,20,1,B:158:,chain_B,3,0,0.0,0.0,0.0,0.04918032786885246,7.561875386839642,7.734390037627666
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,21,1,B:218:,chain_B,1,0,0.0,0.0,0.0,0.01639344262295082,7.359478724256002,7.359478724256002
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,22,2,C:320:,chain_C,7,0,0.0,0.0,0.0,0.11475409836065574,5.293806422169358,5.293806422169358
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,23,2,D:320:,chain_D,7,0,0.0,0.0,0.0,0.13114754098360656,5.27514695776637,5.27514695776637
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,24,2,A:208:,chain_A,5,0,0.0,0.0,0.0,0.0,10.016668549807806,10.629387583703178
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,25,2,B:208:,chain_B,6,0,0.0,0.0,0.0,0.0,8.66603813546181,10.683584509683111
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,26,2,B:315:,chain_B,6,0,0.0,0.0,0.0,0.11475409836065574,5.178086446483538,8.150025751760822
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,27,2,C:62:,chain_A,6,0,0.0,0.0,0.0,0.03278688524590164,5.085064665451939,9.280021886867178
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,28,2,B:62:,chain_D,6,0,0.0,0.0,0.0,0.03278688524590164,5.088873410642608,9.166755909284173
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,29,2,A:62:,chain_C,6,0,0.0,0.0,0.0,0.03278688524590164,5.144741721288518,9.24943708738093
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,30,2,A:286:,chain_A,7,7,0.11475409836065574,1.0,0.18032786885245902,0.3442622950819672,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,31,2,D:281:,chain_D,9,6,0.09836065573770492,0.6666666666666666,0.14754098360655737,0.26229508196721313,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,32,2,A:200:,chain_A,5,0,0.0,0.0,0.0,0.0,9.433405617104974,14.027497085677384
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,33,2,A:213:,chain_A,4,0,0.0,0.0,0.0,0.08196721311475409,5.3528974782304,6.95801441765306
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,34,3,B:25:,chain_D,10,2,0.03278688524590164,0.2,0.06557377049180328,0.11475409836065574,0.0,5.798301268573488
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,35,3,A:33:,chain_C,7,0,0.0,0.0,0.0,0.0,18.51999899986845,23.340921650449417
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,36,3,C:258:,chain_C,8,8,0.13114754098360656,1.0,0.2786885245901639,0.4262295081967213,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,37,3,A:258:,chain_A,8,8,0.13114754098360656,1.0,0.2459016393442623,0.4262295081967213,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,38,3,A:77:,chain_A,8,0,0.0,0.0,0.0,0.0,16.677659968715403,21.473613585158702
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,39,3,B:77:,chain_B,8,0,0.0,0.0,0.0,0.0,16.78193142078305,21.503289850127942
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,40,3,C:77:,chain_C,8,0,0.0,0.0,0.0,0.0,16.74464766548608,21.47812194030429
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,41,3,D:77:,chain_D,8,0,0.0,0.0,0.0,0.0,16.643290579851307,21.340837688374936
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,42,3,A:252:,chain_A,7,6,0.09836065573770492,0.8571428571428571,0.13114754098360656,0.18032786885245902,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,43,3,D:315:,chain_D,6,0,0.0,0.0,0.0,0.11475409836065574,5.100514318702835,8.041294766648237
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,44,3,C:315:,chain_C,6,0,0.0,0.0,0.0,0.11475409836065574,5.215755576229928,8.005259773351193
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,45,3,D:252:,chain_D,7,6,0.09836065573770492,0.8571428571428571,0.13114754098360656,0.18032786885245902,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,46,3,B:252:,chain_B,7,6,0.09836065573770492,0.8571428571428571,0.13114754098360656,0.18032786885245902,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,47,3,D:43:,chain_A,6,0,0.0,0.0,0.0,0.0,18.87214287768979,22.867728496150043
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,48,3,B:19:,chain_D,9,0,0.0,0.0,0.01639344262295082,0.04918032786885246,4.579238275345543,12.00330761667552
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,49,3,A:43:,chain_D,6,0,0.0,0.0,0.0,0.0,18.5199658026939,22.060165683330734
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,50,3,B:152:,chain_C,7,0,0.0,0.0,0.0,0.03278688524590164,7.588543446429065,11.147133331512448
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,51,3,C:152:,chain_B,8,0,0.0,0.0,0.0,0.01639344262295082,7.442457737131524,11.25296969966893
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,52,3,A:204:,chain_A,4,0,0.0,0.0,0.0,0.0,8.56974587694951,8.56974587694951
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,53,3,B:264:,chain_B,6,5,0.08196721311475409,0.8333333333333334,0.11475409836065574,0.2786885245901639,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,54,3,B:213:,chain_B,4,0,0.0,0.0,0.0,0.08196721311475409,5.213674063061804,6.888267870418501
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,55,3,D:213:,chain_D,4,0,0.0,0.0,0.0,0.08196721311475409,5.285604361731193,7.0397253117573175
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,56,3,C:89:,chain_A,4,0,0.0,0.0,0.0,0.0,9.2046162592605,11.437362125705885
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,57,3,A:89:,chain_C,4,0,0.0,0.0,0.0,0.0,9.105570906615919,11.321074792571538
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,58,4,D:32:,chain_B,10,0,0.0,0.0,0.0,0.0,15.613591739801487,21.000827886798817
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,59,4,A:17:,chain_C,12,0,0.0,0.0,0.01639344262295082,0.04918032786885246,4.599678344885559,9.548982807060609
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,60,4,B:258:,chain_B,8,8,0.13114754098360656,1.0,0.2459016393442623,0.4098360655737705,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,61,4,B:34:,chain_D,9,0,0.0,0.0,0.0,0.0,15.694775408435994,21.589285741297505
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,62,4,A:71:,chain_A,6,0,0.0,0.0,0.0,0.0,12.33652587610276,14.858903720189565
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,63,4,C:34:,chain_A,8,0,0.0,0.0,0.0,0.0,16.86140174669185,23.36190411724688
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,64,4,D:71:,chain_D,6,0,0.0,0.0,0.0,0.0,12.470563428811298,14.797812093105337
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,65,4,A:38:,chain_C,7,0,0.0,0.0,0.0,0.0,20.151115654553273,22.886859596894755
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,66,4,D:262:,chain_D,8,8,0.13114754098360656,1.0,0.22950819672131148,0.36065573770491804,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,67,4,D:37:,chain_B,7,0,0.0,0.0,0.0,0.0,20.347986484129038,25.508324426820938
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,68,4,D:22:,chain_B,10,0,0.0,0.0,0.01639344262295082,0.04918032786885246,4.659317121336054,8.396239218064704
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,69,4,A:164:,chain_C,7,3,0.04918032786885246,0.42857142857142855,0.08196721311475409,0.18032786885245902,0.0,4.656538782098097
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,70,4,C:164:,chain_A,7,3,0.04918032786885246,0.42857142857142855,0.08196721311475409,0.18032786885245902,0.0,4.760455136872577
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,71,4,B:40:,chain_C,7,0,0.0,0.0,0.0,0.0,18.59797717685295,22.189408853225892
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,72,4,C:264:,chain_C,6,4,0.06557377049180328,0.6666666666666666,0.09836065573770492,0.22950819672131148,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,73,4,A:264:,chain_A,6,5,0.08196721311475409,0.8333333333333334,0.11475409836065574,0.29508196721311475,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,74,4,D:204:,chain_D,4,0,0.0,0.0,0.0,0.0,8.699029093221663,8.699029093221663
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,75,4,C:188:,chain_B,3,0,0.0,0.0,0.0,0.0,8.652168041563861,9.143618990211982
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,76,4,B:188:,chain_C,3,0,0.0,0.0,0.0,0.0,8.594331487550177,9.040255234572406
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,77,4,A:151:,chain_D,8,0,0.0,0.0,0.0,0.0,8.130933332779064,12.861720494672172
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,78,4,D:151:,chain_A,7,0,0.0,0.0,0.0,0.0,8.07025321128252,12.863067140645045
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,79,4,C:213:,chain_C,4,0,0.0,0.0,0.0,0.09836065573770492,5.099993832027031,6.868431814427459
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,80,4,B:140:,chain_C,5,0,0.0,0.0,0.0,0.0,18.3649388959102,18.3649388959102
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,81,4,B:298:,chain_B,4,4,0.06557377049180328,1.0,0.14754098360655737,0.29508196721311475,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,82,5,D:2:,chain_A,7,0,0.0,0.0,0.0,0.0,18.87214287768979,24.358083527154072
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,83,5,C:71:,chain_C,6,0,0.0,0.0,0.0,0.0,12.550579284959301,14.914061488621893
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,84,5,C:3:,chain_B,8,0,0.0,0.0,0.0,0.0,20.741633589836812,27.13768409846596
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,85,5,C:43:,chain_B,7,0,0.0,0.0,0.0,0.0,18.47534246453528,22.11374071034022
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,86,5,D:164:,chain_B,7,3,0.04918032786885246,0.42857142857142855,0.08196721311475409,0.18032786885245902,0.0,4.689444751892892
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,87,5,C:39:,chain_B,9,0,0.0,0.0,0.0,0.0,18.12557667747683,22.365767960083424
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,88,5,A:140:,chain_D,4,0,0.0,0.0,0.0,0.0,18.39857002880026,18.39857002880026
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,89,5,C:140:,chain_B,4,0,0.0,0.0,0.0,0.0,18.514392455923776,18.514392455923776
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,90,5,D:140:,chain_A,4,0,0.0,0.0,0.0,0.0,18.36810044098868,18.36810044098868
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,91,5,D:226:,chain_D,7,0,0.0,0.0,0.01639344262295082,0.04918032786885246,4.855574061442791,8.50425164615677
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,92,5,D:100:,chain_D,3,0,0.0,0.0,0.0,0.03278688524590164,7.711323334250375,10.221563480083516
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,93,6,A:3:,chain_D,8,0,0.0,0.0,0.0,0.0,20.944214704216826,27.178857341654652
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,94,6,C:119:,chain_A,9,0,0.0,0.0,0.0,0.0,10.430932371245612,14.253506147544108
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,95,6,D:16:,chain_B,11,0,0.0,0.0,0.0,0.03278688524590164,5.77661323215825,10.547951667816688
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,96,6,B:71:,chain_B,6,0,0.0,0.0,0.0,0.0,12.380615389648442,14.898481875862016
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,97,6,A:226:,chain_A,7,0,0.0,0.0,0.01639344262295082,0.04918032786885246,4.956045020017617,8.531429885564291
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,98,6,B:226:,chain_B,7,0,0.0,0.0,0.01639344262295082,0.04918032786885246,4.751820108448473,8.344934646774806
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,99,6,C:100:,chain_C,3,0,0.0,0.0,0.0,0.03278688524590164,7.631136057419089,10.259738631638683
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,100,7,B:3:,chain_C,8,0,0.0,0.0,0.0,0.0,20.759786090454583,27.051977938001198
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,101,7,D:325:,chain_D,7,0,0.0,0.0,0.0,0.04918032786885246,6.864628567350478,10.38424069408695
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,102,7,C:50:,chain_A,7,0,0.0,0.0,0.0,0.0,19.626194477588395,26.548250182116906
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,103,7,D:199:,chain_D,5,0,0.0,0.0,0.0,0.0,11.382225777047475,14.511685357696923
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,104,7,B:232:,chain_B,8,1,0.01639344262295082,0.125,0.06557377049180328,0.14754098360655737,0.0,6.674888738047778
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,105,7,B:164:,chain_D,8,3,0.04918032786885246,0.375,0.08196721311475409,0.18032786885245902,0.0,4.731256626829997
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,106,7,D:181:,chain_A,6,0,0.0,0.0,0.0,0.01639344262295082,7.725775441065603,8.754667084948517
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,107,7,A:181:,chain_D,6,0,0.0,0.0,0.0,0.01639344262295082,7.5682217938819525,8.8153508234307
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,108,7,C:26:,chain_A,8,1,0.01639344262295082,0.125,0.04918032786885246,0.08196721311475409,0.0,6.175021150890899
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,109,7,C:226:,chain_C,8,0,0.0,0.0,0.01639344262295082,0.04918032786885246,4.735476545377291,8.365115257400985
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,110,7,A:298:,chain_A,3,3,0.04918032786885246,1.0,0.13114754098360656,0.2786885245901639,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,111,7,C:298:,chain_C,3,3,0.04918032786885246,1.0,0.13114754098360656,0.2786885245901639,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,112,7,D:49:,chain_B,6,0,0.0,0.0,0.0,0.0,24.0783976529943,29.679954344120045
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,113,7,D:266:,chain_D,6,3,0.04918032786885246,0.5,0.09836065573770492,0.2459016393442623,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,114,8,B:144:,chain_B,6,0,0.0,0.0,0.0,0.0,13.257162233374014,18.228922938219775
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,115,8,A:144:,chain_A,6,0,0.0,0.0,0.0,0.0,13.214192336915282,18.189384204599655
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,116,8,D:144:,chain_D,7,0,0.0,0.0,0.0,0.0,13.157826059577962,18.099913389064348
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,117,8,C:144:,chain_C,7,0,0.0,0.0,0.0,0.0,13.131469679135686,18.005304653584716
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,118,8,C:199:,chain_C,6,0,0.0,0.0,0.0,0.0,9.400385667254236,14.644689642081472
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,119,8,C:325:,chain_C,7,0,0.0,0.0,0.0,0.04918032786885246,6.8406414204085655,10.318482652182382
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,120,8,C:232:,chain_C,8,1,0.01639344262295082,0.125,0.06557377049180328,0.14754098360655737,0.0,6.477401257976599
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,121,8,B:325:,chain_B,7,0,0.0,0.0,0.0,0.04918032786885246,6.757759333845244,10.438603151933464
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,122,8,B:197:,chain_B,7,0,0.0,0.0,0.0,0.01639344262295082,7.734587231013827,11.372485113637936
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,123,8,B:45:,chain_C,9,0,0.0,0.0,0.0,0.0,17.004666093659527,18.520670816703152
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,124,8,B:52:,chain_D,7,0,0.0,0.0,0.0,0.0,14.30051980435806,20.896329312361644
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,125,8,C:168:,chain_A,6,0,0.0,0.0,0.0,0.03278688524590164,6.7415888479154615,11.821277834070905
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,126,8,D:298:,chain_D,3,3,0.04918032786885246,1.0,0.13114754098360656,0.2786885245901639,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,127,8,D:246:,chain_D,6,3,0.04918032786885246,0.5,0.16393442622950818,0.29508196721311475,0.0,4.97267373363894
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,128,8,D:295:,chain_D,5,4,0.06557377049180328,0.8,0.14754098360655737,0.26229508196721313,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,129,9,B:106:,chain_B,7,0,0.0,0.0,0.0,0.0,14.448327560258589,19.37434455820376
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,130,9,A:325:,chain_A,7,0,0.0,0.0,0.0,0.04918032786885246,7.009751527022696,10.357819958639862
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,131,9,A:106:,chain_A,7,0,0.0,0.0,0.0,0.0,14.470377575515455,19.316214474705106
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,132,9,A:232:,chain_A,8,1,0.01639344262295082,0.125,0.06557377049180328,0.14754098360655737,0.0,6.70269549210199
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,133,9,D:59:,chain_B,8,2,0.03278688524590164,0.25,0.04918032786885246,0.09836065573770492,0.0,5.228735424521881
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,134,9,B:59:,chain_D,8,2,0.03278688524590164,0.25,0.04918032786885246,0.09836065573770492,0.0,5.162167974175853
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,135,9,C:59:,chain_A,7,2,0.03278688524590164,0.2857142857142857,0.04918032786885246,0.09836065573770492,0.0,5.240715906350147
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,136,9,A:59:,chain_C,7,2,0.03278688524590164,0.2857142857142857,0.06557377049180328,0.09836065573770492,0.0,5.171483839827653
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,137,9,A:52:,chain_C,7,0,0.0,0.0,0.0,0.0,14.405721552898742,20.824107450596202
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,138,10,A:27:,chain_C,11,1,0.01639344262295082,0.09090909090909091,0.04918032786885246,0.08196721311475409,0.0,7.660510657491564
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,139,10,D:232:,chain_D,8,1,0.01639344262295082,0.125,0.06557377049180328,0.14754098360655737,0.0,6.751556169865213
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,140,10,A:120:,chain_C,13,0,0.0,0.0,0.0,0.03278688524590164,5.80200349434315,12.60353655324628
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,141,10,D:174:,chain_D,8,2,0.03278688524590164,0.25,0.06557377049180328,0.16393442622950818,0.0,5.9772755849900365
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,142,10,B:184:,chain_C,8,1,0.01639344262295082,0.125,0.04918032786885246,0.11475409836065574,0.0,7.340428036454524
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,143,10,B:127:,chain_D,7,0,0.0,0.0,0.0,0.0,16.792282185739268,22.39413557618459
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,144,10,D:127:,chain_B,7,0,0.0,0.0,0.0,0.0,16.69774257036556,22.316039009613487
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,145,10,C:127:,chain_B,9,0,0.0,0.0,0.0,0.0,11.976054526570127,17.24434663162446
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,146,10,A:277:,chain_A,7,5,0.08196721311475409,0.7142857142857143,0.16393442622950818,0.2786885245901639,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,147,10,D:186:,chain_A,5,0,0.0,0.0,0.0,0.03278688524590164,7.725775441065603,10.560938361431703
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,148,10,C:277:,chain_C,7,5,0.08196721311475409,0.7142857142857143,0.16393442622950818,0.2786885245901639,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,149,10,B:277:,chain_B,7,5,0.08196721311475409,0.7142857142857143,0.16393442622950818,0.29508196721311475,0.0,0.0
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,150,10,A:186:,chain_D,5,0,0.0,0.0,0.0,0.03278688524590164,7.5682217938819525,10.546094298028645
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,151,11,B:118:,chain_D,11,0,0.0,0.0,0.0,0.0,10.038476708887522,14.40394568148892
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,152,11,D:123:,chain_B,11,0,0.0,0.0,0.0,0.0,10.42723840064332,15.345320628755125
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,153,11,C:54:,chain_A,7,0,0.0,0.0,0.0,0.0,11.011697383051931,15.832682716227596
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,154,11,D:54:,chain_B,6,0,0.0,0.0,0.0,0.0,10.604875348976536,15.14657278313887
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,155,11,A:127:,chain_C,7,0,0.0,0.0,0.0,0.0,16.53177182915564,22.262601939142986
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,156,11,C:172:,chain_C,7,0,0.0,0.0,0.0,0.06557377049180328,6.099009848351584,10.685282616099059
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,157,11,C:14:,chain_A,8,0,0.0,0.0,0.0,0.01639344262295082,7.929807042429778,14.010919079166674
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,158,11,C:134:,chain_B,8,0,0.0,0.0,0.0,0.0,10.515024410508559,17.106591279528363
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,159,12,B:172:,chain_B,8,0,0.0,0.0,0.0,0.06557377049180328,6.118718685109511,10.743657362876315
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,160,12,A:172:,chain_C,6,0,0.0,0.0,0.0,0.04918032786885246,5.591081034920117,11.830404749314365
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,161,12,C:175:,chain_C,8,2,0.03278688524590164,0.25,0.06557377049180328,0.14754098360655737,0.0,6.076223312765969
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,162,12,A:175:,chain_A,8,2,0.03278688524590164,0.25,0.06557377049180328,0.14754098360655737,0.0,6.115252240561994
+transferrin_ps,secondary,Human transferrin,peptide_region,1,1,C:75:,single,8,0,0.0,0.0,0.0,0.0,18.81211587900287,21.784390782022495
+transferrin_ps,secondary,Human transferrin,peptide_region,2,1,C:216:,single,7,0,0.0,0.0,0.0,0.0,21.252087955959663,26.46115669012334
+transferrin_ps,secondary,Human transferrin,peptide_region,3,1,E:333:,single,4,0,0.0,0.0,0.0,0.0,16.39643097120269,16.39643097120269
+transferrin_ps,secondary,Human transferrin,peptide_region,4,1,C:236:,single,5,0,0.0,0.0,0.0,0.0,23.347814768558923,25.55717587447355
+transferrin_ps,secondary,Human transferrin,peptide_region,5,1,E:573:,single,5,0,0.0,0.0,0.0,0.0,20.10505092838336,26.154763586209082
+transferrin_ps,secondary,Human transferrin,peptide_region,6,1,C:60:,single,1,0,0.0,0.0,0.0,0.0,18.459418830485443,18.459418830485443
+transferrin_ps,secondary,Human transferrin,peptide_region,7,2,E:653:,single,10,0,0.0,0.0,0.0,0.0,16.390728074957902,21.31990020597481
+transferrin_ps,secondary,Human transferrin,peptide_region,8,2,E:502:,single,8,4,0.09523809523809523,0.5,0.16666666666666666,0.30952380952380953,0.0,5.36999043386314
+transferrin_ps,secondary,Human transferrin,peptide_region,9,2,C:143:,single,9,8,0.19047619047619047,0.8888888888888888,0.2619047619047619,0.3333333333333333,0.0,0.0
+transferrin_ps,secondary,Human transferrin,peptide_region,10,2,E:601:,single,8,0,0.0,0.0,0.0,0.0,30.547120300485453,31.861176104938558
+transferrin_ps,secondary,Human transferrin,peptide_region,11,2,E:363:,single,6,0,0.0,0.0,0.0,0.0,27.29489544056797,33.62309167191806
+transferrin_ps,secondary,Human transferrin,peptide_region,12,2,E:357:,single,8,0,0.0,0.0,0.0,0.0,18.069505288559423,24.15385294153524
+transferrin_ps,secondary,Human transferrin,peptide_region,13,2,E:547:,single,8,0,0.0,0.0,0.0,0.0,10.648765819223406,14.120719835128888
+transferrin_ps,secondary,Human transferrin,peptide_region,14,2,C:306:,single,5,0,0.0,0.0,0.0,0.0,13.610986682772282,15.959631323610061
+transferrin_ps,secondary,Human transferrin,peptide_region,15,2,E:608:,single,6,0,0.0,0.0,0.0,0.0,30.409389444081558,33.8405820336664
+transferrin_ps,secondary,Human transferrin,peptide_region,16,2,C:172:,single,5,0,0.0,0.0,0.047619047619047616,0.11904761904761904,4.852360813458971,5.377914787648856
+transferrin_ps,secondary,Human transferrin,peptide_region,17,2,E:611:,single,6,0,0.0,0.0,0.0,0.0,26.831463546943432,30.631497621105318
+transferrin_ps,secondary,Human transferrin,peptide_region,18,2,E:569:,single,5,0,0.0,0.0,0.0,0.0,22.552010129359594,25.577746198358692
+transferrin_ps,secondary,Human transferrin,peptide_region,19,2,E:336:,single,5,0,0.0,0.0,0.0,0.0,20.128365361868557,24.577394935159802
+transferrin_ps,secondary,Human transferrin,peptide_region,20,2,C:303:,single,4,0,0.0,0.0,0.0,0.0,21.548156481911693,24.666510921878224
+transferrin_ps,secondary,Human transferrin,peptide_region,21,2,C:288:,single,4,0,0.0,0.0,0.0,0.0,17.09023281976036,22.92563979356266
+transferrin_ps,secondary,Human transferrin,peptide_region,22,2,C:211:,single,7,0,0.0,0.0,0.0,0.0,18.89840104723649,21.692983639627904
+transferrin_ps,secondary,Human transferrin,peptide_region,23,3,C:44:,single,10,0,0.0,0.0,0.0,0.023809523809523808,5.209326859784296,10.524786011857099
+transferrin_ps,secondary,Human transferrin,peptide_region,24,3,E:591:,single,8,0,0.0,0.0,0.0,0.0,23.401923332954183,28.245481478877362
+transferrin_ps,secondary,Human transferrin,peptide_region,25,3,C:254:,single,8,0,0.0,0.0,0.0,0.0,20.87344852335004,24.1675178925587
+transferrin_ps,secondary,Human transferrin,peptide_region,26,3,C:221:,single,10,0,0.0,0.0,0.0,0.0,19.447167323394016,24.574407565222767
+transferrin_ps,secondary,Human transferrin,peptide_region,27,3,E:658:,single,9,0,0.0,0.0,0.0,0.0,14.639667296410352,19.26174873304479
+transferrin_ps,secondary,Human transferrin,peptide_region,28,3,C:164:,single,9,0,0.0,0.0,0.023809523809523808,0.16666666666666666,4.971486443222027,9.142485974838026
+transferrin_ps,secondary,Human transferrin,peptide_region,29,3,C:39:,single,8,0,0.0,0.0,0.0,0.0,18.689393202885164,23.671157086914327
+transferrin_ps,secondary,Human transferrin,peptide_region,30,3,C:147:,single,6,5,0.11904761904761904,0.8333333333333334,0.19047619047619047,0.2857142857142857,0.0,0.0
+transferrin_ps,secondary,Human transferrin,peptide_region,31,3,C:54:,single,5,0,0.0,0.0,0.0,0.0,18.81211587900287,24.722362481445625
+transferrin_ps,secondary,Human transferrin,peptide_region,32,3,C:133:,single,7,0,0.0,0.0,0.0,0.023809523809523808,7.953955475637253,10.42242443253795
+transferrin_ps,secondary,Human transferrin,peptide_region,33,3,E:435:,single,7,0,0.0,0.0,0.0,0.0,9.360540055734637,16.627865576974028
+transferrin_ps,secondary,Human transferrin,peptide_region,34,3,E:563:,single,9,0,0.0,0.0,0.0,0.0,15.207660026706744,20.187631435516497
+transferrin_ps,secondary,Human transferrin,peptide_region,35,3,C:15:,single,7,0,0.0,0.0,0.0,0.0,13.591071650726775,16.817392497680228
+transferrin_ps,secondary,Human transferrin,peptide_region,36,3,E:523:,single,4,0,0.0,0.0,0.0,0.023809523809523808,6.964309769477996,9.466119460758907
+transferrin_ps,secondary,Human transferrin,peptide_region,37,3,E:552:,single,7,0,0.0,0.0,0.0,0.0,20.544943174337213,22.865994560676814
+transferrin_ps,secondary,Human transferrin,peptide_region,38,3,C:111:,single,6,0,0.0,0.0,0.0,0.07142857142857142,5.298948128683511,10.494340306920105
+transferrin_ps,secondary,Human transferrin,peptide_region,39,3,C:279:,single,11,0,0.0,0.0,0.0,0.0,26.8141658813793,33.317464558814315
+transferrin_ps,secondary,Human transferrin,peptide_region,40,3,C:106:,single,6,0,0.0,0.0,0.0,0.0,13.479251754963585,16.02381157588133
+transferrin_ps,secondary,Human transferrin,peptide_region,41,4,C:183:,single,10,0,0.0,0.0,0.0,0.047619047619047616,5.209326859784296,8.016345148232327
+transferrin_ps,secondary,Human transferrin,peptide_region,42,4,E:379:,single,7,0,0.0,0.0,0.0,0.0,10.35791563873664,16.380753181872667
+transferrin_ps,secondary,Human transferrin,peptide_region,43,4,E:351:,single,8,0,0.0,0.0,0.0,0.0,11.92899758549114,15.793449465931413
+transferrin_ps,secondary,Human transferrin,peptide_region,44,4,E:421:,single,6,0,0.0,0.0,0.0,0.0,26.112028849174077,28.25075252360353
+transferrin_ps,secondary,Human transferrin,peptide_region,45,4,E:578:,single,7,0,0.0,0.0,0.0,0.0,19.38748934396141,20.41490787392277
+transferrin_ps,secondary,Human transferrin,peptide_region,46,4,E:566:,single,7,0,0.0,0.0,0.0,0.0,19.362122849841413,23.517778067876524
+transferrin_ps,secondary,Human transferrin,peptide_region,47,4,C:230:,single,8,0,0.0,0.0,0.0,0.0,12.086608925307683,17.859223831488546
+transferrin_ps,secondary,Human transferrin,peptide_region,48,4,E:341:,single,7,0,0.0,0.0,0.0,0.0,24.92213385409201,30.769875980611392
+transferrin_ps,secondary,Human transferrin,peptide_region,49,4,C:264:,single,8,0,0.0,0.0,0.0,0.0,21.38057767342758,24.404349532769853
+transferrin_ps,secondary,Human transferrin,peptide_region,50,4,E:670:,single,8,0,0.0,0.0,0.0,0.0,11.452688521853808,17.407501983015944
+transferrin_ps,secondary,Human transferrin,peptide_region,51,4,C:31:,single,7,0,0.0,0.0,0.0,0.0,32.16608722152971,36.69312148390717
+transferrin_ps,secondary,Human transferrin,peptide_region,52,4,E:486:,single,6,3,0.07142857142857142,0.5,0.11904761904761904,0.23809523809523808,0.0,0.0
+transferrin_ps,secondary,Human transferrin,peptide_region,53,4,E:533:,single,5,0,0.0,0.0,0.0,0.0,18.27914273244958,19.71077857817805
+transferrin_ps,secondary,Human transferrin,peptide_region,54,4,E:596:,single,6,0,0.0,0.0,0.0,0.0,29.58876932609463,32.90810367097252
+transferrin_ps,secondary,Human transferrin,peptide_region,55,4,C:124:,single,6,0,0.0,0.0,0.0,0.047619047619047616,5.77160583635676,9.97729503806642
+transferrin_ps,secondary,Human transferrin,peptide_region,56,4,E:617:,single,8,0,0.0,0.0,0.0,0.0,22.186920325138377,26.251693384724202
+transferrin_ps,secondary,Human transferrin,peptide_region,57,5,C:69:,single,5,0,0.0,0.0,0.0,0.0,13.242104315955446,16.1760735608484
+transferrin_ps,secondary,Human transferrin,peptide_region,58,5,E:467:,single,10,0,0.0,0.0,0.0,0.0,12.991537489865054,15.85326263823376
+transferrin_ps,secondary,Human transferrin,peptide_region,59,5,C:92:,single,9,0,0.0,0.0,0.0,0.0,22.831041743785516,27.038993037746444
+transferrin_ps,secondary,Human transferrin,peptide_region,60,5,C:319:,single,6,0,0.0,0.0,0.0,0.0,14.009431308795,18.05274597045239
+transferrin_ps,secondary,Human transferrin,peptide_region,61,5,C:324:,single,7,0,0.0,0.0,0.0,0.023809523809523808,7.835891026965955,12.512455954639018
+transferrin_ps,secondary,Human transferrin,peptide_region,62,5,C:233:,single,7,0,0.0,0.0,0.0,0.0,19.754458775698467,22.627335421249505
+transferrin_ps,secondary,Human transferrin,peptide_region,63,5,C:88:,single,7,0,0.0,0.0,0.0,0.0,26.24698317506766,32.147172640602875
+transferrin_ps,secondary,Human transferrin,peptide_region,64,5,E:510:,single,8,3,0.07142857142857142,0.375,0.09523809523809523,0.16666666666666666,0.0,3.9938864260493805
+transferrin_ps,secondary,Human transferrin,peptide_region,65,5,E:459:,single,7,0,0.0,0.0,0.0,0.09523809523809523,5.562775966606244,8.259660520727918
+transferrin_ps,secondary,Human transferrin,peptide_region,66,5,C:242:,single,8,0,0.0,0.0,0.0,0.0,18.174223134132284,20.592263080686543
+transferrin_ps,secondary,Human transferrin,peptide_region,67,5,C:161:,single,5,0,0.0,0.0,0.023809523809523808,0.047619047619047616,3.798605691029698,3.798605691029698
+transferrin_ps,secondary,Human transferrin,peptide_region,68,5,C:199:,single,7,0,0.0,0.0,0.023809523809523808,0.11904761904761904,4.852360813458971,8.794935014866565
+transferrin_ps,secondary,Human transferrin,peptide_region,69,5,E:442:,single,6,0,0.0,0.0,0.023809523809523808,0.047619047619047616,4.817267872713781,12.323596276586429
+transferrin_ps,secondary,Human transferrin,peptide_region,70,5,E:389:,single,2,0,0.0,0.0,0.0,0.0,18.553912557086083,18.553912557086083
+transferrin_ps,secondary,Human transferrin,peptide_region,71,6,E:506:,single,12,0,0.0,0.0,0.047619047619047616,0.14285714285714285,4.513519959300718,7.673035497242536
+transferrin_ps,secondary,Human transferrin,peptide_region,72,6,C:312:,single,6,0,0.0,0.0,0.0,0.0,17.517528759635784,21.86729416054804
+transferrin_ps,secondary,Human transferrin,peptide_region,73,6,C:187:,single,8,0,0.0,0.0,0.0,0.047619047619047616,5.975401191450579,8.037120809822921
+transferrin_ps,secondary,Human transferrin,peptide_region,74,6,E:674:,single,9,0,0.0,0.0,0.0,0.0,18.60751166899262,25.292390666555406
+transferrin_ps,secondary,Human transferrin,peptide_region,75,6,E:495:,single,7,7,0.16666666666666666,1.0,0.30952380952380953,0.42857142857142855,0.0,0.0
+transferrin_ps,secondary,Human transferrin,peptide_region,76,6,E:476:,single,9,5,0.11904761904761904,0.5555555555555556,0.21428571428571427,0.38095238095238093,0.0,5.525220784818649
+transferrin_ps,secondary,Human transferrin,peptide_region,77,6,E:643:,single,8,0,0.0,0.0,0.0,0.0,22.74998629256085,26.251705092708477
+transferrin_ps,secondary,Human transferrin,peptide_region,78,6,E:630:,single,6,0,0.0,0.0,0.0,0.0,14.2165584361134,20.17510190098476
+transferrin_ps,secondary,Human transferrin,peptide_region,79,6,C:271:,single,8,0,0.0,0.0,0.0,0.0,28.2916449447647,29.820529597729507
+transferrin_ps,secondary,Human transferrin,peptide_region,80,7,E:384:,single,6,0,0.0,0.0,0.0,0.0,18.443911659851082,24.049266171094626
+transferrin_ps,secondary,Human transferrin,peptide_region,81,7,E:370:,single,6,0,0.0,0.0,0.0,0.0,11.127447194089203,17.56145175521882
+catalase_ps,secondary,Bovine catalase,peptide_region,1,1,D:291:,chain_D,8,0,0.0,0.0,0.0,0.0,13.614481858056802,18.981638572499463
+catalase_ps,secondary,Bovine catalase,peptide_region,2,1,A:21:,chain_C,6,0,0.0,0.0,0.0,0.0,14.75795978021513,17.96786669401582
+catalase_ps,secondary,Bovine catalase,peptide_region,3,1,D:19:,chain_B,7,0,0.0,0.0,0.0,0.0,17.61139134789508,21.43839299405219
+catalase_ps,secondary,Bovine catalase,peptide_region,4,1,C:445:,chain_C,8,0,0.0,0.0,0.0,0.0,20.280819713477374,23.7136220624212
+catalase_ps,secondary,Bovine catalase,peptide_region,5,1,C:288:,chain_C,8,0,0.0,0.0,0.0,0.0,13.563943571122202,16.95853750902118
+catalase_ps,secondary,Bovine catalase,peptide_region,6,1,B:20:,chain_D,5,0,0.0,0.0,0.0,0.0,16.282772462263015,21.501550374519418
+catalase_ps,secondary,Bovine catalase,peptide_region,7,1,C:416:,chain_C,4,0,0.0,0.0,0.0,0.0,14.348211872757057,16.33641517353652
+catalase_ps,secondary,Bovine catalase,peptide_region,8,1,B:305:,chain_B,6,0,0.0,0.0,0.0,0.0,20.411039395845492,25.01106944137209
+catalase_ps,secondary,Bovine catalase,peptide_region,9,1,D:305:,chain_D,6,0,0.0,0.0,0.0,0.0,20.058926218122792,24.659210070815742
+catalase_ps,secondary,Bovine catalase,peptide_region,10,1,C:305:,chain_C,6,0,0.0,0.0,0.0,0.0,20.09017541776248,24.76365592603033
+catalase_ps,secondary,Bovine catalase,peptide_region,11,1,B:293:,chain_B,4,0,0.0,0.0,0.0,0.0,13.889237111367372,17.19626923203442
+catalase_ps,secondary,Bovine catalase,peptide_region,12,1,C:292:,chain_C,4,0,0.0,0.0,0.0,0.0,13.847836045138152,19.93190428071371
+catalase_ps,secondary,Bovine catalase,peptide_region,13,1,C:52:,chain_A,5,0,0.0,0.0,0.0,0.16129032258064516,6.881933395214707,6.881933395214707
+catalase_ps,secondary,Bovine catalase,peptide_region,14,1,D:52:,chain_B,5,1,0.03225806451612903,0.2,0.0967741935483871,0.2903225806451613,0.0,6.474377078605437
+catalase_ps,secondary,Bovine catalase,peptide_region,15,1,D:498:,chain_D,7,0,0.0,0.0,0.0,0.0,36.67822584293634,40.82424135949835
+catalase_ps,secondary,Bovine catalase,peptide_region,16,1,C:8:,chain_C,4,0,0.0,0.0,0.0,0.0,23.721022033139015,25.004921634936874
+catalase_ps,secondary,Bovine catalase,peptide_region,17,1,C:160:,chain_C,1,0,0.0,0.0,0.0,0.0,9.460405885931015,9.460405885931015
+catalase_ps,secondary,Bovine catalase,peptide_region,18,2,C:250:,chain_C,11,0,0.0,0.0,0.0,0.0,24.661853466353357,31.31288145063056
+catalase_ps,secondary,Bovine catalase,peptide_region,19,2,C:19:,chain_A,8,0,0.0,0.0,0.0,0.0,17.679976381004863,21.589148047265354
+catalase_ps,secondary,Bovine catalase,peptide_region,20,2,B:288:,chain_B,8,0,0.0,0.0,0.0,0.0,13.889237111367372,17.107946535581416
+catalase_ps,secondary,Bovine catalase,peptide_region,21,2,A:253:,chain_A,13,0,0.0,0.0,0.0,0.0,22.086883278264214,27.36105721808375
+catalase_ps,secondary,Bovine catalase,peptide_region,22,2,D:250:,chain_D,10,0,0.0,0.0,0.0,0.0,24.315648836547997,30.771024612032154
+catalase_ps,secondary,Bovine catalase,peptide_region,23,2,A:288:,chain_A,8,0,0.0,0.0,0.0,0.0,13.45214022465949,16.626055090017555
+catalase_ps,secondary,Bovine catalase,peptide_region,24,2,C:470:,chain_C,5,0,0.0,0.0,0.0,0.0,30.87803701487351,32.67167317230147
+catalase_ps,secondary,Bovine catalase,peptide_region,25,2,D:309:,chain_D,8,0,0.0,0.0,0.0,0.0,17.61816262854223,21.343132732025637
+catalase_ps,secondary,Bovine catalase,peptide_region,26,2,A:445:,chain_A,9,0,0.0,0.0,0.0,0.0,18.068403855438937,23.592018701180862
+catalase_ps,secondary,Bovine catalase,peptide_region,27,2,D:445:,chain_D,8,0,0.0,0.0,0.0,0.0,20.253432343930236,23.43145230422345
+catalase_ps,secondary,Bovine catalase,peptide_region,28,2,A:470:,chain_A,4,0,0.0,0.0,0.0,0.0,32.43803649399793,32.43803649399793
+catalase_ps,secondary,Bovine catalase,peptide_region,29,2,A:309:,chain_A,9,0,0.0,0.0,0.0,0.0,16.255438223822843,21.062456149631426
+catalase_ps,secondary,Bovine catalase,peptide_region,30,2,B:247:,chain_B,7,0,0.0,0.0,0.0,0.0,30.330209163261305,34.696669385354554
+catalase_ps,secondary,Bovine catalase,peptide_region,31,2,A:247:,chain_A,7,0,0.0,0.0,0.0,0.0,30.21264769763807,34.907685498867366
+catalase_ps,secondary,Bovine catalase,peptide_region,32,2,B:448:,chain_B,8,0,0.0,0.0,0.0,0.0,23.840227254228896,28.73152912605369
+catalase_ps,secondary,Bovine catalase,peptide_region,33,2,B:416:,chain_B,4,0,0.0,0.0,0.0,0.0,13.88058968181091,16.31136765432745
+catalase_ps,secondary,Bovine catalase,peptide_region,34,2,A:416:,chain_A,4,0,0.0,0.0,0.0,0.0,14.297014527909589,16.595780221382046
+catalase_ps,secondary,Bovine catalase,peptide_region,35,2,A:24:,chain_C,7,0,0.0,0.0,0.0,0.0,9.540928526406441,11.03936845213822
+catalase_ps,secondary,Bovine catalase,peptide_region,36,2,A:485:,chain_A,6,0,0.0,0.0,0.0,0.0,24.965171282661252,29.581541046435223
+catalase_ps,secondary,Bovine catalase,peptide_region,37,2,B:485:,chain_B,6,0,0.0,0.0,0.0,0.0,25.213213215258282,29.87897739852242
+catalase_ps,secondary,Bovine catalase,peptide_region,38,2,B:393:,chain_D,6,1,0.03225806451612903,0.16666666666666666,0.0967741935483871,0.3548387096774194,0.0,5.933661598402774
+catalase_ps,secondary,Bovine catalase,peptide_region,39,2,A:475:,chain_B,6,0,0.0,0.0,0.0,0.0,33.65418770561211,37.08182164135885
+catalase_ps,secondary,Bovine catalase,peptide_region,40,2,D:188:,chain_C,4,0,0.0,0.0,0.0,0.0,27.233077639970915,29.564513145417465
+catalase_ps,secondary,Bovine catalase,peptide_region,41,2,C:188:,chain_D,4,0,0.0,0.0,0.0,0.0,27.036677866979574,29.375144027067314
+catalase_ps,secondary,Bovine catalase,peptide_region,42,2,A:301:,chain_A,4,0,0.0,0.0,0.0,0.0,12.912882184808023,14.833864385519206
+catalase_ps,secondary,Bovine catalase,peptide_region,43,2,A:52:,chain_C,5,0,0.0,0.0,0.0,0.16129032258064516,6.509911358428355,6.509911358428355
+catalase_ps,secondary,Bovine catalase,peptide_region,44,2,A:305:,chain_A,6,0,0.0,0.0,0.0,0.0,20.18509652819326,24.64035703997425
+catalase_ps,secondary,Bovine catalase,peptide_region,45,2,D:220:,chain_D,7,0,0.0,0.0,0.0,0.06451612903225806,7.381071190252362,11.865647106428876
+catalase_ps,secondary,Bovine catalase,peptide_region,46,2,C:255:,chain_C,7,0,0.0,0.0,0.0,0.0,24.26213342922866,30.533827323200967
+catalase_ps,secondary,Bovine catalase,peptide_region,47,2,B:301:,chain_B,4,0,0.0,0.0,0.0,0.0,12.85099666385014,14.972533186245133
+catalase_ps,secondary,Bovine catalase,peptide_region,48,2,B:220:,chain_B,7,0,0.0,0.0,0.0,0.06451612903225806,7.138454301303847,11.746182752409336
+catalase_ps,secondary,Bovine catalase,peptide_region,49,2,B:153:,chain_B,5,0,0.0,0.0,0.0,0.0,11.33099684427578,13.493684118873228
+catalase_ps,secondary,Bovine catalase,peptide_region,50,2,C:498:,chain_C,7,0,0.0,0.0,0.0,0.0,36.55700256683352,41.00499115651601
+catalase_ps,secondary,Bovine catalase,peptide_region,51,3,B:253:,chain_B,15,0,0.0,0.0,0.0,0.0,21.707143005451922,27.447863552020817
+catalase_ps,secondary,Bovine catalase,peptide_region,52,3,D:470:,chain_D,6,0,0.0,0.0,0.0,0.0,30.854112775428735,32.689145329968156
+catalase_ps,secondary,Bovine catalase,peptide_region,53,3,B:309:,chain_B,8,0,0.0,0.0,0.0,0.0,16.431459976571052,21.450690526707636
+catalase_ps,secondary,Bovine catalase,peptide_region,54,3,C:309:,chain_C,8,0,0.0,0.0,0.0,0.0,16.504147269605475,21.4132974063136
+catalase_ps,secondary,Bovine catalase,peptide_region,55,3,D:417:,chain_D,8,0,0.0,0.0,0.0,0.0,9.367880281914445,14.113295374842668
+catalase_ps,secondary,Bovine catalase,peptide_region,56,3,A:16:,chain_C,8,0,0.0,0.0,0.0,0.0,19.975675935144693,24.863855224274143
+catalase_ps,secondary,Bovine catalase,peptide_region,57,3,D:493:,chain_D,7,0,0.0,0.0,0.0,0.0,29.572090662243102,34.6065277490774
+catalase_ps,secondary,Bovine catalase,peptide_region,58,3,D:223:,chain_D,10,0,0.0,0.0,0.0,0.0,16.550295091685847,20.407271189229657
+catalase_ps,secondary,Bovine catalase,peptide_region,59,3,B:223:,chain_B,10,0,0.0,0.0,0.0,0.0,16.698052482529235,20.421449886358793
+catalase_ps,secondary,Bovine catalase,peptide_region,60,3,C:493:,chain_C,7,0,0.0,0.0,0.0,0.0,29.6210839692804,34.559080760689376
+catalase_ps,secondary,Bovine catalase,peptide_region,61,3,B:45:,chain_D,4,0,0.0,0.0,0.0,0.0,19.62921925448789,21.272863323301767
+catalase_ps,secondary,Bovine catalase,peptide_region,62,3,A:493:,chain_A,7,0,0.0,0.0,0.0,0.0,29.753471499770583,34.98960807179524
+catalase_ps,secondary,Bovine catalase,peptide_region,63,3,C:485:,chain_C,6,0,0.0,0.0,0.0,0.0,24.924129899969518,29.777364036954634
+catalase_ps,secondary,Bovine catalase,peptide_region,64,3,D:485:,chain_D,6,0,0.0,0.0,0.0,0.0,24.835053728752086,29.339703508623497
+catalase_ps,secondary,Bovine catalase,peptide_region,65,3,B:126:,chain_B,7,0,0.0,0.0,0.0,0.0,17.361556291512922,23.613126365141817
+catalase_ps,secondary,Bovine catalase,peptide_region,66,3,D:393:,chain_B,6,1,0.03225806451612903,0.16666666666666666,0.0967741935483871,0.3225806451612903,0.0,6.016920982652985
+catalase_ps,secondary,Bovine catalase,peptide_region,67,3,D:475:,chain_C,7,0,0.0,0.0,0.0,0.0,34.07229432843447,37.45819405964294
+catalase_ps,secondary,Bovine catalase,peptide_region,68,3,D:126:,chain_D,7,0,0.0,0.0,0.0,0.0,17.14318249839575,23.672766658490065
+catalase_ps,secondary,Bovine catalase,peptide_region,69,3,B:188:,chain_A,5,0,0.0,0.0,0.0,0.0,26.878394587706158,29.444066699223676
+catalase_ps,secondary,Bovine catalase,peptide_region,70,3,C:88:,chain_C,6,0,0.0,0.0,0.0,0.0,16.751486692689543,21.90205395718143
+catalase_ps,secondary,Bovine catalase,peptide_region,71,3,D:284:,chain_D,8,0,0.0,0.0,0.0,0.0,13.282415722535642,18.840633239304946
+catalase_ps,secondary,Bovine catalase,peptide_region,72,3,A:188:,chain_B,4,0,0.0,0.0,0.0,0.0,27.11513229802106,29.27009732059089
+catalase_ps,secondary,Bovine catalase,peptide_region,73,3,B:52:,chain_D,3,0,0.0,0.0,0.0,0.12903225806451613,6.68486642391858,6.68486642391858
+catalase_ps,secondary,Bovine catalase,peptide_region,74,3,C:220:,chain_C,7,0,0.0,0.0,0.0,0.06451612903225806,7.304955221149468,11.900676582183367
+catalase_ps,secondary,Bovine catalase,peptide_region,75,3,C:301:,chain_C,4,0,0.0,0.0,0.0,0.0,12.952783306195599,14.670407262538722
+catalase_ps,secondary,Bovine catalase,peptide_region,76,3,B:498:,chain_B,7,0,0.0,0.0,0.0,0.0,36.816311290551994,41.24024715673209
+catalase_ps,secondary,Bovine catalase,peptide_region,77,3,A:498:,chain_A,7,0,0.0,0.0,0.0,0.0,36.6309226049275,40.76719595222393
+catalase_ps,secondary,Bovine catalase,peptide_region,78,3,A:451:,chain_A,9,0,0.0,0.0,0.0,0.0,26.187243771696913,32.140342968110815
+catalase_ps,secondary,Bovine catalase,peptide_region,79,3,D:451:,chain_D,9,0,0.0,0.0,0.0,0.0,26.24018748677017,32.00134027941316
+catalase_ps,secondary,Bovine catalase,peptide_region,80,3,C:451:,chain_C,9,0,0.0,0.0,0.0,0.0,26.184231922222587,31.56668105369932
+catalase_ps,secondary,Bovine catalase,peptide_region,81,4,B:470:,chain_B,6,0,0.0,0.0,0.0,0.0,31.012044378417453,32.38674889781679
+catalase_ps,secondary,Bovine catalase,peptide_region,82,4,D:123:,chain_D,11,0,0.0,0.0,0.0,0.0,15.633206952748765,21.98422669145711
+catalase_ps,secondary,Bovine catalase,peptide_region,83,4,C:393:,chain_A,7,1,0.03225806451612903,0.14285714285714285,0.0967741935483871,0.3225806451612903,0.0,6.041546018484071
+catalase_ps,secondary,Bovine catalase,peptide_region,84,4,C:223:,chain_C,10,0,0.0,0.0,0.0,0.0,16.507907476634987,20.354403041349766
+catalase_ps,secondary,Bovine catalase,peptide_region,85,4,B:431:,chain_A,8,0,0.0,0.0,0.0,0.0,13.870564395982353,20.743628562464867
+catalase_ps,secondary,Bovine catalase,peptide_region,86,4,B:493:,chain_B,7,0,0.0,0.0,0.0,0.0,29.559103644444612,34.88759635634675
+catalase_ps,secondary,Bovine catalase,peptide_region,87,4,A:223:,chain_A,10,0,0.0,0.0,0.0,0.0,16.837684546232417,20.902380712280344
+catalase_ps,secondary,Bovine catalase,peptide_region,88,4,C:24:,chain_A,8,0,0.0,0.0,0.03225806451612903,0.12903225806451613,3.791890614976689,10.916256735601607
+catalase_ps,secondary,Bovine catalase,peptide_region,89,4,B:24:,chain_D,8,0,0.0,0.0,0.03225806451612903,0.12903225806451613,3.8256329735234473,10.701806460688244
+catalase_ps,secondary,Bovine catalase,peptide_region,90,4,D:256:,chain_D,9,0,0.0,0.0,0.0,0.0,21.979856468741467,27.61425087317212
+catalase_ps,secondary,Bovine catalase,peptide_region,91,4,C:475:,chain_D,7,0,0.0,0.0,0.0,0.0,34.29464884749534,37.64284396398655
+catalase_ps,secondary,Bovine catalase,peptide_region,92,4,B:411:,chain_B,9,0,0.0,0.0,0.0,0.0,9.131290087522093,13.665733388047299
+catalase_ps,secondary,Bovine catalase,peptide_region,93,4,B:57:,chain_D,8,1,0.03225806451612903,0.125,0.0967741935483871,0.2903225806451613,0.0,7.6997444085012425
+catalase_ps,secondary,Bovine catalase,peptide_region,94,4,A:88:,chain_A,5,0,0.0,0.0,0.0,0.0,19.181194886050033,22.585131191362688
+catalase_ps,secondary,Bovine catalase,peptide_region,95,4,A:57:,chain_C,7,0,0.0,0.0,0.0,0.12903225806451613,7.285503237065096,8.086921069174764
+catalase_ps,secondary,Bovine catalase,peptide_region,96,4,D:88:,chain_D,7,0,0.0,0.0,0.0,0.0,16.976862477755777,21.97373610099359
+catalase_ps,secondary,Bovine catalase,peptide_region,97,4,C:83:,chain_C,6,0,0.0,0.0,0.0,0.0,8.451635825977869,12.641406961530087
+catalase_ps,secondary,Bovine catalase,peptide_region,98,4,A:83:,chain_A,6,0,0.0,0.0,0.0,0.0,8.745749202400178,13.016014808993777
+catalase_ps,secondary,Bovine catalase,peptide_region,99,4,C:103:,chain_C,7,0,0.0,0.0,0.0,0.0,11.524476261126054,16.81048285188583
+catalase_ps,secondary,Bovine catalase,peptide_region,100,4,D:73:,chain_D,7,0,0.0,0.0,0.0,0.03225806451612903,7.160504514453313,10.712385255157736
+catalase_ps,secondary,Bovine catalase,peptide_region,101,4,D:104:,chain_D,7,0,0.0,0.0,0.0,0.0,11.801102644422421,13.627134223735098
+catalase_ps,secondary,Bovine catalase,peptide_region,102,4,C:73:,chain_C,7,0,0.0,0.0,0.0,0.03225806451612903,7.149994325143701,10.728835228818056
+catalase_ps,secondary,Bovine catalase,peptide_region,103,4,D:157:,chain_D,5,1,0.03225806451612903,0.2,0.1935483870967742,0.25806451612903225,0.0,5.716253531209048
+catalase_ps,secondary,Bovine catalase,peptide_region,104,4,C:192:,chain_C,6,0,0.0,0.0,0.0,0.0,17.86997776962736,19.30356275770727
+catalase_ps,secondary,Bovine catalase,peptide_region,105,4,B:157:,chain_B,5,1,0.03225806451612903,0.2,0.12903225806451613,0.25806451612903225,0.0,5.364002400443339
+catalase_ps,secondary,Bovine catalase,peptide_region,106,4,D:181:,chain_D,4,0,0.0,0.0,0.0,0.0,18.82742293340477,22.583362229360496
+catalase_ps,secondary,Bovine catalase,peptide_region,107,4,A:145:,chain_A,6,0,0.0,0.0,0.0,0.16129032258064516,5.820164722893386,9.823137154004689
+catalase_ps,secondary,Bovine catalase,peptide_region,108,4,C:132:,chain_C,5,0,0.0,0.0,0.0,0.0967741935483871,7.30159047645165,12.350870604972599
+catalase_ps,secondary,Bovine catalase,peptide_region,109,4,D:132:,chain_D,5,0,0.0,0.0,0.0,0.06451612903225806,7.076233765606777,12.091484355190977
+catalase_ps,secondary,Bovine catalase,peptide_region,110,4,D:405:,chain_D,4,0,0.0,0.0,0.0,0.0,20.6410409633763,21.98013871764269
+catalase_ps,secondary,Bovine catalase,peptide_region,111,4,A:405:,chain_A,4,0,0.0,0.0,0.0,0.0,20.562428578341173,21.98391095511349
+catalase_ps,secondary,Bovine catalase,peptide_region,112,4,C:405:,chain_C,4,0,0.0,0.0,0.0,0.0,20.697281911987787,22.26534571878277
+catalase_ps,secondary,Bovine catalase,peptide_region,113,4,C:348:,chain_C,5,0,0.0,0.0,0.03225806451612903,0.12903225806451613,3.804485281766797,5.009354354269965
+catalase_ps,secondary,Bovine catalase,peptide_region,114,4,A:336:,chain_A,8,3,0.0967741935483871,0.375,0.2903225806451613,0.41935483870967744,0.0,4.63121901984942
+catalase_ps,secondary,Bovine catalase,peptide_region,115,4,A:271:,chain_A,6,0,0.0,0.0,0.0,0.0,16.157430995941777,22.563014514918745
+catalase_ps,secondary,Bovine catalase,peptide_region,116,4,B:271:,chain_B,6,0,0.0,0.0,0.0,0.0,16.2128238854939,22.78802404594522
+catalase_ps,secondary,Bovine catalase,peptide_region,117,4,B:455:,chain_B,10,0,0.0,0.0,0.0,0.0,25.077451448757664,30.88783077301532
+catalase_ps,secondary,Bovine catalase,peptide_region,118,4,C:271:,chain_C,6,0,0.0,0.0,0.0,0.0,16.10558724146694,22.835433478187166
+catalase_ps,secondary,Bovine catalase,peptide_region,119,4,D:22:,chain_B,6,0,0.0,0.0,0.0,0.0,10.620208627642342,15.835545832252304
+catalase_ps,secondary,Bovine catalase,peptide_region,120,4,D:336:,chain_D,8,3,0.0967741935483871,0.375,0.2903225806451613,0.41935483870967744,0.0,4.763021309911721
+catalase_ps,secondary,Bovine catalase,peptide_region,121,5,A:293:,chain_A,5,0,0.0,0.0,0.0,0.0,13.82685266063717,16.982104297577187
+catalase_ps,secondary,Bovine catalase,peptide_region,122,5,D:398:,chain_B,6,0,0.0,0.0,0.0,0.0,8.335447644022564,12.81860458985552
+catalase_ps,secondary,Bovine catalase,peptide_region,123,5,D:431:,chain_C,7,0,0.0,0.0,0.0,0.0,14.129219639225171,20.77274880291024
+catalase_ps,secondary,Bovine catalase,peptide_region,124,5,B:398:,chain_B,6,0,0.0,0.0,0.0,0.0,10.934087831784987,14.969867844636807
+catalase_ps,secondary,Bovine catalase,peptide_region,125,5,C:376:,chain_C,7,6,0.1935483870967742,0.8571428571428571,0.3548387096774194,0.41935483870967744,0.0,0.0
+catalase_ps,secondary,Bovine catalase,peptide_region,126,5,A:393:,chain_A,6,1,0.03225806451612903,0.16666666666666666,0.12903225806451613,0.25806451612903225,0.0,6.82553156081263
+catalase_ps,secondary,Bovine catalase,peptide_region,127,5,B:16:,chain_D,8,0,0.0,0.0,0.0,0.0,19.989014883952393,24.91001397859161
+catalase_ps,secondary,Bovine catalase,peptide_region,128,5,D:376:,chain_D,5,5,0.16129032258064516,1.0,0.3548387096774194,0.41935483870967744,0.0,0.0
+catalase_ps,secondary,Bovine catalase,peptide_region,129,5,D:245:,chain_D,8,0,0.0,0.0,0.0,0.0,24.804273082535925,32.14117199880405
+catalase_ps,secondary,Bovine catalase,peptide_region,130,5,C:46:,chain_B,6,0,0.0,0.0,0.0,0.06451612903225806,6.444907242841984,11.415857740698765
+catalase_ps,secondary,Bovine catalase,peptide_region,131,5,C:432:,chain_D,7,0,0.0,0.0,0.0,0.0,18.81931945405725,23.553120006403404
+catalase_ps,secondary,Bovine catalase,peptide_region,132,5,A:376:,chain_A,6,6,0.1935483870967742,1.0,0.3548387096774194,0.41935483870967744,0.0,0.0
+catalase_ps,secondary,Bovine catalase,peptide_region,133,5,C:57:,chain_A,8,1,0.03225806451612903,0.125,0.0967741935483871,0.2903225806451613,0.0,7.839527244993781
+catalase_ps,secondary,Bovine catalase,peptide_region,134,5,B:475:,chain_A,7,0,0.0,0.0,0.0,0.0,33.77330194512466,37.42530104525106
+catalase_ps,secondary,Bovine catalase,peptide_region,135,5,C:413:,chain_C,8,0,0.0,0.0,0.0,0.0,9.18998504473976,14.892231290178236
+catalase_ps,secondary,Bovine catalase,peptide_region,136,5,A:229:,chain_A,9,0,0.0,0.0,0.0,0.0,11.617536046976644,16.54949320947584
+catalase_ps,secondary,Bovine catalase,peptide_region,137,5,A:101:,chain_A,7,0,0.0,0.0,0.0,0.0,14.0035446207275,17.14544396565246
+catalase_ps,secondary,Bovine catalase,peptide_region,138,5,B:87:,chain_B,8,0,0.0,0.0,0.0,0.0,15.5338523445525,21.242741259800777
+catalase_ps,secondary,Bovine catalase,peptide_region,139,5,D:356:,chain_D,7,6,0.1935483870967742,0.8571428571428571,0.3225806451612903,0.4838709677419355,0.0,0.0
+catalase_ps,secondary,Bovine catalase,peptide_region,140,5,B:101:,chain_B,7,0,0.0,0.0,0.0,0.0,13.520986678331715,17.323284001921035
+catalase_ps,secondary,Bovine catalase,peptide_region,141,5,A:357:,chain_A,9,7,0.22580645161290322,0.7777777777777778,0.3548387096774194,0.6451612903225806,0.0,0.0
+catalase_ps,secondary,Bovine catalase,peptide_region,142,5,C:327:,chain_C,7,2,0.06451612903225806,0.2857142857142857,0.12903225806451613,0.22580645161290322,0.0,5.820504059741723
+catalase_ps,secondary,Bovine catalase,peptide_region,143,5,D:14:,chain_B,8,0,0.0,0.0,0.0,0.0,17.887479949746304,22.321388659784034
+catalase_ps,secondary,Bovine catalase,peptide_region,144,5,C:14:,chain_A,8,0,0.0,0.0,0.0,0.0,18.16707877053805,22.38323471646062
+catalase_ps,secondary,Bovine catalase,peptide_region,145,5,B:405:,chain_B,4,0,0.0,0.0,0.0,0.0,20.24523152701395,21.772820125771226
+catalase_ps,secondary,Bovine catalase,peptide_region,146,5,D:480:,chain_D,8,0,0.0,0.0,0.0,0.0,19.281758491523444,25.618039655223132
+catalase_ps,secondary,Bovine catalase,peptide_region,147,5,A:480:,chain_A,8,0,0.0,0.0,0.0,0.0,19.6369936668115,25.93698719525792
+catalase_ps,secondary,Bovine catalase,peptide_region,148,5,D:271:,chain_D,6,0,0.0,0.0,0.0,0.0,15.956650164339086,22.522258439817453
+catalase_ps,secondary,Bovine catalase,peptide_region,149,5,B:480:,chain_B,8,0,0.0,0.0,0.0,0.0,19.546479730364485,25.77020969232696
+catalase_ps,secondary,Bovine catalase,peptide_region,150,5,B:336:,chain_B,7,3,0.0967741935483871,0.42857142857142855,0.2903225806451613,0.41935483870967744,0.0,4.7693132145090225
+catalase_ps,secondary,Bovine catalase,peptide_region,151,6,A:398:,chain_A,7,0,0.0,0.0,0.0,0.0,10.489428080957392,15.010084635716282
+catalase_ps,secondary,Bovine catalase,peptide_region,152,6,A:431:,chain_B,8,0,0.0,0.0,0.0,0.0,13.715211293234269,20.696207041447643
+catalase_ps,secondary,Bovine catalase,peptide_region,153,6,C:204:,chain_C,13,0,0.0,0.0,0.0,0.0,17.39443308676534,24.88999331221822
+catalase_ps,secondary,Bovine catalase,peptide_region,154,6,B:438:,chain_B,11,0,0.0,0.0,0.0,0.0,16.591081020383733,19.118799702698823
+catalase_ps,secondary,Bovine catalase,peptide_region,155,6,D:438:,chain_D,10,0,0.0,0.0,0.0,0.0,17.23387579077471,18.909795610897582
+catalase_ps,secondary,Bovine catalase,peptide_region,156,6,A:204:,chain_A,11,0,0.0,0.0,0.0,0.0,20.071619415163703,24.941067009702333
+catalase_ps,secondary,Bovine catalase,peptide_region,157,6,A:46:,chain_D,5,0,0.0,0.0,0.03225806451612903,0.0967741935483871,4.981761305159473,11.103096704446184
+catalase_ps,secondary,Bovine catalase,peptide_region,158,6,D:57:,chain_B,6,0,0.0,0.0,0.0,0.06451612903225806,7.205908186885544,8.003660417821438
+catalase_ps,secondary,Bovine catalase,peptide_region,159,6,B:82:,chain_B,7,0,0.0,0.0,0.0,0.0,9.062859919327238,12.808678518052092
+catalase_ps,secondary,Bovine catalase,peptide_region,160,6,A:157:,chain_A,6,1,0.03225806451612903,0.16666666666666666,0.12903225806451613,0.25806451612903225,0.0,5.5061185431506985
+catalase_ps,secondary,Bovine catalase,peptide_region,161,6,B:419:,chain_B,7,0,0.0,0.0,0.0,0.0,10.726213028300043,14.671874071327673
+catalase_ps,secondary,Bovine catalase,peptide_region,162,6,B:242:,chain_B,8,0,0.0,0.0,0.0,0.0,23.603929546352255,28.564324121465127
+catalase_ps,secondary,Bovine catalase,peptide_region,163,6,A:438:,chain_A,10,0,0.0,0.0,0.0,0.0,17.29800342816261,18.835498529290255
+catalase_ps,secondary,Bovine catalase,peptide_region,164,6,C:242:,chain_C,7,0,0.0,0.0,0.0,0.0,25.173263242162182,28.819004421107408
+catalase_ps,secondary,Bovine catalase,peptide_region,165,6,A:197:,chain_A,7,0,0.0,0.0,0.0,0.0,18.068403855438937,20.263260980800982
+catalase_ps,secondary,Bovine catalase,peptide_region,166,6,D:197:,chain_D,7,0,0.0,0.0,0.0,0.0,17.685781573040444,20.158289325289857
+catalase_ps,secondary,Bovine catalase,peptide_region,167,6,C:437:,chain_D,7,0,0.0,0.0,0.0,0.0,30.10686729702281,33.58674546677023
+catalase_ps,secondary,Bovine catalase,peptide_region,168,6,A:242:,chain_A,7,0,0.0,0.0,0.0,0.0,25.079139304041128,28.624940908797022
+catalase_ps,secondary,Bovine catalase,peptide_region,169,6,B:36:,chain_D,8,0,0.0,0.0,0.0,0.0,14.50481545574353,18.33090581922734
+catalase_ps,secondary,Bovine catalase,peptide_region,170,6,C:178:,chain_C,6,0,0.0,0.0,0.0,0.0,22.26827280236586,26.381832033929093
+catalase_ps,secondary,Bovine catalase,peptide_region,171,6,A:178:,chain_A,6,0,0.0,0.0,0.0,0.0,22.31778863022676,26.97435832103077
+catalase_ps,secondary,Bovine catalase,peptide_region,172,6,B:178:,chain_B,5,0,0.0,0.0,0.0,0.0,22.283838522536872,26.787652566587365
+catalase_ps,secondary,Bovine catalase,peptide_region,173,6,C:409:,chain_C,7,0,0.0,0.0,0.0,0.0,13.922090753130181,19.46932642145088
+catalase_ps,secondary,Bovine catalase,peptide_region,174,6,A:38:,chain_C,4,0,0.0,0.0,0.0,0.0,18.524924067746454,20.60398257041337
+catalase_ps,secondary,Bovine catalase,peptide_region,175,6,C:423:,chain_C,9,0,0.0,0.0,0.0,0.0,14.603677159890442,16.601821677300673
+catalase_ps,secondary,Bovine catalase,peptide_region,176,6,C:36:,chain_A,7,0,0.0,0.0,0.0,0.0,14.297014527909589,18.26260070297027
+catalase_ps,secondary,Bovine catalase,peptide_region,177,6,A:327:,chain_A,8,2,0.06451612903225806,0.25,0.12903225806451613,0.22580645161290322,0.0,5.552982394789643
+catalase_ps,secondary,Bovine catalase,peptide_region,178,6,C:152:,chain_C,4,0,0.0,0.0,0.0,0.0,8.766396674733985,11.134189331850104
+catalase_ps,secondary,Bovine catalase,peptide_region,179,6,D:327:,chain_D,7,1,0.03225806451612903,0.14285714285714285,0.0967741935483871,0.25806451612903225,0.0,5.519064471644301
+catalase_ps,secondary,Bovine catalase,peptide_region,180,6,B:282:,chain_B,7,0,0.0,0.0,0.0,0.0,12.573963194548563,17.761058555301645
+catalase_ps,secondary,Bovine catalase,peptide_region,181,6,C:282:,chain_C,7,0,0.0,0.0,0.0,0.0,12.550578826485333,17.72127450531534
+catalase_ps,secondary,Bovine catalase,peptide_region,182,7,C:122:,chain_C,12,0,0.0,0.0,0.0,0.0,17.1341231593266,22.059757447195334
+catalase_ps,secondary,Bovine catalase,peptide_region,183,7,C:398:,chain_C,7,0,0.0,0.0,0.0,0.0,10.488976866360042,15.080935661967489
+catalase_ps,secondary,Bovine catalase,peptide_region,184,7,B:376:,chain_B,6,5,0.16129032258064516,0.8333333333333334,0.3548387096774194,0.41935483870967744,0.0,0.0
+catalase_ps,secondary,Bovine catalase,peptide_region,185,7,D:46:,chain_A,6,0,0.0,0.0,0.0,0.0967741935483871,5.144317500353054,11.155790070586667
+catalase_ps,secondary,Bovine catalase,peptide_region,186,7,A:266:,chain_A,8,0,0.0,0.0,0.0,0.0,18.09032336386207,21.563192035817327
+catalase_ps,secondary,Bovine catalase,peptide_region,187,7,D:300:,chain_D,5,0,0.0,0.0,0.0,0.0,12.737557920480201,13.468821736481065
+catalase_ps,secondary,Bovine catalase,peptide_region,188,7,B:266:,chain_B,8,0,0.0,0.0,0.0,0.0,18.347772726031327,21.763833966442167
+catalase_ps,secondary,Bovine catalase,peptide_region,189,7,C:419:,chain_C,6,0,0.0,0.0,0.0,0.0,10.885111840527777,15.154602025461143
+catalase_ps,secondary,Bovine catalase,peptide_region,190,7,A:73:,chain_A,8,0,0.0,0.0,0.0,0.03225806451612903,7.0404397730176855,10.668518907880866
+catalase_ps,secondary,Bovine catalase,peptide_region,191,7,B:197:,chain_B,8,0,0.0,0.0,0.0,0.0,17.98618175452533,20.568378795483124
+catalase_ps,secondary,Bovine catalase,peptide_region,192,7,A:8:,chain_D,6,0,0.0,0.0,0.0,0.0,25.58785628552837,31.54800685710123
+catalase_ps,secondary,Bovine catalase,peptide_region,193,7,A:427:,chain_B,10,0,0.0,0.0,0.0,0.0,14.355573289104974,17.625419885616747
+catalase_ps,secondary,Bovine catalase,peptide_region,194,7,B:8:,chain_C,6,0,0.0,0.0,0.0,0.0,25.300336733818522,31.405506939477814
+catalase_ps,secondary,Bovine catalase,peptide_region,195,7,B:390:,chain_D,7,1,0.03225806451612903,0.14285714285714285,0.12903225806451613,0.3225806451612903,0.0,6.185569291089176
+catalase_ps,secondary,Bovine catalase,peptide_region,196,7,D:242:,chain_D,8,0,0.0,0.0,0.0,0.0,23.641444706287793,28.61689451457091
+catalase_ps,secondary,Bovine catalase,peptide_region,197,7,D:265:,chain_D,7,0,0.0,0.0,0.0,0.0,12.981916734628674,18.05291315941095
+catalase_ps,secondary,Bovine catalase,peptide_region,198,7,A:219:,chain_A,6,0,0.0,0.0,0.0,0.06451612903225806,7.309151727857443,8.769956923661296
+catalase_ps,secondary,Bovine catalase,peptide_region,199,7,D:423:,chain_D,8,0,0.0,0.0,0.0,0.0,14.532163212774066,16.244843580191436
+catalase_ps,secondary,Bovine catalase,peptide_region,200,7,D:36:,chain_B,7,0,0.0,0.0,0.0,0.0,13.88058968181091,18.119488145482237
+catalase_ps,secondary,Bovine catalase,peptide_region,201,7,D:409:,chain_D,8,0,0.0,0.0,0.0,0.0,13.772373059121993,19.57599501573615
+catalase_ps,secondary,Bovine catalase,peptide_region,202,7,B:327:,chain_B,7,1,0.03225806451612903,0.14285714285714285,0.0967741935483871,0.22580645161290322,0.0,5.682458813937919
+catalase_ps,secondary,Bovine catalase,peptide_region,203,7,A:319:,chain_A,5,0,0.0,0.0,0.0,0.0,9.980789214596209,13.5347600589102
+catalase_ps,secondary,Bovine catalase,peptide_region,204,7,C:429:,chain_D,7,0,0.0,0.0,0.0,0.0,14.532163212774066,15.876098016405944
+catalase_ps,secondary,Bovine catalase,peptide_region,205,7,C:319:,chain_C,5,0,0.0,0.0,0.0,0.0,10.065290063620617,13.416614370086975
+catalase_ps,secondary,Bovine catalase,peptide_region,206,8,B:115:,chain_B,11,0,0.0,0.0,0.0,0.0,10.587742986810284,14.575582011141357
+catalase_ps,secondary,Bovine catalase,peptide_region,207,8,C:266:,chain_C,8,0,0.0,0.0,0.0,0.0,18.29821524734978,21.652251995711836
+catalase_ps,secondary,Bovine catalase,peptide_region,208,8,C:357:,chain_C,9,7,0.22580645161290322,0.7777777777777778,0.45161290322580644,0.6451612903225806,0.0,0.0
+catalase_ps,secondary,Bovine catalase,peptide_region,209,8,B:357:,chain_B,8,7,0.22580645161290322,0.875,0.45161290322580644,0.6129032258064516,0.0,0.0
+catalase_ps,secondary,Bovine catalase,peptide_region,210,8,C:197:,chain_C,7,0,0.0,0.0,0.0,0.0,17.86997776962736,20.236871669511977
+catalase_ps,secondary,Bovine catalase,peptide_region,211,8,B:427:,chain_A,10,0,0.0,0.0,0.0,0.0,14.20180143948819,17.344103861814563
+catalase_ps,secondary,Bovine catalase,peptide_region,212,8,D:163:,chain_D,5,0,0.0,0.0,0.0,0.0,9.503101150719521,14.40700600530244
+catalase_ps,secondary,Bovine catalase,peptide_region,213,8,C:216:,chain_C,5,0,0.0,0.0,0.0,0.0,9.379967936626233,9.379967936626233
+catalase_ps,secondary,Bovine catalase,peptide_region,214,8,C:339:,chain_C,7,0,0.0,0.0,0.0,0.03225806451612903,5.95006632875776,10.858301118356914
+catalase_ps,secondary,Bovine catalase,peptide_region,215,8,D:136:,chain_D,5,2,0.06451612903225806,0.4,0.12903225806451613,0.1935483870967742,0.0,5.635142082014783
+catalase_ps,secondary,Bovine catalase,peptide_region,216,8,D:319:,chain_D,6,0,0.0,0.0,0.0,0.0,9.957718505990735,13.414454655293245
+catalase_ps,secondary,Bovine catalase,peptide_region,217,8,B:461:,chain_B,7,0,0.0,0.0,0.0,0.0,24.39253638018148,29.643569643845225
+catalase_ps,secondary,Bovine catalase,peptide_region,218,8,A:461:,chain_A,7,0,0.0,0.0,0.0,0.0,24.072304738069153,29.51720631815851
+catalase_ps,secondary,Bovine catalase,peptide_region,219,8,D:461:,chain_D,7,0,0.0,0.0,0.0,0.0,23.897163433357672,29.421705373894294
+catalase_ps,secondary,Bovine catalase,peptide_region,220,9,A:258:,chain_A,9,0,0.0,0.0,0.0,0.0,18.700618397038667,22.518795683873083
+catalase_ps,secondary,Bovine catalase,peptide_region,221,9,D:83:,chain_D,8,0,0.0,0.0,0.0,0.0,8.645884578569415,12.925606148163027
+catalase_ps,secondary,Bovine catalase,peptide_region,222,9,C:275:,chain_C,8,0,0.0,0.0,0.0,0.0,17.41938785501332,20.630955093447263
+catalase_ps,secondary,Bovine catalase,peptide_region,223,9,B:275:,chain_B,8,0,0.0,0.0,0.0,0.0,17.70623992095187,21.075131133085566
+catalase_ps,secondary,Bovine catalase,peptide_region,224,9,A:275:,chain_A,8,0,0.0,0.0,0.0,0.0,17.493488562951534,20.595407160501026
+catalase_ps,secondary,Bovine catalase,peptide_region,225,9,B:78:,chain_B,4,0,0.0,0.0,0.0,0.0,14.32707870740367,14.32707870740367
+catalase_ps,secondary,Bovine catalase,peptide_region,226,10,C:382:,chain_C,7,0,0.0,0.0,0.03225806451612903,0.1935483870967742,3.8133466307362416,6.595395335471971
+catalase_ps,secondary,Bovine catalase,peptide_region,227,10,D:382:,chain_D,6,0,0.0,0.0,0.03225806451612903,0.16129032258064516,3.8256329735234473,6.52055807951732
+catalase_ps,secondary,Bovine catalase,peptide_region,228,10,B:369:,chain_B,8,7,0.22580645161290322,0.875,0.45161290322580644,0.6451612903225806,0.0,0.0
+catalase_ps,secondary,Bovine catalase,peptide_region,229,10,C:27:,chain_A,10,0,0.0,0.0,0.03225806451612903,0.16129032258064516,3.791890614976689,8.930952906255756
+catalase_ps,secondary,Bovine catalase,peptide_region,230,10,B:146:,chain_B,9,0,0.0,0.0,0.0,0.0,9.427896051617056,11.10874892383123
+catalase_ps,secondary,Bovine catalase,peptide_region,231,10,D:6:,chain_D,8,0,0.0,0.0,0.0,0.0,20.16927638387252,23.823352537455126
+catalase_ps,secondary,Bovine catalase,peptide_region,232,10,C:390:,chain_A,8,1,0.03225806451612903,0.125,0.16129032258064516,0.3225806451612903,0.0,6.207589500939451
+catalase_ps,secondary,Bovine catalase,peptide_region,233,10,A:216:,chain_A,6,0,0.0,0.0,0.0,0.0,9.277806625101027,9.277806625101027
+catalase_ps,secondary,Bovine catalase,peptide_region,234,10,D:216:,chain_D,6,0,0.0,0.0,0.0,0.0,9.10149338092052,9.10149338092052
+catalase_ps,secondary,Bovine catalase,peptide_region,235,10,A:419:,chain_A,7,0,0.0,0.0,0.0,0.0,10.754696451438287,14.834249862007036
+catalase_ps,secondary,Bovine catalase,peptide_region,236,10,B:72:,chain_B,8,0,0.0,0.0,0.0,0.03225806451612903,5.618290109050544,8.171434119795732
+catalase_ps,secondary,Bovine catalase,peptide_region,237,10,B:32:,chain_D,8,0,0.0,0.0,0.0,0.0967741935483871,5.655485286354714,8.125033806653013
+catalase_ps,secondary,Bovine catalase,peptide_region,238,11,D:27:,chain_B,11,0,0.0,0.0,0.03225806451612903,0.1935483870967742,3.798565562747658,8.772141075617656
+catalase_ps,secondary,Bovine catalase,peptide_region,239,11,D:390:,chain_B,9,1,0.03225806451612903,0.1111111111111111,0.12903225806451613,0.3225806451612903,0.0,6.240153583121336
+catalase_ps,secondary,Bovine catalase,peptide_region,240,11,C:69:,chain_C,7,0,0.0,0.0,0.0,0.06451612903225806,5.551412023637292,5.551412023637292
+catalase_ps,secondary,Bovine catalase,peptide_region,241,11,D:69:,chain_D,9,1,0.03225806451612903,0.1111111111111111,0.12903225806451613,0.22580645161290322,0.0,5.355958669037341
+catalase_ps,secondary,Bovine catalase,peptide_region,242,11,A:390:,chain_A,7,2,0.06451612903225806,0.2857142857142857,0.1935483870967742,0.2903225806451613,0.0,6.483097510133684
+catalase_ps,secondary,Bovine catalase,peptide_region,243,11,A:121:,chain_A,10,0,0.0,0.0,0.0,0.0,14.027020788388464,19.178646606445316
+catalase_ps,secondary,Bovine catalase,peptide_region,244,11,D:275:,chain_D,8,0,0.0,0.0,0.0,0.0,17.62338638802908,21.124660515963242
+catalase_ps,secondary,Bovine catalase,peptide_region,245,11,C:167:,chain_C,8,0,0.0,0.0,0.0,0.0,15.767102300670762,18.529369332674595
+catalase_ps,secondary,Bovine catalase,peptide_region,246,11,C:260:,chain_C,10,0,0.0,0.0,0.0,0.0,18.97195468964031,21.337042578995415
+catalase_ps,secondary,Bovine catalase,peptide_region,247,11,D:62:,chain_B,6,1,0.03225806451612903,0.16666666666666666,0.12903225806451613,0.25806451612903225,0.0,6.8107227587431485
+catalase_ps,secondary,Bovine catalase,peptide_region,248,12,D:362:,chain_D,8,8,0.25806451612903225,1.0,0.3870967741935484,0.5161290322580645,0.0,0.0
+catalase_ps,secondary,Bovine catalase,peptide_region,249,12,A:168:,chain_A,8,0,0.0,0.0,0.0,0.0,15.8306360723506,18.181252760373408
+catalase_ps,secondary,Bovine catalase,peptide_region,250,12,C:362:,chain_C,7,7,0.22580645161290322,1.0,0.3870967741935484,0.5161290322580645,0.0,0.0
+catalase_ps,secondary,Bovine catalase,peptide_region,251,12,A:362:,chain_A,7,7,0.22580645161290322,1.0,0.3870967741935484,0.5161290322580645,0.0,0.0
+catalase_ps,secondary,Bovine catalase,peptide_region,252,12,B:168:,chain_B,7,0,0.0,0.0,0.0,0.0,15.968064186385806,18.246762560848182
+catalase_ps,secondary,Bovine catalase,peptide_region,253,12,D:168:,chain_D,8,0,0.0,0.0,0.0,0.0,16.05752572773362,18.167097143403634
+catalase_ps,secondary,Bovine catalase,peptide_region,254,12,A:62:,chain_C,7,1,0.03225806451612903,0.14285714285714285,0.12903225806451613,0.25806451612903225,0.0,6.866451125015074
+catalase_ps,secondary,Bovine catalase,peptide_region,255,12,C:62:,chain_A,7,1,0.03225806451612903,0.14285714285714285,0.12903225806451613,0.25806451612903225,0.0,6.682562044357491
+catalase_ps,secondary,Bovine catalase,peptide_region,256,13,B:62:,chain_D,9,1,0.03225806451612903,0.1111111111111111,0.12903225806451613,0.25806451612903225,0.0,6.683047967848581
