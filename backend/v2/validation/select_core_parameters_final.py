@@ -1,7 +1,7 @@
 """Canonical adsorption-label-free parameter-selection run.
 
 The publication development panel contains eight structurally diverse proteins
-and is independent of the external experimental adsorption benchmark.
+and is independent of the literature-derived adsorption benchmark.
 """
 from v2.validation import select_core_parameters_consensus as base
 
@@ -16,5 +16,10 @@ base.STRUCTURES = [
     {"id":"citrate_synthase","label":"Open citrate synthase","pdb_id":"5CSC","chain":"B","class":"large enzyme"},
 ]
 
-if __name__ == '__main__':
+
+def main() -> None:
     base.main()
+
+
+if __name__ == '__main__':
+    main()
