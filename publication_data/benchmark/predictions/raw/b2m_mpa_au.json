@@ -1,0 +1,2458 @@
+{
+  "archived_full_pdb": "experimental_predictions/pdb/full_rcsb/b2m_mpa_au_1JNJ.pdb",
+  "archived_prepared_pdb": "experimental_predictions/pdb/prepared_for_analysis/b2m_mpa_au_1JNJ_prepared.pdb",
+  "fixed_model_settings": {
+    "coarse_patch_radius_A": 8.0,
+    "multiscale_radii_A": [
+      6.0,
+      9.0
+    ],
+    "sasa_points_per_atom": 200,
+    "sasa_probe_A": 1.4,
+    "scrsa_threshold": 0.05
+  },
+  "ground_truth_visible_to_predictor": false,
+  "interfacescout_output": {
+    "diagnostics": {
+      "n_surface_residues": 85,
+      "surface_residue_keys": [
+        "A:0:",
+        "A:1:",
+        "A:2:",
+        "A:3:",
+        "A:4:",
+        "A:6:",
+        "A:7:",
+        "A:8:",
+        "A:10:",
+        "A:11:",
+        "A:12:",
+        "A:13:",
+        "A:14:",
+        "A:15:",
+        "A:16:",
+        "A:17:",
+        "A:18:",
+        "A:19:",
+        "A:20:",
+        "A:22:",
+        "A:24:",
+        "A:26:",
+        "A:28:",
+        "A:29:",
+        "A:31:",
+        "A:32:",
+        "A:33:",
+        "A:34:",
+        "A:36:",
+        "A:38:",
+        "A:40:",
+        "A:41:",
+        "A:42:",
+        "A:43:",
+        "A:44:",
+        "A:45:",
+        "A:46:",
+        "A:47:",
+        "A:48:",
+        "A:49:",
+        "A:50:",
+        "A:51:",
+        "A:52:",
+        "A:53:",
+        "A:54:",
+        "A:55:",
+        "A:56:",
+        "A:57:",
+        "A:58:",
+        "A:59:",
+        "A:60:",
+        "A:61:",
+        "A:62:",
+        "A:63:",
+        "A:64:",
+        "A:65:",
+        "A:66:",
+        "A:67:",
+        "A:69:",
+        "A:71:",
+        "A:72:",
+        "A:73:",
+        "A:74:",
+        "A:75:",
+        "A:76:",
+        "A:77:",
+        "A:78:",
+        "A:79:",
+        "A:81:",
+        "A:83:",
+        "A:85:",
+        "A:86:",
+        "A:87:",
+        "A:88:",
+        "A:89:",
+        "A:90:",
+        "A:91:",
+        "A:92:",
+        "A:93:",
+        "A:94:",
+        "A:95:",
+        "A:96:",
+        "A:97:",
+        "A:98:",
+        "A:99:"
+      ]
+    },
+    "engine": "InterfaceScout",
+    "input": {
+      "chain": "A",
+      "ionic_mM": 150.0,
+      "pH": 7.0,
+      "pdb_id": null,
+      "primary_chemistry": "anionic",
+      "surface": "mpa_au",
+      "temp_K": 298.0
+    },
+    "method": {
+      "accessibility_source": "side-chain relative solvent accessibility",
+      "multiscale_radii_A": [
+        6.0,
+        9.0
+      ],
+      "orientation": "coarse outward C-alpha face consistency",
+      "parameter_selection": {
+        "development_pdbs": [
+          "1CRN",
+          "1R69",
+          "1SHG",
+          "2PPN",
+          "4AKE",
+          "1OMP",
+          "1TIM",
+          "5CSC"
+        ],
+        "sasa_reference_points_per_atom": 1000,
+        "selected_multiscale_radii_A": [
+          6.0,
+          9.0
+        ],
+        "selected_sasa_points_per_atom": 200,
+        "selection_commit": "ba0e63b7b82a222856ff75a6dd39409b89b664dd",
+        "selection_workflow_run": 34329264963,
+        "uses_experimental_adsorption_labels": false
+      },
+      "patch_definition": "non-transitive local surface neighbourhood around a chemistry-patch maximum",
+      "patch_radius_A": 8.0,
+      "ranking": "Pareto fronts across chemistry support, accessibility, patch coherence and orientation coherence; no weighted sum",
+      "sasa_points_per_atom": 200,
+      "sasa_probe_A": 1.4,
+      "scrsa_threshold": 0.05,
+      "single_pass_all_maps": true
+    },
+    "method_notes": [
+      "All single-channel chemistry maps use the same prepared structure and environmental conditions.",
+      "Experimental interface labels are not inputs to patch construction or ranking.",
+      "Multi-chemistry composite views are derived overlays of canonical single-channel maps; they do not introduce fitted material weights or constitute a separately validated combined score."
+    ],
+    "n_pareto_primary_patches": 4,
+    "n_patches": 14,
+    "patches": [
+      {
+        "center_key": "A:17:",
+        "center_residue": {
+          "chain": "A",
+          "icode": "",
+          "key": "A:17:",
+          "res_name": "ASN",
+          "res_seq": 17
+        },
+        "chains": [
+          "A"
+        ],
+        "chemistry_support": 0.4,
+        "classification": "primary plausible interface",
+        "diameter_A": 12.42507264399959,
+        "display_rank": 1,
+        "mean_accessibility": 0.584497,
+        "member_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:15:",
+            "res_name": "ALA",
+            "res_seq": 15
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:16:",
+            "res_name": "GLU",
+            "res_seq": 16
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:17:",
+            "res_name": "ASN",
+            "res_seq": 17
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:18:",
+            "res_name": "GLY",
+            "res_seq": 18
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:19:",
+            "res_name": "LYS",
+            "res_seq": 19
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:20:",
+            "res_name": "SER",
+            "res_seq": 20
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:71:",
+            "res_name": "THR",
+            "res_seq": 71
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:72:",
+            "res_name": "PRO",
+            "res_seq": 72
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:73:",
+            "res_name": "THR",
+            "res_seq": 73
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:74:",
+            "res_name": "GLU",
+            "res_seq": 74
+          }
+        ],
+        "members": [
+          "A:15:",
+          "A:16:",
+          "A:17:",
+          "A:18:",
+          "A:19:",
+          "A:20:",
+          "A:71:",
+          "A:72:",
+          "A:73:",
+          "A:74:"
+        ],
+        "n_chemistry_seeds": 4,
+        "n_members": 10,
+        "orientation_coherence": 0.972165506193017,
+        "pareto_front": 1,
+        "patch_coherence": 0.81951,
+        "residue_span_max": 74,
+        "residue_span_min": 15,
+        "seed_members": [
+          "A:19:",
+          "A:20:",
+          "A:71:",
+          "A:73:"
+        ],
+        "seed_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:19:",
+            "res_name": "LYS",
+            "res_seq": 19
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:20:",
+            "res_name": "SER",
+            "res_seq": 20
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:71:",
+            "res_name": "THR",
+            "res_seq": 71
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:73:",
+            "res_name": "THR",
+            "res_seq": 73
+          }
+        ],
+        "spatial_coherence": "fixed 8 A local neighbourhood around a chemistry-patch maximum"
+      },
+      {
+        "center_key": "A:3:",
+        "center_residue": {
+          "chain": "A",
+          "icode": "",
+          "key": "A:3:",
+          "res_name": "ARG",
+          "res_seq": 3
+        },
+        "chains": [
+          "A"
+        ],
+        "chemistry_support": 0.5,
+        "classification": "primary plausible interface",
+        "diameter_A": 12.491567769216088,
+        "display_rank": 2,
+        "mean_accessibility": 0.5419475,
+        "member_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:1:",
+            "res_name": "ILE",
+            "res_seq": 1
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:29:",
+            "res_name": "GLY",
+            "res_seq": 29
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:2:",
+            "res_name": "GLN",
+            "res_seq": 2
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:31:",
+            "res_name": "HIS",
+            "res_seq": 31
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:32:",
+            "res_name": "PRO",
+            "res_seq": 32
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:3:",
+            "res_name": "ARG",
+            "res_seq": 3
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:4:",
+            "res_name": "THR",
+            "res_seq": 4
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:86:",
+            "res_name": "THR",
+            "res_seq": 86
+          }
+        ],
+        "members": [
+          "A:1:",
+          "A:29:",
+          "A:2:",
+          "A:31:",
+          "A:32:",
+          "A:3:",
+          "A:4:",
+          "A:86:"
+        ],
+        "n_chemistry_seeds": 4,
+        "n_members": 8,
+        "orientation_coherence": 0.9607392397442989,
+        "pareto_front": 1,
+        "patch_coherence": 0.6989799999999999,
+        "residue_span_max": 86,
+        "residue_span_min": 1,
+        "seed_members": [
+          "A:31:",
+          "A:3:",
+          "A:4:",
+          "A:86:"
+        ],
+        "seed_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:31:",
+            "res_name": "HIS",
+            "res_seq": 31
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:3:",
+            "res_name": "ARG",
+            "res_seq": 3
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:4:",
+            "res_name": "THR",
+            "res_seq": 4
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:86:",
+            "res_name": "THR",
+            "res_seq": 86
+          }
+        ],
+        "spatial_coherence": "fixed 8 A local neighbourhood around a chemistry-patch maximum"
+      },
+      {
+        "center_key": "A:56:",
+        "center_residue": {
+          "chain": "A",
+          "icode": "",
+          "key": "A:56:",
+          "res_name": "PHE",
+          "res_seq": 56
+        },
+        "chains": [
+          "A"
+        ],
+        "chemistry_support": 0.36363636363636365,
+        "classification": "primary plausible interface",
+        "diameter_A": 14.072136624809248,
+        "display_rank": 3,
+        "mean_accessibility": 0.4807390909090909,
+        "member_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:54:",
+            "res_name": "LEU",
+            "res_seq": 54
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:55:",
+            "res_name": "SER",
+            "res_seq": 55
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:56:",
+            "res_name": "PHE",
+            "res_seq": 56
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:57:",
+            "res_name": "SER",
+            "res_seq": 57
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:58:",
+            "res_name": "LYS",
+            "res_seq": 58
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:59:",
+            "res_name": "ASP",
+            "res_seq": 59
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:60:",
+            "res_name": "TRP",
+            "res_seq": 60
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:61:",
+            "res_name": "SER",
+            "res_seq": 61
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:62:",
+            "res_name": "PHE",
+            "res_seq": 62
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:63:",
+            "res_name": "TYR",
+            "res_seq": 63
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:64:",
+            "res_name": "LEU",
+            "res_seq": 64
+          }
+        ],
+        "members": [
+          "A:54:",
+          "A:55:",
+          "A:56:",
+          "A:57:",
+          "A:58:",
+          "A:59:",
+          "A:60:",
+          "A:61:",
+          "A:62:",
+          "A:63:",
+          "A:64:"
+        ],
+        "n_chemistry_seeds": 4,
+        "n_members": 11,
+        "orientation_coherence": 0.9744117630582962,
+        "pareto_front": 1,
+        "patch_coherence": 0.6672899999999999,
+        "residue_span_max": 64,
+        "residue_span_min": 54,
+        "seed_members": [
+          "A:55:",
+          "A:57:",
+          "A:58:",
+          "A:61:"
+        ],
+        "seed_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:55:",
+            "res_name": "SER",
+            "res_seq": 55
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:57:",
+            "res_name": "SER",
+            "res_seq": 57
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:58:",
+            "res_name": "LYS",
+            "res_seq": 58
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:61:",
+            "res_name": "SER",
+            "res_seq": 61
+          }
+        ],
+        "spatial_coherence": "fixed 8 A local neighbourhood around a chemistry-patch maximum"
+      },
+      {
+        "center_key": "A:43:",
+        "center_residue": {
+          "chain": "A",
+          "icode": "",
+          "key": "A:43:",
+          "res_name": "GLY",
+          "res_seq": 43
+        },
+        "chains": [
+          "A"
+        ],
+        "chemistry_support": 0.3333333333333333,
+        "classification": "primary plausible interface",
+        "diameter_A": 8.801001994235827,
+        "display_rank": 4,
+        "mean_accessibility": 0.515185,
+        "member_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:40:",
+            "res_name": "LEU",
+            "res_seq": 40
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:41:",
+            "res_name": "LYS",
+            "res_seq": 41
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:42:",
+            "res_name": "ASN",
+            "res_seq": 42
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:43:",
+            "res_name": "GLY",
+            "res_seq": 43
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:44:",
+            "res_name": "GLU",
+            "res_seq": 44
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:45:",
+            "res_name": "ARG",
+            "res_seq": 45
+          }
+        ],
+        "members": [
+          "A:40:",
+          "A:41:",
+          "A:42:",
+          "A:43:",
+          "A:44:",
+          "A:45:"
+        ],
+        "n_chemistry_seeds": 2,
+        "n_members": 6,
+        "orientation_coherence": 0.976892368054336,
+        "pareto_front": 1,
+        "patch_coherence": 0.056740000000000006,
+        "residue_span_max": 45,
+        "residue_span_min": 40,
+        "seed_members": [
+          "A:41:",
+          "A:45:"
+        ],
+        "seed_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:41:",
+            "res_name": "LYS",
+            "res_seq": 41
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:45:",
+            "res_name": "ARG",
+            "res_seq": 45
+          }
+        ],
+        "spatial_coherence": "fixed 8 A local neighbourhood around a chemistry-patch maximum"
+      },
+      {
+        "center_key": "A:76:",
+        "center_residue": {
+          "chain": "A",
+          "icode": "",
+          "key": "A:76:",
+          "res_name": "ASP",
+          "res_seq": 76
+        },
+        "chains": [
+          "A"
+        ],
+        "chemistry_support": 0.3333333333333333,
+        "classification": "alternative interface",
+        "diameter_A": 12.472484006761913,
+        "display_rank": 5,
+        "mean_accessibility": 0.5163277777777777,
+        "member_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:41:",
+            "res_name": "LYS",
+            "res_seq": 41
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:42:",
+            "res_name": "ASN",
+            "res_seq": 42
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:72:",
+            "res_name": "PRO",
+            "res_seq": 72
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:73:",
+            "res_name": "THR",
+            "res_seq": 73
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:74:",
+            "res_name": "GLU",
+            "res_seq": 74
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:75:",
+            "res_name": "LYS",
+            "res_seq": 75
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:76:",
+            "res_name": "ASP",
+            "res_seq": 76
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:77:",
+            "res_name": "GLU",
+            "res_seq": 77
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:78:",
+            "res_name": "TYR",
+            "res_seq": 78
+          }
+        ],
+        "members": [
+          "A:41:",
+          "A:42:",
+          "A:72:",
+          "A:73:",
+          "A:74:",
+          "A:75:",
+          "A:76:",
+          "A:77:",
+          "A:78:"
+        ],
+        "n_chemistry_seeds": 3,
+        "n_members": 9,
+        "orientation_coherence": 0.9699856092241625,
+        "pareto_front": 2,
+        "patch_coherence": 0.57534,
+        "residue_span_max": 78,
+        "residue_span_min": 41,
+        "seed_members": [
+          "A:41:",
+          "A:73:",
+          "A:75:"
+        ],
+        "seed_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:41:",
+            "res_name": "LYS",
+            "res_seq": 41
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:73:",
+            "res_name": "THR",
+            "res_seq": 73
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:75:",
+            "res_name": "LYS",
+            "res_seq": 75
+          }
+        ],
+        "spatial_coherence": "fixed 8 A local neighbourhood around a chemistry-patch maximum"
+      },
+      {
+        "center_key": "A:87:",
+        "center_residue": {
+          "chain": "A",
+          "icode": "",
+          "key": "A:87:",
+          "res_name": "LEU",
+          "res_seq": 87
+        },
+        "chains": [
+          "A"
+        ],
+        "chemistry_support": 0.4444444444444444,
+        "classification": "alternative interface",
+        "diameter_A": 12.614281047564699,
+        "display_rank": 6,
+        "mean_accessibility": 0.5262688888888889,
+        "member_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:4:",
+            "res_name": "THR",
+            "res_seq": 4
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:83:",
+            "res_name": "ASN",
+            "res_seq": 83
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:85:",
+            "res_name": "VAL",
+            "res_seq": 85
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:86:",
+            "res_name": "THR",
+            "res_seq": 86
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:87:",
+            "res_name": "LEU",
+            "res_seq": 87
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:88:",
+            "res_name": "SER",
+            "res_seq": 88
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:89:",
+            "res_name": "GLN",
+            "res_seq": 89
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:90:",
+            "res_name": "PRO",
+            "res_seq": 90
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:91:",
+            "res_name": "LYS",
+            "res_seq": 91
+          }
+        ],
+        "members": [
+          "A:4:",
+          "A:83:",
+          "A:85:",
+          "A:86:",
+          "A:87:",
+          "A:88:",
+          "A:89:",
+          "A:90:",
+          "A:91:"
+        ],
+        "n_chemistry_seeds": 4,
+        "n_members": 9,
+        "orientation_coherence": 0.9405288652176459,
+        "pareto_front": 2,
+        "patch_coherence": 0.5047999999999999,
+        "residue_span_max": 91,
+        "residue_span_min": 4,
+        "seed_members": [
+          "A:4:",
+          "A:86:",
+          "A:88:",
+          "A:91:"
+        ],
+        "seed_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:4:",
+            "res_name": "THR",
+            "res_seq": 4
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:86:",
+            "res_name": "THR",
+            "res_seq": 86
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:88:",
+            "res_name": "SER",
+            "res_seq": 88
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:91:",
+            "res_name": "LYS",
+            "res_seq": 91
+          }
+        ],
+        "spatial_coherence": "fixed 8 A local neighbourhood around a chemistry-patch maximum"
+      },
+      {
+        "center_key": "A:6:",
+        "center_residue": {
+          "chain": "A",
+          "icode": "",
+          "key": "A:6:",
+          "res_name": "LYS",
+          "res_seq": 6
+        },
+        "chains": [
+          "A"
+        ],
+        "chemistry_support": 0.5,
+        "classification": "alternative interface",
+        "diameter_A": 12.98215461841806,
+        "display_rank": 7,
+        "mean_accessibility": 0.4983033333333334,
+        "member_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:28:",
+            "res_name": "SER",
+            "res_seq": 28
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:29:",
+            "res_name": "GLY",
+            "res_seq": 29
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:4:",
+            "res_name": "THR",
+            "res_seq": 4
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:6:",
+            "res_name": "LYS",
+            "res_seq": 6
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:7:",
+            "res_name": "ILE",
+            "res_seq": 7
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:8:",
+            "res_name": "GLN",
+            "res_seq": 8
+          }
+        ],
+        "members": [
+          "A:28:",
+          "A:29:",
+          "A:4:",
+          "A:6:",
+          "A:7:",
+          "A:8:"
+        ],
+        "n_chemistry_seeds": 3,
+        "n_members": 6,
+        "orientation_coherence": 0.9173581701402929,
+        "pareto_front": 2,
+        "patch_coherence": 0.48079,
+        "residue_span_max": 29,
+        "residue_span_min": 4,
+        "seed_members": [
+          "A:28:",
+          "A:4:",
+          "A:6:"
+        ],
+        "seed_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:28:",
+            "res_name": "SER",
+            "res_seq": 28
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:4:",
+            "res_name": "THR",
+            "res_seq": 4
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:6:",
+            "res_name": "LYS",
+            "res_seq": 6
+          }
+        ],
+        "spatial_coherence": "fixed 8 A local neighbourhood around a chemistry-patch maximum"
+      },
+      {
+        "center_key": "A:99:",
+        "center_residue": {
+          "chain": "A",
+          "icode": "",
+          "key": "A:99:",
+          "res_name": "MET",
+          "res_seq": 99
+        },
+        "chains": [
+          "A"
+        ],
+        "chemistry_support": 0.2,
+        "classification": "alternative interface",
+        "diameter_A": 9.2523190991398,
+        "display_rank": 8,
+        "mean_accessibility": 0.56438,
+        "member_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:14:",
+            "res_name": "PRO",
+            "res_seq": 14
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:15:",
+            "res_name": "ALA",
+            "res_seq": 15
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:97:",
+            "res_name": "ARG",
+            "res_seq": 97
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:98:",
+            "res_name": "ASP",
+            "res_seq": 98
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:99:",
+            "res_name": "MET",
+            "res_seq": 99
+          }
+        ],
+        "members": [
+          "A:14:",
+          "A:15:",
+          "A:97:",
+          "A:98:",
+          "A:99:"
+        ],
+        "n_chemistry_seeds": 1,
+        "n_members": 5,
+        "orientation_coherence": 0.9705043531274338,
+        "pareto_front": 2,
+        "patch_coherence": 0.25156,
+        "residue_span_max": 99,
+        "residue_span_min": 14,
+        "seed_members": [
+          "A:97:"
+        ],
+        "seed_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:97:",
+            "res_name": "ARG",
+            "res_seq": 97
+          }
+        ],
+        "spatial_coherence": "fixed 8 A local neighbourhood around a chemistry-patch maximum"
+      },
+      {
+        "center_key": "A:33:",
+        "center_residue": {
+          "chain": "A",
+          "icode": "",
+          "key": "A:33:",
+          "res_name": "SER",
+          "res_seq": 33
+        },
+        "chains": [
+          "A"
+        ],
+        "chemistry_support": 0.4,
+        "classification": "alternative interface",
+        "diameter_A": 10.02796321702053,
+        "display_rank": 9,
+        "mean_accessibility": 0.550768,
+        "member_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:31:",
+            "res_name": "HIS",
+            "res_seq": 31
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:32:",
+            "res_name": "PRO",
+            "res_seq": 32
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:33:",
+            "res_name": "SER",
+            "res_seq": 33
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:34:",
+            "res_name": "ASP",
+            "res_seq": 34
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:62:",
+            "res_name": "PHE",
+            "res_seq": 62
+          }
+        ],
+        "members": [
+          "A:31:",
+          "A:32:",
+          "A:33:",
+          "A:34:",
+          "A:62:"
+        ],
+        "n_chemistry_seeds": 2,
+        "n_members": 5,
+        "orientation_coherence": 0.9676765363360784,
+        "pareto_front": 2,
+        "patch_coherence": 0.24075,
+        "residue_span_max": 62,
+        "residue_span_min": 31,
+        "seed_members": [
+          "A:31:",
+          "A:33:"
+        ],
+        "seed_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:31:",
+            "res_name": "HIS",
+            "res_seq": 31
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:33:",
+            "res_name": "SER",
+            "res_seq": 33
+          }
+        ],
+        "spatial_coherence": "fixed 8 A local neighbourhood around a chemistry-patch maximum"
+      },
+      {
+        "center_key": "A:93:",
+        "center_residue": {
+          "chain": "A",
+          "icode": "",
+          "key": "A:93:",
+          "res_name": "VAL",
+          "res_seq": 93
+        },
+        "chains": [
+          "A"
+        ],
+        "chemistry_support": 0.42857142857142855,
+        "classification": "alternative interface",
+        "diameter_A": 11.841818044960943,
+        "display_rank": 10,
+        "mean_accessibility": 0.38107857142857143,
+        "member_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:79:",
+            "res_name": "ALA",
+            "res_seq": 79
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:81:",
+            "res_name": "ARG",
+            "res_seq": 81
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:91:",
+            "res_name": "LYS",
+            "res_seq": 91
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:92:",
+            "res_name": "ILE",
+            "res_seq": 92
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:93:",
+            "res_name": "VAL",
+            "res_seq": 93
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:94:",
+            "res_name": "LYS",
+            "res_seq": 94
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:95:",
+            "res_name": "TRP",
+            "res_seq": 95
+          }
+        ],
+        "members": [
+          "A:79:",
+          "A:81:",
+          "A:91:",
+          "A:92:",
+          "A:93:",
+          "A:94:",
+          "A:95:"
+        ],
+        "n_chemistry_seeds": 3,
+        "n_members": 7,
+        "orientation_coherence": 0.859245561891602,
+        "pareto_front": 3,
+        "patch_coherence": 0.48097999999999996,
+        "residue_span_max": 95,
+        "residue_span_min": 79,
+        "seed_members": [
+          "A:81:",
+          "A:91:",
+          "A:94:"
+        ],
+        "seed_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:81:",
+            "res_name": "ARG",
+            "res_seq": 81
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:91:",
+            "res_name": "LYS",
+            "res_seq": 91
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:94:",
+            "res_name": "LYS",
+            "res_seq": 94
+          }
+        ],
+        "spatial_coherence": "fixed 8 A local neighbourhood around a chemistry-patch maximum"
+      },
+      {
+        "center_key": "A:11:",
+        "center_residue": {
+          "chain": "A",
+          "icode": "",
+          "key": "A:11:",
+          "res_name": "SER",
+          "res_seq": 11
+        },
+        "chains": [
+          "A"
+        ],
+        "chemistry_support": 0.36363636363636365,
+        "classification": "alternative interface",
+        "diameter_A": 12.713461041066198,
+        "display_rank": 11,
+        "mean_accessibility": 0.4782481818181818,
+        "member_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:10:",
+            "res_name": "TYR",
+            "res_seq": 10
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:11:",
+            "res_name": "SER",
+            "res_seq": 11
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:12:",
+            "res_name": "ARG",
+            "res_seq": 12
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:13:",
+            "res_name": "HIS",
+            "res_seq": 13
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:14:",
+            "res_name": "PRO",
+            "res_seq": 14
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:15:",
+            "res_name": "ALA",
+            "res_seq": 15
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:22:",
+            "res_name": "PHE",
+            "res_seq": 22
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:24:",
+            "res_name": "ASN",
+            "res_seq": 24
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:96:",
+            "res_name": "ASP",
+            "res_seq": 96
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:97:",
+            "res_name": "ARG",
+            "res_seq": 97
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:98:",
+            "res_name": "ASP",
+            "res_seq": 98
+          }
+        ],
+        "members": [
+          "A:10:",
+          "A:11:",
+          "A:12:",
+          "A:13:",
+          "A:14:",
+          "A:15:",
+          "A:22:",
+          "A:24:",
+          "A:96:",
+          "A:97:",
+          "A:98:"
+        ],
+        "n_chemistry_seeds": 4,
+        "n_members": 11,
+        "orientation_coherence": 0.9169823747058605,
+        "pareto_front": 3,
+        "patch_coherence": 0.46674,
+        "residue_span_max": 98,
+        "residue_span_min": 10,
+        "seed_members": [
+          "A:11:",
+          "A:12:",
+          "A:13:",
+          "A:97:"
+        ],
+        "seed_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:11:",
+            "res_name": "SER",
+            "res_seq": 11
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:12:",
+            "res_name": "ARG",
+            "res_seq": 12
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:13:",
+            "res_name": "HIS",
+            "res_seq": 13
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:97:",
+            "res_name": "ARG",
+            "res_seq": 97
+          }
+        ],
+        "spatial_coherence": "fixed 8 A local neighbourhood around a chemistry-patch maximum"
+      },
+      {
+        "center_key": "A:50:",
+        "center_residue": {
+          "chain": "A",
+          "icode": "",
+          "key": "A:50:",
+          "res_name": "GLU",
+          "res_seq": 50
+        },
+        "chains": [
+          "A"
+        ],
+        "chemistry_support": 0.42857142857142855,
+        "classification": "alternative interface",
+        "diameter_A": 13.866649668893997,
+        "display_rank": 12,
+        "mean_accessibility": 0.4941885714285714,
+        "member_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:48:",
+            "res_name": "LYS",
+            "res_seq": 48
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:49:",
+            "res_name": "VAL",
+            "res_seq": 49
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:50:",
+            "res_name": "GLU",
+            "res_seq": 50
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:51:",
+            "res_name": "HIS",
+            "res_seq": 51
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:52:",
+            "res_name": "SER",
+            "res_seq": 52
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:66:",
+            "res_name": "TYR",
+            "res_seq": 66
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:67:",
+            "res_name": "TYR",
+            "res_seq": 67
+          }
+        ],
+        "members": [
+          "A:48:",
+          "A:49:",
+          "A:50:",
+          "A:51:",
+          "A:52:",
+          "A:66:",
+          "A:67:"
+        ],
+        "n_chemistry_seeds": 3,
+        "n_members": 7,
+        "orientation_coherence": 0.9120497526158852,
+        "pareto_front": 3,
+        "patch_coherence": 0.07164,
+        "residue_span_max": 67,
+        "residue_span_min": 48,
+        "seed_members": [
+          "A:48:",
+          "A:51:",
+          "A:52:"
+        ],
+        "seed_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:48:",
+            "res_name": "LYS",
+            "res_seq": 48
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:51:",
+            "res_name": "HIS",
+            "res_seq": 51
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:52:",
+            "res_name": "SER",
+            "res_seq": 52
+          }
+        ],
+        "spatial_coherence": "fixed 8 A local neighbourhood around a chemistry-patch maximum"
+      },
+      {
+        "center_key": "A:46:",
+        "center_residue": {
+          "chain": "A",
+          "icode": "",
+          "key": "A:46:",
+          "res_name": "ILE",
+          "res_seq": 46
+        },
+        "chains": [
+          "A"
+        ],
+        "chemistry_support": 0.3333333333333333,
+        "classification": "alternative interface",
+        "diameter_A": 13.232951067592243,
+        "display_rank": 13,
+        "mean_accessibility": 0.4511344444444445,
+        "member_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:38:",
+            "res_name": "ASP",
+            "res_seq": 38
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:40:",
+            "res_name": "LEU",
+            "res_seq": 40
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:41:",
+            "res_name": "LYS",
+            "res_seq": 41
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:44:",
+            "res_name": "GLU",
+            "res_seq": 44
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:45:",
+            "res_name": "ARG",
+            "res_seq": 45
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:46:",
+            "res_name": "ILE",
+            "res_seq": 46
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:47:",
+            "res_name": "GLU",
+            "res_seq": 47
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:48:",
+            "res_name": "LYS",
+            "res_seq": 48
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:49:",
+            "res_name": "VAL",
+            "res_seq": 49
+          }
+        ],
+        "members": [
+          "A:38:",
+          "A:40:",
+          "A:41:",
+          "A:44:",
+          "A:45:",
+          "A:46:",
+          "A:47:",
+          "A:48:",
+          "A:49:"
+        ],
+        "n_chemistry_seeds": 3,
+        "n_members": 9,
+        "orientation_coherence": 0.8908261841547332,
+        "pareto_front": 4,
+        "patch_coherence": 0.42383000000000004,
+        "residue_span_max": 49,
+        "residue_span_min": 38,
+        "seed_members": [
+          "A:41:",
+          "A:45:",
+          "A:48:"
+        ],
+        "seed_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:41:",
+            "res_name": "LYS",
+            "res_seq": 41
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:45:",
+            "res_name": "ARG",
+            "res_seq": 45
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:48:",
+            "res_name": "LYS",
+            "res_seq": 48
+          }
+        ],
+        "spatial_coherence": "fixed 8 A local neighbourhood around a chemistry-patch maximum"
+      },
+      {
+        "center_key": "A:65:",
+        "center_residue": {
+          "chain": "A",
+          "icode": "",
+          "key": "A:65:",
+          "res_name": "LEU",
+          "res_seq": 65
+        },
+        "chains": [
+          "A"
+        ],
+        "chemistry_support": 0.18181818181818182,
+        "classification": "alternative interface",
+        "diameter_A": 14.927605429903236,
+        "display_rank": 14,
+        "mean_accessibility": 0.342,
+        "member_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:24:",
+            "res_name": "ASN",
+            "res_seq": 24
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:26:",
+            "res_name": "TYR",
+            "res_seq": 26
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:51:",
+            "res_name": "HIS",
+            "res_seq": 51
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:52:",
+            "res_name": "SER",
+            "res_seq": 52
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:53:",
+            "res_name": "ASP",
+            "res_seq": 53
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:54:",
+            "res_name": "LEU",
+            "res_seq": 54
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:63:",
+            "res_name": "TYR",
+            "res_seq": 63
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:64:",
+            "res_name": "LEU",
+            "res_seq": 64
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:65:",
+            "res_name": "LEU",
+            "res_seq": 65
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:66:",
+            "res_name": "TYR",
+            "res_seq": 66
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:67:",
+            "res_name": "TYR",
+            "res_seq": 67
+          }
+        ],
+        "members": [
+          "A:24:",
+          "A:26:",
+          "A:51:",
+          "A:52:",
+          "A:53:",
+          "A:54:",
+          "A:63:",
+          "A:64:",
+          "A:65:",
+          "A:66:",
+          "A:67:"
+        ],
+        "n_chemistry_seeds": 2,
+        "n_members": 11,
+        "orientation_coherence": 0.828608630151992,
+        "pareto_front": 5,
+        "patch_coherence": 0.35345999999999994,
+        "residue_span_max": 67,
+        "residue_span_min": 24,
+        "seed_members": [
+          "A:51:",
+          "A:52:"
+        ],
+        "seed_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:51:",
+            "res_name": "HIS",
+            "res_seq": 51
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:52:",
+            "res_name": "SER",
+            "res_seq": 52
+          }
+        ],
+        "spatial_coherence": "fixed 8 A local neighbourhood around a chemistry-patch maximum"
+      }
+    ],
+    "primary_patches": [
+      {
+        "center_key": "A:17:",
+        "center_residue": {
+          "chain": "A",
+          "icode": "",
+          "key": "A:17:",
+          "res_name": "ASN",
+          "res_seq": 17
+        },
+        "chains": [
+          "A"
+        ],
+        "chemistry_support": 0.4,
+        "classification": "primary plausible interface",
+        "diameter_A": 12.42507264399959,
+        "display_rank": 1,
+        "mean_accessibility": 0.584497,
+        "member_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:15:",
+            "res_name": "ALA",
+            "res_seq": 15
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:16:",
+            "res_name": "GLU",
+            "res_seq": 16
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:17:",
+            "res_name": "ASN",
+            "res_seq": 17
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:18:",
+            "res_name": "GLY",
+            "res_seq": 18
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:19:",
+            "res_name": "LYS",
+            "res_seq": 19
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:20:",
+            "res_name": "SER",
+            "res_seq": 20
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:71:",
+            "res_name": "THR",
+            "res_seq": 71
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:72:",
+            "res_name": "PRO",
+            "res_seq": 72
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:73:",
+            "res_name": "THR",
+            "res_seq": 73
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:74:",
+            "res_name": "GLU",
+            "res_seq": 74
+          }
+        ],
+        "members": [
+          "A:15:",
+          "A:16:",
+          "A:17:",
+          "A:18:",
+          "A:19:",
+          "A:20:",
+          "A:71:",
+          "A:72:",
+          "A:73:",
+          "A:74:"
+        ],
+        "n_chemistry_seeds": 4,
+        "n_members": 10,
+        "orientation_coherence": 0.972165506193017,
+        "pareto_front": 1,
+        "patch_coherence": 0.81951,
+        "residue_span_max": 74,
+        "residue_span_min": 15,
+        "seed_members": [
+          "A:19:",
+          "A:20:",
+          "A:71:",
+          "A:73:"
+        ],
+        "seed_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:19:",
+            "res_name": "LYS",
+            "res_seq": 19
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:20:",
+            "res_name": "SER",
+            "res_seq": 20
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:71:",
+            "res_name": "THR",
+            "res_seq": 71
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:73:",
+            "res_name": "THR",
+            "res_seq": 73
+          }
+        ],
+        "spatial_coherence": "fixed 8 A local neighbourhood around a chemistry-patch maximum"
+      },
+      {
+        "center_key": "A:3:",
+        "center_residue": {
+          "chain": "A",
+          "icode": "",
+          "key": "A:3:",
+          "res_name": "ARG",
+          "res_seq": 3
+        },
+        "chains": [
+          "A"
+        ],
+        "chemistry_support": 0.5,
+        "classification": "primary plausible interface",
+        "diameter_A": 12.491567769216088,
+        "display_rank": 2,
+        "mean_accessibility": 0.5419475,
+        "member_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:1:",
+            "res_name": "ILE",
+            "res_seq": 1
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:29:",
+            "res_name": "GLY",
+            "res_seq": 29
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:2:",
+            "res_name": "GLN",
+            "res_seq": 2
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:31:",
+            "res_name": "HIS",
+            "res_seq": 31
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:32:",
+            "res_name": "PRO",
+            "res_seq": 32
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:3:",
+            "res_name": "ARG",
+            "res_seq": 3
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:4:",
+            "res_name": "THR",
+            "res_seq": 4
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:86:",
+            "res_name": "THR",
+            "res_seq": 86
+          }
+        ],
+        "members": [
+          "A:1:",
+          "A:29:",
+          "A:2:",
+          "A:31:",
+          "A:32:",
+          "A:3:",
+          "A:4:",
+          "A:86:"
+        ],
+        "n_chemistry_seeds": 4,
+        "n_members": 8,
+        "orientation_coherence": 0.9607392397442989,
+        "pareto_front": 1,
+        "patch_coherence": 0.6989799999999999,
+        "residue_span_max": 86,
+        "residue_span_min": 1,
+        "seed_members": [
+          "A:31:",
+          "A:3:",
+          "A:4:",
+          "A:86:"
+        ],
+        "seed_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:31:",
+            "res_name": "HIS",
+            "res_seq": 31
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:3:",
+            "res_name": "ARG",
+            "res_seq": 3
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:4:",
+            "res_name": "THR",
+            "res_seq": 4
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:86:",
+            "res_name": "THR",
+            "res_seq": 86
+          }
+        ],
+        "spatial_coherence": "fixed 8 A local neighbourhood around a chemistry-patch maximum"
+      },
+      {
+        "center_key": "A:56:",
+        "center_residue": {
+          "chain": "A",
+          "icode": "",
+          "key": "A:56:",
+          "res_name": "PHE",
+          "res_seq": 56
+        },
+        "chains": [
+          "A"
+        ],
+        "chemistry_support": 0.36363636363636365,
+        "classification": "primary plausible interface",
+        "diameter_A": 14.072136624809248,
+        "display_rank": 3,
+        "mean_accessibility": 0.4807390909090909,
+        "member_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:54:",
+            "res_name": "LEU",
+            "res_seq": 54
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:55:",
+            "res_name": "SER",
+            "res_seq": 55
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:56:",
+            "res_name": "PHE",
+            "res_seq": 56
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:57:",
+            "res_name": "SER",
+            "res_seq": 57
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:58:",
+            "res_name": "LYS",
+            "res_seq": 58
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:59:",
+            "res_name": "ASP",
+            "res_seq": 59
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:60:",
+            "res_name": "TRP",
+            "res_seq": 60
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:61:",
+            "res_name": "SER",
+            "res_seq": 61
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:62:",
+            "res_name": "PHE",
+            "res_seq": 62
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:63:",
+            "res_name": "TYR",
+            "res_seq": 63
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:64:",
+            "res_name": "LEU",
+            "res_seq": 64
+          }
+        ],
+        "members": [
+          "A:54:",
+          "A:55:",
+          "A:56:",
+          "A:57:",
+          "A:58:",
+          "A:59:",
+          "A:60:",
+          "A:61:",
+          "A:62:",
+          "A:63:",
+          "A:64:"
+        ],
+        "n_chemistry_seeds": 4,
+        "n_members": 11,
+        "orientation_coherence": 0.9744117630582962,
+        "pareto_front": 1,
+        "patch_coherence": 0.6672899999999999,
+        "residue_span_max": 64,
+        "residue_span_min": 54,
+        "seed_members": [
+          "A:55:",
+          "A:57:",
+          "A:58:",
+          "A:61:"
+        ],
+        "seed_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:55:",
+            "res_name": "SER",
+            "res_seq": 55
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:57:",
+            "res_name": "SER",
+            "res_seq": 57
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:58:",
+            "res_name": "LYS",
+            "res_seq": 58
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:61:",
+            "res_name": "SER",
+            "res_seq": 61
+          }
+        ],
+        "spatial_coherence": "fixed 8 A local neighbourhood around a chemistry-patch maximum"
+      },
+      {
+        "center_key": "A:43:",
+        "center_residue": {
+          "chain": "A",
+          "icode": "",
+          "key": "A:43:",
+          "res_name": "GLY",
+          "res_seq": 43
+        },
+        "chains": [
+          "A"
+        ],
+        "chemistry_support": 0.3333333333333333,
+        "classification": "primary plausible interface",
+        "diameter_A": 8.801001994235827,
+        "display_rank": 4,
+        "mean_accessibility": 0.515185,
+        "member_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:40:",
+            "res_name": "LEU",
+            "res_seq": 40
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:41:",
+            "res_name": "LYS",
+            "res_seq": 41
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:42:",
+            "res_name": "ASN",
+            "res_seq": 42
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:43:",
+            "res_name": "GLY",
+            "res_seq": 43
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:44:",
+            "res_name": "GLU",
+            "res_seq": 44
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:45:",
+            "res_name": "ARG",
+            "res_seq": 45
+          }
+        ],
+        "members": [
+          "A:40:",
+          "A:41:",
+          "A:42:",
+          "A:43:",
+          "A:44:",
+          "A:45:"
+        ],
+        "n_chemistry_seeds": 2,
+        "n_members": 6,
+        "orientation_coherence": 0.976892368054336,
+        "pareto_front": 1,
+        "patch_coherence": 0.056740000000000006,
+        "residue_span_max": 45,
+        "residue_span_min": 40,
+        "seed_members": [
+          "A:41:",
+          "A:45:"
+        ],
+        "seed_residues": [
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:41:",
+            "res_name": "LYS",
+            "res_seq": 41
+          },
+          {
+            "chain": "A",
+            "icode": "",
+            "key": "A:45:",
+            "res_name": "ARG",
+            "res_seq": 45
+          }
+        ],
+        "spatial_coherence": "fixed 8 A local neighbourhood around a chemistry-patch maximum"
+      }
+    ],
+    "scope": {
+      "benchmark_fitted_weights": false,
+      "models_adsorption_induced_unfolding": false,
+      "prediction_unit": "coarse protein surface region / interface patch",
+      "predicts_absolute_adsorption_free_energy": false,
+      "predicts_adsorption_amount": false,
+      "predicts_unique_orientation": false,
+      "residue_precision_claim": false
+    },
+    "structure_preparation": {
+      "available_chains_first_model": [
+        "A"
+      ],
+      "explicit_hydrogens_removed": true,
+      "hetero_residues_removed": true,
+      "input_models": 20,
+      "policy": "first_model_heavy_atom_selected_chains",
+      "selected_chain": "A",
+      "selected_model": 1
+    },
+    "version": "2.4.0-selected-parameters"
+  },
+  "model_version": "2.4.0-selected-parameters",
+  "prediction_input": {
+    "chain": "A",
+    "id": "b2m_mpa_au",
+    "pH": 7.0,
+    "pdb_id": "1JNJ",
+    "protein": "Human beta-2-microglobulin",
+    "surface": "mpa_au"
+  },
+  "selected_public_map": "anionic",
+  "structure_preparation": {
+    "available_chains_first_model": [
+      "A"
+    ],
+    "explicit_hydrogens_removed": true,
+    "hetero_residues_removed": true,
+    "input_models": 20,
+    "policy": "first_model_heavy_atom_selected_chains",
+    "selected_chain": "A",
+    "selected_model": 1
+  }
+}

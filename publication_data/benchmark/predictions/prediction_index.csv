@@ -1,0 +1,10 @@
+﻿id,protein,pdb_id,chain,surface,pH,selected_public_map,model_version,n_surface_residues,n_patches,n_front1_patches,raw_output,all_maps_output
+bsa_silica,Bovine serum albumin,4F5S,A,silica,8.0,anionic,2.4.0-selected-parameters,474,89,10,experimental_predictions/raw/bsa_silica.json,experimental_predictions/all_maps/bsa_silica_all_maps.json
+hsa_paa_fe3o4,Human serum albumin,2VUF,A,paa_fe3o4,6.2,anionic,2.4.0-selected-parameters,468,89,17,experimental_predictions/raw/hsa_paa_fe3o4.json,experimental_predictions/all_maps/hsa_paa_fe3o4_all_maps.json
+hcaii_silica_ph63,Human carbonic anhydrase II,2CBA,A,silica,6.3,anionic,2.4.0-selected-parameters,170,35,4,experimental_predictions/raw/hcaii_silica_ph63.json,experimental_predictions/all_maps/hcaii_silica_ph63_all_maps.json
+hcaii_silica_ph83,Human carbonic anhydrase II,2CBA,A,silica,8.3,anionic,2.4.0-selected-parameters,170,35,9,experimental_predictions/raw/hcaii_silica_ph83.json,experimental_predictions/all_maps/hcaii_silica_ph83_all_maps.json
+ubiquitin_citrate_au,Human ubiquitin,1UBQ,A,citrate_au,7.7,anionic,2.4.0-selected-parameters,61,11,5,experimental_predictions/raw/ubiquitin_citrate_au.json,experimental_predictions/all_maps/ubiquitin_citrate_au_all_maps.json
+b2m_mpa_au,Human beta-2-microglobulin,1JNJ,A,mpa_au,7.0,anionic,2.4.0-selected-parameters,85,14,4,experimental_predictions/raw/b2m_mpa_au.json,experimental_predictions/all_maps/b2m_mpa_au_all_maps.json
+asparaginase_alumoh,E. coli L-asparaginase II,3ECA,"A,B,C,D",alumoh,7.5,cationic,2.4.0-selected-parameters,731,162,21,experimental_predictions/raw/asparaginase_alumoh.json,experimental_predictions/all_maps/asparaginase_alumoh_all_maps.json
+transferrin_ps,Human transferrin,1SUV,"C,E",polystyrene,7.4,hydrophobic,2.4.0-selected-parameters,450,81,6,experimental_predictions/raw/transferrin_ps.json,experimental_predictions/all_maps/transferrin_ps_all_maps.json
+catalase_ps,Bovine catalase,1TGU,"A,B,C,D",polystyrene,7.4,hydrophobic,2.4.0-selected-parameters,1291,256,17,experimental_predictions/raw/catalase_ps.json,experimental_predictions/all_maps/catalase_ps_all_maps.json
