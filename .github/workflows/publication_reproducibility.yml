@@ -44,9 +44,11 @@ jobs:
             echo "Publication data already up to date."
           else
             git commit -m "Generate frozen publication data [skip ci]"
-            git push
+            git pull --rebase origin publication-reproducibility-cleanup
+            git push origin HEAD:publication-reproducibility-cleanup
           fi
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: interfacescout-publication-data
           path: publication_data
