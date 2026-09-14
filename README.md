@@ -2,8 +2,6 @@
 
 InterfaceScout is an open-source tool for identifying and prioritizing plausible protein-side contact regions at material interfaces from a protein structure and solution conditions.
 
-The current application contains a single backend and a single frontend. There are no legacy `v1`/`v2` application folders.
-
 The program prepares the selected protein structure once and calculates 11 canonical surface-chemistry maps. Candidate surface patches are prioritized using chemistry support, side-chain accessibility, patch coherence, and coarse orientation coherence without material-specific fitted weights.
 
 ## Surface-chemistry maps
@@ -75,51 +73,25 @@ After setup, `start.sh` can be used to launch InterfaceScout again.
 
 The local application opens at `http://localhost:8000`.
 
-## Repository structure
-
-```text
-InterfaceScout/
-├── backend/
-│   ├── app.py
-│   ├── core.py
-│   ├── interface_engine.py
-│   ├── coarse_patch.py
-│   ├── geometry.py
-│   ├── model_settings.py
-│   ├── prepare.py
-│   └── requirements.txt
-├── frontend/
-│   └── index.html
-├── examples/
-├── run_local.bat
-├── run_local.sh
-├── start.command
-├── start.sh
-├── LICENSE
-└── README.md
-```
-
 ## Examples
 
-The `examples/` directory contains outputs generated with the current InterfaceScout application for the PDB structures used in the manuscript evaluation:
+The `examples/` directory contains only the structures reported in the manuscript.
+
+Structures used for parameter robustness:
 
 ```text
-examples/
-├── 4F5S/
-├── 2VUF/
-├── 2CBA/
-│   ├── pH_6.3/
-│   └── pH_8.3/
-├── 1UBQ/
-├── 1JNJ/
-├── 3ECA/
-├── 1SUV/
-└── 1TGU/
+1CRN  1R69  1SHG  2PPN  4AKE  1OMP  1TIM  5CSC
 ```
 
-Each condition contains only the same user-facing files produced by InterfaceScout: the complete Excel result workbook and the B-factor PDB for the chemistry map used for that example.
+Structures used for literature comparison:
 
-## Current fixed settings
+```text
+4F5S  2VUF  2CBA (pH 6.3 and 8.3)  1UBQ  1JNJ  3ECA  1SUV  1TGU
+```
+
+Each condition contains only the same user-facing files produced by InterfaceScout: the complete Excel result workbook and the B-factor PDB for the displayed chemistry map.
+
+## Fixed settings used in the manuscript
 
 - Shrake–Rupley probe radius: **1.40 Å**
 - Shrake–Rupley sampling: **200 points/atom**
