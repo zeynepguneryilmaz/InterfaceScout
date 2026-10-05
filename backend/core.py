@@ -18,13 +18,18 @@ from Bio.PDB.Polypeptide import is_aa
 from Bio.PDB.SASA import ShrakeRupley
 from pydantic import BaseModel, Field
 
-APP_VERSION = "1.0-publication"
-SC_RSA_THRESHOLD = 0.05
-SASA_PROBE_A = 1.40
-SASA_POINTS = 200
-PATCH_RADII_A = (6.0, 9.0)
-COARSE_PATCH_RADIUS_A = 8.0
-PKA_SENSITIVITY_WINDOW = 1.0
+from model_settings import (
+    PUBLIC_VERSION,
+    SC_RSA_THRESHOLD,
+    SASA_PROBE_A,
+    SASA_POINTS,
+    MULTISCALE_RADII_A,
+    COARSE_PATCH_RADIUS_A,
+    PKA_SENSITIVITY_WINDOW,
+)
+
+APP_VERSION = PUBLIC_VERSION
+PATCH_RADII_A = MULTISCALE_RADII_A
 
 SIDECHAIN_REF_ASA: Dict[str, float] = {
     "ALA": 69.23, "ARG": 200.35, "ASN": 106.25, "ASP": 102.06,
