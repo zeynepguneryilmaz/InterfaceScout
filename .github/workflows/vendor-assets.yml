@@ -1,0 +1,37 @@
+name: Vendor pinned frontend assets
+
+on:
+  push:
+    branches: [publication-hardening-2026-10-05]
+    paths:
+      - '.github/workflows/vendor-assets.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: publication-hardening-2026-10-05
+      - name: Download pinned browser dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p frontend/vendor
+          curl -fL --retry 3 https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.1.0/3Dmol-min.js -o frontend/vendor/3Dmol-2.1.0.min.js
+          curl -fL --retry 3 https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js -o frontend/vendor/xlsx-0.20.3.full.min.js
+          test -s frontend/vendor/3Dmol-2.1.0.min.js
+          test -s frontend/vendor/xlsx-0.20.3.full.min.js
+      - name: Commit vendored assets
+        shell: bash
+        run: |
+          git config user.name "Ö. Zeynep Güner Yılmaz"
+          git config user.email "ozdezeynepg@gmail.com"
+          git add frontend/vendor
+          if ! git diff --cached --quiet; then
+            git commit -m "Vendor pinned frontend dependencies"
+            git push origin HEAD:publication-hardening-2026-10-05
+          fi
