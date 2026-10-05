@@ -1,0 +1,10 @@
+﻿case_id,analysis_set,protein,evidence_resolution,first_direct_overlap_position,first_near_5A_position,first_near_8A_position,top3_near_8A_hit,top5_near_8A_hit,top5_direct_overlap_hit,top3_near_8A_recall,top5_near_8A_recall,top5_overlap_recall,best_front1_near_8A_recall,null_median_near_8A_recall,null_q90_near_8A_recall,doi
+bsa_silica,primary,Bovine serum albumin,broader_region,2,2,2,True,True,True,0.1276595744680851,0.1276595744680851,0.03723404255319149,0.1276595744680851,0.0,0.1367021276595744,10.1016/j.jcis.2005.03.064
+hsa_paa_fe3o4,primary,Human serum albumin,peptide_region,30,30,3,True,True,False,0.075,0.15,0.0,0.075,0.0,0.2,10.1021/ac201889j
+hcaii_silica_ph63,primary,Human carbonic anhydrase II,residue_anchor,2,2,2,True,True,True,1.0,1.0,1.0,1.0,0.0,0.0,10.1529/biophysj.104.054809
+hcaii_silica_ph83,primary,Human carbonic anhydrase II,residue_anchor,8,8,3,True,True,False,1.0,1.0,0.0,1.0,0.0,0.0,10.1529/biophysj.104.054809
+ubiquitin_citrate_au,primary,Human ubiquitin,localized_residue_region,4,1,1,True,True,True,0.3333333333333333,1.0,0.16666666666666666,0.8333333333333334,0.0,1.0,10.1021/nl101746v
+b2m_mpa_au,primary,Human beta-2-microglobulin,localized_residue_set,2,2,2,True,True,True,0.8,0.8,0.6,0.7,0.2,0.7600000000000009,10.1039/C8TB01129J
+asparaginase_alumoh,primary,E. coli L-asparaginase II,broader_region,7,4,1,True,True,False,0.14754098360655737,0.16393442622950818,0.0,0.3114754098360656,0.03278688524590164,0.2786885245901639,10.1038/s41541-019-0115-7
+transferrin_ps,secondary,Human transferrin,peptide_region,8,8,8,False,False,False,0.0,0.0,0.0,0.0,0.0,0.16666666666666666,10.1021/acs.analchem.9b00482
+catalase_ps,secondary,Bovine catalase,peptide_region,14,14,13,False,False,False,0.0,0.0,0.0,0.2903225806451613,0.0,0.22580645161290322,10.1021/acs.analchem.9b00482

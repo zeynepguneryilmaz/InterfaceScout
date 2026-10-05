@@ -1,0 +1,46 @@
+name: Cross-platform publication CI
+
+on:
+  push:
+    branches: [main, publication-hardening-2026-10-05]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.10", "3.11", "3.12"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install pinned backend dependencies
+        run: python -m pip install --disable-pip-version-check -r backend/requirements.txt
+      - name: Publication smoke tests
+        run: python -m unittest discover -s tests -v
+      - name: Frozen validation checks
+        run: python validation/verify_publication.py
+      - name: Unix launcher checks
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          bash run_local.sh --check
+          bash start.sh --check
+          bash start.command --check
+      - name: Windows launcher checks
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          call run_local.bat --check
+          call start.bat --check

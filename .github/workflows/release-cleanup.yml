@@ -1,0 +1,80 @@
+name: Publication release cleanup
+
+on:
+  workflow_run:
+    workflows: ["Cross-platform publication CI"]
+    types: [completed]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Create publication tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Ö. Zeynep Güner Yılmaz"
+          git config user.email "ozdezeynepg@gmail.com"
+          if ! git rev-parse "v1.0.0" >/dev/null 2>&1; then
+            git tag -a v1.0.0 -m "InterfaceScout publication release v1.0.0"
+            git push origin v1.0.0
+          fi
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! gh release view v1.0.0 >/dev/null 2>&1; then
+            gh release create v1.0.0               --title "InterfaceScout v1.0.0 — publication release"               --notes "Frozen publication release. Uses 200-point Shrake–Rupley sampling, 6/9 Å multiscale aggregation radii selected on the adsorption-label-free development panel, and a predefined 8 Å coarse contact-region scale. Includes cross-platform CI, frozen validation evidence, local browser dependencies, and reproducibility checks."
+          fi
+
+      - name: Remove stale development branches
+        shell: bash
+        run: |
+          set -euo pipefail
+          branches=(
+            "all-maps-ui"
+            "artifact/pdb-snapshot"
+            "artifact/publication-benchmark"
+            "bad2-benchmark"
+            "chain-filter-viewer"
+            "cleanup/v2-tree"
+            "development/v2.0.0"
+            "development/v5.2-core-freeze"
+            "development/v5.2-electrostatic-steering"
+            "development/v5.3-established-physics"
+            "excel-pdb-exports"
+            "flatten-current-app"
+            "freeze/v5.1-canonical-20260904"
+            "generate-manuscript-examples"
+            "interactive-3d-viewer"
+            "manuscript-validation-freeze"
+            "publication-homogeneity-audit"
+            "publication-reproducibility-cleanup"
+            "publication-v2-cleanup"
+            "release/v1.0.0"
+            "simplify-examples"
+            "structural-context-maps"
+            "validation/interfacescout-external-benchmark-20260903"
+            "validation/v2-explicit-harrison-20260904"
+            "validation/v2-literature-20260904"
+            "validation/v52-heldout-lysozyme-pe-20260904"
+            "validation-study"
+            "publication-hardening-2026-10-05"
+          )
+          for b in "${branches[@]}"; do
+            if git ls-remote --exit-code --heads origin "$b" >/dev/null 2>&1; then
+              git push origin --delete "$b"
+            fi
+          done
