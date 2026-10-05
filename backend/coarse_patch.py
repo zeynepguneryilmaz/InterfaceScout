@@ -12,8 +12,9 @@ from geometry import (
     patch_orientation_coherence,
     patch_diameter_A,
 )
+from model_settings import COARSE_PATCH_RADIUS_A
 
-PATCH_SCALE_A = 8.0
+PATCH_SCALE_A = COARSE_PATCH_RADIUS_A
 
 
 def _local_maxima(channel: dict, geometry: dict) -> List[dict]:
