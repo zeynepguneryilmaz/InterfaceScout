@@ -1,0 +1,19 @@
+NPUNID,NPID,Sample_num,Notes,BatchID,Raw_FileID,Zeta Potential,Core_PS,Core_Iron_Oxide,Core_Iron_Oxide_Au,Core Material,Ligands,Ligand_Carboxylate,Ligand_PEG_two_k,Ligand_Citrate,Ligand_PEI,Ligand_PVP,Ligand_PEG_five_k,Surface_Ligand,Dtem,Dh_functionalized,Centrifuged,ProteinID,Protein Source,NP_incubation Concentration (mg/mL),Incubation Concentration (mg/ml),notes
+17,10,31,200_PS Carb_10,3,101054,-63,1,0,0,8,Carboxylate,1,0,0,0,0,0,1,200,221,1,1,FBS,4.0,4,200_PS Carb_10
+18,11,32,200_PS Carb_100,3,101055,-63,1,0,0,8,Carboxylate,1,0,0,0,0,0,1,200,221,1,1,FBS,4.0,40,200_PS Carb_100
+19,12,33,small_Citrate_10,3,101056,-42,0,1,0,1,Citrate,0,0,1,0,0,0,3,82,149,0,1,FBS,5.0,4,small_Citrate_10
+20,13,34,large_Citrate_10,3,101057,-49,0,1,0,1,Citrate,0,0,1,0,0,0,3,182,229,0,1,FBS,5.0,4,large_Citrate_10
+21,14,35,small_PEI_10,3,101058,29,0,1,0,1,Citrate_PEI,0,0,0,1,0,0,6,82,226,0,1,FBS,5.0,4,small_PEI_10
+22,15,36,large_PEI_10,3,101059,39,0,1,0,1,Citrate_PEI,0,0,0,1,0,0,6,182,282,0,1,FBS,5.0,4,large_PEI_10
+23,16,37,large_PVP@AU_100,3,101060,-11,0,0,1,1,Citrate_PEI_Au_PVP,0,0,0,0,1,0,7,182,316,0,1,FBS,5.0,40,large_PVP@AU_100
+24,17,38,small_PVP@AU_10,3,101061,-12,0,0,1,1,Citrate_PEI_Au_PVP,0,0,0,0,1,0,7,98,271,0,1,FBS,5.0,4,small_PVP@AU_10
+25,18,39,small_PVP@AU_100,3,101062,-12,0,0,1,1,Citrate_PEI_Au_PVP,0,0,0,0,1,0,7,98,271,0,1,FBS,5.0,40,small_PVP@AU_100
+26,19,40,large_Citrate_100,3,101063,-49,0,1,0,1,Citrate,0,0,1,0,0,0,3,182,218,0,1,FBS,5.0,40,large_Citrate_100
+27,20,41,large_PEI_100,3,101064,39,0,1,0,1,Citrate_PEI,0,0,0,1,0,0,6,182,282,0,1,FBS,5.0,40,large_PEI_100
+28,21,42,small_Citrate_100,3,101065,-42,0,1,0,1,Citrate,0,0,1,0,0,0,3,82,151,0,1,FBS,5.0,40,small_Citrate_100
+29,22,43,small_PEI_100,3,101066,29,0,1,0,1,Citrate_PEI,0,0,0,1,0,0,6,82,288,0,1,FBS,5.0,40,small_PEI_100
+30,23,44,large_PVP@AU_10,3,101067,-11,0,0,1,1,Citrate_PEI_Au_PVP,0,0,0,0,1,0,7,244,316,0,1,FBS,5.0,4,large_PVP@AU_10
+31,24,45,large_PEG@Au_100,3,101068,-3,0,0,1,1,Citrate_PEI_Au_PEG5k,0,0,0,0,0,1,5,244,609,0,1,FBS,5.0,40,large_PEG@Au_100
+32,25,46,large_PEI@Au_100,3,101069,12,0,0,1,1,Citrate_PEI_Au_PEI,0,0,0,1,0,0,6,244,291,0,1,FBS,5.0,40,large_PEI@Au_100
+33,26,47,small_PEI@Au_100,3,101070,12,0,0,1,1,Citrate_PEI_Au_PEI,0,0,0,1,0,0,6,98,229,0,1,FBS,5.0,40,small_PEI@Au_100
+34,27,48,200_PS Carb@ PEG_100,3,101071,-7,1,0,0,8,Carboxylate_PEG2k,0,1,0,0,0,0,4,200,266,1,1,FBS,2.4,40,200_PS Carb@ PEG_100
