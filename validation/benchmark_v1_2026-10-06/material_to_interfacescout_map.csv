@@ -1,142 +1,149 @@
-core_material,surface_modification,modification_type,reported_modification_charge,n_pcdb_experiments,anionic,cationic,hydrophobic,pi_aromatic,hbond_donor,hbond_acceptor,metal_oxide,calcium_phosphate_charged_sites,transition_metal_coordination,soft_metal_sulfur_affinity,phosphate_rich,mapping_status,mapping_confidence,mapping_rule,manual_override
-ADM105,No Modification,No Modification,No Modification,1,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,
-ADM105,pDNA,Other,Negative,1,1,0,0,0,0,0,0,0,0,0,1,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; phosphate/phosphonate/nucleic-acid-rich surface,
-ADM70,No Modification,No Modification,No Modification,1,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,
-ADM70,pDNA,Other,Negative,1,1,0,0,0,0,0,0,0,0,0,1,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; phosphate/phosphonate/nucleic-acid-rich surface,
-Ag,"(11-Mercaptoundecyl)-N,N,N-trimethylammonium",Alkylthiols,Positive,1,0,1,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; calcium/phosphate surface,
-Ag,1-Dodecanethiol,Alkylthiols,Positive,1,0,1,1,0,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface,
-Ag,11-Amino-1-undecanethiol,Amines,Positive,1,0,1,0,0,1,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; surface contains plausible H-bond donor groups,
-Ag,16-Mercaptohexadecanoic acid,Alkylthiols,Negative,1,1,0,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; calcium/phosphate surface,
-Ag,2-Mercaptoethanesulfonate,Alkylthiols,Negative,1,1,0,0,0,0,1,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond acceptor groups; calcium/phosphate surface,
-Ag,4-Mercaptobenzoic acid,Alkylthiols,Negative,1,1,0,0,1,0,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; graphitic/aromatic surface; calcium/phosphate surface,
-Ag,Amino Acid,Amino Acid,Negative,1,1,1,0,0,1,0,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; positive/amine-rich surface; surface contains plausible H-bond donor groups,
-Ag,Branched polyethyleneimine,Polymeric,Neutral,2,0,1,0,0,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface,
-Ag,Citrate,Carboxylic Acids,Negative,15,1,0,0,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond acceptor groups,
-Ag,Hexadecylamine,Amines,Positive,1,0,1,1,0,1,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface; surface contains plausible H-bond donor groups,
-Ag,Lipoic Acid,Alkylthiols,Negative,1,1,0,0,0,0,0,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface,
-Ag,Mercaptoacetic acid,Alkylthiols,Negative,1,1,0,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; calcium/phosphate surface,
-Ag,No Modification,No Modification,No Modification,2,0,0,0,0,0,0,0,0,0,1,0,mapped,rule_based_medium,uncoated soft-metal surface,
-Ag,PEG,Polymeric,Neutral,3,0,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Ag,Polyvinyl Alcohol,Polymeric,Negative,1,1,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Ag,Polyvinyl Pyrrolidone,Polymeric,Neutral,14,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,unmapped,,
-Ag,Stearic acid,Carboxylic Acids,Negative,1,1,0,1,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; surface contains plausible H-bond acceptor groups,
-Ag,Sulfide,Sulfur-Based,Negative,2,1,0,0,0,0,0,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface,
-Au,"(11-Mercaptoundecyl)-N,N,N-trimethylammonium",Alkylthiols,Positive,3,0,1,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; calcium/phosphate surface,
-Au,(11-Mercaptoundecyl)tetra(ethylene glycol),Alkylthiols,Neutral,1,0,0,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,calcium/phosphate surface,
-Au,1-Dodecanethiol,Alkylthiols,Positive,12,0,1,1,0,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface,
-Au,11-Amino-1-undecanethiol,Alkylthiols,Positive,1,0,1,0,0,1,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; surface contains plausible H-bond donor groups,
-Au,11-Amino-1-undecanethiol,Amines,Positive,2,0,1,0,0,1,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; surface contains plausible H-bond donor groups,
-Au,11-Mercaptoundecanoic acid,Alkylthiols,Negative,2,1,0,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; calcium/phosphate surface,
-Au,16-Mercaptohexadecanoic acid,Alkylthiols,Negative,2,1,0,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; calcium/phosphate surface,
-Au,2-Mercaptoethanesulfonate,Alkylthiols,Negative,1,1,0,0,0,0,1,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond acceptor groups; calcium/phosphate surface,
-Au,2-Napthalenethiol,Alkylthiols,Negative,10,1,0,0,1,0,0,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; graphitic/aromatic surface,
-Au,3-Mercaptopropionic acid,Alkylthiols,Negative,3,1,0,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; calcium/phosphate surface,
-Au,4-Mercaptobenzoic acid,Alkylthiols,Negative,2,1,0,0,1,0,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; graphitic/aromatic surface; calcium/phosphate surface,
-Au,"5,5′-Dithiobis(2-nitrobenzoic acid)",Alkylthiols,Negative,2,1,0,0,0,0,0,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface,
-Au,6-Amino-1-hexanethiol,Amines,Positive,1,0,1,0,0,1,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; surface contains plausible H-bond donor groups,
-Au,6-Mercaptohexanoic acid,Alkylthiols,Negative,1,1,0,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; calcium/phosphate surface,
-Au,Amino Acid,Amino Acid,Negative,15,1,1,0,0,1,0,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; positive/amine-rich surface; surface contains plausible H-bond donor groups,
-Au,Bis(p-sulfonatophenyl)phenylphosphine,Other,Negative,2,1,0,0,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond acceptor groups,
-Au,Branched polyethyleneimine,Polymeric,Neutral,2,0,1,0,0,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface,
-Au,Citrate,Carboxylic Acids,Negative,6,1,0,0,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond acceptor groups,
-Au,Hexadecylamine,Amines,Positive,2,0,1,1,0,1,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface; surface contains plausible H-bond donor groups,
-Au,Hexadecyltrimethylammonium bromide,Surfactant,Positive,2,0,1,1,0,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface,
-Au,Lipoic Acid,Alkylthiols,Positive,2,0,1,0,0,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface,
-Au,Lipoic Acid,Alkylthiols,Negative,2,1,0,0,0,0,0,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface,
-Au,Mercaptoacetic acid,Alkylthiols,Negative,1,1,0,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; calcium/phosphate surface,
-Au,Mercaptosuccinic acid,Alkylthiols,Negative,1,1,0,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; calcium/phosphate surface,
-Au,N-(2-Mercaptopropionyl)glycine,Amino Acid,Negative,1,1,1,0,0,1,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; positive/amine-rich surface; surface contains plausible H-bond donor groups; calcium/phosphate surface,
-Au,N-(2-Mercaptopropionyl)glycine,Alkylthiols,Negative,1,1,0,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; calcium/phosphate surface,
-Au,N-Acetyl-L-cysteine,Amino Acid,Negative,2,1,1,0,0,1,0,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; positive/amine-rich surface; surface contains plausible H-bond donor groups,
-Au,Octadecylamine,Amines,Positive,2,0,1,1,0,1,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface; surface contains plausible H-bond donor groups,
-Au,PEG,Polymeric,Neutral,18,0,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Au,Peptide sequence 'CALNN',Peptide,Negative,2,1,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Au,Peptide sequence 'CFGAILS',Peptide,Negative,1,1,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Au,Peptide sequence 'CVVIT',Peptide,Negative,1,1,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Au,Pluronic F-127,Other,Negative,1,1,0,0,0,1,0,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond donor groups,
-Au,Poly(vinylpyrrolidone),Polymeric,Negative,1,1,0,0,0,0,0,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface,
-Au,Polyethyleneimine,Polymeric,Neutral,2,0,1,0,0,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface,
-Au,Polyvinyl Alcohol,Polymeric,Negative,2,1,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Au,Polyvinyl Pyrrolidone,Polymeric,Neutral,2,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,unmapped,,
-Au,Stearic acid,Carboxylic Acids,Negative,1,1,0,1,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; surface contains plausible H-bond acceptor groups,
-Au,Thiolated poly(allylamine),Polymeric,Positive,1,0,1,0,0,1,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; surface contains plausible H-bond donor groups,
-Au,Thiolated poly(ethyleneimine),Polymeric,Positive,2,0,1,0,0,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface,
-Au,Tween-20,Polymeric,Negative,1,1,0,0,0,1,0,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond donor groups,
-Carbon,COOH,Carboxylic Acids,Negative,1,1,0,0,1,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; graphitic/aromatic surface; surface contains plausible H-bond acceptor groups,
-Chol-DC,No Modification,No Modification,No Modification,4,0,0,1,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,nonpolar/polymer/alkyl surface,
-CHOL-PC,No Modification,No Modification,No Modification,1,0,0,1,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,nonpolar/polymer/alkyl surface,
-DC-Chol-DOPE,No Modification,No Modification,No Modification,11,0,0,1,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,nonpolar/polymer/alkyl surface,
-DC-Chol,Cholesterol,Lipid,Neutral,1,0,0,1,0,0,0,0,0,0,0,0,mapped,rule_based_medium,nonpolar/polymer/alkyl surface,
-DC-Chol,DOPE,Lipid,Neutral,4,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,unmapped,,
-DOPC-DOPE-PEG-DSPC-DPPC,No Modification,No Modification,No Modification,2,0,0,0,0,1,1,0,0,0,0,0,ambiguous_unmapped,low,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-DOPG-DOPA,No Modification,No Modification,No Modification,4,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,
-DOPG,No Modification,No Modification,No Modification,1,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,
-DOTAP-CHOL-DPPC,No Modification,No Modification,No Modification,1,0,0,1,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,nonpolar/polymer/alkyl surface,
-DOTAP-CHOL-DSPC,No Modification,No Modification,No Modification,1,0,0,1,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,nonpolar/polymer/alkyl surface,
-DOTAP-CHOL-PC,No Modification,No Modification,No Modification,1,0,0,1,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,nonpolar/polymer/alkyl surface,
-DOTAP-Chol,No Modification,No Modification,No Modification,3,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,
-DOTAP-DC-Chol,No Modification,No Modification,No Modification,18,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,
-DOTAP-DC-Chol,PEG,Polymeric,Neutral,6,0,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-DOTAP-DOPC-DC-Chol-DOPE/DOPE-PEG,PEG,Polymeric,No Modification,3,0,0,1,0,1,1,0,0,0,0,0,mapped,rule_based_medium,nonpolar/polymer/alkyl surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-DOTAP-DOPC-DC-Chol-DOPE,No Modification,No Modification,No Modification,1,0,0,1,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,nonpolar/polymer/alkyl surface,
-DOTAP-DOPE,No Modification,No Modification,No Modification,3,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,
-DOTAP-DSPC-Chol,No Modification,No Modification,No Modification,1,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,
-DOTAP/DNA,No Modification,No Modification,No Modification,4,0,0,0,0,0,0,0,0,0,0,1,ambiguous_unmapped,low,phosphate/phosphonate/nucleic-acid-rich surface,
-DOTAP/DOPC/DC-Chol/DOPE/DOPE-PEG2k,PEG,Polymeric,Neutral,1,0,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-DOTAP,Cholesterol,Carboxylic Acids,Neutral,1,1,0,1,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; surface contains plausible H-bond acceptor groups,
-DOTAP,DOPE,Lipid,Neutral,1,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,unmapped,,
-DOTAP,No Modification,No Modification,No Modification,3,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,
-DOTAP,PEG,Polymeric,Neutral,1,0,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-DSPC-Chol,DSPE-MPEG,Lipid,Neutral,3,0,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-EMT-Zeolite,No Modification,No Modification,No Modification,12,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,
-FAU-Zeolite,No Modification,No Modification,No Modification,12,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,
-G-Rich DNA,No Modification,No Modification,No Modification,1,0,0,0,0,0,0,0,0,0,0,1,ambiguous_unmapped,low,phosphate/phosphonate/nucleic-acid-rich surface,
-Graphite,No Modification,No Modification,No Modification,1,0,0,0,1,0,0,0,0,0,0,0,mapped,rule_based_medium,graphitic/aromatic surface,
-HSPC-Chol,DPSE-MPEG,Lipid,Neutral,3,0,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Iron Oxide,Citrate,Carboxylic Acids,Negative,2,1,0,0,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond acceptor groups,
-Iron Oxide,No Modification,No Modification,No Modification,4,0,0,0,0,0,1,1,0,1,0,0,mapped,rule_based_medium,surface contains plausible H-bond acceptor groups; oxide-like accessible surface (InterfaceScout oxide channel includes silica-like oxide chemistry); uncoated transition-metal-containing surface; coordination accessibility plausible,
-Iron Oxide,Oleate,Carboxylic Acids,Negative,2,1,0,1,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; surface contains plausible H-bond acceptor groups,
-Iron Oxide,PEG,Polymeric,Neutral,1,0,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Iron Oxide,pHILP,Peptide,Neutral,1,0,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Iron Oxide,Silica,Silicon-Based,Neutral,2,0,0,0,0,0,1,1,0,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond acceptor groups; oxide-like accessible surface (InterfaceScout oxide channel includes silica-like oxide chemistry),
-Latex,PS-Sulfonate,Polymeric,Negative,2,1,0,1,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; surface contains plausible H-bond acceptor groups,
-PEG,No Modification,No Modification,No Modification,4,0,0,0,0,1,1,0,0,0,0,0,ambiguous_unmapped,low,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Poly-T DNA,No Modification,No Modification,No Modification,1,0,0,0,0,0,0,0,0,0,0,1,ambiguous_unmapped,low,phosphate/phosphonate/nucleic-acid-rich surface,
-Polyoxyethylene (20) sorbitan monolaurate,No Modification,No Modification,No Modification,6,0,0,0,0,1,1,0,0,0,0,0,ambiguous_unmapped,low,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Polyoxyethylene (21) sorbitan monooleate:Polyoxyethylene (80) sorbitan monooleate,No Modification,No Modification,No Modification,6,1,0,1,0,1,1,0,0,0,0,0,ambiguous_unmapped,low,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Polyoxyethylene (21) sorbitan monooleate,No Modification,No Modification,No Modification,6,1,0,1,0,1,1,0,0,0,0,0,ambiguous_unmapped,low,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Polyoxyethylene (80) sorbitan monooleate,No Modification,No Modification,No Modification,6,1,0,1,0,1,1,0,0,0,0,0,ambiguous_unmapped,low,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Polystyrene,CHAIYPRH (LT7) peptide,Peptide,Positive,1,0,1,1,1,1,1,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Polystyrene,Citrate,Carboxylic Acids,Negative,2,1,0,1,1,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond acceptor groups,
-Polystyrene,COOH,Carboxylic Acids,Negative,12,1,0,1,1,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond acceptor groups,
-Polystyrene,"hrpyiahc, all D-form amino acids (DT7)",Amino Acid,Positive,1,0,1,1,1,1,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond donor groups,
-Polystyrene,Lutensol AT50,Surfactant,Neutral,1,0,0,1,1,0,0,0,0,0,0,0,mapped,rule_based_medium,nonpolar/polymer/alkyl surface; graphitic/aromatic surface,
-Polystyrene,Lutensol AT50 + 0.01% CTMA-Cl,Surfactant,Neutral,1,0,1,1,1,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface,
-Polystyrene,Lutensol AT50 + 0.1% CTMA-Cl,Surfactant,Neutral,1,0,1,1,1,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface,
-Polystyrene,Lutensol AT50 + 0.2% CTMA-Cl,Surfactant,Neutral,1,0,1,1,1,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface,
-Polystyrene,Lutensol AT50 + 0.3% CTMA-Cl,Surfactant,Neutral,1,0,1,1,1,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface,
-Polystyrene,NH2,Amines,Positive,12,0,1,1,1,1,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond donor groups,
-Polystyrene,No Modification,No Modification,No Modification,41,0,0,1,1,0,0,0,0,0,0,0,mapped,rule_based_medium,nonpolar/polymer/alkyl surface; graphitic/aromatic surface,
-Polystyrene,PEG,Polymeric,Neutral,4,0,0,1,1,1,1,0,0,0,0,0,mapped,rule_based_medium,nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Polystyrene,PEG + 0.3% CTMA-Cl,Polymeric,Neutral,1,0,1,1,1,1,1,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Polystyrene,Phosphonate,Phosphorous-based,Negative,1,1,0,1,1,0,1,0,0,0,0,1,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond acceptor groups; phosphate/phosphonate/nucleic-acid-rich surface,
-Polystyrene,phosphonate-Lutensol AT50,Phosphorous-based,Negative,1,1,0,1,1,0,1,0,0,0,0,1,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond acceptor groups; phosphate/phosphonate/nucleic-acid-rich surface,
-Polystyrene,phosphonate-SDS,Phosphorous-based,Negative,1,1,0,1,1,0,1,0,0,0,0,1,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond acceptor groups; phosphate/phosphonate/nucleic-acid-rich surface,
-Polystyrene,Poly(Ethyl Ethylene Phosphate),Polymeric,Neutral,2,0,0,1,1,0,1,0,0,0,0,1,mapped,rule_based_medium,nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond acceptor groups; phosphate/phosphonate/nucleic-acid-rich surface,
-Polystyrene,sulfate,Sulfur-Based,Negative,1,1,0,1,1,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond acceptor groups,
-Polystyrene,Sulfonate,Sulfur-Based,Negative,1,1,0,1,1,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond acceptor groups,
-Polystyrene,Transferrin,Peptide,Negative,1,1,0,1,1,1,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Shingosine-Chol-DSPC,No Modification,No Modification,No Modification,1,0,0,1,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,nonpolar/polymer/alkyl surface,
-Silica,"1,7-Octadiene",Small Hydrocarbons,Neutral,2,0,0,1,1,0,1,0,0,0,0,0,mapped,rule_based_medium,nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond acceptor groups,
-Silica,2-Methyl-2-Oxazoline,Small Hydrocarbons,Neutral,2,0,0,1,1,0,1,0,0,0,0,0,mapped,rule_based_medium,nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond acceptor groups,
-Silica,Acrylic Acid,Carboxylic Acids,Negative,2,1,0,0,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond acceptor groups,
-Silica,Allylamine,Amines,Positive,2,0,1,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Silica,COOH,Carboxylic Acids,Negative,40,1,0,0,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond acceptor groups,
-Silica,COOH-GG,Carboxylic Acids,Negative,1,1,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Silica,COOH-HSA,Carboxylic Acids,Negative,1,1,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Silica,NH2,Amines,Positive,38,0,1,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,
-Silica,No Modification,No Modification,No Modification,72,0,0,0,0,0,1,1,0,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond acceptor groups; oxide-like accessible surface (InterfaceScout oxide channel includes silica-like oxide chemistry),
-Silica,PEG,Polymeric,Neutral,4,0,0,0,0,1,1,0,1,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups; calcium/phosphate surface,
-Zeolite,No Modification,No Modification,No Modification,15,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,
-Zinc Oxide,No Modification,No Modification,No Modification,2,0,0,0,0,0,1,1,0,1,0,0,mapped,rule_based_medium,surface contains plausible H-bond acceptor groups; oxide-like accessible surface (InterfaceScout oxide channel includes silica-like oxide chemistry); uncoated transition-metal-containing surface; coordination accessibility plausible,
-Zinc Oxide,Sulfide,Sulfur-Based,Negative,2,1,0,0,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond acceptor groups,
+core_material,surface_modification,modification_type,reported_modification_charge,n_pcdb_experiments,anionic,cationic,hydrophobic,pi_aromatic,hbond_donor,hbond_acceptor,metal_oxide,calcium_phosphate_charged_sites,transition_metal_coordination,soft_metal_sulfur_affinity,phosphate_rich,mapping_status,mapping_confidence,mapping_rule,manual_override,source_database
+ADM105,No Modification,No Modification,No Modification,1,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,,Chou_PCDB
+ADM105,pDNA,Other,Negative,1,1,0,0,0,0,0,0,0,0,0,1,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; phosphate/phosphonate/nucleic-acid-rich surface,,Chou_PCDB
+ADM70,No Modification,No Modification,No Modification,1,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,,Chou_PCDB
+ADM70,pDNA,Other,Negative,1,1,0,0,0,0,0,0,0,0,0,1,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; phosphate/phosphonate/nucleic-acid-rich surface,,Chou_PCDB
+Ag,"(11-Mercaptoundecyl)-N,N,N-trimethylammonium",Alkylthiols,Positive,1,0,1,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; calcium/phosphate surface,,Chou_PCDB
+Ag,1-Dodecanethiol,Alkylthiols,Positive,1,0,1,1,0,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface,,Chou_PCDB
+Ag,11-Amino-1-undecanethiol,Amines,Positive,1,0,1,0,0,1,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; surface contains plausible H-bond donor groups,,Chou_PCDB
+Ag,16-Mercaptohexadecanoic acid,Alkylthiols,Negative,1,1,0,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; calcium/phosphate surface,,Chou_PCDB
+Ag,2-Mercaptoethanesulfonate,Alkylthiols,Negative,1,1,0,0,0,0,1,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond acceptor groups; calcium/phosphate surface,,Chou_PCDB
+Ag,4-Mercaptobenzoic acid,Alkylthiols,Negative,1,1,0,0,1,0,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; graphitic/aromatic surface; calcium/phosphate surface,,Chou_PCDB
+Ag,Amino Acid,Amino Acid,Negative,1,1,1,0,0,1,0,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; positive/amine-rich surface; surface contains plausible H-bond donor groups,,Chou_PCDB
+Ag,Branched polyethyleneimine,Polymeric,Neutral,2,0,1,0,0,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface,,Chou_PCDB
+Ag,Citrate,Carboxylic Acids,Negative,15,1,0,0,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Ag,Hexadecylamine,Amines,Positive,1,0,1,1,0,1,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface; surface contains plausible H-bond donor groups,,Chou_PCDB
+Ag,Lipoic Acid,Alkylthiols,Negative,1,1,0,0,0,0,0,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface,,Chou_PCDB
+Ag,Mercaptoacetic acid,Alkylthiols,Negative,1,1,0,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; calcium/phosphate surface,,Chou_PCDB
+Ag,No Modification,No Modification,No Modification,2,0,0,0,0,0,0,0,0,0,1,0,mapped,rule_based_medium,uncoated soft-metal surface,,Chou_PCDB
+Ag,PEG,Polymeric,Neutral,3,0,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Ag,Polyvinyl Alcohol,Polymeric,Negative,1,1,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Ag,Polyvinyl Pyrrolidone,Polymeric,Neutral,14,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,unmapped,,,Chou_PCDB
+Ag,Stearic acid,Carboxylic Acids,Negative,1,1,0,1,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Ag,Sulfide,Sulfur-Based,Negative,2,1,0,0,0,0,0,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface,,Chou_PCDB
+Au,"(11-Mercaptoundecyl)-N,N,N-trimethylammonium",Alkylthiols,Positive,3,0,1,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; calcium/phosphate surface,,Chou_PCDB
+Au,(11-Mercaptoundecyl)tetra(ethylene glycol),Alkylthiols,Neutral,1,0,0,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,calcium/phosphate surface,,Chou_PCDB
+Au,1-Dodecanethiol,Alkylthiols,Positive,12,0,1,1,0,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface,,Chou_PCDB
+Au,11-Amino-1-undecanethiol,Alkylthiols,Positive,1,0,1,0,0,1,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; surface contains plausible H-bond donor groups,,Chou_PCDB
+Au,11-Amino-1-undecanethiol,Amines,Positive,2,0,1,0,0,1,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; surface contains plausible H-bond donor groups,,Chou_PCDB
+Au,11-Mercaptoundecanoic acid,Alkylthiols,Negative,2,1,0,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; calcium/phosphate surface,,Chou_PCDB
+Au,16-Mercaptohexadecanoic acid,Alkylthiols,Negative,2,1,0,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; calcium/phosphate surface,,Chou_PCDB
+Au,2-Mercaptoethanesulfonate,Alkylthiols,Negative,1,1,0,0,0,0,1,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond acceptor groups; calcium/phosphate surface,,Chou_PCDB
+Au,2-Napthalenethiol,Alkylthiols,Negative,10,1,0,0,1,0,0,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; graphitic/aromatic surface,,Chou_PCDB
+Au,3-Mercaptopropionic acid,Alkylthiols,Negative,3,1,0,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; calcium/phosphate surface,,Chou_PCDB
+Au,4-Mercaptobenzoic acid,Alkylthiols,Negative,2,1,0,0,1,0,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; graphitic/aromatic surface; calcium/phosphate surface,,Chou_PCDB
+Au,"5,5′-Dithiobis(2-nitrobenzoic acid)",Alkylthiols,Negative,2,1,0,0,0,0,0,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface,,Chou_PCDB
+Au,6-Amino-1-hexanethiol,Amines,Positive,1,0,1,0,0,1,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; surface contains plausible H-bond donor groups,,Chou_PCDB
+Au,6-Mercaptohexanoic acid,Alkylthiols,Negative,1,1,0,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; calcium/phosphate surface,,Chou_PCDB
+Au,Amino Acid,Amino Acid,Negative,15,1,1,0,0,1,0,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; positive/amine-rich surface; surface contains plausible H-bond donor groups,,Chou_PCDB
+Au,Bis(p-sulfonatophenyl)phenylphosphine,Other,Negative,2,1,0,0,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Au,Branched polyethyleneimine,Polymeric,Neutral,2,0,1,0,0,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface,,Chou_PCDB
+Au,Citrate,Carboxylic Acids,Negative,6,1,0,0,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Au,Hexadecylamine,Amines,Positive,2,0,1,1,0,1,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface; surface contains plausible H-bond donor groups,,Chou_PCDB
+Au,Hexadecyltrimethylammonium bromide,Surfactant,Positive,2,0,1,1,0,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface,,Chou_PCDB
+Au,Lipoic Acid,Alkylthiols,Positive,2,0,1,0,0,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface,,Chou_PCDB
+Au,Lipoic Acid,Alkylthiols,Negative,2,1,0,0,0,0,0,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface,,Chou_PCDB
+Au,Mercaptoacetic acid,Alkylthiols,Negative,1,1,0,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; calcium/phosphate surface,,Chou_PCDB
+Au,Mercaptosuccinic acid,Alkylthiols,Negative,1,1,0,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; calcium/phosphate surface,,Chou_PCDB
+Au,N-(2-Mercaptopropionyl)glycine,Amino Acid,Negative,1,1,1,0,0,1,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; positive/amine-rich surface; surface contains plausible H-bond donor groups; calcium/phosphate surface,,Chou_PCDB
+Au,N-(2-Mercaptopropionyl)glycine,Alkylthiols,Negative,1,1,0,0,0,0,0,0,1,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; calcium/phosphate surface,,Chou_PCDB
+Au,N-Acetyl-L-cysteine,Amino Acid,Negative,2,1,1,0,0,1,0,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; positive/amine-rich surface; surface contains plausible H-bond donor groups,,Chou_PCDB
+Au,Octadecylamine,Amines,Positive,2,0,1,1,0,1,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface; surface contains plausible H-bond donor groups,,Chou_PCDB
+Au,PEG,Polymeric,Neutral,18,0,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Au,Peptide sequence 'CALNN',Peptide,Negative,2,1,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Au,Peptide sequence 'CFGAILS',Peptide,Negative,1,1,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Au,Peptide sequence 'CVVIT',Peptide,Negative,1,1,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Au,Pluronic F-127,Other,Negative,1,1,0,0,0,1,0,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond donor groups,,Chou_PCDB
+Au,Poly(vinylpyrrolidone),Polymeric,Negative,1,1,0,0,0,0,0,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface,,Chou_PCDB
+Au,Polyethyleneimine,Polymeric,Neutral,2,0,1,0,0,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface,,Chou_PCDB
+Au,Polyvinyl Alcohol,Polymeric,Negative,2,1,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Au,Polyvinyl Pyrrolidone,Polymeric,Neutral,2,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,unmapped,,,Chou_PCDB
+Au,Stearic acid,Carboxylic Acids,Negative,1,1,0,1,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Au,Thiolated poly(allylamine),Polymeric,Positive,1,0,1,0,0,1,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; surface contains plausible H-bond donor groups,,Chou_PCDB
+Au,Thiolated poly(ethyleneimine),Polymeric,Positive,2,0,1,0,0,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface,,Chou_PCDB
+Au,Tween-20,Polymeric,Negative,1,1,0,0,0,1,0,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond donor groups,,Chou_PCDB
+Carbon,COOH,Carboxylic Acids,Negative,1,1,0,0,1,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; graphitic/aromatic surface; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Chol-DC,No Modification,No Modification,No Modification,4,0,0,1,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,nonpolar/polymer/alkyl surface,,Chou_PCDB
+CHOL-PC,No Modification,No Modification,No Modification,1,0,0,1,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,nonpolar/polymer/alkyl surface,,Chou_PCDB
+DC-Chol-DOPE,No Modification,No Modification,No Modification,11,0,0,1,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,nonpolar/polymer/alkyl surface,,Chou_PCDB
+DC-Chol,Cholesterol,Lipid,Neutral,1,0,0,1,0,0,0,0,0,0,0,0,mapped,rule_based_medium,nonpolar/polymer/alkyl surface,,Chou_PCDB
+DC-Chol,DOPE,Lipid,Neutral,4,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,unmapped,,,Chou_PCDB
+DOPC-DOPE-PEG-DSPC-DPPC,No Modification,No Modification,No Modification,2,0,0,0,0,1,1,0,0,0,0,0,ambiguous_unmapped,low,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+DOPG-DOPA,No Modification,No Modification,No Modification,4,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,,Chou_PCDB
+DOPG,No Modification,No Modification,No Modification,1,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,,Chou_PCDB
+DOTAP-CHOL-DPPC,No Modification,No Modification,No Modification,1,0,0,1,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,nonpolar/polymer/alkyl surface,,Chou_PCDB
+DOTAP-CHOL-DSPC,No Modification,No Modification,No Modification,1,0,0,1,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,nonpolar/polymer/alkyl surface,,Chou_PCDB
+DOTAP-CHOL-PC,No Modification,No Modification,No Modification,1,0,0,1,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,nonpolar/polymer/alkyl surface,,Chou_PCDB
+DOTAP-Chol,No Modification,No Modification,No Modification,3,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,,Chou_PCDB
+DOTAP-DC-Chol,No Modification,No Modification,No Modification,18,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,,Chou_PCDB
+DOTAP-DC-Chol,PEG,Polymeric,Neutral,6,0,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+DOTAP-DOPC-DC-Chol-DOPE/DOPE-PEG,PEG,Polymeric,No Modification,3,0,0,1,0,1,1,0,0,0,0,0,mapped,rule_based_medium,nonpolar/polymer/alkyl surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+DOTAP-DOPC-DC-Chol-DOPE,No Modification,No Modification,No Modification,1,0,0,1,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,nonpolar/polymer/alkyl surface,,Chou_PCDB
+DOTAP-DOPE,No Modification,No Modification,No Modification,3,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,,Chou_PCDB
+DOTAP-DSPC-Chol,No Modification,No Modification,No Modification,1,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,,Chou_PCDB
+DOTAP/DNA,No Modification,No Modification,No Modification,4,0,0,0,0,0,0,0,0,0,0,1,ambiguous_unmapped,low,phosphate/phosphonate/nucleic-acid-rich surface,,Chou_PCDB
+DOTAP/DOPC/DC-Chol/DOPE/DOPE-PEG2k,PEG,Polymeric,Neutral,1,0,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+DOTAP,Cholesterol,Carboxylic Acids,Neutral,1,1,0,1,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+DOTAP,DOPE,Lipid,Neutral,1,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,unmapped,,,Chou_PCDB
+DOTAP,No Modification,No Modification,No Modification,3,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,,Chou_PCDB
+DOTAP,PEG,Polymeric,Neutral,1,0,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+DSPC-Chol,DSPE-MPEG,Lipid,Neutral,3,0,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+EMT-Zeolite,No Modification,No Modification,No Modification,12,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,,Chou_PCDB
+FAU-Zeolite,No Modification,No Modification,No Modification,12,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,,Chou_PCDB
+G-Rich DNA,No Modification,No Modification,No Modification,1,0,0,0,0,0,0,0,0,0,0,1,ambiguous_unmapped,low,phosphate/phosphonate/nucleic-acid-rich surface,,Chou_PCDB
+Graphite,No Modification,No Modification,No Modification,1,0,0,0,1,0,0,0,0,0,0,0,mapped,rule_based_medium,graphitic/aromatic surface,,Chou_PCDB
+HSPC-Chol,DPSE-MPEG,Lipid,Neutral,3,0,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Iron Oxide,Citrate,Carboxylic Acids,Negative,2,1,0,0,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Iron Oxide,No Modification,No Modification,No Modification,4,0,0,0,0,0,1,1,0,1,0,0,mapped,rule_based_medium,surface contains plausible H-bond acceptor groups; oxide-like accessible surface (InterfaceScout oxide channel includes silica-like oxide chemistry); uncoated transition-metal-containing surface; coordination accessibility plausible,,Chou_PCDB
+Iron Oxide,Oleate,Carboxylic Acids,Negative,2,1,0,1,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Iron Oxide,PEG,Polymeric,Neutral,1,0,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Iron Oxide,pHILP,Peptide,Neutral,1,0,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Iron Oxide,Silica,Silicon-Based,Neutral,2,0,0,0,0,0,1,1,0,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond acceptor groups; oxide-like accessible surface (InterfaceScout oxide channel includes silica-like oxide chemistry),,Chou_PCDB
+Latex,PS-Sulfonate,Polymeric,Negative,2,1,0,1,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+PEG,No Modification,No Modification,No Modification,4,0,0,0,0,1,1,0,0,0,0,0,ambiguous_unmapped,low,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Poly-T DNA,No Modification,No Modification,No Modification,1,0,0,0,0,0,0,0,0,0,0,1,ambiguous_unmapped,low,phosphate/phosphonate/nucleic-acid-rich surface,,Chou_PCDB
+Polyoxyethylene (20) sorbitan monolaurate,No Modification,No Modification,No Modification,6,0,0,0,0,1,1,0,0,0,0,0,ambiguous_unmapped,low,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Polyoxyethylene (21) sorbitan monooleate:Polyoxyethylene (80) sorbitan monooleate,No Modification,No Modification,No Modification,6,1,0,1,0,1,1,0,0,0,0,0,ambiguous_unmapped,low,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Polyoxyethylene (21) sorbitan monooleate,No Modification,No Modification,No Modification,6,1,0,1,0,1,1,0,0,0,0,0,ambiguous_unmapped,low,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Polyoxyethylene (80) sorbitan monooleate,No Modification,No Modification,No Modification,6,1,0,1,0,1,1,0,0,0,0,0,ambiguous_unmapped,low,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Polystyrene,CHAIYPRH (LT7) peptide,Peptide,Positive,1,0,1,1,1,1,1,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Polystyrene,Citrate,Carboxylic Acids,Negative,2,1,0,1,1,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Polystyrene,COOH,Carboxylic Acids,Negative,12,1,0,1,1,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Polystyrene,"hrpyiahc, all D-form amino acids (DT7)",Amino Acid,Positive,1,0,1,1,1,1,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond donor groups,,Chou_PCDB
+Polystyrene,Lutensol AT50,Surfactant,Neutral,1,0,0,1,1,0,0,0,0,0,0,0,mapped,rule_based_medium,nonpolar/polymer/alkyl surface; graphitic/aromatic surface,,Chou_PCDB
+Polystyrene,Lutensol AT50 + 0.01% CTMA-Cl,Surfactant,Neutral,1,0,1,1,1,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface,,Chou_PCDB
+Polystyrene,Lutensol AT50 + 0.1% CTMA-Cl,Surfactant,Neutral,1,0,1,1,1,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface,,Chou_PCDB
+Polystyrene,Lutensol AT50 + 0.2% CTMA-Cl,Surfactant,Neutral,1,0,1,1,1,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface,,Chou_PCDB
+Polystyrene,Lutensol AT50 + 0.3% CTMA-Cl,Surfactant,Neutral,1,0,1,1,1,0,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface,,Chou_PCDB
+Polystyrene,NH2,Amines,Positive,12,0,1,1,1,1,0,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond donor groups,,Chou_PCDB
+Polystyrene,No Modification,No Modification,No Modification,41,0,0,1,1,0,0,0,0,0,0,0,mapped,rule_based_medium,nonpolar/polymer/alkyl surface; graphitic/aromatic surface,,Chou_PCDB
+Polystyrene,PEG,Polymeric,Neutral,4,0,0,1,1,1,1,0,0,0,0,0,mapped,rule_based_medium,nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Polystyrene,PEG + 0.3% CTMA-Cl,Polymeric,Neutral,1,0,1,1,1,1,1,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Polystyrene,Phosphonate,Phosphorous-based,Negative,1,1,0,1,1,0,1,0,0,0,0,1,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond acceptor groups; phosphate/phosphonate/nucleic-acid-rich surface,,Chou_PCDB
+Polystyrene,phosphonate-Lutensol AT50,Phosphorous-based,Negative,1,1,0,1,1,0,1,0,0,0,0,1,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond acceptor groups; phosphate/phosphonate/nucleic-acid-rich surface,,Chou_PCDB
+Polystyrene,phosphonate-SDS,Phosphorous-based,Negative,1,1,0,1,1,0,1,0,0,0,0,1,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond acceptor groups; phosphate/phosphonate/nucleic-acid-rich surface,,Chou_PCDB
+Polystyrene,Poly(Ethyl Ethylene Phosphate),Polymeric,Neutral,2,0,0,1,1,0,1,0,0,0,0,1,mapped,rule_based_medium,nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond acceptor groups; phosphate/phosphonate/nucleic-acid-rich surface,,Chou_PCDB
+Polystyrene,sulfate,Sulfur-Based,Negative,1,1,0,1,1,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Polystyrene,Sulfonate,Sulfur-Based,Negative,1,1,0,1,1,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Polystyrene,Transferrin,Peptide,Negative,1,1,0,1,1,1,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Shingosine-Chol-DSPC,No Modification,No Modification,No Modification,1,0,0,1,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,nonpolar/polymer/alkyl surface,,Chou_PCDB
+Silica,"1,7-Octadiene",Small Hydrocarbons,Neutral,2,0,0,1,1,0,1,0,0,0,0,0,mapped,rule_based_medium,nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Silica,2-Methyl-2-Oxazoline,Small Hydrocarbons,Neutral,2,0,0,1,1,0,1,0,0,0,0,0,mapped,rule_based_medium,nonpolar/polymer/alkyl surface; graphitic/aromatic surface; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Silica,Acrylic Acid,Carboxylic Acids,Negative,2,1,0,0,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Silica,Allylamine,Amines,Positive,2,0,1,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Silica,COOH,Carboxylic Acids,Negative,40,1,0,0,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Silica,COOH-GG,Carboxylic Acids,Negative,1,1,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Silica,COOH-HSA,Carboxylic Acids,Negative,1,1,0,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Silica,NH2,Amines,Positive,38,0,1,0,0,1,1,0,0,0,0,0,mapped,rule_based_medium,positive/amine-rich surface; surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Silica,No Modification,No Modification,No Modification,72,0,0,0,0,0,1,1,0,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond acceptor groups; oxide-like accessible surface (InterfaceScout oxide channel includes silica-like oxide chemistry),,Chou_PCDB
+Silica,PEG,Polymeric,Neutral,4,0,0,0,0,1,1,0,1,0,0,0,mapped,rule_based_medium,surface contains plausible H-bond donor groups; surface contains plausible H-bond acceptor groups; calcium/phosphate surface,,Chou_PCDB
+Zeolite,No Modification,No Modification,No Modification,15,0,0,0,0,0,0,0,0,0,0,0,ambiguous_unmapped,low,,,Chou_PCDB
+Zinc Oxide,No Modification,No Modification,No Modification,2,0,0,0,0,0,1,1,0,1,0,0,mapped,rule_based_medium,surface contains plausible H-bond acceptor groups; oxide-like accessible surface (InterfaceScout oxide channel includes silica-like oxide chemistry); uncoated transition-metal-containing surface; coordination accessibility plausible,,Chou_PCDB
+Zinc Oxide,Sulfide,Sulfur-Based,Negative,2,1,0,0,0,0,1,0,0,0,0,0,mapped,rule_based_medium,negative/carboxylate/sulfonate/sulfate surface; surface contains plausible H-bond acceptor groups,,Chou_PCDB
+Polystyrene,Carboxylate,source-defined ligand coating,Negative,2,1,0,0,0,0,1,0,0,0,0,0,mapped,rule_based_high,carboxylated polymer surface: anionic + H-bond acceptor,,Payne_PXD053700
+Iron oxide,Citrate,source-defined ligand coating,Negative,4,1,0,0,0,0,1,0,0,0,0,0,mapped,rule_based_high,citrate coating: anionic + H-bond acceptor; coated core not automatically exposed,,Payne_PXD053700
+Iron oxide,Citrate_PEI,source-defined ligand coating,Positive,4,0,1,0,0,1,1,0,0,0,0,0,mapped,rule_based_high,PEI-dominated coating: cationic + H-bond donor/acceptor,,Payne_PXD053700
+Iron oxide/Au,Citrate_PEI_Au_PVP,source-defined ligand coating,Negative,4,0,0,0,0,0,1,0,0,0,0,0,mapped,rule_based_high,PVP outer ligand: H-bond acceptor; internal Au/oxide not forced into exposed-core channels,,Payne_PXD053700
+Iron oxide/Au,Citrate_PEI_Au_PEG5k,source-defined ligand coating,Near-neutral,1,0,0,0,0,0,1,0,0,0,0,0,mapped,rule_based_high,PEG outer ligand: H-bond acceptor; internal Au/oxide not forced into exposed-core channels,,Payne_PXD053700
+Iron oxide/Au,Citrate_PEI_Au_PEI,source-defined ligand coating,Positive,2,0,1,0,0,1,1,0,0,0,0,0,mapped,rule_based_high,PEI outer ligand: cationic + H-bond donor/acceptor,,Payne_PXD053700
+Polystyrene,Carboxylate_PEG2k,source-defined ligand coating,Negative/near-neutral,2,1,0,0,0,0,1,0,0,0,0,0,mapped,rule_based_high,carboxylate + PEG coating: anionic + H-bond acceptor; second proteomics column has no separate NP metadata row but identical source surface label,,Payne_PXD053700
