@@ -1,0 +1,257 @@
+name: Build frozen benchmark package
+on:
+  push:
+    branches:
+      - benchmark-audit-freeze-2026-10-06
+    paths:
+      - 'validation/benchmark_v1_2026-10-06/TRIGGER_BUILD_FULL'
+      - '.github/workflows/benchmark_build_full.yml'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build long-format master and package
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import csv, json, hashlib, shutil
+
+          root=Path('validation/benchmark_v1_2026-10-06')
+          pkg=Path('benchmark_package')
+          if pkg.exists(): shutil.rmtree(pkg)
+          pkg.mkdir()
+          shutil.copytree(root/'raw_sources', pkg/'raw_sources')
+
+          # Copy frozen derived/provenance files except compact master.
+          for name in [
+              'proteins.csv','experiments.csv','material_to_interfacescout_map.csv',
+              'residue_level_ground_truth.csv','structural_response_ground_truth.csv',
+              'exclusions.csv','source_manifest.csv','README.md','METHODOLOGY_PROVENANCE.md'
+          ]:
+              shutil.copy2(root/name, pkg/name)
+
+          # Chemistry map lookup.
+          map_lookup={}
+          with open(root/'material_to_interfacescout_map.csv', newline='', encoding='utf-8-sig') as fh:
+              for r in csv.DictReader(fh):
+                  src=r.get('source_database') or 'Chou_PCDB'
+                  key=(src, r.get('core_material','').strip(), r.get('surface_modification','').strip())
+                  channels=[]
+                  for col,label in [
+                      ('anionic','anionic'),('cationic','cationic'),('hydrophobic','hydrophobic'),
+                      ('pi_aromatic','pi/aromatic'),('hbond_donor','H-bond donor'),
+                      ('hbond_acceptor','H-bond acceptor'),('metal_oxide','metal-oxide'),
+                      ('calcium_phosphate_charged_sites','calcium/phosphate charged sites'),
+                      ('transition_metal_coordination','transition-metal coordination'),
+                      ('soft_metal_sulfur_affinity','soft-metal sulfur affinity'),
+                      ('phosphate_rich','phosphate-rich')
+                  ]:
+                      if str(r.get(col,'')).strip() in ('1','1.0','true','True'):
+                          channels.append(label)
+                  map_lookup[key]={
+                      'status':r.get('mapping_status',''),
+                      'confidence':r.get('mapping_confidence',''),
+                      'channels':';'.join(channels)
+                  }
+
+          fields=[
+              'source_database','source_publication','DOI','study_id','experiment_id',
+              'protein_name','protein_group_source_ids','uniprot_accession','species',
+              'protein_sequence','protein_length','pdb_id','structure_origin',
+              'material_core','surface_modification','surface_chemistry',
+              'canonical_chemistry_channels','chemistry_map_status','chemistry_map_confidence',
+              'zeta_potential_mV','primary_size_nm','hydrodynamic_size_nm','size_nm','shape',
+              'pH','ionic_strength','temperature_C','incubation_time_min','biological_medium',
+              'protein_concentration','np_concentration_mg_ml',
+              'adsorption_corona_present','quantitative_abundance','quantitative_abundance_units',
+              'protected_contact_region','newly_exposed_region','conformational_change_label',
+              'experimental_technique','confidence_quality_flag','source_row_identifier',
+              'benchmark_level','inclusion_status','inclusion_exclusion_reason','metadata_notes'
+          ]
+
+          metrics={
+              'pcdb_experiments':0,'pcdb_protein_columns':0,'pcdb_cells':0,'pcdb_present':0,
+              'pcdb_nonpositive':0,'pcdb_negative_source_values':0,
+              'payne_experiments':0,'payne_protein_groups':0,'payne_cells':0,'payne_present':0,
+              'payne_nonpositive':0,'payne_single_accession_groups':0,'payne_multi_accession_groups':0,
+              'master_rows':0,'master_duplicate_source_keys':0
+          }
+          seen=set()
+
+          outpath=pkg/'harmonized_master.csv'
+          with open(outpath,'w',newline='',encoding='utf-8') as out:
+              w=csv.DictWriter(out,fieldnames=fields)
+              w.writeheader()
+
+              # PC-DB experiment metadata.
+              meta={}
+              with open(root/'raw_sources/chou_pcdb/PC-DB_for_Meta-Analysis.csv',newline='',encoding='utf-8-sig') as fh:
+                  for r in csv.DictReader(fh):
+                      meta[r['NP Entry ID'].strip()]=r
+
+              matrix_path=root/'raw_sources/chou_pcdb/Dataset-for-protein-freq-analysis-v2.csv'
+              with open(matrix_path,newline='',encoding='utf-8-sig') as fh:
+                  reader=csv.reader(fh)
+                  header=next(reader)
+                  proteins=header[2:]
+                  metrics['pcdb_protein_columns']=len(proteins)
+                  for row_idx,row in enumerate(reader,start=2):
+                      if not row: continue
+                      eid=row[0].strip(); sid=row[1].strip()
+                      m=meta.get(eid,{})
+                      metrics['pcdb_experiments']+=1
+                      core=m.get('Core NP Material','').strip()
+                      mod=m.get('Surface Modification','').strip()
+                      cmap=map_lookup.get(('Chou_PCDB',core,mod),{})
+                      for j,pname in enumerate(proteins,start=2):
+                          raw=(row[j] if j < len(row) else '').strip()
+                          try: val=float(raw)
+                          except: val=None
+                          present=1 if val is not None and val>0 else 0
+                          metrics['pcdb_cells']+=1
+                          if present: metrics['pcdb_present']+=1
+                          else: metrics['pcdb_nonpositive']+=1
+                          if val is not None and val<0: metrics['pcdb_negative_source_values']+=1
+                          key=('Chou_PCDB',eid,pname)
+                          if key in seen: metrics['master_duplicate_source_keys']+=1
+                          seen.add(key)
+                          w.writerow({
+                              'source_database':'Chou_PCDB',
+                              'source_publication':'Meta-Analysis and Machine Learning Prediction of Protein Corona Composition across Nanoparticle Systems in Biological Media',
+                              'DOI':m.get('DOI',''),
+                              'study_id':sid,'experiment_id':eid,
+                              'protein_name':pname,'protein_group_source_ids':'','uniprot_accession':'',
+                              'species':m.get('Species',''),
+                              'protein_sequence':'','protein_length':'','pdb_id':'','structure_origin':'unresolved_structure_lookup_required',
+                              'material_core':core,'surface_modification':mod,
+                              'surface_chemistry':m.get('Modification Type','') or mod,
+                              'canonical_chemistry_channels':cmap.get('channels',''),
+                              'chemistry_map_status':cmap.get('status','ambiguous_unmapped'),
+                              'chemistry_map_confidence':cmap.get('confidence',''),
+                              'zeta_potential_mV':m.get('Zeta Potential (mV)',''),
+                              'primary_size_nm':'','hydrodynamic_size_nm':m.get('Size (nm)',''),
+                              'size_nm':m.get('Size (nm)',''),'shape':m.get('NP Shape',''),
+                              'pH':'','ionic_strength':'','temperature_C':m.get('Incubation Temp (°C)',''),
+                              'incubation_time_min':m.get('Incubation time (min)',''),
+                              'biological_medium':m.get('Incubation Protein Source','') or m.get('Incubation Media',''),
+                              'protein_concentration':m.get('Incubation Protein Concentration (%-v/v)',''),
+                              'np_concentration_mg_ml':m.get('NP Solution Concentration','') if m.get('NP Solution Concentration Units','')=='mg/mL' else '',
+                              'adsorption_corona_present':present,
+                              'quantitative_abundance':raw,
+                              'quantitative_abundance_units':m.get('Protein Composition Units',''),
+                              'protected_contact_region':'','newly_exposed_region':'','conformational_change_label':'',
+                              'experimental_technique':'protein corona proteomics / source-specific quantitative composition',
+                              'confidence_quality_flag':'A','source_row_identifier':f'Dataset-for-protein-freq-analysis-v2.csv:{eid}:protein_col_{j-1}',
+                              'benchmark_level':'LEVEL1','inclusion_status':'eligible_frozen',
+                              'inclusion_exclusion_reason':'Accessible open PC-DB human subset; eligibility frozen before InterfaceScout scoring.',
+                              'metadata_notes':'PC-DB UniProt accession intentionally unresolved because the 2,497-accession source list is not a safe row-aligned crosswalk to the 1,513-column human matrix.'
+                          })
+
+              # Payne NP metadata.
+              paymeta={}
+              with open(root/'raw_sources/payne2025/NP_Database_BovOnly_v5_parsed.csv',newline='',encoding='utf-8-sig') as fh:
+                  for r in csv.DictReader(fh):
+                      paymeta[str(r.get('Sample_num','')).strip()]=r
+
+              pay_path=root/'raw_sources/payne2025/Bov_SP_06252024_Pers.txt'
+              with open(pay_path,encoding='utf-8-sig') as fh:
+                  tsv=csv.reader(fh,delimiter='\t')
+                  ph=next(tsv); type_row=next(tsv)
+                  data=list(tsv)
+              id_idx=ph.index('Majority protein IDs')
+              sp_idx=ph.index('Species')
+              intensity=[(i,n) for i,n in enumerate(ph) if n.startswith('Intensity ') and not (n.endswith('_FBS') or '_SPQC' in n)]
+              metrics['payne_experiments']=len(intensity)
+              metrics['payne_protein_groups']=len(data)
+              for r in data:
+                  ids=(r[id_idx] if id_idx < len(r) else '').strip()
+                  parts=[x for x in ids.split(';') if x]
+                  if len(parts)==1: metrics['payne_single_accession_groups']+=1
+                  elif len(parts)>1: metrics['payne_multi_accession_groups']+=1
+
+              for col_idx,colname in intensity:
+                  label=colname.replace('Intensity ','',1)
+                  sample=label.split('_',1)[0]
+                  pm=paymeta.get(sample,{})
+                  if pm:
+                      core = 'Polystyrene' if pm.get('Core_PS')=='1' else ('Iron oxide/Au' if pm.get('Core_Iron_Oxide_Au')=='1' else ('Iron oxide' if pm.get('Core_Iron_Oxide')=='1' else pm.get('Core Material','')))
+                      mod=pm.get('Ligands','')
+                      cmap=map_lookup.get(('Payne_PXD053700',core,mod),{})
+                  else:
+                      core=''
+                      mod='Carboxylate_PEG2k' if 'PS Carb@ PEG' in label else ''
+                      cmap=map_lookup.get(('Payne_PXD053700','Polystyrene',mod),{}) if mod else {}
+                  for group_idx,r in enumerate(data,start=1):
+                      raw=(r[col_idx] if col_idx < len(r) else '').strip()
+                      try: val=float(raw)
+                      except: val=None
+                      present=1 if val is not None and val>0 else 0
+                      metrics['payne_cells']+=1
+                      if present: metrics['payne_present']+=1
+                      else: metrics['payne_nonpositive']+=1
+                      ids=(r[id_idx] if id_idx < len(r) else '').strip()
+                      parts=[x for x in ids.split(';') if x]
+                      accession=parts[0] if len(parts)==1 else ''
+                      source_pid=ids
+                      key=('Payne_PXD053700',sample,group_idx)
+                      if key in seen: metrics['master_duplicate_source_keys']+=1
+                      seen.add(key)
+                      w.writerow({
+                          'source_database':'Payne_PXD053700',
+                          'source_publication':'Predicting the protein corona on nanoparticles using random forest models with nanoparticle, protein, and experimental features',
+                          'DOI':'10.1039/D5NA00425J','study_id':'PXD053700','experiment_id':f'PAYNE_{sample}',
+                          'protein_name':'','protein_group_source_ids':source_pid,'uniprot_accession':accession,
+                          'species':(r[sp_idx] if sp_idx < len(r) else 'Bos taurus'),
+                          'protein_sequence':'','protein_length':'','pdb_id':'','structure_origin':'unresolved_structure_lookup_required',
+                          'material_core':core,'surface_modification':mod,'surface_chemistry':mod,
+                          'canonical_chemistry_channels':cmap.get('channels',''),
+                          'chemistry_map_status':cmap.get('status','mapped_from_source_label' if mod else 'ambiguous_unmapped'),
+                          'chemistry_map_confidence':cmap.get('confidence',''),
+                          'zeta_potential_mV':pm.get('Zeta Potential','') if pm else '',
+                          'primary_size_nm':pm.get('Dtem','') if pm else '',
+                          'hydrodynamic_size_nm':pm.get('Dh_functionalized','') if pm else '',
+                          'size_nm':pm.get('Dh_functionalized','') if pm else '',
+                          'shape':'','pH':'','ionic_strength':'','temperature_C':'','incubation_time_min':'',
+                          'biological_medium':'Fetal bovine serum (FBS)',
+                          'protein_concentration':pm.get('Incubation Concentration (mg/ml)','') if pm else '',
+                          'np_concentration_mg_ml':pm.get('NP_incubation Concentration (mg/mL)','') if pm else '',
+                          'adsorption_corona_present':present,'quantitative_abundance':raw,
+                          'quantitative_abundance_units':'MS intensity (source intensity units)',
+                          'protected_contact_region':'','newly_exposed_region':'','conformational_change_label':'',
+                          'experimental_technique':'LC-MS proteomics; source Intensity matrix',
+                          'confidence_quality_flag':'A' if pm else 'B_metadata_gap',
+                          'source_row_identifier':f'Bov_SP_06252024_Pers.txt:{colname}:protein_group_{group_idx}',
+                          'benchmark_level':'LEVEL1','inclusion_status':'eligible_frozen',
+                          'inclusion_exclusion_reason':'Independent in-house corona proteomics experiment; eligibility frozen before InterfaceScout scoring.',
+                          'metadata_notes':('Exact NP metadata from NP_Database_BovOnly_v5.xlsx.' if pm else 'Proteomics sample 49 has no distinct row in NP_Database_BovOnly_v5.xlsx; exact NP metadata intentionally left unresolved. Multi-accession protein groups also retain blank single-accession field.')
+                      })
+
+          metrics['master_rows']=metrics['pcdb_cells']+metrics['payne_cells']
+          metrics['level1_experiments_total']=metrics['pcdb_experiments']+metrics['payne_experiments']
+          metrics['level1_present_total']=metrics['pcdb_present']+metrics['payne_present']
+          metrics['level1_nonpositive_total']=metrics['pcdb_nonpositive']+metrics['payne_nonpositive']
+          metrics['level1_observation_cells_total']=metrics['master_rows']
+          (pkg/'benchmark_metrics.json').write_text(json.dumps(metrics,indent=2),encoding='utf-8')
+
+          # Checksums
+          checksum_lines=[]
+          for p in sorted(pkg.rglob('*')):
+              if p.is_file():
+                  h=hashlib.sha256(p.read_bytes()).hexdigest()
+                  checksum_lines.append(f'{h}  {p.relative_to(pkg)}')
+          (pkg/'checksums.sha256').write_text('\n'.join(checksum_lines)+'\n',encoding='utf-8')
+          print(json.dumps(metrics,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-benchmark-v1-2026-10-06
+          path: benchmark_package/
+          compression-level: 6
+          retention-days: 90
