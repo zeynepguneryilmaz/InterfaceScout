@@ -1,0 +1,47 @@
+name: Benchmark parse Payne metadata
+on:
+  push:
+    branches:
+      - benchmark-audit-freeze-2026-10-06
+    paths:
+      - 'validation/benchmark_v1_2026-10-06/raw_sources/payne2025/NP_Database_BovOnly_v5.xlsx.base64'
+      - 'validation/benchmark_v1_2026-10-06/TRIGGER_PARSE_PAYNE'
+      - '.github/workflows/benchmark_parse_payne.yml'
+permissions:
+  contents: read
+jobs:
+  parse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pandas openpyxl
+      - name: Decode and parse workbook
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import base64, pandas as pd, json
+          root=Path('validation/benchmark_v1_2026-10-06')
+          b64=(root/'raw_sources/payne2025/NP_Database_BovOnly_v5.xlsx.base64').read_text().strip()
+          xlsx=root/'raw_sources/payne2025/NP_Database_BovOnly_v5.xlsx'
+          xlsx.write_bytes(base64.b64decode(b64))
+          xl=pd.ExcelFile(xlsx)
+          manifest=[]
+          outdir=Path('parsed_payne')
+          outdir.mkdir(exist_ok=True)
+          for sheet in xl.sheet_names:
+              df=pd.read_excel(xlsx, sheet_name=sheet)
+              safe=''.join(c if c.isalnum() or c in '-_' else '_' for c in sheet)
+              out=outdir/f'{safe}.csv'
+              df.to_csv(out,index=False)
+              manifest.append({'sheet':sheet,'rows':len(df),'columns':list(df.columns),'csv':str(out)})
+          (outdir/'manifest.json').write_text(json.dumps(manifest,indent=2,default=str))
+          print(json.dumps(manifest,indent=2,default=str))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: parsed-payne-metadata
+          path: parsed_payne/
