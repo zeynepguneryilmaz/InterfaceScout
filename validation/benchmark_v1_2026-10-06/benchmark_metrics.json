@@ -1,0 +1,42 @@
+{
+  "release": "benchmark_v1_2026-10-06",
+  "freeze_policy": "eligibility fixed before InterfaceScout scoring",
+  "independent_level1_families_ingested": 2,
+  "level1_experiments_total": 616,
+  "source_protein_entities_before_cross_source_dedup": 1914,
+  "unique_biological_protein_count": null,
+  "unique_biological_protein_count_status": "withheld_pending_safe_identity_crosswalk",
+  "level1_observation_rows": 910880,
+  "level1_present_total": 70328,
+  "level1_nonpositive_total": 840552,
+  "pcdb": {
+    "experiments": 597,
+    "protein_columns": 1513,
+    "cells": 903261,
+    "present_value_gt_0": 66792,
+    "nonpositive": 836469,
+    "negative_source_values": 1293,
+    "raw_matrix_git_blob_sha": "e04a4535579d8f092e3c61bd5681982aed20fcea"
+  },
+  "payne": {
+    "experiments": 19,
+    "protein_groups": 401,
+    "individual_accession_strings": 446,
+    "single_accession_groups": 376,
+    "multi_accession_groups": 25,
+    "cells": 7619,
+    "present_intensity_gt_0": 3536,
+    "nonpositive": 4083,
+    "np_metadata_rows_exact": 18,
+    "np_metadata_unresolved_experiment_columns": 1,
+    "np_workbook_source_git_blob_sha": "17167ee4cdcc77d82cf3369206a06adb049766ca"
+  },
+  "chemistry_mapped_level1_experiments": 464,
+  "chemistry_ambiguous_unmapped_level1_experiments": 152,
+  "level2_records": 14,
+  "level3_records": 10,
+  "experimental_pdbs_level2_level3": 8,
+  "master_duplicate_source_keys": 0,
+  "level1_structure_enrichment_status": "pending",
+  "deferred_sources_contributing_zero_frozen_rows": ["BAD 2.0", "Blume/PXD017052", "NanoPro-3M", "Fe3O4-wheat TLiP/XL-MS"]
+}
