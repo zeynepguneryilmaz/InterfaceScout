@@ -231,8 +231,10 @@ def main():
                 "ground_truth_type":r["ground_truth_type"],"evidence_resolution":r["evidence_resolution"],
                 "confidence_quality_flag":r["confidence_quality_flag"],"DOI":r["DOI"],
             }
+            chain=(r["chain"] or "").replace("/",",")
+            base["chain"]=chain
             try:
-                l3.append(score_record(base,r["pdb_id"],r["chain"],float(r["pH"]),channels,start,end,exact))
+                l3.append(score_record(base,r["pdb_id"],chain,float(r["pH"]),channels,start,end,exact))
             except Exception as e:
                 z=dict(base); z.update({"channels":";".join(channels),"scoring_status":"failed","error":repr(e)}); l3.append(z)
     write_csv(outdir/"level3_spatial_results.csv",l3)
