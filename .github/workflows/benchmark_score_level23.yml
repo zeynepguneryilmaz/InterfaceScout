@@ -1,0 +1,26 @@
+name: Score frozen benchmark Level 2-3
+on:
+  push:
+    branches:
+      - benchmark-scoring-v1-2026-10-07
+    paths:
+      - 'validation/benchmark_v1_2026-10-06/run_level23_scoring.py'
+      - 'validation/benchmark_v1_2026-10-06/TRIGGER_LEVEL23'
+      - '.github/workflows/benchmark_score_level23.yml'
+permissions:
+  contents: read
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r backend/requirements.txt
+      - run: python validation/benchmark_v1_2026-10-06/run_level23_scoring.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-level23-scoring-v1-2026-10-07
+          path: validation/benchmark_v1_2026-10-06/scoring_v1_2026-10-07/
+          retention-days: 90
