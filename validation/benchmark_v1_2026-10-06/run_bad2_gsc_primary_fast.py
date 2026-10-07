@@ -30,7 +30,7 @@ def map_surface(surface):
     if re.search(r"(hydroxy|hydroxyl|\boh[- ]?terminated|hydroxy-thiol)",s): return ["H-bond donor","H-bond acceptor"],"hydroxyl"
     if re.search(r"(phosphonate|phosphate[- ]?terminated)",s): return ["phosphate-rich","anionic","H-bond acceptor"],"phosphate"
     if re.search(r"(polyethylene glycol|\bpeg\b)",s): return ["H-bond acceptor"],"PEG"
-    if re.search(r"(methyl[- ]?thiol|methyl[- ]?terminated|\bch3\b)",s): return ["hydrophobic"],"methyl"
+    if re.search(r"(methylated|methyl[- ]?thiol|methyl[- ]?terminated|\\bch3\\b)",s): return ["hydrophobic"],"methyl"
     if s in {"gold","au","bare gold","unmodified gold"}: return ["soft-metal sulfur affinity"],"bare gold"
     if re.search(r"(silica|silicon oxide|quartz|\bglass\b)",s): return ["metal-oxide"],"silica"
     if re.search(r"(titanium oxide|titania|tio2)",s): return ["metal-oxide"],"titania"
