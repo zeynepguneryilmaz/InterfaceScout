@@ -144,6 +144,96 @@ def resolve_payne(protein_rows):
         })
     return out
 
+
+def _select_pdbe_candidate(arr):
+    if not isinstance(arr,list):
+        return None
+    cand=[]
+    for x in arr:
+        try: cov=float(x.get("coverage"))
+        except: cov=0.0
+        res=x.get("resolution")
+        try: resf=float(res) if res not in (None,"","None") else None
+        except: resf=None
+        if cov < 0.70: continue
+        if resf is not None and resf>4.0: continue
+        pdb=(x.get("pdb_id") or x.get("pdbId") or "").upper()
+        chain=(x.get("chain_id") or x.get("chainId") or "").strip()
+        if not pdb or not chain: continue
+        cand.append((cov, resf, pdb, chain, x))
+    if not cand:
+        return None
+    cand.sort(key=lambda z:(-z[0], z[1] if z[1] is not None else 999.0, z[2], z[3]))
+    cov,res,pdb,chain,x=cand[0]
+    return {
+        "structure_origin":"experimental_pdb",
+        "pdb_id":pdb,"chain":chain,"coverage":cov,"resolution":res,
+        "structure_url":f"https://files.rcsb.org/download/{pdb}.pdb",
+    }
+
+def batch_pdbe_best(accessions, chunk_size=200):
+    accessions=sorted(set(a for a in accessions if a))
+    out={}
+    endpoint="https://www.ebi.ac.uk/pdbe/api/mappings/best_structures/"
+    for i in range(0,len(accessions),chunk_size):
+        chunk=accessions[i:i+chunk_size]
+        body=",".join(chunk).encode("utf-8")
+        req=urllib.request.Request(endpoint,data=body,headers={
+            "User-Agent":UA,
+            "Accept":"application/json",
+            "Content-Type":"text/plain",
+        },method="POST")
+        last=None
+        for attempt in range(4):
+            try:
+                with urllib.request.urlopen(req,timeout=120) as r:
+                    obj=json.loads(r.read().decode("utf-8"))
+                for acc in chunk:
+                    arr=obj.get(acc) or obj.get(acc.upper()) or obj.get(acc.lower()) or []
+                    out[acc]=_select_pdbe_candidate(arr)
+                last=None
+                break
+            except Exception as e:
+                last=e
+                time.sleep(min(8,1.5**attempt))
+        if last is not None:
+            # Deterministic fallback to the already-defined single-accession endpoint.
+            for acc in chunk:
+                exp,_=get_best_pdbe_structure(acc)
+                out[acc]=exp
+    return out
+
+def enrich_identities_batch(identities):
+    accessions=sorted(set((r.get("uniprot_accession") or "").strip() for r in identities if (r.get("uniprot_accession") or "").strip()))
+    pdbe=batch_pdbe_best(accessions)
+    no_exp=[a for a in accessions if not pdbe.get(a)]
+    af_map={}
+    with ThreadPoolExecutor(max_workers=16) as ex:
+        fut={ex.submit(get_alphafold_structure,a):a for a in no_exp}
+        for f in as_completed(fut):
+            a=fut[f]
+            try:
+                af,status=f.result()
+            except Exception:
+                af,status=None,"alphafold_exception"
+            af_map[a]=(af,status)
+    enriched=[]
+    for r in identities:
+        z=dict(r)
+        acc=(r.get("uniprot_accession") or "").strip()
+        if not acc:
+            z.update({"structure_status":"identity_unresolved","structure_origin":"","pdb_id":"","chain":"","coverage":"","resolution":"","structure_url":""})
+        elif pdbe.get(acc):
+            z.update(pdbe[acc]); z["structure_status"]="experimental_selected"
+        else:
+            af,status=af_map.get(acc,(None,"alphafold_no_model"))
+            if af:
+                z.update(af); z["structure_status"]="alphafold_selected"; z["pdbe_status"]="pdbe_no_eligible_structure"
+            else:
+                z.update({"structure_status":"no_qualifying_structure","structure_origin":"","pdb_id":"","chain":"","coverage":"","resolution":"","structure_url":"","pdbe_status":"pdbe_no_eligible_structure","alphafold_status":status})
+        enriched.append(z)
+    return enriched
+
 def get_best_pdbe_structure(accession):
     url=f"https://www.ebi.ac.uk/pdbe/api/mappings/best_structures/{urllib.parse.quote(accession)}"
     try:
@@ -353,12 +443,8 @@ def main():
     identities=pcdb+payne
     print(f"Identity rows: {len(identities)}; human UniProt downloaded: {human_uniprot_count}",flush=True)
 
-    enriched=[]
-    with ThreadPoolExecutor(max_workers=16) as ex:
-        fut={ex.submit(enrich_one_identity,r):r for r in identities}
-        for i,f in enumerate(as_completed(fut),1):
-            enriched.append(f.result())
-            if i%100==0: print(f"structure enrichment {i}/{len(identities)}",flush=True)
+    enriched=enrich_identities_batch(identities)
+    print(f"structure enrichment batch complete: {len(enriched)} identities",flush=True)
     enriched.sort(key=lambda r:(r["source_database"],r["source_identifier"]))
     write_csv(OUT/"level1_structure_enrichment.csv",enriched)
 
