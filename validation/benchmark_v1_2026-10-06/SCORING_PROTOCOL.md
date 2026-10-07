@@ -89,6 +89,10 @@ Because quantitative units differ among studies/experiments:
 - Summarize experiment-level Spearman rho by median, IQR, number evaluable, fraction rho > 0, and Wilcoxon signed-rank test versus 0 when defined.
 - PC-DB and Payne are reported separately.
 
+### Multi-channel spatial ordering
+
+For LEVEL 2/3 cases mapped to more than one canonical chemistry channel, candidate patches are combined without a weighted score. The frozen deterministic ordering is: `pareto_front` ascending, `patch_coherence` descending, `chemistry_support` descending, then canonical map key and center key. Identical map/center/member records are retained as channel-specific candidates; no post-result channel selection is allowed. Residue propensity across mapped channels uses the maximum propensity, matching the public V1 unweighted composite policy.
+
 ## LEVEL-2 structural-response analysis
 
 Predefined chemistry mapping:
