@@ -11,11 +11,7 @@ def main():
     pcdb,total=m.resolve_pcdb_names(proteins)
     payne=m.resolve_payne(proteins)
     identities=pcdb+payne
-    enriched=[]
-    with ThreadPoolExecutor(max_workers=16) as ex:
-        fut={ex.submit(m.enrich_one_identity,r):r for r in identities}
-        for f in as_completed(fut):
-            enriched.append(f.result())
+    enriched=m.enrich_identities_batch(identities)
     enriched.sort(key=lambda r:(r["source_database"],r["source_identifier"]))
     m.write_csv(m.OUT/"level1_structure_enrichment_only.csv",enriched)
     audit={
