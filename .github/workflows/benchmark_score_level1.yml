@@ -1,0 +1,28 @@
+name: Score frozen benchmark Level 1
+on:
+  push:
+    branches:
+      - benchmark-scoring-v1-2026-10-07
+    paths:
+      - 'validation/benchmark_v1_2026-10-06/run_level1_scoring.py'
+      - 'validation/benchmark_v1_2026-10-06/TRIGGER_LEVEL1'
+      - '.github/workflows/benchmark_score_level1.yml'
+permissions:
+  contents: read
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r backend/requirements.txt scipy==1.16.2
+      - run: python validation/benchmark_v1_2026-10-06/run_level1_scoring.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-level1-scoring-v1-2026-10-07
+          path: validation/benchmark_v1_2026-10-06/scoring_v1_2026-10-07/
+          compression-level: 6
+          retention-days: 90
