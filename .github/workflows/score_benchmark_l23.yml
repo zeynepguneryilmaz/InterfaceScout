@@ -1,0 +1,286 @@
+name: Score frozen Level2 Level3 benchmark
+on:
+  push:
+    branches: [benchmark-scoring-v1-2026-10-07]
+    paths:
+      - 'validation/benchmark_v1_2026-10-06/TRIGGER_SCORE_L23'
+      - '.github/workflows/score_benchmark_l23.yml'
+permissions:
+  contents: read
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r backend/requirements.txt
+      - name: Score Level 2 and Level 3
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv, json, math, statistics, sys
+          from pathlib import Path
+          import numpy as np
+          from Bio.PDB import PDBParser
+          sys.path.insert(0, str(Path('backend').resolve()))
+          from interface_engine import analyze_all_maps
+          
+          root=Path('validation/benchmark_v1_2026-10-06')
+          outdir=Path('benchmark_scoring_l23')
+          outdir.mkdir(exist_ok=True)
+
+          MAP_ALIAS={
+            'anionic':'anionic','cationic':'cationic','hydrophobic':'hydrophobic',
+            'pi/aromatic':'pi_carbon','H-bond donor':'hbond_donor','H-bond acceptor':'hbond_acceptor',
+            'metal-oxide':'oxide','calcium/phosphate charged sites':'calcium_phosphate',
+            'transition-metal coordination':'metal_coord','soft-metal sulfur affinity':'soft_metal_sulfur',
+            'phosphate-rich':'phosphate'
+          }
+          CHEM={
+            'hsa_paa_fe3o4':['anionic','H-bond acceptor'],
+            'ubiquitin_citrate_au':['anionic','H-bond acceptor'],
+            'hcaii_silica_ph63':['metal-oxide'],
+            'hcaii_silica_ph83':['metal-oxide'],
+            'b2m_mpa_au':['anionic','H-bond acceptor'],
+            'asparaginase_alumoh':['cationic','metal-oxide'],
+            'bsa_silica':['metal-oxide'],
+            'transferrin_PS':['hydrophobic','pi/aromatic'],
+            'apo_transferrin_PS':['hydrophobic','pi/aromatic'],
+            'catalase_PS':['hydrophobic','pi/aromatic'],
+            'transferrin_IO':['metal-oxide'],
+          }
+
+          def parse_key(k):
+            # InterfaceScout keys are typically chain:resseq[:icode]
+            parts=str(k).split(':')
+            chain=parts[0] if parts else ''
+            try: res=int(parts[1])
+            except: res=None
+            return chain,res
+
+          def gt_residues(row):
+            vals=set()
+            ex=(row.get('exact_residues') or '').strip()
+            if ex:
+              for x in ex.split(';'):
+                try: vals.add(int(x))
+                except: pass
+            rs=(row.get('region_start') or '').strip()
+            re=(row.get('region_end') or '').strip()
+            try:
+              a=int(rs); b=int(re); vals.update(range(a,b+1))
+            except: pass
+            return vals
+
+          def combine_patches(result, channels):
+            patches=[]
+            for c in channels:
+              mk=MAP_ALIAS[c]
+              for p in result['maps'][mk]['patches']:
+                q=dict(p); q['_map']=mk
+                patches.append(q)
+            patches.sort(key=lambda p:(
+              int(p.get('pareto_front',999)),
+              -float(p.get('patch_coherence',0)),
+              -float(p.get('chemistry_support',0)),
+              str(p.get('_map','')),
+              str(p.get('center_key',''))
+            ))
+            return patches
+
+          def coords_from_prepared(prepared):
+            parser=PDBParser(QUIET=True)
+            from io import StringIO
+            st=parser.get_structure('x',StringIO(prepared))
+            d={}
+            for res in st.get_residues():
+              if 'CA' not in res: continue
+              ch=res.get_parent().id
+              try: num=int(res.id[1])
+              except: continue
+              d.setdefault(num,[]).append(np.array(res['CA'].coord,dtype=float))
+            return d
+
+          def patch_resnums(p):
+            nums=set()
+            for k in p.get('members',[]):
+              _,r=parse_key(k)
+              if r is not None: nums.add(r)
+            return nums
+
+          def min_dist_patch_to_gt(p, gt, coord):
+            vals=[]
+            pnums=patch_resnums(p)
+            for a in pnums:
+              for b in gt:
+                for ca in coord.get(a,[]):
+                  for cb in coord.get(b,[]):
+                    vals.append(float(np.linalg.norm(ca-cb)))
+            return min(vals) if vals else math.inf
+
+          def spatial_metrics(result, channels, gt):
+            patches=combine_patches(result,channels)
+            coord=coords_from_prepared(result['_prepared'])
+            gt=set(gt)
+            direct_positions=[]; near5=[]; near8=[]
+            direct_rec=[]; near8_rec=[]
+            front1_rec=[]
+            for i,p in enumerate(patches,1):
+              pr=patch_resnums(p)
+              direct=len(pr&gt)
+              # GT residue is near patch if any CA pair <= threshold
+              hit5=set(); hit8=set()
+              for g in gt:
+                md=math.inf
+                for a in pr:
+                  for ca in coord.get(a,[]):
+                    for cb in coord.get(g,[]):
+                      md=min(md,float(np.linalg.norm(ca-cb)))
+                if md<=5: hit5.add(g)
+                if md<=8: hit8.add(g)
+              if direct: direct_positions.append(i)
+              if hit5: near5.append(i)
+              if hit8: near8.append(i)
+              direct_rec.append(direct/len(gt) if gt else 0)
+              near8_rec.append(len(hit8)/len(gt) if gt else 0)
+              if int(p.get('pareto_front',999))==1:
+                front1_rec.append(len(hit8)/len(gt) if gt else 0)
+            return {
+              'n_candidate_patches':len(patches),
+              'first_direct_overlap_position':min(direct_positions) if direct_positions else '',
+              'first_near_5A_position':min(near5) if near5 else '',
+              'first_near_8A_position':min(near8) if near8 else '',
+              'top3_near_8A_hit':any(i<=3 for i in near8),
+              'top5_near_8A_hit':any(i<=5 for i in near8),
+              'top5_direct_overlap_hit':any(i<=5 for i in direct_positions),
+              'top3_near_8A_recall':max(near8_rec[:3], default=0.0),
+              'top5_near_8A_recall':max(near8_rec[:5], default=0.0),
+              'top5_overlap_recall':max(direct_rec[:5], default=0.0),
+              'best_front1_near_8A_recall':max(front1_rec, default=0.0),
+            }
+
+          def residue_propensity(result, channels, gt):
+            byres={}
+            for c in channels:
+              mk=MAP_ALIAS[c]
+              for r in result['maps'][mk]['residues']:
+                try: num=int(r['res_seq'])
+                except: continue
+                val=float(r.get('propensity') or 0)
+                byres[num]=max(byres.get(num,0),val)
+            vals=[byres[x] for x in gt if x in byres]
+            return (float(np.mean(vals)) if vals else '', max(vals) if vals else '', len(vals))
+
+          cache={}
+          def run(pdb,pH,chain=''):
+            key=(pdb,float(pH),chain)
+            if key in cache:return cache[key]
+            r=analyze_all_maps(pdb_id=pdb,pH=float(pH),ionic_mM=150.0,temp_K=298.0,chain=(chain or None))
+            # obtain prepared text separately by calling internal helper is avoided; reuse fetch+prepare via result is not exposed.
+            # RCSB fetch + prepare with public code for coordinate comparison.
+            import urllib.request
+            from prepare import prepare_pdb_text
+            raw=urllib.request.urlopen(f'https://files.rcsb.org/download/{pdb}.pdb',timeout=30).read().decode()
+            prepared,_=prepare_pdb_text(raw,chain=(chain or None))
+            r['_prepared']=prepared
+            cache[key]=r
+            return r
+
+          # Level 3
+          l3=[]
+          with open(root/'residue_level_ground_truth.csv',newline='',encoding='utf-8-sig') as fh:
+            rows=list(csv.DictReader(fh))
+          # Group rows by study condition, preserving individual GT records too.
+          groups={}
+          for row in rows:
+            groups.setdefault(row['study_id'],[]).append(row)
+          for study,rs in groups.items():
+            first=rs[0]
+            pdb=first['pdb_id']; pH=float(first['pH']); chain=first.get('chain','')
+            chain_arg='' if '/' in chain else chain.replace(',','')
+            # For equivalent-chain tetramer preserve all chains by selecting none; otherwise explicit chain.
+            if study=='asparaginase_alumoh': chain_arg=''
+            result=run(pdb,pH,chain_arg)
+            channels=CHEM[study]
+            gt=set()
+            for row in rs: gt |= gt_residues(row)
+            met=spatial_metrics(result,channels,gt)
+            meanp,maxp,npres=residue_propensity(result,channels,gt)
+            rec={
+              'benchmark_level':'LEVEL3','study_id':study,'protein_name':first['protein_name'],
+              'pdb_id':pdb,'pH':pH,'chemistry_channels':';'.join(channels),
+              'evidence_resolution':';'.join(sorted(set(x['evidence_resolution'] for x in rs))),
+              'n_ground_truth_residues':len(gt),'mean_gt_residue_propensity':meanp,
+              'max_gt_residue_propensity':maxp,'n_gt_residues_with_propensity':npres,
+              **met
+            }
+            l3.append(rec)
+
+          # Level 2 each annotation row; numeric only
+          l2=[]
+          with open(root/'structural_response_ground_truth.csv',newline='',encoding='utf-8-sig') as fh:
+            rows=list(csv.DictReader(fh))
+          for row in rows:
+            gt=gt_residues(row)
+            if not gt:
+              l2.append({
+                'benchmark_level':'LEVEL2','study_id':row['study_id'],'source_row_identifier':row['source_row_identifier'],
+                'response_label':row['response_label'],'protein_name':row['protein_name'],'pdb_id':row['pdb_id'],
+                'scoring_status':'not_scored_non_numeric_region'
+              })
+              continue
+            study=row['study_id']; channels=CHEM[study]
+            result=run(row['pdb_id'],float(row['pH']),'')
+            met=spatial_metrics(result,channels,gt)
+            meanp,maxp,npres=residue_propensity(result,channels,gt)
+            l2.append({
+              'benchmark_level':'LEVEL2','study_id':study,'source_row_identifier':row['source_row_identifier'],
+              'response_label':row['response_label'],'experimental_direction':row['experimental_direction'],
+              'protein_name':row['protein_name'],'pdb_id':row['pdb_id'],'pH':row['pH'],
+              'chemistry_channels':';'.join(channels),'n_ground_truth_residues':len(gt),
+              'mean_gt_residue_propensity':meanp,'max_gt_residue_propensity':maxp,
+              'n_gt_residues_with_propensity':npres,'scoring_status':'scored',**met
+            })
+
+          def write_csv(path,rows):
+            keys=[]
+            for r in rows:
+              for k in r:
+                if k not in keys:keys.append(k)
+            with open(path,'w',newline='',encoding='utf-8') as fh:
+              w=csv.DictWriter(fh,fieldnames=keys);w.writeheader();w.writerows(rows)
+
+          write_csv(outdir/'level3_results.csv',l3)
+          write_csv(outdir/'level2_results.csv',l2)
+
+          # Summaries
+          summary={'level3':{},'level2':{}}
+          summary['level3']={
+            'n_conditions':len(l3),
+            'top3_near8_hits':sum(bool(r['top3_near_8A_hit']) for r in l3),
+            'top5_near8_hits':sum(bool(r['top5_near_8A_hit']) for r in l3),
+            'top5_direct_hits':sum(bool(r['top5_direct_overlap_hit']) for r in l3),
+            'median_top5_near8_recall':statistics.median(float(r['top5_near_8A_recall']) for r in l3),
+            'median_best_front1_near8_recall':statistics.median(float(r['best_front1_near_8A_recall']) for r in l3),
+          }
+          scored=[r for r in l2 if r.get('scoring_status')=='scored']
+          for label in sorted(set(r['response_label'] for r in scored)):
+            z=[r for r in scored if r['response_label']==label]
+            summary['level2'][label]={
+              'n_records':len(z),
+              'top3_near8_hits':sum(bool(r['top3_near_8A_hit']) for r in z),
+              'top5_near8_hits':sum(bool(r['top5_near_8A_hit']) for r in z),
+              'top5_direct_hits':sum(bool(r['top5_direct_overlap_hit']) for r in z),
+              'median_top5_near8_recall':statistics.median(float(r['top5_near_8A_recall']) for r in z),
+              'median_gt_residue_propensity':statistics.median(float(r['mean_gt_residue_propensity']) for r in z if r['mean_gt_residue_propensity']!='')
+            }
+          summary['level2']['not_scored_non_numeric_region']=sum(r.get('scoring_status')!='scored' for r in l2)
+          (outdir/'summary.json').write_text(json.dumps(summary,indent=2))
+          print(json.dumps(summary,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-l23-results
+          path: benchmark_scoring_l23/
