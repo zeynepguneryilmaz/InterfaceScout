@@ -143,3 +143,15 @@ Residue-anchor, residue-set, peptide-region, and broader-region evidence are nev
 ## Immutability
 
 Any post-scoring change to eligibility, chemistry mapping, structure-resolution thresholds, tested descriptors, or primary metrics requires a new explicitly labeled sensitivity analysis or a new benchmark version. It cannot replace this frozen primary analysis.
+
+
+## Deterministic multi-channel patch pooling addendum (frozen before scoring)
+
+For LEVEL 2 and LEVEL 3 surfaces mapped to more than one canonical channel, spatial concordance uses a deterministic pooled candidate list:
+
+1. Collect every patch from every pre-specified channel.
+2. Deduplicate patches only when both the patch center key and the complete member-key set are identical.
+3. Sort the pooled list by: Pareto front ascending, patch coherence descending, chemistry support descending, canonical public channel key lexical ascending, center key lexical ascending.
+4. Assign pooled ranks 1..N from that ordering.
+5. No channel is chosen by experimental overlap, and no best-channel result replaces the pooled primary result.
+6. Composite residue propensity is the maximum V1 propensity for each residue across the pre-specified channels, consistent with the public V1 derived-overlay policy.
