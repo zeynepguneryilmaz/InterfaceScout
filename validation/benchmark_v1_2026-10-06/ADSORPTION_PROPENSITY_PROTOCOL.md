@@ -88,6 +88,7 @@ Surface-name matching is case-insensitive and based on explicit material/functio
 - alumina / aluminum oxide / aluminium oxide -> metal-oxide
 - hydroxyapatite / calcium phosphate -> calcium/phosphate charged sites
 - polystyrene / PS -> hydrophobic + pi/aromatic
+- poly(tetrafluoroethylene) / PTFE -> hydrophobic
 - graphite / graphene / carbon nanotube -> hydrophobic + pi/aromatic
 - diamond-like carbon / DLC -> hydrophobic + pi/aromatic
 - methyl / CH3-terminated explicit surface -> hydrophobic
@@ -138,3 +139,8 @@ PC-DB and Payne are retained only as secondary complex-mixture generalization te
 ## Immutability
 
 GSC, secondary descriptors, BAD mapping rules, eligibility criteria, and primary statistical analysis above are frozen before the BAD adsorption values are scored. Any later alternative formula is a separately labeled sensitivity analysis and cannot replace this primary test.
+
+
+## Pre-scoring source-inventory addendum
+
+Before any GSC values or adsorption-association results were calculated, inspection of the BAD 2.0 source inventory showed that poly(tetrafluoroethylene) (PTFE) is a recurrent explicit surface label. PTFE is therefore mapped to the hydrophobic canonical channel based solely on its exposed fluorocarbon chemistry. This addendum was committed before the first BAD/GSC scoring run. No surface rule will be added or removed in the primary analysis after performance results are viewed.
