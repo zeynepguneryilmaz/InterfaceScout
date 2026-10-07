@@ -1,7 +1,7 @@
 from __future__ import annotations
 import csv, io, json, math, os, re, sys, time, unicodedata, urllib.parse, urllib.request
 from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 import numpy as np
@@ -364,8 +364,8 @@ def main():
 
     scoreable=[r for r in enriched if r.get("structure_status") in ("experimental_selected","alphafold_selected")]
     scored=[]
-    # Threading is used conservatively because BioPython/Numpy release substantial work and avoids fork/network complexity.
-    with ThreadPoolExecutor(max_workers=4) as ex:
+    # Structure scoring is CPU-heavy; process-level parallelism changes execution only, not the frozen scientific protocol.
+    with ProcessPoolExecutor(max_workers=4) as ex:
         fut={ex.submit(score_structure,r):r for r in scoreable}
         for i,f in enumerate(as_completed(fut),1):
             scored.append(f.result())
