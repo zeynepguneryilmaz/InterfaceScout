@@ -1,7 +1,7 @@
 from __future__ import annotations
 import io, json, math, re, sys, urllib.request
 from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 import numpy as np
@@ -214,7 +214,7 @@ def main():
         key=(pdb,float(ph),tuple(chans));needed.add(key);prelim.append((base,key))
 
     scores={}
-    with ThreadPoolExecutor(max_workers=8) as exr:
+    with ProcessPoolExecutor(max_workers=4) as exr:
         fut={exr.submit(compute_descriptors,k):k for k in needed}
         for f in as_completed(fut):
             k=fut[f]
