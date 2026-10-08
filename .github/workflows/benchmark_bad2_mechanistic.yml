@@ -1,0 +1,24 @@
+name: Explore BAD mechanistic adsorption descriptors
+on:
+  push:
+    branches: [benchmark-scoring-v1-2026-10-07]
+    paths:
+      - 'validation/benchmark_v1_2026-10-06/run_bad2_mechanistic_exploratory.py'
+      - 'validation/benchmark_v1_2026-10-06/TRIGGER_BAD2_MECH'
+permissions:
+  contents: read
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install -r backend/requirements.txt pandas lxml scipy
+      - run: python validation/benchmark_v1_2026-10-06/run_bad2_mechanistic_exploratory.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bad2-mechanistic-exploratory
+          path: validation/benchmark_v1_2026-10-06/direct_adsorption_mechanistic_2026-10-08/
+          retention-days: 90
