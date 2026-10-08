@@ -144,3 +144,76 @@ GSC, secondary descriptors, BAD mapping rules, eligibility criteria, and primary
 ## Pre-scoring source-inventory addendum
 
 Before any GSC values or adsorption-association results were calculated, inspection of the BAD 2.0 source inventory showed that poly(tetrafluoroethylene) (PTFE) is a recurrent explicit surface label. PTFE is therefore mapped to the hydrophobic canonical channel based solely on its exposed fluorocarbon chemistry. This addendum was committed before the first BAD/GSC scoring run. No surface rule will be added or removed in the primary analysis after performance results are viewed.
+
+
+## Parameter-free mechanistic descriptor test — frozen before execution
+
+The first GSC-only direct-adsorption test did not support GSC as a standalone adsorption-propensity predictor. The following mechanistic diagnostics are therefore defined as an **exploratory model-development analysis**, not as a replacement primary validation. Any descriptor emerging from this analysis must subsequently be validated on an independent holdout/source before being promoted to a primary InterfaceScout output.
+
+All quantities below are computed only from the already-frozen V1 chemistry maps; no residue weights or regression coefficients are fitted.
+
+For each exposed residue i and mapped material channel c:
+- F_ic is the frozen V1 favorable local score.
+- R_ic is the frozen V1 repulsive local score.
+- F_i = max_c(F_ic)
+- R_i = max_c(R_ic)
+- A_i = scRSA_i
+
+Predeclared descriptors:
+
+1. **Net Global Compatibility (NGC)**
+
+   NGC = sum_i(F_i - R_i) / sum_i(A_i)
+
+2. **Best Patch Net Compatibility (BPNC)**
+
+   For every frozen V1 Pareto-front-1 patch P across the pre-mapped material channels:
+
+   BPNC(P) = sum_{i in P}(F_i - R_i) / sum_{i in P}(A_i)
+
+   BPNC is the maximum BPNC(P). Patch membership and Pareto fronts are those produced by unmodified public V1.
+
+3. **Best Patch Favorable Compatibility (BPFC)**
+
+   BPFC(P) = sum_{i in P} F_i / sum_{i in P} A_i
+
+   BPFC is the maximum BPFC(P).
+
+4. **Best Patch Surface Coverage (BPSC)**
+
+   For the patch attaining BPNC, BPSC = sum_{i in P} A_i / sum_i A_i.
+
+5. **Localized Net Support (LNS)**
+
+   LNS = max_P[ max(0, BPNC(P)) * (sum_{i in P} A_i / sum_i A_i) ]
+
+   This is a parameter-free product of local net compatibility and the fraction of the accessible protein surface represented by that patch. There are no fitted coefficients.
+
+### Experimental responses
+
+The following targets are reported separately:
+
+A. **Raw surface concentration** from BAD 2.0 (mg/m²), retained for comparison with the failed GSC analysis.
+
+B. **Molar surface density sensitivity target**, defined as BAD surface concentration divided by the molecular mass of the exact analyzed PDB structure. This removes the first-order mass-unit confounding across proteins but is explicitly **not** called monolayer coverage.
+
+The BAD 2.0 publication reports an additional normalization to fractions/numbers of monolayers using ProMS-derived protein shape/sphericity and a monolayer-density calculation. The actual SI monolayer-density workbook is not reproducibly accessible in the present environment. Therefore no monolayer values are reconstructed or guessed in this analysis.
+
+### Statistical independence correction
+
+Within each exact experimental stratum, repeated BAD rows for the same PDB are collapsed to the median experimental response before cross-protein Spearman correlation. Each protein therefore contributes at most one point per stratum.
+
+Exact strata remain defined by identical:
+- adsorbing-surface label,
+- solution concentration,
+- pH,
+- ionic strength,
+- temperature,
+- measurement method,
+- experiment type.
+
+At least three distinct scoreable PDBs and at least three distinct response values are required.
+
+### Interpretation
+
+This analysis is exploratory because it is initiated after observing failure of GSC. It may identify a physically sensible candidate protein-level descriptor, but it cannot by itself establish a validated adsorption-propensity claim. A successful candidate requires independent holdout validation without further formula changes.
