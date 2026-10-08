@@ -182,3 +182,139 @@ def compute_descriptors(key):
         "selected_chain":prep.get("selected_chain","ALL"),
     }
 
+def ex(v):
+    if v is None:return ""
+    return f"{v:.12g}" if isinstance(v,float) else str(v).strip()
+
+def main():
+    df,url=fetch_bad()
+    prelim=[];excl=[];needed=set()
+    for _,r in df.iterrows():
+        rid=str(r.get("ID","")).strip();pdb=str(r.get("PDB","")).strip().upper()
+        protein=str(r.get("Protein","")).strip();surf=str(r.get("Adsorbing Surface","")).strip()
+        gamma=fnum(r.get("Surface Concentration"));csol=fnum(r.get("Solution Concentration"))
+        ph=fnum(r.get("pH"));ionic=fnum(r.get("Ionic Strength"));temp=fnum(r.get("Temperature"))
+        method=str(r.get("Measurement Method","")).strip();etype=str(r.get("Experiment Type","")).strip()
+        val=str(r.get("Data Validation",r.get("Data validation",""))).strip();notes=str(r.get("Explanatory Notes","")).strip()
+        chans,rule=map_surface(surf)
+        reasons=[]
+        if not re.fullmatch(r"[0-9A-Za-z]{4}",pdb): reasons.append("invalid_or_missing_pdb")
+        if gamma is None or gamma<=0: reasons.append("bad_surface_concentration")
+        if csol is None or csol<=0: reasons.append("bad_solution_concentration")
+        if ph is None: reasons.append("missing_pH")
+        if not chans: reasons.append("surface_unmapped")
+        if re.search(r"(uncertain|invalid)",val+" "+notes,re.I): reasons.append("source_flag_uncertain_or_invalid")
+        base={"source_row_id":rid,"protein":protein,"pdb_id":pdb,"surface_concentration_mg_m2":gamma,
+              "solution_concentration_mg_ml":csol,"adsorbing_surface":surf,"pH":ph,"ionic_strength":ionic,
+              "temperature_C":temp,"measurement_method":method,"experiment_type":etype,
+              "reference":str(r.get("Reference","")).strip(),"DOI":str(r.get("DOI","")).strip(),
+              "mapped_channels":";".join(chans),"surface_mapping_rule":rule}
+        if reasons:
+            excl.append({**base,"exclusion_reasons":";".join(reasons)});continue
+        key=(pdb,float(ph),tuple(chans));needed.add(key);prelim.append((base,key))
+
+    scores={}
+    with ThreadPoolExecutor(max_workers=8) as exr:
+        fut={exr.submit(compute_descriptors,k):k for k in needed}
+        for f in as_completed(fut):
+            k=fut[f]
+            try:scores[k]=f.result()
+            except Exception as e:scores[k]={"error":repr(e)}
+
+    rows=[]
+    for base,key in prelim:
+        sc=scores[key]
+        if "error" in sc:
+            excl.append({**base,"exclusion_reasons":"v1_or_structure_failure","score_error":sc["error"]})
+            continue
+        z={**base,**sc}
+        mw=sc.get("structure_mw_Da")
+        z["molar_surface_density_umol_m2"]=(
+            float(base["surface_concentration_mg_m2"])*1e3/float(mw)
+            if mw and mw>0 else np.nan
+        )
+        rows.append(z)
+
+    pd.DataFrame(rows).to_csv(OUT/"scored_rows.csv",index=False)
+    pd.DataFrame(excl).to_csv(OUT/"exclusions.csv",index=False)
+
+    # exact strata; collapse repeated same-PDB rows to median response
+    groups=defaultdict(list)
+    for r in rows:
+        k=(ns(r["adsorbing_surface"]),ex(r["solution_concentration_mg_ml"]),ex(r["pH"]),
+           ex(r["ionic_strength"]),ex(r["temperature_C"]),r["measurement_method"].lower(),r["experiment_type"].lower())
+        groups[k].append(r)
+
+    descriptors=["GFC","GRC","NGC","BPNC","BPFC","BPSC","LNS"]
+    targets=["surface_concentration_mg_m2","molar_surface_density_umol_m2"]
+    results=[]
+    collapsed=[]
+    for k,arr in groups.items():
+        bypdb=defaultdict(list)
+        for x in arr:bypdb[x["pdb_id"]].append(x)
+        if len(bypdb)<3:continue
+        reps=[]
+        for pdb,aa in bypdb.items():
+            first=dict(aa[0])
+            for target in targets:
+                vals=[float(x[target]) for x in aa if x.get(target) is not None and np.isfinite(float(x[target]))]
+                first[target]=float(np.median(vals)) if vals else np.nan
+            first["n_replicate_rows_collapsed"]=len(aa)
+            reps.append(first)
+            collapsed.append({**first,"stratum_surface":k[0],"stratum_solution_concentration":k[1]})
+        for target in targets:
+            for desc in descriptors:
+                xs=[];ys=[]
+                for x in reps:
+                    try: xv=float(x[desc]);yv=float(x[target])
+                    except:continue
+                    if np.isfinite(xv) and np.isfinite(yv):
+                        xs.append(xv);ys.append(yv)
+                if len(xs)<3 or len(set(xs))<2 or len(set(ys))<3:continue
+                rho,p=spearmanr(xs,ys)
+                if not np.isfinite(rho):continue
+                results.append({
+                    "surface":k[0],"solution_concentration_mg_ml":k[1],"pH":k[2],
+                    "ionic_strength":k[3],"temperature_C":k[4],"measurement_method":k[5],
+                    "experiment_type":k[6],"target":target,"descriptor":desc,
+                    "n_unique_pdb":len(xs),"spearman_rho":float(rho),
+                    "spearman_p":float(p) if np.isfinite(p) else "",
+                    "protein_pdbs":";".join(sorted(bypdb)),
+                })
+
+    pd.DataFrame(collapsed).to_csv(OUT/"collapsed_exact_strata_rows.csv",index=False)
+    pd.DataFrame(results).to_csv(OUT/"stratum_correlations.csv",index=False)
+
+    summary=[]
+    for target in targets:
+        for desc in descriptors:
+            vals=np.array([r["spearman_rho"] for r in results if r["target"]==target and r["descriptor"]==desc],float)
+            if len(vals)==0:continue
+            p=""
+            if np.any(np.abs(vals)>1e-15):
+                try:p=float(wilcoxon(vals,zero_method="wilcox",alternative="two-sided").pvalue)
+                except:pass
+            summary.append({
+                "target":target,"descriptor":desc,"n_evaluable_strata":len(vals),
+                "median_rho":float(np.median(vals)),"q1_rho":float(np.quantile(vals,.25)),
+                "q3_rho":float(np.quantile(vals,.75)),"fraction_positive":float(np.mean(vals>0)),
+                "wilcoxon_p_vs_zero":p
+            })
+    pd.DataFrame(summary).to_csv(OUT/"descriptor_summary.csv",index=False)
+
+    audit={
+        "source_url":url,"live_rows":len(df),"eligible_scored_rows":len(rows),"excluded_rows":len(excl),
+        "unique_scored_pdb":len(set(r["pdb_id"] for r in rows)),"unique_scored_surfaces":len(set(r["adsorbing_surface"] for r in rows)),
+        "unique_descriptor_calculations_success":sum("error" not in v for v in scores.values()),
+        "unique_descriptor_calculations_failed":sum("error" in v for v in scores.values()),
+        "exact_groups_with_3plus_distinct_pdb":sum(len(set(x["pdb_id"] for x in a))>=3 for a in groups.values()),
+        "correlation_rows":len(results),"post_gsc_failure_exploratory":True,
+        "coefficients_fitted":False,"BAD_values_used_in_descriptor_definition":False,
+        "same_pdb_replicates_collapsed_to_median":True,
+        "monolayer_claim_made":False
+    }
+    (OUT/"audit.json").write_text(json.dumps(audit,indent=2))
+    print(json.dumps(audit,indent=2))
+    print(json.dumps(summary,indent=2))
+
+if __name__=="__main__":main()
