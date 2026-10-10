@@ -1,0 +1,26 @@
+name: Score prospective Level3 expansion
+on:
+  push:
+    branches: [level3-expansion-score-2026-10-10]
+    paths:
+      - 'validation/level3_expansion_2026-10-10/score_prospective_level3.py'
+      - 'validation/level3_expansion_2026-10-10/TRIGGER_SCORE'
+permissions:
+  contents: read
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install -r backend/requirements.txt
+      - run: python validation/level3_expansion_2026-10-10/score_prospective_level3.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: level3-expansion-results
+          path: |
+            validation/level3_expansion_2026-10-10/prospective_level3_results.csv
+            validation/level3_expansion_2026-10-10/prospective_level3_summary.json
+          retention-days: 90
