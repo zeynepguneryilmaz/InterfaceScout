@@ -21,7 +21,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[2]
 PANEL = ROOT / "validation/large_panel_285_2026-10-13/source_285_master.csv"
 OUT = ROOT / "validation/large_panel_285_2026-10-13/structure_audit_auto.csv"
 
