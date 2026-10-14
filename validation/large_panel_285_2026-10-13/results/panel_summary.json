@@ -1,0 +1,129 @@
+{
+  "batch_run_id": 38614780417,
+  "channel_descriptive_statistics": {
+    "anionic": {
+      "median_n_pareto_primary_patches": 10.0,
+      "median_n_patches": 66.0,
+      "median_top_patch_chemistry_support": 0.625,
+      "median_top_patch_coherence": 0.8831249999999999,
+      "n_proteins": 282
+    },
+    "calcium_phosphate": {
+      "median_n_pareto_primary_patches": 10.0,
+      "median_n_patches": 61.0,
+      "median_top_patch_chemistry_support": 0.6,
+      "median_top_patch_coherence": 0.90049,
+      "n_proteins": 282
+    },
+    "cationic": {
+      "median_n_pareto_primary_patches": 10.0,
+      "median_n_patches": 71.0,
+      "median_top_patch_chemistry_support": 0.714286,
+      "median_top_patch_coherence": 0.889845,
+      "n_proteins": 282
+    },
+    "hbond_acceptor": {
+      "median_n_pareto_primary_patches": 9.0,
+      "median_n_patches": 65.0,
+      "median_top_patch_chemistry_support": 0.6,
+      "median_top_patch_coherence": 0.8770100000000001,
+      "n_proteins": 282
+    },
+    "hbond_donor": {
+      "median_n_pareto_primary_patches": 10.0,
+      "median_n_patches": 71.0,
+      "median_top_patch_chemistry_support": 0.714286,
+      "median_top_patch_coherence": 0.88986,
+      "n_proteins": 282
+    },
+    "hydrophobic": {
+      "median_n_pareto_primary_patches": 8.0,
+      "median_n_patches": 67.5,
+      "median_top_patch_chemistry_support": 0.8,
+      "median_top_patch_coherence": 0.9278,
+      "n_proteins": 282
+    },
+    "metal_coord": {
+      "median_n_pareto_primary_patches": 8.0,
+      "median_n_patches": 53.0,
+      "median_top_patch_chemistry_support": 0.5,
+      "median_top_patch_coherence": 0.89066,
+      "n_proteins": 282
+    },
+    "oxide": {
+      "median_n_pareto_primary_patches": 7.0,
+      "median_n_patches": 45.5,
+      "median_top_patch_chemistry_support": 0.4365075,
+      "median_top_patch_coherence": 0.8890899999999999,
+      "n_proteins": 282
+    },
+    "phosphate": {
+      "median_n_pareto_primary_patches": 9.0,
+      "median_n_patches": 61.0,
+      "median_top_patch_chemistry_support": 0.555556,
+      "median_top_patch_coherence": 0.866825,
+      "n_proteins": 282
+    },
+    "pi_carbon": {
+      "median_n_pareto_primary_patches": 9.0,
+      "median_n_patches": 56.0,
+      "median_top_patch_chemistry_support": 0.5,
+      "median_top_patch_coherence": 0.88358,
+      "n_proteins": 282
+    },
+    "soft_metal_sulfur": {
+      "median_n_pareto_primary_patches": 2.0,
+      "median_n_patches": 14.0,
+      "median_top_patch_chemistry_support": 0.333333,
+      "median_top_patch_coherence": 1.0,
+      "n_proteins": 282
+    }
+  },
+  "chemistry_channels_n": 11,
+  "chemistry_specificity": {
+    "median_fraction_channel_pairs_zero_overlap_per_protein": 0.836364,
+    "median_unique_center_fraction": 0.636364,
+    "median_unique_top_patch_centers_per_protein": 7.0,
+    "overall_mean_pairwise_top_patch_jaccard": 0.13074708739309676,
+    "overall_median_pairwise_top_patch_jaccard": 0.0,
+    "proteins_n": 282
+  },
+  "full_json_outputs": "GitHub Actions run 38614780417, shard artifacts 0-11",
+  "full_or_near_full_success_n": 281,
+  "interpretation": "Large-panel breadth/chemistry-specific landscape only; not adsorption propensity or experimental accuracy.",
+  "no_model_proteins": [
+    {
+      "panel_id": "LP013",
+      "protein_name": "Apolipoprotein B-100",
+      "uniprot_accession": "P04114"
+    },
+    {
+      "panel_id": "LP072",
+      "protein_name": "Selenoprotein P",
+      "uniprot_accession": "P49908"
+    },
+    {
+      "panel_id": "LP173",
+      "protein_name": "Glutathione peroxidase 3",
+      "uniprot_accession": "P22352"
+    }
+  ],
+  "partial_structure_success_n": 1,
+  "plddt_qc_counts_among_successes": {
+    "LOW_MEDIAN_CONFIDENCE": 6,
+    "STANDARD": 239,
+    "SUBSTANTIAL_LOW_CONFIDENCE": 37
+  },
+  "protein_by_channel_rows_n": 3102,
+  "reference_condition": {
+    "ionic_mM_metadata": 150.0,
+    "pH": 7.4,
+    "temp_K_metadata": 298.0
+  },
+  "source_panel_n": 285,
+  "status_counts": {
+    "NO_ALPHAFOLD_MODEL": 3,
+    "SUCCESS": 282
+  },
+  "successful_proteins_n": 282
+}
