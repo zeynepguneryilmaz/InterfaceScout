@@ -8,15 +8,13 @@ AlphaFold DB for the corresponding predicted monomer models. This script does
 NOT use InterfaceScout scores, adsorption labels, or experimental PDB
 availability to include/exclude proteins.
 
-AlphaFold confidence is recorded only as QC metadata. It is not used as a
-weight in InterfaceScout V1.
+AlphaFold confidence is recorded during the later batch run as QC metadata. It is not used as a\nweight in InterfaceScout V1.
 """
 from __future__ import annotations
 
 import csv
 import json
 import re
-import statistics
 import sys
 import time
 from pathlib import Path
@@ -145,35 +143,6 @@ def af_records(accession: str) -> list[dict[str, Any]]:
     return payload if isinstance(payload, list) else []
 
 
-def pdb_plddt_summary(url: str) -> dict[str, Any]:
-    """Read CA B-factors from AF PDB as pLDDT QC metadata."""
-    if not url:
-        return {}
-    r = session.get(url, timeout=120)
-    r.raise_for_status()
-    vals: list[float] = []
-    for line in r.text.splitlines():
-        if not line.startswith("ATOM"):
-            continue
-        atom = line[12:16].strip()
-        if atom != "CA":
-            continue
-        try:
-            vals.append(float(line[60:66]))
-        except Exception:
-            pass
-    if not vals:
-        return {}
-    return {
-        "n_ca_confidence": len(vals),
-        "mean_plddt": statistics.fmean(vals),
-        "median_plddt": statistics.median(vals),
-        "frac_plddt_ge90": sum(v >= 90 for v in vals) / len(vals),
-        "frac_plddt_ge70": sum(v >= 70 for v in vals) / len(vals),
-        "frac_plddt_lt50": sum(v < 50 for v in vals) / len(vals),
-    }
-
-
 def choose_primary(records: list[dict[str, Any]], uniprot_length: int):
     """Choose the model record with maximal sequence coverage, deterministic ties."""
     parsed = []
@@ -274,26 +243,8 @@ def main():
                         "af_is_reference_proteome": primary.get("isReferenceProteome", ""),
                         "primary_large_panel_status": "MODEL_AVAILABLE_FULL_OR_NEAR_FULL" if cov >= 0.95 else "MODEL_AVAILABLE_FRAGMENT_OR_PARTIAL",
                     })
-                    try:
-                        conf = pdb_plddt_summary(primary.get("pdbUrl", ""))
-                        for k, v in conf.items():
-                            if isinstance(v, float):
-                                row[k] = f"{v:.6f}"
-                            else:
-                                row[k] = v
-                        low = float(conf.get("frac_plddt_lt50", 0.0)) if conf else 0.0
-                        med = float(conf.get("median_plddt", 0.0)) if conf else 0.0
-                        if not conf:
-                            row["confidence_qc_flag"] = "CONFIDENCE_UNAVAILABLE"
-                        elif low >= 0.30:
-                            row["confidence_qc_flag"] = "SUBSTANTIAL_LOW_CONFIDENCE"
-                        elif med < 70:
-                            row["confidence_qc_flag"] = "LOW_MEDIAN_CONFIDENCE"
-                        else:
-                            row["confidence_qc_flag"] = "STANDARD"
-                    except Exception as exc:
-                        row["confidence_qc_flag"] = "CONFIDENCE_FETCH_ERROR"
-                        row["notes"] = f"pLDDT fetch failed: {exc}"
+                    row["confidence_qc_flag"] = "DEFERRED_TO_BATCH"
+                    row["notes"] = "pLDDT/PAE QC deferred to batch run to avoid downloading each model twice."
             except Exception as exc:
                 print(f"WARN AlphaFold {name} {acc}: {exc}", file=sys.stderr)
                 row["alphafold_status"] = "ALPHAFOLD_LOOKUP_ERROR"
