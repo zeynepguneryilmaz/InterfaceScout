@@ -1,0 +1,45 @@
+name: Aggregate large-panel 285 results
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - large-panel-freeze-2026-10-13
+    paths:
+      - 'scripts/validation/aggregate_large_panel_results.py'
+      - '.github/workflows/large_panel_aggregate.yml'
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  aggregate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: large-panel-freeze-2026-10-13
+      - name: Download frozen batch artifacts
+        uses: actions/download-artifact@v4
+        with:
+          repository: zeynepguneryilmaz/InterfaceScout
+          run-id: 38614780417
+          github-token: ${{ github.token }}
+          pattern: large-panel-batch-shard-*
+          path: validation/large_panel_285_2026-10-13/downloaded_artifacts
+          merge-multiple: true
+      - name: Aggregate and verify
+        run: python scripts/validation/aggregate_large_panel_results.py
+      - name: Commit aggregate results
+        run: |
+          rm -rf validation/large_panel_285_2026-10-13/downloaded_artifacts
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/large_panel_285_2026-10-13/results
+          if git diff --cached --quiet; then
+            echo "No aggregate changes to commit"
+          else
+            git commit -m "Freeze aggregate 285-protein InterfaceScout results"
+            git push origin HEAD:large-panel-freeze-2026-10-13
+          fi
