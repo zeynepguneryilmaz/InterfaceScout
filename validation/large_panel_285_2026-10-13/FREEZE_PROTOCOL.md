@@ -45,31 +45,35 @@ A protein is included when its source abundance is >0 in at least 5% of these 51
 
 Membership in the 285-protein panel is frozen before any InterfaceScout score, patch, propensity, or material-channel output is inspected. No protein may be removed because InterfaceScout performs poorly or because its patch landscape appears inconvenient.
 
-## Structure audit
+## Structure policy for the 285-protein panel
 
-Every source protein remains in `source_285_master.csv` even if it later proves unsuitable for primary structure-based analysis.
+Every source protein remains in `source_285_master.csv`. The large-panel analysis is **not an experimental-structure benchmark** and experimental PDB availability is not an inclusion criterion.
+
+The primary purpose is to apply the frozen V1 method consistently across the complete source-derived protein panel. Therefore the primary large-panel structure source is a **uniform UniProt-linked predicted-structure source (AlphaFold DB where available)** rather than a heterogeneous subset selected by PDB availability.
 
 For each protein, audit:
-1. protein identity / UniProt mapping;
-2. experimental structure availability;
-3. construct and sequence coverage;
-4. chain choice and oligomeric context;
-5. intrinsically disordered status;
-6. whether only a domain/fragment structure is available;
-7. whether a biologically meaningful experimental structure can support full-protein V1 analysis.
+1. protein identity / reviewed human UniProt mapping;
+2. availability of the corresponding AlphaFold DB model or human-proteome fragment model;
+3. sequence coverage / fragmentation;
+4. model-confidence metadata (pLDDT; and PAE/domain context when needed);
+5. intrinsically disordered or very-low-confidence regions;
+6. exceptionally long proteins represented as overlapping AlphaFold fragments;
+7. any biological context that makes a single-chain static structure a poor representation of the relevant protein state.
 
-Primary structural stratum:
-- experimentally determined structure;
-- defensible identity and sequence mapping;
-- sufficiently representative construct;
-- folded protein state compatible with V1.
+Primary large-panel stratum:
+- frozen source membership (n=285);
+- defensible UniProt identity;
+- AlphaFold DB monomer/full-length prediction where available;
+- frozen V1 run without using adsorption labels to choose proteins, channels, thresholds, or structures.
 
-Separate sensitivity strata:
-- domain-only experimental structures;
-- partial experimental coverage;
-- predicted structures (if used at all).
+AlphaFold confidence is **QC metadata, not an InterfaceScout scoring term**. No pLDDT-derived weight is added to V1 and no confidence cutoff is tuned against InterfaceScout or adsorption outcomes. Standard AlphaFold confidence bands may be reported descriptively and used to flag low-confidence regions for interpretation.
 
-Do not silently pool experimental and predicted structures.
+Experimental PDB structures are retained only as a **secondary cross-structure sensitivity analysis** for proteins where a defensible native-like experimental structure exists. PDB availability must not determine membership in the main 285-protein panel.
+
+Do not mix experimental-interface validation with this large-panel analysis:
+- predicted/full-panel structures establish breadth and applicability;
+- Level-3 literature cases establish experimental region-level accuracy;
+- experimental PDB vs AlphaFold comparisons, when performed, test structure-source sensitivity only.
 
 ## InterfaceScout batch rule
 
@@ -104,10 +108,10 @@ The 285-protein panel does not replace the experimental Level-3 gold standard.
 Always report the full source denominator:
 - 285 source proteins
 - number identity-resolved
-- number with suitable experimental structures
-- number domain-only/partial
-- number predicted-structure only
-- number IDP/ineligible
+- number with AlphaFold DB full-length models
+- number represented by AlphaFold fragments / partial sequence coverage
+- number with substantial low-confidence or disorder-like regions
+- number with no usable predicted model
 - number unresolved
 
-This prevents easy-structure selection from being mistaken for the source panel itself.
+Experimental-PDB availability is reported separately as a sensitivity resource, not as the primary denominator. This prevents easy-structure or PDB-availability selection from being mistaken for the source panel itself.
