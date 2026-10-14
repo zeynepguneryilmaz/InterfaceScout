@@ -1,0 +1,38 @@
+name: Large-panel 285 InterfaceScout batch
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - large-panel-freeze-2026-10-13
+    paths:
+      - 'scripts/validation/run_large_panel_batch.py'
+      - '.github/workflows/large_panel_batch.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  batch:
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install InterfaceScout dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Run frozen V1 shard
+        run: python scripts/validation/run_large_panel_batch.py --shard-index ${{ matrix.shard }} --shard-count 12
+      - name: Upload shard outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: large-panel-batch-shard-${{ matrix.shard }}
+          path: validation/large_panel_285_2026-10-13/batch_outputs/shard_*
+          if-no-files-found: error
+          compression-level: 6
