@@ -1,0 +1,153 @@
+{
+  "alphafold_confidence_strata": {
+    "FLAGGED": {
+      "median_mean_pairwise_jaccard": 0.080909,
+      "median_surface_residues": 578.0,
+      "median_uniprot_length": 578.0,
+      "median_unique_top_patch_centers": 8.0,
+      "median_zero_overlap_fraction": 0.909091,
+      "n": 43
+    },
+    "STANDARD": {
+      "median_mean_pairwise_jaccard": 0.127273,
+      "median_surface_residues": 321.0,
+      "median_uniprot_length": 424.0,
+      "median_unique_top_patch_centers": 7.0,
+      "median_zero_overlap_fraction": 0.818182,
+      "n": 239
+    }
+  },
+  "analysis_type": "post-hoc descriptive QC; no thresholds or weights fitted",
+  "highest_mean_overlap_channel_pairs": [
+    {
+      "a": "cationic",
+      "b": "hbond_donor",
+      "mean": 1.0,
+      "median": 1.0,
+      "zero": 0.0
+    },
+    {
+      "a": "anionic",
+      "b": "hbond_acceptor",
+      "mean": 0.877164,
+      "median": 1.0,
+      "zero": 0.102837
+    },
+    {
+      "a": "anionic",
+      "b": "phosphate",
+      "mean": 0.567416,
+      "median": 1.0,
+      "zero": 0.361702
+    },
+    {
+      "a": "hbond_acceptor",
+      "b": "phosphate",
+      "mean": 0.536866,
+      "median": 0.666667,
+      "zero": 0.379433
+    },
+    {
+      "a": "oxide",
+      "b": "metal_coord",
+      "mean": 0.507228,
+      "median": 0.555556,
+      "zero": 0.443262
+    },
+    {
+      "a": "oxide",
+      "b": "calcium_phosphate",
+      "mean": 0.309598,
+      "median": 0.0,
+      "zero": 0.592199
+    },
+    {
+      "a": "calcium_phosphate",
+      "b": "metal_coord",
+      "mean": 0.256805,
+      "median": 0.0,
+      "zero": 0.652482
+    },
+    {
+      "a": "pi_carbon",
+      "b": "phosphate",
+      "mean": 0.252987,
+      "median": 0.0,
+      "zero": 0.673759
+    }
+  ],
+  "key_interpretation": [
+    "Cross-channel zero-overlap increases with protein size/surface area, so raw zero-overlap fraction must not be treated as size-independent validation.",
+    "Distinct top-patch-center count is only weakly associated with protein size and is a more conservative breadth descriptor.",
+    "Chemically related channels show much higher top-patch overlap than chemically dissimilar channels.",
+    "At pH 7.4, cationic and H-bond-donor rank-1 patches are identical across this panel; the 11 outputs should therefore not be described as 11 statistically independent dimensions.",
+    "AlphaFold-confidence strata differ in protein size as well as chemistry-specificity metrics; confidence-stratified differences are descriptive and not causal."
+  ],
+  "lowest_mean_overlap_channel_pairs": [
+    {
+      "a": "hydrophobic",
+      "b": "calcium_phosphate",
+      "mean": 0.000678,
+      "median": 0.0,
+      "zero": 0.989362
+    },
+    {
+      "a": "cationic",
+      "b": "hydrophobic",
+      "mean": 0.002792,
+      "median": 0.0,
+      "zero": 0.985816
+    },
+    {
+      "a": "hydrophobic",
+      "b": "hbond_donor",
+      "mean": 0.002792,
+      "median": 0.0,
+      "zero": 0.985816
+    },
+    {
+      "a": "hydrophobic",
+      "b": "oxide",
+      "mean": 0.004122,
+      "median": 0.0,
+      "zero": 0.98227
+    },
+    {
+      "a": "cationic",
+      "b": "soft_metal_sulfur",
+      "mean": 0.00496,
+      "median": 0.0,
+      "zero": 0.978723
+    },
+    {
+      "a": "hbond_donor",
+      "b": "soft_metal_sulfur",
+      "mean": 0.00496,
+      "median": 0.0,
+      "zero": 0.978723
+    },
+    {
+      "a": "hbond_acceptor",
+      "b": "metal_coord",
+      "mean": 0.005337,
+      "median": 0.0,
+      "zero": 0.978723
+    },
+    {
+      "a": "anionic",
+      "b": "hydrophobic",
+      "mean": 0.005578,
+      "median": 0.0,
+      "zero": 0.978723
+    }
+  ],
+  "n_successful_proteins": 282,
+  "spearman_size_associations": {
+    "surface_residues_vs_mean_pairwise_jaccard": -0.27271356733112756,
+    "surface_residues_vs_unique_top_patch_centers": 0.1736701323607958,
+    "surface_residues_vs_zero_overlap_fraction": 0.4219643459376375,
+    "uniprot_length_vs_mean_pairwise_jaccard": -0.21883530371727597,
+    "uniprot_length_vs_unique_top_patch_centers": 0.11484425472621948,
+    "uniprot_length_vs_zero_overlap_fraction": 0.3697131643487329
+  }
+}
