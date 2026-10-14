@@ -209,3 +209,5 @@ output or PC-DB adsorption labels.
 """
 (OUT/"RESULTS_README.md").write_text(readme)
 print(json.dumps(summary,indent=2,sort_keys=True))
+
+# Aggregation workflow trigger marker; no analytical effect.
