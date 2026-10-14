@@ -29,6 +29,26 @@ UNIPROT = "https://rest.uniprot.org/uniprotkb/search"
 RCSB_SEARCH = "https://search.rcsb.org/rcsbsearch/v2/query"
 RCSB_DATA = "https://data.rcsb.org/rest/v1/core"
 
+# Source-name aliases verified independently of InterfaceScout outputs.
+# These resolve nomenclature differences only; they do not change panel membership.
+CURATED_SOURCE_ALIASES = {
+    "Serum albumin": "P02768",
+    "Insulin-like growth factor-binding protein complex acid labile chain": "P35858",
+    "Hepatocyte growth factor activator": "Q04756",
+    "78kDa glucose-regulated protein": "P11021",
+    "Inactive cell surface hyaluronidase CEMIP2": "Q9UHN6",
+    "Coiled coil domain containing protein 144B": "Q3MJ40",
+}
+
+CONTEXT_PATTERNS = [
+    ("AMYLOID_FIBRIL", r"amyloid|\bfibril"),
+    ("ENGINEERED_OR_VARIANT", r"mutant|mutation|variant|engineered"),
+    ("ACTIVATED_OR_ZYMOGEN_STATE", r"activated|zymogen|proconvertase|convertase"),
+    ("ANTIBODY_OR_BINDER_COMPLEX", r"\bfab\b|antibody|nanobody|sybody"),
+    ("LIGAND_OR_PARTNER_COMPLEX", r"\bcomplex\b|\bbound\b"),
+    ("VIRAL_OR_CAPSID_CONTEXT", r"capsid|virus|viral"),
+]
+
 session = requests.Session()
 retry = Retry(
     total=5, connect=5, read=5, status=5,
@@ -58,7 +78,34 @@ def uniprot_names(rec: dict[str, Any]) -> list[str]:
     return names
 
 
+def fetch_curated_alias(source_name: str):
+    accession = CURATED_SOURCE_ALIASES.get(source_name)
+    if not accession:
+        return None
+    r = session.get(f"https://rest.uniprot.org/uniprotkb/{accession}.json", timeout=45)
+    r.raise_for_status()
+    rec = r.json()
+    organism_id = ((rec.get("organism") or {}).get("taxonId"))
+    entry_type = rec.get("entryType", "")
+    if organism_id != 9606 or "reviewed" not in entry_type.lower():
+        raise RuntimeError(f"Curated alias {source_name}->{accession} is not reviewed human UniProtKB")
+    names = uniprot_names(rec)
+    recommended = names[0] if names else ""
+    length = ((rec.get("sequence") or {}).get("length"))
+    return (
+        "RESOLVED_CURATED_ALIAS_REVIEWED_HUMAN",
+        accession,
+        rec.get("uniProtkbId", ""),
+        recommended,
+        int(length) if isinstance(length, int) else None,
+        names,
+    )
+
+
 def search_uniprot(source_name: str) -> tuple[str, str, str, str, int | None, list[str]]:
+    curated = fetch_curated_alias(source_name)
+    if curated is not None:
+        return curated
     # First use protein_name-scoped query; if no results, broaden but still require
     # an exact normalized protein name before auto-resolution.
     queries = [
@@ -249,6 +296,14 @@ def pdb_audit(accession: str, length: int | None) -> tuple[str, dict[str, Any] |
     return status, top, hits[:5]
 
 
+def context_flags(title: str) -> list[str]:
+    flags = []
+    for label, pattern in CONTEXT_PATTERNS:
+        if re.search(pattern, title or "", flags=re.I):
+            flags.append(label)
+    return flags
+
+
 def compact_hit(h: dict[str, Any]) -> str:
     cov = "" if h["coverage"] is None else f'{h["coverage"]:.3f}'
     res = "" if h["resolution"] is None else f'{h["resolution"]:.2f}'
@@ -271,7 +326,8 @@ def main() -> None:
         "uniprot_length", "identity_candidates_or_names",
         "pdb_auto_status", "top_pdb_candidate", "top_entity", "top_chain",
         "top_coverage", "top_coverage_basis", "top_method", "top_resolution",
-        "top_mutation_count", "top_entity_length", "top_title", "top5_candidates",
+        "top_mutation_count", "top_entity_length", "top_title", "top_context_flags",
+        "top_candidate_qc_priority", "top5_candidates",
         "manual_structure_qc_required", "final_structure_selection_status",
     ]
 
@@ -307,6 +363,8 @@ def main() -> None:
             "top_mutation_count": "",
             "top_entity_length": "",
             "top_title": "",
+            "top_context_flags": "",
+            "top_candidate_qc_priority": "",
             "top5_candidates": "",
             "manual_structure_qc_required": "YES",
             "final_structure_selection_status": "PENDING_MANUAL_QC",
@@ -328,6 +386,8 @@ def main() -> None:
                         "top_mutation_count": "" if top["mutation_count"] is None else top["mutation_count"],
                         "top_entity_length": top["entity_length"],
                         "top_title": top["title"],
+                        "top_context_flags": ";".join(context_flags(top["title"])),
+                        "top_candidate_qc_priority": "HIGH" if context_flags(top["title"]) else "STANDARD",
                         "top5_candidates": ";".join(compact_hit(h) for h in hits),
                     })
             except Exception as e:
@@ -344,12 +404,28 @@ def main() -> None:
 
     counts: dict[str, int] = {}
     pdb_counts: dict[str, int] = {}
+    qc_counts: dict[str, int] = {}
     for r in output:
         counts[r["identity_status"]] = counts.get(r["identity_status"], 0) + 1
         pdb_counts[r["pdb_auto_status"]] = pdb_counts.get(r["pdb_auto_status"], 0) + 1
+        q = r["top_candidate_qc_priority"] or "NO_PDB_OR_UNRESOLVED"
+        qc_counts[q] = qc_counts.get(q, 0) + 1
+
+    summary = {
+        "source_panel_n": 285,
+        "identity_counts": counts,
+        "pdb_auto_counts": pdb_counts,
+        "top_candidate_qc_priority_counts": qc_counts,
+        "policy": "automatic PDB candidates require manual construct/state/context QC before InterfaceScout batch scoring",
+    }
+    summary_path = OUT.with_name("structure_audit_auto_summary.json")
+    summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
     print("IDENTITY_COUNTS=" + json.dumps(counts, sort_keys=True))
     print("PDB_COUNTS=" + json.dumps(pdb_counts, sort_keys=True))
+    print("QC_PRIORITY_COUNTS=" + json.dumps(qc_counts, sort_keys=True))
     print(f"WROTE {OUT}")
+    print(f"WROTE {summary_path}")
 
 
 if __name__ == "__main__":
