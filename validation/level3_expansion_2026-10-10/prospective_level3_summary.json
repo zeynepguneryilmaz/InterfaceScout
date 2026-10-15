@@ -1,0 +1,40 @@
+{
+  "n_conditions": 2,
+  "n_scored": 2,
+  "n_partial_truth_mapping": 0,
+  "top3_near8_hits": 2,
+  "top5_near8_hits": 2,
+  "top5_direct_hits": 1,
+  "condition_results": {
+    "L3E001": {
+      "first_direct_overlap_rank": 2,
+      "first_near_5A_rank": 2,
+      "first_near_8A_rank": 2,
+      "top3_near_8A_hit": 1,
+      "top5_near_8A_hit": 1,
+      "top5_direct_overlap_hit": 1,
+      "top3_near_8A_recall": 1.0,
+      "top5_near_8A_recall": 1.0,
+      "top5_direct_overlap_recall": 1.0,
+      "best_front1_near_8A_recall": 1.0,
+      "mean_truth_propensity": 69.089,
+      "max_truth_propensity": 69.089,
+      "channels": "anionic;H-bond acceptor"
+    },
+    "L3E025": {
+      "first_direct_overlap_rank": 12,
+      "first_near_5A_rank": 12,
+      "first_near_8A_rank": 3,
+      "top3_near_8A_hit": 1,
+      "top5_near_8A_hit": 1,
+      "top5_direct_overlap_hit": 0,
+      "top3_near_8A_recall": 0.075,
+      "top5_near_8A_recall": 0.1,
+      "top5_direct_overlap_recall": 0.0,
+      "best_front1_near_8A_recall": 0.25,
+      "mean_truth_propensity": 14.8907,
+      "max_truth_propensity": 78.895,
+      "channels": "cationic;metal-oxide"
+    }
+  }
+}
