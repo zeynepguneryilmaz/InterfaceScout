@@ -80,6 +80,9 @@ Prospectively added before any new scoring:
 - **pristine C60 fullerene -> hydrophobic + pi/aromatic**
   Rationale: pristine fullerene is an exposed aromatic carbon cage with strong hydrophobic/aromatic interaction character. C60 molecular-nanomaterial examples are reported as a distinct sensitivity stratum because C60 is not an extended solid surface.
 
+- **iron oxide NP explicitly measured as strongly positive at the assay pH, with no reported organic outer shell -> cationic + metal-oxide**
+  Rationale: the oxide surface chemistry is retained while the experimentally measured positive electrokinetic surface character is represented prospectively by the cationic channel. This rule was added before scoring the Duan apo-transferrin–IONP condition and is not result-fitted.
+
 No chemistry rule will be added or removed after observing new expansion scoring results.
 
 ## pH rule
