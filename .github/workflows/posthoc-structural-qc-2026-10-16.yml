@@ -1,0 +1,41 @@
+name: Posthoc 97-protein structural site QC
+on:
+  push:
+    branches: [level3-literature-audit-2026-10-15]
+    paths:
+      - '.github/workflows/posthoc-structural-qc-2026-10-16.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  patch-qc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Retrieve all twelve frozen V1 shard artifacts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p artifacts
+          gh run download 38614780417 --repo "$GITHUB_REPOSITORY" --pattern 'large-panel-batch-shard-*' --dir artifacts
+          echo "JSON files: $(find artifacts -name 'LP*_*.json' | wc -l)"
+      - name: Check residue-wise confidence and protein maturation
+        shell: bash
+        run: |
+          python scripts/validation/patch_residue_confidence_qc.py --input artifacts --output qc_results
+          cat qc_results/summary.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: structural-97-patch-qc-2026-10-16
+          path: |
+            qc_results/patch_residue_qc.csv
+            qc_results/protein_residue_qc.csv
+            qc_results/summary.json
+          if-no-files-found: warn
