@@ -1,0 +1,13 @@
+predictor,outcome,n,spearman_rho
+uniprot_length,mean_pairwise_top_patch_jaccard,282,-0.2188
+uniprot_length,fraction_channel_pairs_zero_overlap,282,0.3697
+uniprot_length,n_unique_top_patch_centers,282,0.1148
+n_surface_residues,mean_pairwise_top_patch_jaccard,282,-0.2727
+n_surface_residues,fraction_channel_pairs_zero_overlap,282,0.4220
+n_surface_residues,n_unique_top_patch_centers,282,0.1737
+plddt_mean,mean_pairwise_top_patch_jaccard,282,0.2975
+plddt_mean,fraction_channel_pairs_zero_overlap,282,-0.3956
+plddt_mean,n_unique_top_patch_centers,282,-0.2268
+plddt_frac_lt50,mean_pairwise_top_patch_jaccard,282,-0.3483
+plddt_frac_lt50,fraction_channel_pairs_zero_overlap,282,0.4550
+plddt_frac_lt50,n_unique_top_patch_centers,282,0.2555
