@@ -18,6 +18,17 @@ function runExport(raw, prepared, serial, rows) {
   return vm.runInContext(`rewriteBfactorPdb(${JSON.stringify(rows)},'test','canonical propensity')`,ctx);
 }
 const score = [{chain:'A',res_seq:1,icode:'',value:88.12345}];
+test('B-factor quantization obeys the declared half-cent tolerance at score boundaries',()=>{
+  const pdb=`${atom}\nEND\n`;
+  for(const value of [0,1e-14,0.0049,0.0051,49.9949,49.9951,99.9949,99.9951,100]){
+    const rows=[{chain:'A',res_seq:1,icode:'',value}];
+    const line=runExport(pdb,pdb,null,rows).split('\n').find(l=>l.startsWith('ATOM'));
+    assert.ok(Math.abs(Number(line.slice(60,66))-value)<=0.0050000001);
+    assert.equal(line.slice(0,60),atom.slice(0,60));
+    assert.equal(line.slice(66),atom.slice(66));
+    assert.equal(rows[0].value,value,'export must not mutate the unrounded score');
+  }
+});
 test('scores are exported only on the analyzed first model, with its original serial',()=>{
   const first = `MODEL        7\n${atom}\nENDMDL\nEND\n`;
   const raw = first.replace('END\n','') + `MODEL       42\n${atom}\nENDMDL\nEND\n`;
