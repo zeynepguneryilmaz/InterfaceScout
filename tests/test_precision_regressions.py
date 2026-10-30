@@ -65,6 +65,13 @@ class PrecisionRegressionTests(unittest.TestCase):
         self.assertEqual(row["scrsa"], asa / core.SIDECHAIN_REF_ASA["ALA"])
         self.assertEqual(row["scrsa_raw"], row["scrsa"])
 
+    def test_near_tie_is_ranked_before_presentation_rounding(self):
+        rows = [surface_row(scrsa=0.5000001), surface_row(scrsa=0.5000002)]
+        rows[1].update(key="A:2:", res_seq=2)
+        result = core.chemistry_map(rows, np.array([[0., 20.], [20., 0.]]), "anionic", 6.5)
+        # Both display as 100.000; the larger full-precision density must win.
+        self.assertEqual(result["top_patch"]["center_key"], "A:2:")
+
 
 if __name__ == "__main__":
     unittest.main()

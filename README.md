@@ -36,6 +36,14 @@ InterfaceScout calculates anionic, cationic, hydrophobic, π/aromatic, H-bond do
 - ionic strength
 - temperature
 
+**Multi-model PDB policy:** only the first structural model is analyzed; ensemble
+averaging and scoring additional models are not supported. The preparation report
+records its zero-based model index (0) and original PDB MODEL serial (or null for
+an implicit single model). B-factor export uses the exact prepared first model and
+selected chains, preserving an explicit MODEL serial. Other models, unselected
+chains, hydrogens and hetero residues are omitted according to the existing
+preparation policy; scores are never copied onto unanalysed models.
+
 In the current model, **pH enters the scoring calculation**. Ionic strength and temperature are retained as run metadata and should not be interpreted as explicit electrostatic-screening or thermal-response calculations.
 
 ## Intended scope and limitations
@@ -52,6 +60,13 @@ The literature benchmark contains seven primary conditions and two secondary cha
 
 1. **Complete Excel workbook** with run/method information, map definitions, residue-level values, ranked patches, and patch members for all 11 maps.
 2. **B-factor PDB** for the displayed map, with the 0-100 InterfaceScout residue propensity written to the standard B-factor field.
+
+Calculations and machine-readable/Excel values retain full floating-point
+precision through patch construction and ranking. Rounding is applied only for
+display (three decimal places in the UI; two in the fixed-width PDB B-factor
+field). Publication formulas, constants and weights are unchanged. Removing
+intermediate rounding can resolve former numerical ties and alter patch ranks;
+historical frozen validation tables are retained as historical results.
 
 ## Installation and use
 
@@ -119,6 +134,7 @@ Each condition contains the same user-facing result types produced by InterfaceS
 
 ```bash
 python -m unittest discover -s tests -v
+node --test tests/test_bfactor_export.cjs
 python validation/verify_publication.py
 ```
 

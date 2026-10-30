@@ -5,6 +5,8 @@ kernel used by the public InterfaceScout application and publication
 reproducibility scripts. It implements the current 200-point Shrake-Rupley
 side-chain accessibility calculation and 6/9 A multiscale chemistry mapping.
 No GNM, RIN, APBS, DSSP, material presets, or legacy 5/8 A model are used.
+Keep full floating-point precision through scoring, patch selection and
+ranking. Round only in presentation (UI formatting or the PDB field).
 """
 from __future__ import annotations
 
@@ -268,14 +270,14 @@ def _surface_residues(pdb_text: str, pH: float) -> List[Dict[str, Any]]:
             rows.append({
                 "key": f"{cid}:{seq}:{icode}", "res_name": rn, "res_seq": seq, "icode": icode, "chain": cid,
                 "x": float(ca.coord[0]), "y": float(ca.coord[1]), "z": float(ca.coord[2]),
-                "sidechain_sasa": round(sc_sasa, 3), "scrsa_raw": round(scrsa_raw, 5),
-                "scrsa": round(min(max(scrsa_raw, 0.0), 1.0), 5),
+                "sidechain_sasa": sc_sasa, "scrsa_raw": scrsa_raw,
+                "scrsa": min(max(scrsa_raw, 0.0), 1.0),
                 "surface_exposed": bool(scrsa_raw >= SC_RSA_THRESHOLD),
-                "charge_fraction": round(charged_fraction(rn, pH), 5),
-                "charge_descriptor": round(residue_charge_descriptor(rn, pH), 5),
+                "charge_fraction": charged_fraction(rn, pH),
+                "charge_descriptor": residue_charge_descriptor(rn, pH),
                 "pka": PKA.get(rn),
                 "ionization_sensitive": bool(rn in PKA and abs(pH - PKA[rn]) <= PKA_SENSITIVITY_WINDOW),
-                "bfactor": round(float(ca.bfactor), 3), "phi": None, "ss": None, "n_neighbors_8A": 0,
+                "bfactor": float(ca.bfactor), "phi": None, "ss": None, "n_neighbors_8A": 0,
             })
     return rows
 
@@ -322,12 +324,12 @@ def chemistry_map(surface: List[Dict[str, Any]], distances: np.ndarray, key: str
         patch_centers.append({
             "center_key": row["key"], "res_name": row["res_name"], "res_seq": row["res_seq"],
             "icode": row["icode"], "chain": row["chain"],
-            f"density_{int(inner)}A_raw": round(float(dens[inner][i]), 6),
-            f"density_{int(outer)}A_raw": round(float(dens[outer][i]), 6),
-            f"density_{int(inner)}A_norm": round(float(dens_norm[inner][i] * 100.0), 3),
-            f"density_{int(outer)}A_norm": round(float(dens_norm[outer][i] * 100.0), 3),
-            "multiscale_persistence": round(float(persistence[i]), 3),
-            "multiscale_geomean": round(float(geomean[i]), 3),
+            f"density_{int(inner)}A_raw": float(dens[inner][i]),
+            f"density_{int(outer)}A_raw": float(dens[outer][i]),
+            f"density_{int(inner)}A_norm": float(dens_norm[inner][i] * 100.0),
+            f"density_{int(outer)}A_norm": float(dens_norm[outer][i] * 100.0),
+            "multiscale_persistence": float(persistence[i]),
+            "multiscale_geomean": float(geomean[i]),
             "compatible_members_8A": [surface[j]["key"] for j in range(n) if distances[i, j] <= COARSE_PATCH_RADIUS_A and local[j] > 0],
         })
     patch_centers.sort(key=lambda x: (-x["multiscale_persistence"], -x["multiscale_geomean"], x["center_key"]))
@@ -341,11 +343,11 @@ def chemistry_map(surface: List[Dict[str, Any]], distances: np.ndarray, key: str
         members.append({
             "key": row["key"], "res_name": rn, "res_seq": row["res_seq"], "icode": row["icode"], "chain": row["chain"],
             "sidechain_sasa": row["sidechain_sasa"], "scrsa_raw": row["scrsa_raw"], "scrsa": row["scrsa"],
-            "state_requirement": state or "none", "state_availability": round(state_availability(rn, state, pH), 5),
-            "local_score": round(float(local[i]), 6), "propensity": round(float(prop[i]), 3),
-            f"patch_density_{int(inner)}A": round(float(dens_norm[inner][i] * 100.0), 3),
-            f"patch_density_{int(outer)}A": round(float(dens_norm[outer][i] * 100.0), 3),
-            "multiscale_persistence": round(float(persistence[i]), 3), "multiscale_geomean": round(float(geomean[i]), 3),
+            "state_requirement": state or "none", "state_availability": state_availability(rn, state, pH),
+            "local_score": float(local[i]), "propensity": float(prop[i]),
+            f"patch_density_{int(inner)}A": float(dens_norm[inner][i] * 100.0),
+            f"patch_density_{int(outer)}A": float(dens_norm[outer][i] * 100.0),
+            "multiscale_persistence": float(persistence[i]), "multiscale_geomean": float(geomean[i]),
             "ebase_metadata_kcal_mol": ebase, "mechanism": mechanism,
             "ionization_sensitive": row["ionization_sensitive"], "bfactor": row["bfactor"],
         })
@@ -357,7 +359,7 @@ def chemistry_map(surface: List[Dict[str, Any]], distances: np.ndarray, key: str
         if rn in rep_defs:
             repulsive.append({
                 "key": row["key"], "res_name": rn, "res_seq": row["res_seq"], "chain": row["chain"],
-                "repulsion_propensity": round(float(rep_prop[i]), 3),
+                "repulsion_propensity": float(rep_prop[i]),
             })
 
     return {

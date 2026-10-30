@@ -51,3 +51,7 @@ test('mismatched model identity cannot receive scores',()=>{
   const pdb=`MODEL       42\n${atom}\nENDMDL\nEND\n`;
   assert.throws(()=>runExport(pdb,pdb,7,score),/model/i);
 });
+test('even repeated MODEL serials cannot authorize multiple models',()=>{
+  const pdb=`MODEL        7\n${atom}\nENDMDL\nMODEL        7\n${atom}\nENDMDL\nEND\n`;
+  assert.throws(()=>runExport(pdb,pdb,7,score),/model/i);
+});
