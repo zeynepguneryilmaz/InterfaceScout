@@ -136,9 +136,17 @@ Each condition contains the same user-facing result types produced by InterfaceS
 python -m unittest discover -s tests -v
 node --test tests/test_bfactor_export.cjs
 python validation/verify_publication.py
+python validation/reproduce.py --suite full --output reproducibility-results
 ```
 
 Cross-platform CI repeats these checks under Python 3.10, 3.11, and 3.12 on Windows, macOS, and Linux.
+
+The new offline numerical verifier recomputes all 11 maps from SHA-256-checked,
+versioned PDB inputs. The quick suite runs across the nine CI environments;
+the full 21-input / 231-map suite also runs on Linux/Python 3.12. It checks scalar
+scores, membership, Pareto order and the actual B-factor exporter, and records
+versions, parameters and hashes. This is computational verification, not new
+experimental validation. See [scope, tolerances and commands](validation/reproducibility/README.md).
 
 ## License
 
