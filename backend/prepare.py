@@ -63,7 +63,9 @@ def prepare_pdb_text(pdb_text: str, chain: str | None = None) -> Tuple[str, dict
                 f"Available: {', '.join(available_chains)}"
             )
 
-    io = PDBIO()
+    # Preserve the original MODEL serial, including an explicit single model.
+    explicit_models = any(line.startswith("MODEL ") for line in pdb_text.splitlines())
+    io = PDBIO(use_model_flag=int(explicit_models))
     io.set_structure(structure)
     out = StringIO()
     io.save(out, FirstModelHeavyAtomSelect(chain))
@@ -76,6 +78,9 @@ def prepare_pdb_text(pdb_text: str, chain: str | None = None) -> Tuple[str, dict
         "policy": "first_model_heavy_atom_selected_chains",
         "input_models": len(models),
         "selected_model": 1,
+        "model_policy": "first_model_only",
+        "selected_model_index": 0,
+        "selected_model_serial": int(models[0].serial_num) if explicit_models else None,
         "available_chains_first_model": available_chains,
         "selected_chain": selected_label,
         "explicit_hydrogens_removed": True,

@@ -148,6 +148,8 @@ def _shared_response(context: dict, *, pdb_id: Optional[str], pH: float, ionic_m
             "temp_K": float(temp_K),
         },
         "structure_preparation": context["prep_report"],
+        # Export this exact analyzed structure, never the unprepared ensemble.
+        "prepared_pdb": context["prepared"],
         "method": {
             "accessibility_source": "side-chain relative solvent accessibility",
             "sasa_probe_A": SASA_PROBE_A,
