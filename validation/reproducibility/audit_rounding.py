@@ -89,7 +89,10 @@ def main():
     for case in cases:
         paths=[args.before/(case['id']+'.json'),args.after/(case['id']+'.json')]
         before,after=[json.loads(p.read_text()) for p in paths]
-        assert before['input_sha256']==after['input_sha256']==case['sha256']
+        assert before['input_sha256']==after['input_sha256']==case['p0_capture_sha256']
+        # Historical Windows captures used CRLF; committed snapshots use LF.
+        canonical=checked_input(case).encode('utf-8')
+        assert hashlib.sha256(canonical.replace(b'\n',b'\r\n')).hexdigest()==case['p0_capture_sha256']
         with patch.object(engine,'core',legacy):
             replay=engine.analyze_all_maps(pdb_text=checked_input(case),chain=case['chain'],pH=case['pH'],ionic_mM=case['ionic_mM'],temp_K=case['temp_K'])
         fresh=json.loads((args.recomputed/(case['id']+'.json')).read_text())
@@ -110,7 +113,7 @@ def main():
                             for c in channel['patch_centers'] if c['center_key'] in {'A:19:','A:20:','A:22:','A:24:'}]
                     detail['selection_candidates']=candidates
                 report['changed_maps'].append(detail)
-        report['cases'].append(dict(id=case['id'],input_sha256=case['sha256'],maps=11,legacy_replay_exact=True,p0_recomputation_exact=True,
+        report['cases'].append(dict(id=case['id'],input_sha256=case['sha256'],p0_capture_sha256=case['p0_capture_sha256'],maps=11,legacy_replay_exact=True,p0_recomputation_exact=True,
             archive_sha256={label:hashlib.sha256(p.read_bytes()).hexdigest() for label,p in zip(('before','after'),paths)}))
         print(case['id'],'209-map replay PASS',flush=True)
     assert len(report['changed_maps'])==3

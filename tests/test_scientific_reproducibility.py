@@ -122,6 +122,12 @@ class VerifierMutationTests(unittest.TestCase):
     def test_input_hash_is_enforced(self):
         with self.assertRaisesRegex(ValueError,'SHA-256'):checked_input(dict(self.case,sha256='0'*64))
 
+    def test_every_versioned_input_matches_manifest_bytes(self):
+        cases=json.loads((ROOT/'validation/reproducibility/inputs.json').read_text())['cases']
+        self.assertEqual(len(cases),21)
+        for case in cases:
+            with self.subTest(case=case['id']):self.assertTrue(checked_input(case))
+
     def test_corrupted_scores_membership_and_order_are_rejected(self):
         for kind in ['residue_score','patch_score','membership','ranking','front','nan','map_count']:
             with self.subTest(kind=kind):

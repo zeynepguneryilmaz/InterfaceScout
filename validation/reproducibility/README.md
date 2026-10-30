@@ -16,6 +16,9 @@ reference scores or inputs to scoring. Two added raw RCSB files retain their
 original records. Source provenance, conditions and byte SHA-256 values are in
 `inputs.json`. Inputs are never downloaded or refreshed during verification.
 PDB byte content is protected from Git line-ending conversion.
+Manifest SHA-256 values identify exact committed LF bytes. The additional
+`p0_capture_sha256` fields identify the historical Windows CRLF snapshots;
+the causal audit explicitly proves that their difference is line endings only.
 
 Each run checks the input and specification hashes, recalculates SASA and all
 11 channels, writes unrounded result JSON, checks a separate scalar chemistry
