@@ -1,0 +1,25 @@
+name: Stage3 independent benchmark audit
+on:
+  push:
+    branches: [benchmark-stage3-audit-2026-11-16]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r backend/requirements.txt
+      - run: python validation/run_stage3_benchmark.py 2000
+      - name: Upload stage 3 validation output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-stage3-benchmark-2000
+          path: validation/stage3_results/
+          retention-days: 30
