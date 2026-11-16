@@ -16,6 +16,7 @@ def api(url,tries=5):
    with urllib.request.urlopen(req,timeout=38) as r:return json.load(r)
   except (urllib.error.HTTPError,urllib.error.URLError,TimeoutError,ValueError) as e:
    if isinstance(e,urllib.error.HTTPError) and e.code==404:return {}
+   if isinstance(e,urllib.error.HTTPError) and e.code in (400,401,403):raise
    if attempt==tries-1:raise
    time.sleep(min(3*(attempt+1),15))
 def clean(s):
@@ -40,7 +41,7 @@ def material_type(s):
   if re.search(pattern,s,re.I):return k
  return "not_identified"
 def epmc(query,page=10):
- url="https://www.ebi.ac.uk/europepmc/webservices/rest/search?"+urllib.parse.urlencode({"query":query,"format":"json","resultType":"core","pageSize":page,"sort":"RELEVANCE"})
+ url="https://www.ebi.ac.uk/europepmc/webservices/rest/search?"+urllib.parse.urlencode({"query":query,"format":"json","resultType":"core","pageSize":page})
  obj=api(url)
  return int(obj.get("hitCount",0)),obj.get("resultList",{}).get("result",[])
 def qphrase(s):
