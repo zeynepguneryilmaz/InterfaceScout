@@ -41,7 +41,7 @@ def recall(patches,index,truth,xyz,nodes,equiv,k,t):
  if not sel:return 0.
  if t==0: hit=np.isin(truth,list(sel))
  else:
-  ds=np.linalg.norm(xyz[np.array(truth),None,:]-xyz[np.array(sorted(sel))[None,:,:],:],axis=-1)
+  ds=np.linalg.norm(xyz[np.array(truth),None,:]-xyz[np.array(sorted(sel))[None,:],:],axis=-1)
   hit=np.min(ds,axis=1)<=t+1.e-9
  if equiv:
   chains=np.array([nodes[i]["chain"] for i in truth])
