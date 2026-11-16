@@ -1,0 +1,32 @@
+name: Fixed-hardware InterfaceScout performance benchmark
+on:
+  push:
+    branches: [performance-benchmark-2026-11-17]
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r backend/requirements.txt scipy matplotlib
+      - name: Recover exact 300-PDB archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl --fail --location --retry 3 --silent --show-error -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/14226897455/zip" -o validation/input_300_proteins.zip
+      - name: Benchmark all 11 maps on 40 proteins, 3 isolated replicates
+        run: python validation/performance_benchmark.py
+      - name: Upload benchmark data and figure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-performance-benchmark
+          path: validation/performance_results/
+          retention-days: 90
