@@ -1,0 +1,29 @@
+name: Cross-match 299 protein atlas to PCDB UniProt IDs
+on:
+  push:
+    branches: [pcdb-uniprot-crossmatch-2026-11-17]
+permissions:
+  actions: read
+  contents: read
+jobs:
+  match:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Obtain exact 300-PDB archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl --fail --location --retry 3 --silent --show-error -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/14226897455/zip" -o validation/input_300_proteins.zip
+      - name: Match RCSB UniProt identifiers to published nanoparticle corona data
+        run: python validation/pcdb_uniprot_crossmatch.py
+      - name: Upload full protein-level evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-pcdb-uniprot-crossmatch
+          path: validation/pcdb_crossmatch/
