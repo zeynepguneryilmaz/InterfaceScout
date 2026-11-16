@@ -1,0 +1,76 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>InterfaceScout | 299 Protein Atlas</title>
+<style>
+:root{--ink:#0b2439;--muted:#657988;--teal:#008d89;--aqua:#8edbd1;--gold:#eeab38;--bg:#f3f7f9;--stroke:#d8e4e8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font:15px/1.5 Arial,Helvetica,sans-serif;color:var(--ink)}
+header{background:#09273d;color:white;padding:25px 38px;display:flex;align-items:center;justify-content:space-between}
+header h1{margin:0;font-size:26px;letter-spacing:-.5px}header p{color:#a9d5d5;margin:3px 0 0}
+main{max-width:1480px;margin:24px auto;padding:0 22px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stat,.panel{border:1px solid var(--stroke);background:white;border-radius:14px;box-shadow:0 4px 18px #0b24390b}
+.stat{padding:16px 19px}.stat strong{display:block;font-size:27px}.stat small{color:var(--muted)}
+.layout{display:grid;grid-template-columns:290px minmax(0,1fr) 280px;gap:16px}
+.panel{padding:19px}.panel h2{font-size:16px;margin:0 0 14px}.sidebar label{display:block;font-size:12px;color:var(--muted);font-weight:bold;margin:13px 0 6px}
+select,input{border:1px solid var(--stroke);border-radius:8px;padding:10px;width:100%;font-size:14px;background:white;color:var(--ink)}
+.segment{display:flex;background:#eff5f6;border-radius:9px;padding:3px;gap:4px}
+.segment button{flex:1;padding:8px 6px;border:0;background:transparent;border-radius:7px;cursor:pointer;font-weight:bold;color:#526777}
+.segment button.active{background:var(--teal);color:white}
+#viewer{width:100%;height:560px;position:relative;background:#fff;border-radius:10px;overflow:hidden}
+.hint{font-size:12px;color:var(--muted)}#msg{padding:12px;background:#ebf5f4;color:#065a58;border-radius:8px;font-size:13px}
+.legend{display:flex;gap:18px;flex-wrap:wrap;padding:12px 0;font-size:12px}
+.dot{width:11px;height:11px;border-radius:50%;display:inline-block;margin-right:5px}
+.bignum{font-weight:bold;font-size:25px}.metric{padding:14px 0;border-bottom:1px solid #edf1f3}.metric small{display:block;color:var(--muted)}
+#residues{overflow-wrap:anywhere;max-height:225px;overflow:auto;font-family:Consolas,monospace;font-size:12px;line-height:1.8}
+button.download{width:100%;border:1px solid var(--teal);background:white;border-radius:9px;color:#00736f;padding:11px;font-weight:bold;cursor:pointer}
+footer{color:var(--muted);margin:20px 0;font-size:12px}
+@media(max-width:1050px){.layout{grid-template-columns:250px 1fr}.results{grid-column:1/-1}.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:680px){header{padding:18px}main{padding:0 12px}.layout{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}#viewer{height:420px}}
+</style><script src="vendor/3Dmol-2.1.0.min.js"></script></head>
+<body><header><div><h1>InterfaceScout <span style="color:#51cabb;font-weight:normal">/ Protein Atlas</span></h1><p>Chemistry-conditioned candidate regions · residue-resolved 3D structural explorer</p></div><span style="color:#bde0e1">Model 2.4.0</span></header>
+<main><section class="stats"><div class="stat"><strong>299</strong><small>Valid protein structures</small></div><div class="stat"><strong>3,289</strong><small>Chemistry maps</small></div><div class="stat"><strong>11</strong><small>Surface chemistry classes</small></div><div class="stat"><strong>Top-1 / 3 / 5</strong><small>Cumulative ranked patch views</small></div></section>
+<div class="layout"><aside class="panel sidebar"><h2>Explore a protein</h2><label for="search">Find PDB ID</label><input id="search" placeholder="Type PDB ID e.g. 1CRN"><label for="protein">Protein structure</label><select id="protein"></select><label for="chemistry">Surface-chemistry channel</label><select id="chemistry"></select><label>Ranked patch set</label><div class="segment" id="topk"><button data-k="1">Top-1</button><button data-k="3">Top-3</button><button data-k="5" class="active">Top-5</button></div><p class="hint">Top-3 and Top-5 combine residues from the first three or five Pareto-ranked patches. Chemistry channels are operational categories, not calibrated material potentials.</p><div id="msg" role="status">Loading atlas manifest...</div></aside>
+<section class="panel"><div style="display:flex;justify-content:space-between;align-items:center"><h2 id="structTitle">3D protein structure</h2><span class="hint">Rotate · drag · scroll to zoom</span></div><div id="viewer"></div><div class="legend"><span><i class="dot" style="background:#c7d5de"></i>Protein backbone</span><span><i class="dot" style="background:#eeab38"></i>Top-1</span><span><i class="dot" style="background:#008d89"></i>Top-2/3 additions</span><span><i class="dot" style="background:#8edbd1"></i>Top-4/5 additions</span></div></section>
+<aside class="panel results"><h2>Selected region</h2><div class="metric"><small>Protein / chain</small><div id="pid" class="bignum">—</div></div><div class="metric"><small>Total patches for map</small><div id="npatches" class="bignum">—</div></div><div class="metric"><small>Residues in current Top-k union</small><div id="nres" class="bignum">—</div></div><div class="metric"><small>Top-5 patch centers</small><div id="centers" class="hint">—</div></div><div class="metric"><small>Selected residue keys</small><div id="residues">—</div></div><p><button class="download" id="download">Export selected residues (.csv)</button></p></aside>
+</div><footer>Research-use candidate patch atlas. No adsorption orientation, free energy, enzyme activity, or experimental contact-site accuracy is inferred. Source: frozen 300-PDB archive; 3IYK omitted after side-chain-atom QC. Protein models are shown as supplied in the archived PDB coordinates.</footer></main>
+<script>
+const maps=[["anionic","Anionic"],["cationic","Cationic"],["hydrophobic","Hydrophobic"],["pi_carbon","π / aromatic"],["hbond_donor","H-bond donor"],["hbond_acceptor","H-bond acceptor"],["oxide","Metal oxide"],["calcium_phosphate","Calcium/phosphate"],["metal_coord","Metal coordination"],["soft_metal_sulfur","Soft-metal / sulfur"],["phosphate","Phosphate-rich"]];
+const $=s=>document.querySelector(s), viewer=$3Dmol.createViewer("viewer",{backgroundColor:"white",antialias:true});
+let manifest=[],current=null,K=5;
+maps.forEach(([k,l])=>{let o=document.createElement("option");o.value=k;o.textContent=l;$("#chemistry").appendChild(o)});
+function decodeKey(s){const x=s.split(":");return {chain:x[0],resi:parseInt(x[1],10)}}
+function layer(keys,color){for(const key of keys){const sel=decodeKey(key);viewer.setStyle(sel,{cartoon:{color:color},stick:{radius:0.16,color:color}})}}
+function update(){
+ if(!current)return;
+ const chem=$("#chemistry").value,m=current.maps[chem];if(!m)return;
+ const one=new Set(m.top1),three=new Set(m.top3),five=new Set(m.top5);
+ viewer.setStyle({},{cartoon:{color:"#c7d5de",opacity:0.85}});
+ layer([...five].filter(x=>!three.has(x)),"#8edbd1");
+ layer([...three].filter(x=>!one.has(x)),"#008d89");
+ layer([...one],"#eeab38");
+ // Restrict visual emphasis to selected k, not always Top-5
+ if(K===1){for(const x of [...five].filter(x=>!one.has(x))){const d=decodeKey(x);viewer.setStyle(d,{cartoon:{color:"#c7d5de"}})}}
+ if(K===3){for(const x of [...five].filter(x=>!three.has(x))){const d=decodeKey(x);viewer.setStyle(d,{cartoon:{color:"#c7d5de"}})}}
+ viewer.render();
+ const selected=m["top"+K];
+ $("#nres").textContent=selected.length;
+ $("#npatches").textContent=m.n_patches;
+ $("#centers").textContent=m.top5_centers.join(", ")||"No patches";
+ $("#residues").textContent=selected.join(" · ")||"No candidate regions for this chemistry";
+ $("#msg").textContent=selected.length?selected.length+" accessible candidate residues shown.":"No eligible patch for this chemistry on this structure.";
+}
+async function load(){
+ const chosen=$("#protein").value;if(!chosen)return;
+ try {
+  $("#msg").textContent="Loading structure and patch data...";
+  const res=await fetch("atlas/"+chosen+".json");if(!res.ok)throw Error("Cannot load "+chosen);
+  current=await res.json();
+  viewer.clear();viewer.addModel(current.pdb,"pdb");viewer.zoomTo();
+  $("#pid").textContent=current.pdb_id+" / "+current.chain;
+  $("#structTitle").textContent=current.pdb_id+" · chain "+current.chain;
+  update();
+ }catch(e){$("#msg").textContent="Error: "+e.message}
+}
+$("#protein").addEventListener("change",load);$("#chemistry").addEventListener("change",update);
+$("#topk").addEventListener("click",e=>{if(e.target.tagName!=="BUTTON")return;K=Number(e.target.dataset.k);document.querySelectorAll("#topk button").forEach(b=>b.classList.toggle("active",Number(b.dataset.k)===K));update()});
+$("#search").addEventListener("input",e=>{const q=e.target.value.toUpperCase().trim();const match=manifest.find(x=>x.pdb_id.includes(q));if(q&&match){$("#protein").value=match.pdb_id+"_"+match.chain;load()}});
+$("#download").addEventListener("click",()=>{if(!current)return;const chem=$("#chemistry").value;const rows=current.maps[chem]["top"+K];const csv="pdb_id,chain,chemistry,top_k,residue_key\n"+rows.map(x=>[current.pdb_id,current.chain,chem,K,x].join(",")).join("\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download=current.pdb_id+"_"+chem+"_Top"+K+".csv";a.click();URL.revokeObjectURL(a.href)});
+fetch("atlas_manifest.csv").then(r=>r.text()).then(s=>{const lines=s.trim().split(/\r?\n/);const h=lines.shift().split(",");manifest=lines.map(l=>Object.fromEntries(l.split(",").map((v,i)=>[h[i],v])));for(const r of manifest){let o=document.createElement("option");o.value=r.pdb_id+"_"+r.chain;o.textContent=r.pdb_id+" · chain "+r.chain+" · "+r.n_residues+" aa";$("#protein").appendChild(o)}load()}).catch(e=>$("#msg").textContent="Could not load atlas. Please launch serve.py (not file://): "+e.message);
+</script></body></html>
