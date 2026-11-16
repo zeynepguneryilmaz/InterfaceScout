@@ -1,0 +1,29 @@
+name: Cross-match 299 atlas proteins to BAD2 experimental adsorption DB
+on:
+  push:
+    branches: [bad-database-crossmatch-2026-11-17]
+permissions:
+  actions: read
+  contents: read
+jobs:
+  crossmatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install beautifulsoup4
+      - name: Obtain frozen PDB manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl --fail --location --retry 3 --silent --show-error -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/14226897455/zip" -o validation/input_300_proteins.zip
+      - run: python validation/bad_crossmatch.py
+      - name: Archive database cross-match
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-bad-crossmatch
+          path: validation/bad_crossmatch/
