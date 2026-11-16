@@ -22,7 +22,7 @@ def inspect(item):
   method=next((x[10:].strip() for x in text.splitlines() if x.startswith('EXPDTA')),'')
   if not any(x in method for x in ('X-RAY DIFFRACTION','ELECTRON MICROSCOPY','SOLUTION NMR')):return None,'method'
   compound=' '.join(x[10:].strip() for x in text.splitlines() if x.startswith('COMPND'))
-  matches=re.findall(r'MOL_ID:\\s*(\\d+)\\s*;(?:(?!MOL_ID:).)*?CHAIN:\\s*([^;]+);',compound)
+  matches=re.findall(r'MOL_ID:\s*(\d+)\s*;(?:(?!MOL_ID:).)*?CHAIN:\s*([^;]+);',compound)
   chains=[v for k,v in matches if k==entity]
   if not chains:return None,'entity_unresolved'
   chain=chains[0].split(',')[0].strip()
