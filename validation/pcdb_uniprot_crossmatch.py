@@ -16,7 +16,7 @@ def lookup(row):
  try:
   obj=json.loads(get("https://data.rcsb.org/rest/v1/core/polymer_entity/"+pid+"/"+entity))
   ent=obj.get("rcsb_polymer_entity",{}) or {}
-  acc=ent.get("rcsb_uniprot_accession",[]) or []
+  acc=(obj.get("rcsb_polymer_entity_container_identifiers",{}) or {}).get("uniprot_ids",[]) or []
   if isinstance(acc,str):acc=[acc]
   return {"pdb_id":pid,"chain":row["chain"],"entity_id":entity,"protein_name":ent.get("pdbx_description",""),"uniprot_ids":";".join(sorted(set(x.strip().upper() for x in acc if x))),"metadata_status":"OK"}
  except Exception as e:
