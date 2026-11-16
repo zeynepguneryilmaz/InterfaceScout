@@ -1,0 +1,26 @@
+name: Stage2 function-aware screening
+on:
+  push:
+    branches: [functional-screening-stage2-2026-11-16]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r backend/requirements.txt matplotlib
+      - name: Calculate HCAII and lysozyme functional patch distances
+        run: python validation/run_stage2_functional_screen.py
+      - name: Upload all stage 2 outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-stage2-functional-screen
+          path: validation/stage2_results/
+          retention-days: 30
