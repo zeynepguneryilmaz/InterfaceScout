@@ -1,0 +1,26 @@
+name: 300-protein chemistry diversity panel
+on:
+  push:
+    branches: [structural-panel-300-2026-11-16]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  panel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r backend/requirements.txt
+      - name: Select and compute all 300 proteins
+        run: python validation/run_structural_panel_300.py
+      - name: Upload reproducible panel and outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-300-structural-panel
+          path: validation/structural_panel_output/
+          retention-days: 30
