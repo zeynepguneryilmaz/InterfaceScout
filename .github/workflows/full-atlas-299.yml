@@ -1,0 +1,46 @@
+name: Complete 299-protein residue atlas
+on:
+  push:
+    branches: [full-atlas-299-2026-11-16]
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+jobs:
+  atlas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r backend/requirements.txt
+      - name: Recover exact frozen PDB archive from prior completed run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p validation
+          curl --fail --location --retry 3 --silent --show-error \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/14226897455/zip" \
+            -o validation/input_300_proteins.zip
+          python -c "import zipfile; z=zipfile.ZipFile('validation/input_300_proteins.zip'); assert 'manifest.csv' in z.namelist()"
+      - name: Compute complete Top-k atlas and validate original metrics
+        run: python validation/run_full_atlas_299.py
+      - name: Include local 3D viewer assets in archive
+        if: success()
+        run: |
+          cp validation/atlas_viewer.html validation/full_atlas_299_results/index.html
+          mkdir -p validation/full_atlas_299_results/vendor
+          cp frontend/vendor/3Dmol-2.1.0.min.js validation/full_atlas_299_results/vendor/
+          cp validation/atlas_README.md validation/full_atlas_299_results/README.md
+          cp validation/atlas_local_server.py validation/full_atlas_299_results/serve.py
+      - name: Upload complete data atlas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-complete-299-atlas
+          path: validation/full_atlas_299_results/
+          retention-days: 90
