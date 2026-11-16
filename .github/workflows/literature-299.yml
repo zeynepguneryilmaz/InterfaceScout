@@ -1,0 +1,31 @@
+name: Literature evidence screening of all 299 atlas proteins
+on:
+  push:
+    branches: [all-299-literature-evidence-2026-11-17]
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+jobs:
+  screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Recover exact protein manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl --fail --location --retry 3 --silent --show-error -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/14226897455/zip" -o validation/input_300_proteins.zip
+      - name: Screen all 299 PDB entities in RCSB and Europe PMC
+        run: python validation/screen_299_literature.py
+      - name: Save auditable provenance and results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-299-literature-screen
+          path: validation/literature_299/
+          retention-days: 90
