@@ -1,0 +1,25 @@
+name: Experimental GB1 sulfate-latex residue mutagenesis benchmark
+on:
+  push:
+    branches: [independent-md-functional-2026-11-17]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  gb1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r backend/requirements.txt
+      - run: python validation/run_gb1_mutation_screen.py
+      - name: Export data and predictions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-GB1-mutagenesis-screen
+          path: validation/independent_md_functional/gb1_mutagenesis/
+          retention-days: 90
