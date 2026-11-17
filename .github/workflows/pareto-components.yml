@@ -1,0 +1,26 @@
+name: Same-candidate Pareto component ablation
+on:
+  push:
+    branches: [pareto-component-test-2026-11-17]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pareto-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r backend/requirements.txt scipy
+      - name: Independently reconstruct Pareto ordering and test components
+        run: python validation/run_pareto_component_audit.py
+      - name: Archive all rankings and matched coverage null distributions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-pareto-component-13-cases
+          path: validation/pareto_component_results/
+          retention-days: 90
