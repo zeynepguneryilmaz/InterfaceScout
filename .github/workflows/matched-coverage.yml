@@ -1,0 +1,25 @@
+name: Residue-level equal-coverage comparative benchmark
+on:
+  push:
+    branches: [matched-coverage-benchmark-2026-11-17]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r backend/requirements.txt scipy
+      - run: python validation/run_matched_coverage_benchmark.py
+      - name: Archive real benchmark calculations
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-13-condition-matched-coverage
+          path: validation/matched_coverage_results/
+          retention-days: 90
