@@ -57,6 +57,40 @@ def diversity_rank(patches):
     rem[i]["score_composite"],-rem[i]["display_rank"]))
   chosen=rem.pop(pos);ans.append(chosen);union.update(chosen["members"])
  return ans
+def constrained_swap(original_patches,k,field,surface_rows):
+ """Exploratory deterministic single-swap local search under both ±10% budgets.
+ Start from v1 Top-k (a feasible set), replace one candidate with a higher
+ intrinsic area score only when both union residue count and exposed SASA
+ stay close to v1. NO ground-truth labels, no model retraining.
+ Results are SETS chosen separately for each k, not a nested Top-k ordering.
+ """
+ n=len(original_patches)
+ top=[original_patches.index(q) for q in original_patches[:k]]
+ mems=[set(q["members"]) for q in original_patches]
+ sas={r:surface_rows[r]["sidechain_sasa"] for q in original_patches for r in q["members"]}
+ def union(which):return set().union(*(mems[j] for j in which))
+ tgt=union(top);budget_n=len(tgt);budget_a=sum(sas[x] for x in tgt)
+ scores=[float(q[field]) for q in original_patches]
+ def score(which):return sum(scores[j] for j in which)
+ old=score(top)
+ for round_ix in range(12):
+  best=None
+  for ii in range(k):
+   for new in range(n):
+    if new in top:continue
+    test=top[:];test[ii]=new
+    used=union(test)
+    if abs(len(used)-budget_n)/max(budget_n,1)>.10:continue
+    area=sum(sas[x] for x in used)
+    if abs(area-budget_a)/max(budget_a,1)>.10:continue
+    value=score(test)
+    if value<=old+1e-10:continue
+    if best is None or (value,-ii,-new)>(best[0],-best[1],-best[2]):best=(value,ii,new)
+  if best is None:break
+  old,ii,new=best;top[ii]=new
+ selected=[original_patches[j] for j in top]
+ return selected+[q for j,q in enumerate(original_patches) if j not in set(top)]
+
 rows=[];qc=[];details=[]
 for case in CASES:
  cid=case["id"];pid=case["pdb_id"];ph=case["pH"]
@@ -102,6 +136,8 @@ for case in CASES:
  for k in (1,3,5):
   original=results(out,k)
   budget_n=len(original);budget_area=sum(exposed[r]["sidechain_sasa"] for r in original)
+  for name,field in [("BudgetMatched_Area_total","compatible_area_A2"),("BudgetMatched_Area_fraction","compatible_area_fraction"),("BudgetMatched_Area_x_coherence_x_orientation","score_composite")]:
+   rankings[name]=constrained_swap(out,k,field,exposed)
   for method,ranked in rankings.items():
    selected=results(ranked,k)
    used_area=sum(exposed[r]["sidechain_sasa"] for r in selected)
@@ -115,7 +151,8 @@ for case in CASES:
      "relative_SASA_coverage_error":err_a,"relative_residue_coverage_error":err_n,
      "SASA_area_matched_10pct":int(err_a<=.1),"residue_count_matched_10pct":int(err_n<=.1),
      "both_coverage_matched_10pct":int(err_a<=.1 and err_n<=.1),
-     "top1_same_original":int(ranked[0]["center_key"]==out[0]["center_key"])}
+     "top1_same_original":int(ranked[0]["center_key"]==out[0]["center_key"]),
+     "selected_centers_changed":sum(q["center_key"] not in {v["center_key"] for v in out[:k]} for q in ranked[:k])}
    for d in (0,5,8):
     row["recall_direct" if d==0 else "recall_"+str(d)+"A"]=recall(selected,gt,nodes,d,case["gt_kind"]=="equivalent_chain_ranges")
    rows.append(row)
@@ -147,6 +184,7 @@ report={"n_conditions":len(CASES),"n_unique_proteins":len({x["pdb_id"] for x in 
  "GO_limits":"All GO oxidation levels assigned the same anionic proxy. Four conditions are one protein and one study.",
  "area_definition":"native exposed side-chain area sum, never nanoparticle-buried interface area",
  "primary_matched_definition":"both exposed sidechain area and residue count matched to InterfaceScout v1 TopK within ±10%",
+ "budgeted_variant":"deterministic single-swap intrinsic-score optimization initialized at v1 Top-k, no labels; returns nonnested separately optimized Top-k SETS, not a single ranking; potential v1 initialization bias; transparent count of changed patches",
  "do_not_claim":"Do not compare unmatched method group means as equal-budget predictive performance."}
 (OUT/"summary.json").write_text(json.dumps(report,indent=2))
 print("AREA_BENCHMARK_COMPLETE",json.dumps(report),flush=True)
