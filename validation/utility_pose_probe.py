@@ -35,7 +35,8 @@ def angle(u,v):
 def save(fn,data):
  if not data:return
  with (OUT/fn).open("w",newline="",encoding="utf8") as f:
-  w=csv.DictWriter(f,fieldnames=list(data[0]));w.writeheader();w.writerows(data)
+  fields=list(dict.fromkeys(key for row in data for key in row))
+  w=csv.DictWriter(f,fieldnames=fields);w.writeheader();w.writerows(data)
 def make(pdb):
  data=urllib.request.urlopen("https://files.rcsb.org/download/"+pdb+".pdb",timeout=50).read().decode("utf8")
  prepared,_=prepare_pdb_text(data,chain="A")
