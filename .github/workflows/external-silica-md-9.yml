@@ -1,0 +1,26 @@
+name: Frozen v1 external silica MD published-contact benchmark
+on:
+  push:
+    branches: [frozen-v1-external-silica-md-2026-11-17]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  md-contact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r backend/requirements.txt
+      - name: Run 9 paper-defined conditions against unchanged InterfaceScout v1
+        run: python validation/external_silica_md_9_conditions.py
+      - name: Archive all audit outcomes and results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-external-silica-MD-9-conditions
+          path: validation/frozen_v1_external_silica_md/
+          retention-days: 90
