@@ -1,0 +1,25 @@
+name: InterfaceScout v2 exploratory area-aware candidate ranking
+on:
+  push:
+    branches: [area-aware-diagnostic-2026-11-17]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r backend/requirements.txt
+      - run: python validation/area_aware_rank_audit.py
+      - name: Archive all area ranks and matched-coverage audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-area-aware-v2-exploratory
+          path: validation/area_aware_diagnostic/
+          retention-days: 90
