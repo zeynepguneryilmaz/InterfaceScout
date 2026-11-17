@@ -1,0 +1,25 @@
+name: External lysozyme CNT native-MD contact benchmark
+on:
+  push:
+    branches: [independent-md-functional-2026-11-17]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  md:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r backend/requirements.txt
+      - run: python validation/run_lysozyme_cnt_md.py
+      - name: Archive MD validation arrays
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-external-lysozyme-cnt-MD
+          path: validation/independent_md_functional/lysozyme_swc/
+          retention-days: 90
