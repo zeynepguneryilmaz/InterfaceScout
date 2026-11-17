@@ -1,0 +1,25 @@
+name: RNase experimental surface bioactivity and AALMS structure screen
+on:
+  push:
+    branches: [independent-md-functional-2026-11-17]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  rnase:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r backend/requirements.txt
+      - run: python validation/run_rnase_activity_protection.py
+      - name: Export RNase quantitative activity/protection comparison
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-experimental-RNase-activity-protection
+          path: validation/independent_md_functional/rnase_activity/
+          retention-days: 90
