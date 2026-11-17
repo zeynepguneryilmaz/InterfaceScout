@@ -1,0 +1,26 @@
+name: Frozen InterfaceScout v1 pose and mutagenesis decision utility proxy
+on:
+  push:
+    branches: [utility-pose-and-probe-2026-11-17]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  utility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r backend/requirements.txt
+      - name: Rank candidate pose orientations and GB1 mutations
+        run: python validation/utility_pose_probe.py
+      - name: Archive decision traces and provenance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-pose-mutant-retrospective-utility
+          path: validation/utility_pose_probe/
+          retention-days: 90
