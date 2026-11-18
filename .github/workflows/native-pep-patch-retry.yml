@@ -1,0 +1,87 @@
+name: Native PEP-Patch retry with protein input preparation
+on:
+  push:
+    branches: [native-methods-benchmark-2026-11-18]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-pep-and-is:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install original third-party PEP-Patch and frozen IS
+        shell: bash
+        run: |
+          mkdir -p native_results/pep_retry
+          git clone --depth 1 https://github.com/liedllab/surface_analyses.git pep_upstream
+          git -C pep_upstream rev-parse HEAD > native_results/pep_retry/pep_commit.txt
+          python -m pip install ./pep_upstream mdtraj
+          python -m pip install -r backend/requirements.txt
+          pep_patch_hydrophobic --help > native_results/pep_retry/help.txt
+      - name: Download experimental PDBs and perform minimal naming preparation
+        shell: bash
+        run: |
+          for pid in 3LN2 7RSA 3NWV; do
+            curl -fsSL --retry 2 "https://files.rcsb.org/download/${pid}.pdb" -o "native_results/pep_retry/${pid}_raw.pdb"
+          done
+          python - <<'PY'
+          from pathlib import Path
+          for pid in ['3LN2','7RSA','3NWV']:
+              src=Path(f'native_results/pep_retry/{pid}_raw.pdb')
+              out=src.with_name(pid+'_prepared.pdb')
+              written=[]
+              for l in src.read_text().splitlines():
+                  if l.startswith('MODEL') and written: break
+                  if l.startswith('ATOM  '):
+                      if l[16] not in (' ','A'): continue
+                      if l[21]!='A': continue
+                      if l[17:20]=='HIS': l=l[:17]+'HIE'+l[20:]
+                      if l[16]=='A': l=l[:16]+' '+l[17:]
+                      written.append(l)
+              out.write_text('\n'.join(written)+'\nEND\n')
+              print(pid,len(written),'atoms')
+          PY
+      - name: Native external PEP-Patch against frozen IS on the same runner
+        shell: bash
+        run: |
+          set +e
+          for pid in 3LN2 7RSA 3NWV; do
+            echo "PDB=$pid"
+            for scale in eisenberg crippen; do
+              a=$(date +%s%N)
+              timeout 210 pep_patch_hydrophobic "native_results/pep_retry/${pid}_prepared.pdb" "native_results/pep_retry/${pid}_prepared.pdb" --scale "$scale" --out "native_results/pep_retry/${pid}_${scale}.npz" --ply_out "native_results/pep_retry/${pid}_${scale}.ply" --potential --patches > "native_results/pep_retry/${pid}_${scale}.log" 2>&1
+              code=$?
+              b=$(date +%s%N)
+              echo "${pid},$scale,$code,$(( (b-a)/1000000 ))" >> native_results/pep_retry/PEP_times_ms.csv
+              echo "$pid $scale $code"; tail -12 "native_results/pep_retry/${pid}_${scale}.log"
+            done
+            python - "$pid" <<'PY'
+          import sys,time,json,os
+          sys.path.insert(0,os.path.abspath('backend'))
+          from interface_engine import analyze_all_maps
+          pid=sys.argv[1]
+          p=f'native_results/pep_retry/{pid}_prepared.pdb'
+          pdb=open(p).read()
+          t=time.perf_counter()
+          out=analyze_all_maps(pdb_text=pdb,chain='A',pH=7.4)
+          d=time.perf_counter()-t
+          with open('native_results/pep_retry/IS_times.csv','a') as f:
+              f.write(f"{pid},{d:.6f},{out['n_maps']},{len(out['diagnostics']['surface_residue_keys'])}\n")
+          with open(f'native_results/pep_retry/{pid}_IS.json','w') as f:
+              json.dump({key:{'centers':[p['center_key'] for p in v['patches'][:5]],'residues':list(sorted(set(x for q in v['patches'][:5] for x in q['members'])))} for key,v in out['maps'].items()},f,indent=2)
+          print('IS',pid,'sec',d)
+          PY
+          done
+          find native_results/pep_retry -name '*.npz' -printf '%p %s bytes\n'
+          test -s native_results/pep_retry/3LN2_crippen.npz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-pep-patch-retry-with-is
+          path: native_results/pep_retry/
+          retention-days: 30
