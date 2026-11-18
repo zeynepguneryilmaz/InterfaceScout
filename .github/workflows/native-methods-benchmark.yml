@@ -1,0 +1,75 @@
+name: Native external methods (separate benchmark branch)
+on:
+  push:
+    branches: [native-methods-benchmark-2026-11-18]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pep-patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install original PEP-Patch
+        run: |
+          mkdir -p native_results/pep
+          git clone --depth 1 https://github.com/liedllab/surface_analyses.git pep_upstream
+          git -C pep_upstream rev-parse HEAD > native_results/pep/commit.txt
+          python -m pip install --upgrade pip
+          python -m pip install ./pep_upstream mdtraj
+          pep_patch_hydrophobic --help > native_results/pep/help.txt
+      - name: Run native PEP-Patch on source PDBs
+        shell: bash
+        run: |
+          set +e
+          for pid in 3LN2 7RSA 3NWV; do
+            curl -fsSL --retry 2 "https://files.rcsb.org/download/${pid}.pdb" -o "native_results/pep/${pid}.pdb" || continue
+            a=$(date +%s%N)
+            timeout 180 pep_patch_hydrophobic "native_results/pep/${pid}.pdb" "native_results/pep/${pid}.pdb" --scale eisenberg --out "native_results/pep/${pid}.npz" --ply_out "native_results/pep/${pid}.ply" --potential --patches > "native_results/pep/${pid}.log" 2>&1
+            code=$?
+            b=$(date +%s%N)
+            echo "${pid},$code,$(( (b-a)/1000000 ))" >> native_results/pep/times_ms.csv
+            tail -20 "native_results/pep/${pid}.log"
+          done
+          test -s native_results/pep/3LN2.npz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-pep-patch
+          path: native_results/pep/
+  docksurf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install original DockSurf
+        run: |
+          mkdir -p native_results/docksurf
+          git clone --depth 1 https://github.com/CTM-ITODYS/DockSurf.git docksurf_upstream
+          git -C docksurf_upstream rev-parse HEAD > native_results/docksurf/commit.txt
+          perl -c docksurf_upstream/DockSurf.pl > native_results/docksurf/syntax.txt 2>&1
+      - name: Run native DockSurf Au111
+        shell: bash
+        run: |
+          set +e
+          for pid in 3LN2 7RSA; do
+            curl -fsSL --retry 2 "https://files.rcsb.org/download/${pid}.pdb" -o "native_results/docksurf/${pid}.pdb" || continue
+            cd native_results/docksurf
+            a=$(date +%s%N)
+            timeout 240 perl ../../docksurf_upstream/DockSurf.pl "native_${pid}" "${pid}.pdb" 30 Au111 5 conf > "${pid}.log" 2>&1
+            code=$?
+            b=$(date +%s%N)
+            echo "${pid},$code,$(( (b-a)/1000000 ))" >> times_ms.csv
+            tail -20 "${pid}.log"
+            cd ../..
+          done
+          test -s native_results/docksurf/native_3LN2_score.map
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-docksurf
+          path: native_results/docksurf/
