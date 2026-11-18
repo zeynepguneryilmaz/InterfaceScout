@@ -1,0 +1,101 @@
+name: Direct apo FcγRIIa held-out independent crystallographic PPI interface test
+on:
+  push:
+    branches: [direct-apo-fcgr2a-holdout-2026-11-18]
+permissions:
+  contents: read
+jobs:
+  direct-apo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install unmodified IS
+        run: |
+          python -m pip install -q -r backend/requirements.txt requests biopython numpy
+      - name: Apo 1FCG/1H9V/3RY4 versus bound 3RY6 chain A reference
+        shell: bash
+        run: |
+          cat > test_fcgr2a.py <<'PY'
+          import requests,json,sys,itertools,random,hashlib,traceback
+          from pathlib import Path
+          import numpy as np
+          from Bio.Align import PairwiseAligner
+          from Bio.SeqUtils import seq1
+          sys.path.insert(0,str(Path('backend').resolve()))
+          from interface_engine import analyze_all_maps
+          OUT=Path('apo_direct_Fcgr2a');OUT.mkdir(exist_ok=True)
+          contact="C:113:;C:116:;C:117:;C:119:;C:120:;C:129:;C:132:;C:134:;C:135:;C:157:;C:158:;C:159:;C:160:;C:21:;C:89:;C:90:".split(';')
+          def get_structure(pdb,chain):
+           r=requests.get('https://files.rcsb.org/download/'+pdb+'.pdb',timeout=45);r.raise_for_status()
+           lines=[x[:16]+' '+x[17:] if x[16]=='A' else x for x in r.text.splitlines() if x.startswith('ATOM  ') and len(x)>76 and x[21]==chain and x[16] in (' ','A') and x[76:78].strip().upper() not in ('H','D')]
+           if not lines:raise ValueError(pdb+':'+chain+' no protein ATOM')
+           text='\n'.join(lines)+'\nEND\n'
+           (OUT/f'{pdb}_{chain}.pdb').write_text(text)
+           return text
+          def residue_ca(text):
+           d={}
+           for l in text.splitlines():
+            if l.startswith('ATOM  ') and l[12:16].strip()=='CA':
+             aa=l[17:20];k=f'{l[21]}:{l[22:26].strip()}:{l[26].strip()}'
+             if aa in {'ALA','ARG','ASN','ASP','CYS','GLN','GLU','GLY','HIS','ILE','LEU','LYS','MET','PHE','PRO','SER','THR','TRP','TYR','VAL'}:d[k]=seq1(aa)
+           keys=list(d);return keys,''.join(d.values())
+          bound=get_structure('3RY6','C')
+          bkeys,bseq=residue_ca(bound)
+          summary=[]
+          for apoid in ['1FCG','1H9V','3RY4']:
+           for chain in ['A','B']:
+            try:
+             unbound=get_structure(apoid,chain)
+             ak,aseq=residue_ca(unbound)
+             alg=PairwiseAligner();alg.mode='global';alg.match_score=2;alg.mismatch_score=-3;alg.open_gap_score=-8;alg.extend_gap_score=-1
+             ali=alg.align(bseq,aseq)[0]
+             mapping={}
+             for (bs,be),(as_,ae) in zip(*ali.aligned):
+              for i,j in zip(range(bs,be),range(as_,ae)):
+               if bseq[i]==aseq[j]:mapping[bkeys[i]]=ak[j]
+             matchlen=len(mapping)
+             if matchlen<70:raise ValueError('Insufficient matching residues '+str(matchlen))
+             truth={mapping[c] for c in contact if c in mapping}
+             r=analyze_all_maps(pdb_text=unbound,chain=chain,pH=7.4)
+             exposed=set(r['diagnostics'].get('surface_residue_keys',[]))
+             truth=truth&exposed
+             if len(truth)<4:raise ValueError('Insufficient mappable exposed contacts '+str(len(truth)))
+             d={'bound':'3RY6:C','apo':apoid+':'+chain,'n_bound_residues':len(bkeys),'n_apo_residues':len(ak),'n_aligned_identical':matchlen,'bound_coverage':matchlen/len(bkeys),'n_bound_partner_contacts':len(contact),'n_mapped_exposed_interface':len(truth),'apo_exposed_count':len(exposed),'labels':sorted(truth),'pdb_sha256':hashlib.sha256(unbound.encode()).hexdigest(),'chem':{}}
+             for chemistry in ['hydrophobic','pi_carbon','hbond_donor','cationic','anionic']:
+              patches=[set(p['members']) for p in r['maps'][chemistry]['patches']]
+              out=[]
+              for k in [1,3,5]:
+               if len(patches)<k:continue
+               selected=set().union(*patches[:k]);hits=len(selected&truth)
+               # Random k patches drawn from the ORIGINAL complete candidate list; exact where possible, otherwise reproducible 10k Monte Carlo.
+               ncomb=__import__('math').comb(len(patches),k)
+               rng=random.Random(22091997+k)
+               if ncomb<=15000: combos=itertools.combinations(range(len(patches)),k);m='exact'
+               else:combos=[tuple(rng.sample(range(len(patches)),k)) for _ in range(15000)];m='MC15000'
+               matched=[]
+               for ix in combos:
+                sample=set().union(*(patches[j] for j in ix))
+                if abs(len(sample)-len(selected))<=max(2,round(len(selected)*.1)):matched.append(len(sample&truth))
+               p=sum(h>=hits for h in matched)/len(matched) if matched else None
+               out.append({'top_k':k,'n_patches':len(patches),'n_selected':len(selected),'hits':hits,'recall':hits/len(truth),'coverage':len(selected)/len(exposed),'n_null_matched':len(matched),'null_mean_hits':sum(matched)/len(matched) if matched else None,'p_matched':p,'null_method':m})
+              d['chem'][chemistry]=out
+             summary.append(d)
+             print('RESULT',apoid,chain,'coverage',d['bound_coverage'],'label',len(truth),'hydrophobic',d['chem']['hydrophobic'],flush=True)
+            except Exception as e: print('SKIP',apoid,chain,str(e),flush=True)
+          (OUT/'results.json').write_text(json.dumps(summary,indent=2))
+          if not summary:raise RuntimeError('No residue-number-verified independent apo case')
+          
+          PY
+          python -u test_fcgr2a.py | tee fcgr2a_run.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: independent-apo-Fcgr2a-crystallographic-heldout
+          path: |
+            apo_direct_Fcgr2a/
+            test_fcgr2a.py
+            fcgr2a_run.log
