@@ -1,0 +1,146 @@
+name: Expanded native benchmark PEP-Patch and DockSurf
+on:
+  push:
+    branches: [is-comprehensive-native-benchmark-2026-11-18]
+permissions:
+  contents: read
+jobs:
+  native-pep:
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [0, 1, 2, 3]
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pinned IS v1 and original PEP-Patch
+        run: |
+          mkdir -p native_pep
+          git clone --depth 1 https://github.com/liedllab/surface_analyses.git PEP_Patch_upstream
+          git -C PEP_Patch_upstream rev-parse HEAD > native_pep/pep_commit.txt
+          python -m pip install -q ./PEP_Patch_upstream mdtraj
+          python -m pip install -q -r backend/requirements.txt
+      - name: Run 22 native matched PDBs and three measured repeats per method
+        env:
+          GROUP: ${{ matrix.group }}
+        shell: bash
+        run: |
+          cat > native_pep/runner.py <<'PY'
+          import os,sys,subprocess,time,json,csv,hashlib
+          from pathlib import Path
+          import requests
+          sys.path.insert(0,str(Path('backend').resolve()))
+          from interface_engine import analyze_all_maps
+          pairs=['5D50:E','2FJH:V','6ZL1:C','3GK6:A','9QE9:A','4FUO:A','9URD:A','3E0F:A','4L8J:A','4O4B:A','6AD3:A','7QQG:A','3LN2:A','7RSA:A','3NWV:A','4F5S:A','2VUF:A','2CBA:A','1JNJ:A','3ECA:A','1SUV:A','1TGU:A']
+          g=int(os.environ.get('GROUP','0'))
+          work=Path('native_pep')
+          def addcsv(fn,row):
+              with (work/fn).open('a',newline='') as f:csv.writer(f).writerow(row)
+          for ix,pair in enumerate(pairs):
+              if ix%4!=g:continue
+              pid,chain=pair.split(':')
+              try:
+                  r=requests.get(f'https://files.rcsb.org/download/{pid}.pdb',timeout=40)
+                  r.raise_for_status()
+                  raw=[l for l in r.text.splitlines() if l.startswith('ATOM  ') and len(l)>=54 and l[21]==chain and l[16] in (' ','A') and l[17:20] in {'ALA','ARG','ASN','ASP','CYS','GLN','GLU','GLY','HIS','ILE','LEU','LYS','MET','PHE','PRO','SER','THR','TRP','TYR','VAL'} and l[76:78].strip().upper() not in ('H','D')]
+                  if not raw:raise ValueError('No chain standard amino acid heavy atoms')
+                  orig=[l[:16]+' '+l[17:] if l[16]=='A' else l for l in raw]
+                  # Keep exactly the same atoms/coordinates for both programs. PEP uses HIE, IS uses HIS.
+                  pep=[l[:17]+'HIE'+l[20:] if l[17:20]=='HIS' else l for l in orig]
+                  original=work/f'{pid}_{chain}_IS.pdb';prepared=work/f'{pid}_{chain}_PEP_HIE.pdb'
+                  original.write_text('\n'.join(orig)+'\nEND\n')
+                  prepared.write_text('\n'.join(pep)+'\nEND\n')
+                  atomhash=hashlib.sha256(''.join(l[30:54] for l in orig).encode()).hexdigest()
+                  addcsv('input_manifest.csv',[pid,chain,len(orig),atomhash])
+                  pdb=original.read_text()
+                  for rep in range(3):
+                      t=time.perf_counter()
+                      out=analyze_all_maps(pdb_text=pdb,chain=chain,pH=7.4)
+                      dur=time.perf_counter()-t
+                      addcsv('IS_times.csv',[pid,chain,rep,dur,out['n_maps']])
+                      if rep==0:
+                          maps={}
+                          for k,v in out['maps'].items():
+                              maps[k]={'patches':[{'center':p.get('center_key'),'members':p['members']} for p in v['patches'][:5]],'n_patches':len(v['patches'])}
+                          (work/f'{pid}_{chain}_IS_output.json').write_text(json.dumps(maps))
+                  for scale in ('crippen','eisenberg'):
+                      for rep in range(3):
+                          stem=str(work/f'{pid}_{chain}_{scale}')
+                          cmd=['pep_patch_hydrophobic',str(prepared),str(prepared),'--scale',scale,'--out',stem+'.npz','--ply_out',stem+'.ply','--potential','--patches']
+                          t=time.perf_counter()
+                          try:
+                              q=subprocess.run(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,timeout=190)
+                              code=q.returncode;log=q.stdout
+                          except subprocess.TimeoutExpired as ex:
+                              code=124;log=str(ex)
+                          dur=time.perf_counter()-t
+                          addcsv('PEP_times.csv',[pid,chain,scale,rep,code,dur])
+                          if rep==0 or code!=0:
+                              (work/f'{pid}_{chain}_{scale}_rep{rep}.log').write_text(log[-50000:])
+                          print(pid,chain,scale,rep,'exit',code,'sec',round(dur,3),flush=True)
+              except Exception as e:
+                  import traceback
+                  (work/f'ERROR_{pid}.log').write_text(traceback.format_exc())
+                  addcsv('failures.csv',[pid,chain,str(e)])
+          PY
+          python native_pep/runner.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: expanded-native-pep-group-${{ matrix.group }}
+          path: native_pep/
+          compression-level: 6
+          retention-days: 30
+  native-docksurf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clone DockSurf without modifying its physics
+        run: |
+          mkdir -p native_docksurf
+          git clone --depth 1 https://github.com/CTM-ITODYS/DockSurf.git DockSurf_upstream
+          git -C DockSurf_upstream rev-parse HEAD > native_docksurf/commit.txt
+      - name: Run Au111 on 12 prepared proteins, 10-degree angle, five conformations
+        shell: bash
+        run: |
+          cat > native_docksurf/runner.py <<'PY'
+          import requests,subprocess,time,csv,traceback,os
+          from pathlib import Path
+          wd=Path('native_docksurf')
+          targets=['3LN2:A','7RSA:A','3NWV:A','2CBA:A','1JNJ:A','4F5S:A','2VUF:A','3ECA:A','1SUV:A','1TGU:A','3GK6:A','4L8J:A']
+          for pair in targets:
+              pid,chain=pair.split(':')
+              try:
+                  r=requests.get(f'https://files.rcsb.org/download/{pid}.pdb',timeout=45);r.raise_for_status()
+                  raw=[l for l in r.text.splitlines() if l.startswith('ATOM  ') and len(l)>=54 and l[21]==chain and l[16] in (' ','A') and l[76:78].strip().upper() not in ('H','D')]
+                  if not raw:raise ValueError('Missing matching protein atoms')
+                  clean=[l[:16]+' '+l[17:] if l[16]=='A' else l for l in raw]
+                  (wd/f'{pid}_{chain}.pdb').write_text('\n'.join(clean)+'\nEND\n')
+                  for rep in range(2):
+                      label=f'{pid}_{chain}_run{rep}'
+                      cmd=['perl',str(Path('DockSurf_upstream/DockSurf.pl').resolve()),label,f'{pid}_{chain}.pdb','10','Au111','5','conf']
+                      t=time.perf_counter()
+                      try:
+                          q=subprocess.run(cmd,cwd=wd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,timeout=230)
+                          code=q.returncode;log=q.stdout
+                      except subprocess.TimeoutExpired as ex:
+                          code=124;log=str(ex)
+                      dt=time.perf_counter()-t
+                      (wd/f'{label}.log').write_text(log[-40000:])
+                      with (wd/'times.csv').open('a',newline='') as f:csv.writer(f).writerow([pid,chain,rep,code,dt])
+                      print('DockSurf',pid,rep,code,dt,flush=True)
+              except Exception as e:
+                  (wd/f'ERROR_{pid}.log').write_text(traceback.format_exc())
+          PY
+          python native_docksurf/runner.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: expanded-native-docksurf-12
+          path: native_docksurf/
+          retention-days: 30
