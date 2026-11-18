@@ -1,0 +1,61 @@
+name: Native Protein-Sol patches server probe
+on:
+  push:
+    branches: [native-methods-benchmark-2026-11-18]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  protein-sol-native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Request native Protein-Sol patch calculation with publicly available PDB
+        shell: bash
+        run: |
+          mkdir -p native_results/protein_sol
+          python -m pip -q install beautifulsoup4 requests
+          curl -fsSL --retry 2 "https://files.rcsb.org/download/3LN2.pdb" -o native_results/protein_sol/3LN2.pdb
+          python - <<'PY'
+          import requests,bs4,urllib.parse,json,os
+          from pathlib import Path
+          out=Path("native_results/protein_sol")
+          s=requests.Session()
+          s.headers.update({'User-Agent':'InterfaceScout academic methods comparison 2026'})
+          u="https://protein-sol.manchester.ac.uk/patches"
+          try:
+            r=s.get(u,timeout=25)
+            (out/'server_get.html').write_text(r.text)
+            soup=bs4.BeautifulSoup(r.text,'html.parser')
+            all_forms=[]
+            for f in soup.find_all('form'):
+              all_forms.append({"method":f.get("method"),"action":f.get("action"),"inputs":[{"name":i.get("name"),"type":i.get("type"),"value":i.get("value")} for i in f.find_all(['input','button'])]})
+            (out/'forms.json').write_text(json.dumps(all_forms,indent=2))
+            print("GET",r.status_code,"URL",r.url,"forms",all_forms)
+            matches=[f for f in soup.find_all("form") if f.find('input',{'type':'file'})]
+            if not matches: print("NO_FILE_UPLOAD_FORM; no native job submitted");exit()
+            f=matches[0]
+            field=f.find('input',{'type':'file'}).get('name')
+            action=urllib.parse.urljoin(r.url,f.get('action') or r.url)
+            hidden={i.get('name'):i.get('value','') for i in f.find_all('input') if i.get('name') and i.get('type')=='hidden'}
+            other={i.get('name'):i.get('value','') for i in f.find_all('input') if i.get('name') and i.get('type') in ['submit'] }
+            print("Submitting one native PDB job to",action,"file field",field)
+            with open(out/'3LN2.pdb','rb') as file:
+              rr=s.post(action,data={**hidden,**other},files={field:('3LN2.pdb',file,'chemical/x-pdb')},timeout=80)
+            (out/'server_submission.html').write_text(rr.text)
+            (out/'server_submission_summary.json').write_text(json.dumps({'status':rr.status_code,'url':rr.url,'length':len(rr.content),'links':[(a.get('href'),a.get_text(' ',strip=True)[:90]) for a in bs4.BeautifulSoup(rr.text,'html.parser').find_all('a',href=True)][:65]},indent=2))
+            print("POST",rr.status_code,"final_url",rr.url,"length",len(rr.content))
+          except Exception as e:
+            (out/'error.txt').write_text(repr(e))
+            print(type(e).__name__,str(e))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-protein-sol-probe
+          path: native_results/protein_sol/
+          retention-days: 30
