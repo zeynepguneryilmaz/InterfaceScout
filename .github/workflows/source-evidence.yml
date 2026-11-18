@@ -1,0 +1,62 @@
+name: Retrieve full-text primary-source contact labels (EPMC)
+on:
+  push:
+    branches: [expanded-heldout-contact-evidence-2026-11-18]
+permissions:
+  contents: read
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Obtain peer reviewed full-text XML, supplementary links and source passages
+        run: |
+          python -m pip install -q requests lxml beautifulsoup4
+          mkdir -p source_evidence
+          python - <<'PY'
+          import requests,json,re,time,traceback
+          from lxml import etree
+          from pathlib import Path
+          s=requests.Session()
+          s.headers.update({'User-Agent':'Academic independent protein adsorption validation (contact-source audit; using Europe PMC)'})
+          ids={'AuNP_2019':'PMC6678212','Silica_2025':'PMC12197878','R2ab_2023':'PMC10843815','Ubiquitin_silica_2017':'PMC5451314','Ubiquitin_corona_2014':'PMC4037870','BloodProteins_AuNP_2021':'PMC8395736'}
+          out=Path('source_evidence')
+          for label,pmc in ids.items():
+            d=out/label;d.mkdir(exist_ok=True)
+            try:
+              u=f'https://www.ebi.ac.uk/europepmc/webservices/rest/{pmc}/fullTextXML'
+              r=s.get(u,timeout=45);r.raise_for_status()
+              (d/'source.xml').write_bytes(r.content)
+              tree=etree.fromstring(r.content)
+              headers=[]
+              for element in tree.xpath('.//sec/title | .//fig/label | .//table-wrap/label'):
+                headers.append(' '.join(''.join(element.itertext()).split()))
+              rows=[]
+              for element in tree.xpath('.//sec/p | .//fig/caption | .//table-wrap/caption | .//table-wrap/table//tr | .//supplementary-material'):
+                raw=' '.join(''.join(element.itertext()).split())
+                if not raw:continue
+                is_hit=any(t in raw.lower() for t in ['residue','arginine','lysine','histidine','contacts','contact probability','methylation','surface patch','binding site','interaction site','fig. 1','fig. 5','fig. 3','supplementary'])
+                if is_hit:
+                  rows.append({'tag':element.tag,'text':raw[:5500],'links':[x.attrib for x in element.xpath('.//ext-link | .//media | .//graphic')][:12]})
+              (d/'matched_passages.json').write_text(json.dumps(rows,indent=2))
+              (d/'headings.json').write_text(json.dumps(headers,indent=2))
+              supp=[{k:v for k,v in e.attrib.items()} for e in tree.xpath('.//supplementary-material | .//media | .//ext-link')]
+              (d/'supplementary_links.json').write_text(json.dumps(supp,indent=2))
+              print(label,pmc,'xml',len(r.content),'passages',len(rows),'supp',len(supp))
+              for line in rows:
+                if re.search(r'\b(?:Lys|Arg|Asp|Glu|His|Phe|Trp|Ile|Leu|Val|Thr|Asn|Gln|Pro|Met|Ser|Tyr|Ala)\s*[-]?[0-9]{1,3}\b',line['text'],re.I):
+                  print('MATCH_LABEL',label,line['text'][:800])
+            except Exception as e:
+              (d/'error.txt').write_text(traceback.format_exc())
+              print('ERROR',label,str(e))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: peer-reviewed-fulltext-contact-sources
+          path: source_evidence/
+          retention-days: 30
