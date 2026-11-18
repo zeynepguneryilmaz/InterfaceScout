@@ -1,0 +1,50 @@
+name: Public 2025 silica MD raw data provenance and range verification
+on:
+  push:
+    branches: [md-zenodo-trajectory-inventory-2026-11-18]
+permissions:
+  contents: read
+jobs:
+  audit-zenodo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -q requests
+      - name: Inspect raw MD data archive metadata and partial-download capability
+        run: |
+          cat > inventory.py <<'PY'
+          import io,os,requests,zipfile,json,traceback
+          s=requests.Session();s.headers['User-Agent']='InterfaceScout-independent-md-data-inventory/1.0 (academic data reuse)'
+          id='14982466'
+          out={'record_id':id,'api':'https://zenodo.org/api/records/'+id,'files':[],'range_probe':[]}
+          res=s.get(out['api'],timeout=40);res.raise_for_status();d=res.json()
+          for x in d.get('files',[]):
+           row={'key':x.get('key'),'size':x.get('size'),'download_url':x.get('links',{}).get('self') or x.get('links',{}).get('content'),'checksum':x.get('checksum')}
+           out['files'].append(row)
+           print('ARCHIVE',row['key'],row['size'],row['download_url'],flush=True)
+           url=row['download_url']
+           try:
+            h=s.get(url,headers={'Range':'bytes=0-0'},timeout=60,stream=True)
+            print('RANGE',h.status_code,'Content-Range',h.headers.get('Content-Range'),'Content-Length',h.headers.get('Content-Length'),flush=True)
+            out['range_probe'].append({'key':row['key'],'status':h.status_code,'content_range':h.headers.get('Content-Range'),'accept_ranges':h.headers.get('Accept-Ranges')})
+            h.close()
+           except Exception as e:
+            print('RANGE_ERR',str(e),flush=True)
+            out['range_probe'].append({'key':row['key'],'error':str(e)})
+          import pathlib
+          pathlib.Path('public_trajectory_inventory').mkdir(exist_ok=True)
+          pathlib.Path('public_trajectory_inventory/record.json').write_text(json.dumps(out,indent=2))
+          
+          PY
+          python -u inventory.py | tee public_trajectory_inventory.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zenodo-2025-silica-MD-raw-data-audit
+          path: |
+            public_trajectory_inventory/
+            public_trajectory_inventory.log
