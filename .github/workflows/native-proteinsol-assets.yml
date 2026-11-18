@@ -1,0 +1,50 @@
+name: Retrieve native Protein-Sol actual output files
+on:
+  push:
+    branches: [native-proteinsol-assets-2026-11-18]
+permissions:
+  contents: read
+jobs:
+  native-proteinsol-assets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Retrieve actual completed Protein-Sol job assets
+        shell: bash
+        run: |
+          python -m pip -q install requests beautifulsoup4
+          mkdir -p native_proteinsol
+          python - <<'PY'
+          from pathlib import Path
+          import requests,json,bs4,re,urllib.parse
+          out=Path('native_proteinsol');s=requests.Session()
+          base='https://protein-sol.manchester.ac.uk/results/patches/run-e182164297f393341177/results.html'
+          for path in [base,'https://protein-sol.manchester.ac.uk/js/patches/viewStructure.js']:
+            try:
+              r=s.get(path,timeout=20)
+              fn='results.html' if path==base else 'viewStructure.js'
+              (out/fn).write_bytes(r.content)
+              print(fn,r.status_code,len(r.content))
+            except Exception as e:print(path,repr(e))
+          for filename in ['3LN2-bar.png','3LN2-bar.svg']:
+            url=urllib.parse.urljoin(base,filename)
+            try:
+              r=s.get(url,timeout=20)
+              print(filename,r.status_code,len(r.content),r.headers.get('content-type'))
+              if r.status_code==200:(out/filename).write_bytes(r.content)
+            except Exception as e:print(filename,repr(e))
+          if (out/'viewStructure.js').exists():
+            txt=(out/'viewStructure.js').read_text()
+            print('PDB and URLs in JS:')
+            for line in txt.splitlines():
+              if any(word in line.lower() for word in ['pdb','.pdb','download','loadfile','rundir','timestamp']):
+                print(line[:500])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-proteinsol-assets
+          path: native_proteinsol/
