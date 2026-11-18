@@ -1,0 +1,94 @@
+name: RCSB-EPMC protein-material literature metadata audit
+on:
+  push:
+    branches: [atlas-literature-contact-audit-2026-11-18]
+permissions:
+  contents: read
+jobs:
+  audit:
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [0,1,2,3]
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Download protein identity and query literature indexing
+        env:
+          GROUP: ${{ matrix.part }}
+        run: |
+          python -m pip -q install requests
+          python - <<'PY'
+          import os,sys,time,csv,json,re,traceback
+          from pathlib import Path
+          import requests
+          from concurrent.futures import ThreadPoolExecutor,as_completed
+          group=int(os.environ.get('GROUP','0'))
+          pdbs="5ZTB 2K4B 4EC6 8R6I 3B09 4X5M 9SV0 2P5M 3VDZ 6LK7 2JVR 2YJL 5FNA 1N6Z 1MFF 3NFC 2OF5 2C0S 9EDR 9W2S 5FQ0 7MQ2 2RSO 9JVC 9W3A 1TMY 2OO2 9IQD 4YTP 7VG8 3B0B 5J8Y 2LFH 1YLQ 5V7Q 3DA7 1JC2 2MQD 2GLW 7NKP 4MRT 7BWE 2LC7 4FZ5 5M2S 4I86 1L3P 5D1I 7UQ2 2AYD 6P57 5D50 2FJH 6U8Y 4KMN 4CSQ 9R2Z 9I2A 5U1S 1TGX 3RY6 5FLI 9QE9 6GBV 7L9E 2RBB 3GK6 7QOD 8AXJ 2X2T 2VGA 4R81 1ZXQ 9ZD5 3ILH 4F54 9OUF 9IY4 4A42 1TKP 4YK8 2Z0S 1B87 3EP1 4BXI 8HEQ 7D3U 2NN5 6IS9 4H5B 5ODJ 1D02 6ZJL 8GHA 2WZO 3HDP 6ZL1 7K3O 5BPV 6RBD 8YE5 4V3I 5TJC 8EHT 3CJN 8GAQ 3MMK 4BYZ 3CVO 9RSS 4HFV 6L2L 7OG6 9Z7W 10JX 4AHE 9M3Q 6UXE 3RT2 2AMM 3KSF 8HER 4O92 4O0A 7KFQ 6QLD 2PLG 4MP4 7XGG 3HKL 3WZ3 4P1N 2ZAY 7VVS 3SUB 6PGN 6TR0 4TW5 8U79 4RDB 1VL0 5CWO 4FBE 5O7X 9IOM 6HAI 6R3B 7ZJU 5YAG 4D0K 2E8G 8X1F 3JUG 5D9P 5D88 4PF6 2R8B 4FUO 3ZXU 4JFC 9DAS 8DW4 7EBW 7BF0 6DJY 4L8J 6WO6 9L8J 6UPS 4CBH 6J5U 6TM8 5SWU 3TEC 8TLB 7ZAN 8PSU 9LD9 3HBK 6JLC 9URD 4Y8S 3LB6 2H0R 2Q7T 1DLM 4GSZ 1YDT 1C8O 3B5P 2HI0 4BWG 9PXF 8XB1 5V7O 9RG5 9GMK 7ER6 2P5F 8XI7 3ROT 4H41 5IP3 1RXG 4Q8K 8FRM 2XWI 2JBW 5VRQ 8AYU 2F8J 8DQV 9XC8 6GQ0 3ALF 1QQ0 7MIQ 3MD0 3E0F 9BOU 8K0J 7FAV 4RGP 6T37 4KPP 4TN3 1Z01 7NMQ 5GHT 6KOZ 2BVG 2HXF 9LDR 7Z15 5TIP 7ZNQ 8DT6 6THM 2ZR2 9TK7 9WT8 6WQ1 7YQS 5S53 4EM3 11SU 6TOA 3CLW 30VH 4XI7 8HDS 6N1P 9DQV 9IN6 2GOK 8CEZ 4O4B 5OLQ 4YXQ 3SZZ 7OOP 7RMU 6AD3 2V1U 6SQX 3CC1 3J4S 6GU8 3DP7 7O0G 8AXT 5CPS 8IUA 8G9U 6EB0 6ZQW 7R8K 8VBX 9U4T 8A3T 7L74 3OZO 9VQ4 6YGA 3P1U 7QQG 9QF3 9SN1 7RB4 8DGE 3ELQ 3I01 6TMW 3UKK 6R2Q 3WOL 7JGS 1HMU 8GC5".split()
+          extras="3LN2 7RSA 3NWV 4F5S 2VUF 2CBA 1JNJ 3ECA 1SUV 1TGU 1HRC 1LYZ 1MBN 2HHB 2PTN 1UBQ 1A5R 2Y0G 256L 3V03".split()
+          allids=list(dict.fromkeys(pdbs+extras))
+          myids=[p for i,p in enumerate(allids) if i%4==group]
+          out=Path('literature_audit');out.mkdir(exist_ok=True)
+          s=requests.Session()
+          s.headers['User-Agent']='InterfaceScout research benchmarking/0.1 (academic public metadata)'
+          rows=[]
+          keywords=['albumin','lysozyme','cytochrome','ubiquitin','myoglobin','hemoglobin','trypsin','ribonuclease','immunoglobulin','beta-lactoglobulin','carbonic anhydrase','green fluorescent','egfp','sumo','transferrin','fibrinogen','hemocyanin','apolipoprotein','lactoferrin','lipase','pepsin','casein']
+          def get(url,params=None):
+              x=s.get(url,params=params,timeout=17)
+              x.raise_for_status()
+              return x.json()
+          def process(pid):
+              row={'pdb':pid,'cohort':'299atlas' if pid in pdbs else 'external_worked','entry_title':'','entry_year':'','protein_names':'','evidence_terms':'','article_count':'','article_titles':'','article_dois':'','article_pmids':'','evidence_tier':'UNRESOLVED','error':''}
+              try:
+                  e=get('https://data.rcsb.org/rest/v1/core/entry/'+pid)
+                  row['entry_title']=e.get('struct',{}).get('title','')
+                  row['entry_year']=str(e.get('rcsb_accession_info',{}).get('initial_release_date',''))[:4]
+                  entities=e.get('rcsb_entry_container_identifiers',{}).get('polymer_entity_ids',[])
+                  proteins=[]
+                  for eid in entities[:3]:
+                      try:
+                          q=get(f'https://data.rcsb.org/rest/v1/core/polymer_entity/{pid}/{eid}')
+                          name=q.get('rcsb_polymer_entity',{}).get('pdbx_description') or q.get('entity',{}).get('pdbx_description','')
+                          if name: proteins.append(name)
+                      except Exception:pass
+                  row['protein_names']='; '.join(dict.fromkeys(proteins))
+                  text=(row['protein_names']+' '+row['entry_title']).lower()
+                  candidates=[k for k in keywords if k in text]
+                  if not candidates:
+                      row['evidence_tier']='NO_TARGETED_PROTEIN_NAME_MATCH'
+                      return row
+                  row['evidence_terms']='; '.join(candidates)
+                  query='('+' OR '.join('TITLE_ABS:"'+k+'"' for k in candidates[:2])+') AND (TITLE_ABS:nanoparticle OR TITLE_ABS:silica OR TITLE_ABS:gold OR TITLE_ABS:surface OR TITLE_ABS:graphene OR TITLE_ABS:nanotube OR TITLE_ABS:polystyrene) AND (TITLE_ABS:adsorption OR TITLE_ABS:binding OR TITLE_ABS:interface OR TITLE_ABS:corona)'
+                  res=get('https://www.ebi.ac.uk/europepmc/webservices/rest/search',{'query':query,'format':'json','pageSize':8,'sort':'CITED desc'})
+                  hits=res.get('resultList',{}).get('result',[])
+                  row['article_count']=res.get('hitCount',0)
+                  row['article_titles']=' | '.join(h.get('title','') for h in hits)
+                  row['article_dois']=' | '.join(h.get('doi','') for h in hits if h.get('doi'))
+                  row['article_pmids']=' | '.join(h.get('id','') for h in hits)
+                  row['evidence_tier']='LITERATURE_CANDIDATE_NEEDS_FULL_TEXT_REVIEW' if hits else 'NO_RESULT_FROM_TARGETED_QUERY'
+              except Exception as ex:
+                  row['evidence_tier']='LOOKUP_FAILED'
+                  row['error']=repr(ex)
+              return row
+          with ThreadPoolExecutor(max_workers=6) as pool:
+              futures=[pool.submit(process,p) for p in myids]
+              for f in as_completed(futures):
+                  r=f.result()
+                  rows.append(r)
+                  if r['evidence_tier']=='LITERATURE_CANDIDATE_NEEDS_FULL_TEXT_REVIEW':print('HIT',r['pdb'],r['protein_names'][:75],r['article_count'],r['article_titles'][:90],flush=True)
+                  elif r['error']:print('ERR',r['pdb'],r['error'][:80],flush=True)
+          keys=list(rows[0].keys())
+          with (out/f'group_{group}.csv').open('w',newline='') as f:
+              w=csv.DictWriter(f,fieldnames=keys);w.writeheader();w.writerows(sorted(rows,key=lambda x:x['pdb']))
+          print('GROUP',group,'N',len(rows),'candidate',sum(r['evidence_tier']=='LITERATURE_CANDIDATE_NEEDS_FULL_TEXT_REVIEW' for r in rows),'failed',sum(r['evidence_tier']=='LOOKUP_FAILED' for r in rows))
+          
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: protein-material-audit-${{ matrix.part }}
+          path: literature_audit/
