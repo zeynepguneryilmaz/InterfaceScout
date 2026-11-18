@@ -1,0 +1,78 @@
+name: New 2025 lysozyme-SWCNT published MD contact validation (native frozen IS)
+on:
+  push:
+    branches: [heldout-lysozyme-swc2025-2026-11-18]
+permissions:
+  contents: read
+jobs:
+  new-swc-lysozyme:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install original InterfaceScout dependencies
+        run: |
+          python -m pip install -q -r backend/requirements.txt
+          mkdir -p external_contact_validation
+      - name: Calculate independent published 1LYZ versus SWCNT contact labels
+        shell: bash
+        run: |
+          curl -fsSL --retry 2 https://files.rcsb.org/download/1LYZ.pdb -o external_contact_validation/1LYZ_raw.pdb
+          cat > external_contact_validation/run.py <<'PY'
+          import sys,os,json,time,itertools,statistics,csv,hashlib
+          from pathlib import Path
+          sys.path.insert(0,str(Path('backend').resolve()))
+          from interface_engine import analyze_all_maps
+          work=Path('external_contact_validation')
+          raw=(work/'1LYZ_raw.pdb').read_text()
+          lines=[]
+          for l in raw.splitlines():
+              if l.startswith('ATOM  ') and l[21]=='A' and l[16] in (' ','A') and l[76:78].strip().upper() not in ('H','D'):
+                  lines.append(l[:16]+' '+l[17:] if l[16]=='A' else l)
+          pdb='\n'.join(lines)+'\nEND\n'
+          (work/'1LYZ_A.pdb').write_text(pdb)
+          seq={int(l[22:26]):l[17:20] for l in lines if l[22:26].strip().isdigit()}
+          expected={61:'ARG',62:'TRP',63:'TRP',68:'ARG',69:'THR',70:'PRO',73:'ARG',103:'ASN',106:'ASN',107:'ALA',111:'TRP',112:'ARG',113:'ASN',116:'LYS'}
+          matched={i:seq.get(i)==aa for i,aa in expected.items()}
+          print('identity QC',matched,flush=True)
+          if not all(matched.values()):
+              print('ABORT: original source 1LYZ numbering must be rechecked')
+              (work/'identity_errors.json').write_text(json.dumps({str(i):{'expected':a,'actual':seq.get(i)} for i,a in expected.items()},indent=2))
+              sys.exit(2)
+          result=analyze_all_maps(pdb_text=pdb,chain='A',pH=7.4)
+          target={f'A:{i}:' for i in expected}
+          exposed=set(result['diagnostics'].get('surface_residue_keys',[]))
+          details={'PDB':'1LYZ','source':'10.1038/s41598-025-96435-3','source_type':'independent published MD site labels, not experimental atomic contact map','pH_model':7.4,'label_aa':expected,'pdb_verified':matched,'n_exposed':len(exposed),'surface_missing_labels':sorted(target-exposed),'PDB_sha256':hashlib.sha256(pdb.encode()).hexdigest()}
+          data=[]
+          for chem in ['pi_carbon','hydrophobic','cationic','anionic','hbond_donor']:
+              v=result['maps'][chem]
+              patch=[set(x['members']) for x in v['patches']]
+              details[chem]={'n_patches':len(patch),'top5':[{'center':x.get('center_key'),'members':x['members']} for x in v['patches'][:5]]}
+              for k in [1,2,3,5]:
+                  if len(patch)<k:continue
+                  selected=set().union(*patch[:k])
+                  hits=len(selected & target)
+                  combos=list(itertools.combinations(range(len(patch)),k))
+                  nullhits=[]; nullsizes=[]
+                  for c in combos:
+                      vv=set().union(*(patch[i] for i in c))
+                      nullhits.append(len(vv & target))
+                      nullsizes.append(len(vv))
+                  near=[q for q,n in zip(nullhits,nullsizes) if abs(n-len(selected))<=max(2,round(len(selected)*0.10))]
+                  p=len([q for q in near if q>=hits])/len(near) if near else None
+                  data.append([chem,k,len(patch),len(target),hits,hits/len(target),len(selected),len(exposed),len(selected)/len(exposed),sorted(selected&target),len(near),p])
+                  print(chem,k,'hits',hits,'/',len(target),'coverage',len(selected),'/',len(exposed),'null',p,flush=True)
+          details['results']=data
+          (work/'source_locked_result.json').write_text(json.dumps(details,indent=2))
+          with (work/'result.csv').open('w',newline='') as f:
+              w=csv.writer(f);w.writerow(['chemistry','top_k','candidate_patch_n','source_label_n','hits','recall','selected_residue_n','exposed_n','fraction_exposed','hit_residues','same_budget_null_n','exact_matched_p']);w.writerows(data)
+          PY
+          python external_contact_validation/run.py | tee external_contact_validation/run.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: 2025-lysozyme-SWCNT-independent-MD-1LYZ
+          path: external_contact_validation/
