@@ -1,0 +1,68 @@
+name: Canonical native PEP-Patch vs original IS v1
+on:
+  push:
+    branches: [native-pep-canonical-v1-2026-11-18]
+permissions:
+  contents: read
+jobs:
+  pep-patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install native PEP-Patch (no code modification) and IS v1
+        run: |
+          mkdir -p native/pep
+          git clone --depth 1 https://github.com/liedllab/surface_analyses.git upstream_pep
+          git -C upstream_pep rev-parse HEAD > native/pep/commit.txt
+          pip install -q ./upstream_pep mdtraj
+          pip install -q -r backend/requirements.txt
+      - name: Use matched clean protein chain A PDBs
+        run: |
+          for pid in 3LN2 7RSA 3NWV; do curl -fsSL --retry 2 https://files.rcsb.org/download/$pid.pdb -o native/pep/${pid}_raw.pdb; done
+          python - <<'PY'
+          from pathlib import Path
+          for pid in ['3LN2','7RSA','3NWV']:
+              src=Path(f'native/pep/{pid}_raw.pdb')
+              lines=[]
+              for l in src.read_text().splitlines():
+                  if not l.startswith('ATOM  '):continue
+                  if l[21]!='A' or l[16] not in (' ','A'):continue
+                  if l[76:78].strip().upper() in ('H','D') or l[12:16].strip().startswith('H') and l[76:78].strip()=='':continue
+                  if l[17:20]=='HIS':l=l[:17]+'HIE'+l[20:]
+                  if l[16]=='A':l=l[:16]+' '+l[17:]
+                  lines.append(l)
+              Path(f'native/pep/{pid}_heavyHIE.pdb').write_text('\n'.join(lines)+'\nEND\n')
+              print(pid,len(lines),'heavy atoms')
+          PY
+      - name: Execute native PEP-Patch Crippen and Eisenberg maps; frozen IS same runner
+        shell: bash
+        run: |
+          set +e
+          for pid in 3LN2 7RSA 3NWV; do
+            for scale in crippen eisenberg; do
+              a=$(date +%s%N)
+              timeout 180 pep_patch_hydrophobic native/pep/${pid}_heavyHIE.pdb native/pep/${pid}_heavyHIE.pdb --scale $scale --out native/pep/${pid}_${scale}.npz --ply_out native/pep/${pid}_${scale}.ply --potential --patches > native/pep/${pid}_${scale}.log 2>&1
+              ec=$?;b=$(date +%s%N)
+              echo "$pid,$scale,$ec,$(( (b-a)/1000000 ))" >> native/pep/native_times_ms.csv
+              echo "$pid $scale exit=$ec";tail -4 native/pep/${pid}_${scale}.log
+            done
+            python - $pid <<'PY'
+          import sys,json,time,os
+          sys.path.insert(0,os.path.abspath('backend'))
+          from interface_engine import analyze_all_maps
+          pid=sys.argv[1];pdb=open(f'native/pep/{pid}_raw.pdb').read()
+          a=time.perf_counter();r=analyze_all_maps(pdb_text=pdb,chain='A',pH=7.4);dt=time.perf_counter()-a
+          with open('native/pep/IS_times.csv','a') as f:f.write(f'{pid},{dt:.6f},{r["n_maps"]}\n')
+          with open(f'native/pep/{pid}_IS.json','w') as f:json.dump({k:[p['members'] for p in v['patches'][:5]] for k,v in r['maps'].items()},f)
+          PY
+          done
+          test -s native/pep/7RSA_crippen.npz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: final-native-pep-patch
+          path: native/pep/
