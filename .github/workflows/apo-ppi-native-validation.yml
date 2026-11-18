@@ -1,0 +1,165 @@
+name: Apo-only PPI independent structural validation
+on:
+  push:
+    branches: [independent-apo-ppi-test-2026-11-18]
+permissions:
+  contents: read
+jobs:
+  apo-screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [0,1,2,3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install unmodified v1 IS and alignment dependencies
+        run: |
+          python -m pip install -q -r backend/requirements.txt requests biopython
+      - name: Search PDB for monomeric near-identical independent apo candidates and run native IS
+        env:
+          PART: ${{matrix.part}}
+        shell: bash
+        run: |
+          cat > apo_benchmark_runner.py <<'PY'
+          import os,requests,json,sys,re,time,hashlib,traceback
+          from concurrent.futures import ThreadPoolExecutor,as_completed
+          from pathlib import Path
+          sys.path.insert(0,str(Path('backend').resolve()))
+          from interface_engine import analyze_all_maps
+          TARGETS="10JX:A 11SU:G 1C8O:A 1D02:A 1DLM:A 1MFF:A 1TGX:A 1TKP:A 1VL0:A 1YDT:E 1YLQ:A 1Z01:A 2F8J:A 2FJH:V 2GOK:A 2HXF:A 2JBW:A 2LFH:A 2OF5:A 2P5F:A 2P5M:A 2PLG:A 2RBB:A 2ZR2:A 3B0B:B 3CC1:A 3DA7:A 3DP7:A 3CVO:A 3ELQ:A 3EP1:A 3HKL:A 3I01:M 3KSF:A 3LB6:C 3ROT:A 3RY6:C 3TEC:E 3UKK:A 3WOL:A 3ZXU:A 4BWG:A 4D0K:A 4EC6:A 4EM3:A 4FZ5:A 4H41:A 4H5B:A 4MP4:A 4MRT:C 4O4B:A 4P1N:A 4R81:A 4RGP:A 4TN3:A 4TW5:A 4Y8S:M 4YK8:B 4YTP:D 4YXQ:A 5CPS:A 5D1I:A 5D50:E 5FNA:A 5FLI:A 5FQ0:B 5IP3:B 5J8Y:C 5M2S:B 5O7X:C 5S53:F 5U1S:B 5V7Q:N 5ZTB:E 6DJY:A 6EB0:A 6IS9:A 6J5U:B 6LK7:A 6N1P:A 6QLD:U 6R3B:A 6R2Q:B 6RBD:h 6T37:A 6THM:A 6TMW:A 6TOA:A 6U8Y:D 6UXE:D 6YGA:B 6ZJL:J 6ZL1:C 6ZQW:A 7D3U:C 7ER6:A 7JGS:C 7K3O:A 7L74:A 7L9E:E 7MIQ:A 7MQ2:D 7NKP:L 7OOP:a 7QQG:A 7QOD:A 7UQ2:A 7VVS:H 7XGG:A 7Z15:C 7ZAN:C 7ZJU:A 7ZNQ:D 8A3T:F 8CEZ:A 8DQV:B 8DT6:A 8EHT:C 8FRM:A 8G9U:P 8GAQ:A 8GC5:A 8GHA:E 8HDS:A 8PSU:A 8VBX:A 8X1F:A 8XI7:A 8YE5:A 9DQV:D 9EDR:E 9BOU:A 9GMK:K 9IN6:M 9LDR:A 9M3Q:N 9PXF:D 9R2Z:B 9RSS:G 9SV0:A 9U4T:A 9W2S:K 9W3A:E 9WT8:A 9XC8:A 9Z7W:A 9ZD5:I".split()
+          PART=int(os.environ['PART'])
+          OUT=Path('apo_candidates');OUT.mkdir(exist_ok=True)
+          S=requests.Session();S.headers['User-Agent']='Independent apo versus complex InterfaceScout validation (academic)'
+          def req(url,method='GET',body=None,timeout=22):
+            for retry in range(3):
+              try:
+                q=S.get(url,timeout=timeout) if method=='GET' else S.post(url,json=body,timeout=timeout)
+                if q.status_code==404:return None
+                if q.status_code in (429,500,502,503,504):
+                  time.sleep(1+retry*2);continue
+                q.raise_for_status()
+                return q.json()
+              except Exception as e:
+                if retry==2:raise
+                time.sleep(1+retry)
+            return None
+          def entity_and_sequence(pid,chain):
+            root=req('https://data.rcsb.org/rest/v1/core/entry/'+pid)
+            if not root:return None,None,None
+            for n in root.get('rcsb_entry_container_identifiers',{}).get('polymer_entity_ids',[]):
+              ent=req(f'https://data.rcsb.org/rest/v1/core/polymer_entity/{pid}/{n}')
+              if not ent:continue
+              chains=ent.get('rcsb_polymer_entity_container_identifiers',{}).get('auth_asym_ids',[])
+              if chain not in chains:continue
+              poly=ent.get('entity_poly',{})
+              seq=poly.get('pdbx_seq_one_letter_code_can','').replace('\n','').replace(' ','')
+              if poly.get('type')!='polypeptide(L)' or len(seq)<45:return root,None,None
+              return root,ent,seq
+            return root,None,None
+          def search(seq):
+            q={'query':{'type':'terminal','service':'sequence','parameters':{'evalue_cutoff':1.0,'identity_cutoff':0.97,'target':'pdb_protein_sequence','value':seq}},'return_type':'polymer_entity','request_options':{'paginate':{'start':0,'rows':75},'results_content_type':['experimental']}}
+            res=req('https://search.rcsb.org/rcsbsearch/v2/query','POST',q,30)
+            return [] if not res else [x['identifier'] for x in res.get('result_set',[])]
+          def candidate_check(target,targetseq,otherid):
+            pid=otherid.split('_')[0];en=otherid.split('_')[1]
+            if pid==target:return None
+            ent=req(f'https://data.rcsb.org/rest/v1/core/polymer_entity/{pid}/{en}')
+            if not ent:return None
+            poly=ent.get('entity_poly',{})
+            seq=poly.get('pdbx_seq_one_letter_code_can','').replace('\n','').replace(' ','')
+            if not seq or abs(len(seq)-len(targetseq))>max(12,int(0.12*len(targetseq))):return None
+            from Bio.Align import PairwiseAligner
+            alg=PairwiseAligner();alg.mode='global';alg.match_score=2;alg.mismatch_score=-2;alg.open_gap_score=-5;alg.extend_gap_score=-1
+            aln=alg.align(targetseq,seq)[0]
+            aa,bb=aln.aligned
+            comp=sum(1 for (a,b),(c,d) in zip(aa,bb) for i,j in zip(range(a,b),range(c,d)) if targetseq[i]==seq[j])
+            cov=comp/len(targetseq)
+            ident=comp/max(1,sum(b-a for a,b in aa))
+            if cov<0.94 or ident<0.98:return None
+            entry=req(f'https://data.rcsb.org/rest/v1/core/entry/{pid}')
+            if not entry:return None
+            prot=entry.get('rcsb_entry_info',{}).get('polymer_entity_count_protein',999)
+            asm=entry.get('pdbx_struct_assembly',[])
+            monomer=any(str(a.get('oligomeric_count',''))=='1' for a in asm)
+            title=entry.get('struct',{}).get('title','')
+            explicit_apo=bool(re.search(r'\bapo\b|\bunbound\b|ligand[- ]free|free form|monomeric',title,re.I))
+            if prot!=1 or not monomer:return None
+            if 'ENGINEERED' in title.upper() or 'MUTANT' in title.upper():pass
+            chains=ent.get('rcsb_polymer_entity_container_identifiers',{}).get('auth_asym_ids',[])
+            if not chains:return None
+            release=entry.get('rcsb_accession_info',{}).get('initial_release_date','')
+            return {'candidate':pid,'candidate_entity':en,'chain':chains[0],'source':target,'identity':ident,'exact_aa_coverage':cov,'apo_title':explicit_apo,'is_monomer_assembly':monomer,'one_protein_entity':prot==1,'entry_title':title,'release_date':release,'seq':seq}
+          def getpdb(pid,chain):
+            x=S.get(f'https://files.rcsb.org/download/{pid}.pdb',timeout=45)
+            x.raise_for_status()
+            lines=[l[:16]+' '+l[17:] if l[16]=='A' else l for l in x.text.splitlines() if l.startswith('ATOM  ') and len(l)>76 and l[21]==chain and l[16] in (' ','A') and l[76:78].strip().upper() not in ('H','D')]
+            if len(lines)<100:raise ValueError('Missing chain '+pid+':'+chain)
+            return '\n'.join(lines)+'\nEND\n'
+          def one(i,t):
+            row={'target':t,'status':'UNKNOWN','candidate_count':0,'candidates':[]}
+            pid,chain=t.split(':')
+            try:
+              root,ent,seq=entity_and_sequence(pid,chain)
+              if not seq:
+                row['status']='NO_TARGET_ENTITY_OR_SHORT_SEQ';return row
+              (OUT/f'{pid}_{chain}_polymer_sequence.txt').write_text(seq)
+              ids=search(seq)
+              row['search_total_returned']=len(ids)
+              candidates=[]
+              for id in ids[:55]:
+                try:
+                  c=candidate_check(pid,seq,id)
+                  if c:candidates.append(c)
+                except Exception as e:
+                  row.setdefault('candidate_failures',[]).append(str(e)[:160])
+                if len(candidates)>=7:break
+              candidates.sort(key=lambda x:(not x['apo_title'], -x['exact_aa_coverage'],x['candidate']))
+              row['candidate_count']=len(candidates)
+              row['candidates']=candidates[:7]
+              row['status']='CANDIDATES_FOUND' if candidates else 'NO_MONOMERIC_MATCH'
+              for idx,c in enumerate(candidates[:2]):
+                try:
+                  text=getpdb(c['candidate'],c['chain'])
+                  inp=f'{pid}_{chain}__{c["candidate"]}_{c["chain"]}'
+                  (OUT/f'{inp}.pdb').write_text(text)
+                  r=analyze_all_maps(pdb_text=text,chain=c['chain'],pH=7.4)
+                  # Only exposed heavy-atom residues: top1, top3, top5 selected from same frozen chemistry map
+                  maps={}
+                  for chem,v in r['maps'].items():
+                    pats=v['patches']
+                    maps[chem]={'patch_count':len(pats),'top1':sorted(set().union(*(set(p['members']) for p in pats[:1]))),'top3':sorted(set().union(*(set(p['members']) for p in pats[:3]))),'top5':sorted(set().union(*(set(p['members']) for p in pats[:5]))),'first10_patches':[{'center':p.get('center_key'),'members':p['members']} for p in pats[:10]]}
+                  out={'target':t,'candidate':c,'candidate_chain':c['chain'],'input_sha256':hashlib.sha256(text.encode()).hexdigest(),'pH':7.4,'exposed':r['diagnostics'].get('surface_residue_keys',[]),'maps':maps}
+                  (OUT/f'{inp}_IS_results.json').write_text(json.dumps(out))
+                  c['IS_computed']=True
+                  print('COMPUTED',t,c['candidate'],c['chain'],'apo',c['apo_title'],'len',len(seq),flush=True)
+                except Exception as e:
+                  c['IS_computed']=False;c['IS_error']=str(e)
+                  print('ERROR_IS',t,c['candidate'],str(e),flush=True)
+              print('DONE',t,row['status'],row['candidate_count'],flush=True)
+            except Exception as e:
+              row['status']='ERROR';row['error']=traceback.format_exc()
+              print('ERROR',t,str(e),flush=True)
+            return row
+          work=[(i,t) for i,t in enumerate(TARGETS) if i%4==PART]
+          with ThreadPoolExecutor(max_workers=3) as pool:
+            fs=[pool.submit(one,i,t) for i,t in work]
+            data=[f.result() for f in as_completed(fs)]
+          (OUT/f'manifest_{PART}.json').write_text(json.dumps(sorted(data,key=lambda x:x['target']),indent=2))
+          print('SUMMARY',PART,'searched',len(data),'found',sum(x['status']=='CANDIDATES_FOUND' for x in data),'computed',sum(sum(bool(c.get('IS_computed')) for c in x['candidates']) for x in data),flush=True)
+          
+          PY
+          python -u apo_benchmark_runner.py | tee apo_benchmark_run_${PART}.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: apo-screen-group-${{ matrix.part }}
+          path: |
+            apo_candidates/
+            apo_benchmark_runner.py
+            apo_benchmark_run_*.log
+          retention-days: 30
