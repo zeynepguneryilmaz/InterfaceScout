@@ -1,0 +1,64 @@
+name: Native Protein-Sol matched chain A PDB
+on:
+  push:
+    branches: [native-proteinsol-matched-2026-11-18]
+permissions:
+  contents: read
+jobs:
+  native-protein-sol:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Submit chain-A protein to original Protein-Sol server and save PDB results
+        run: |
+          mkdir -p native_proteinsol
+          pip install -q requests
+          python - <<'PY'
+          from pathlib import Path
+          import requests,re,time,json
+          p=Path('native_proteinsol')
+          session=requests.Session()
+          raw=session.get('https://files.rcsb.org/download/3LN2.pdb',timeout=30).text
+          lines=[l for l in raw.splitlines() if l.startswith('ATOM  ') and l[21]=='A' and l[16] in (' ','A') and l[76:78].strip().upper() not in ('H','D')]
+          protein='\n'.join(lines)+'\nEND\n'
+          (p/'3LN2_chainA.pdb').write_text(protein)
+          print('atoms',len(lines))
+          with open(p/'3LN2_chainA.pdb','rb') as inp:
+            r=session.post('https://protein-sol.manchester.ac.uk/cgi-bin/patches/patches.php',files={'uploadedFile':('3LN2_chainA.pdb',inp,'chemical/x-pdb')},data={'multiprediction':'Upload'},timeout=40)
+          (p/'submission.html').write_text(r.text)
+          matches=re.findall(r'Job id\s*=\s*([a-zA-Z0-9]+)',r.text,re.I)
+          if not matches: matches=re.findall(r'var timestamp\s*=\s*["\']([^"\']+)',r.text)
+          jobid=matches[0] if matches else None
+          print('submission status',r.status_code,'job',jobid)
+          if not jobid:exit(1)
+          base=f'https://protein-sol.manchester.ac.uk/results/patches/run-{jobid}/'
+          report={'job_id':jobid,'base':base,'submission_status':r.status_code,'PDB':'3LN2_chainA'}
+          for k in range(15):
+            try:
+              rr=session.get(base+'results.html',timeout=15)
+              print('result',k,rr.status_code,len(rr.content))
+              if rr.status_code==200 and 'Potential Field' in rr.text:
+                (p/'results.html').write_text(rr.text)
+                report['result_status']=200
+                break
+            except Exception as e:print('result request',repr(e))
+            time.sleep(5)
+          for filename in ['potlfield.pdb','ratio.pdb','3LN2_chainA-bar.png','3LN2_chainA-bar.svg']:
+            try:
+              resp=session.get(base+filename,timeout=20)
+              print('asset',filename,resp.status_code,len(resp.content),resp.headers.get('Content-Type'))
+              report[filename]={'status':resp.status_code,'bytes':len(resp.content)}
+              if resp.status_code==200 and len(resp.content)>0 and len(resp.content)<10000000:
+                (p/filename).write_bytes(resp.content)
+            except Exception as e:
+              print('asset error',repr(e))
+          (p/'status.json').write_text(json.dumps(report,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-proteinsol-matched-chainA
+          path: native_proteinsol/
