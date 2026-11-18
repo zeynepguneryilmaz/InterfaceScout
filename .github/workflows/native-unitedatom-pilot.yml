@@ -1,0 +1,89 @@
+name: Native UnitedAtom material adsorption pilot
+on:
+  push:
+    branches: [native-methods-benchmark-2026-11-18]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  unitedatom-native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Obtain and compile upstream NPCoronaPredict UnitedAtom
+        shell: bash
+        run: |
+          mkdir -p native_results/unitedatom
+          git clone --depth 1 https://github.com/ucd-softmatterlab/NPCoronaPredict.git ua_upstream
+          git -C ua_upstream rev-parse HEAD > native_results/unitedatom/commit.txt
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libboost-system-dev libboost-filesystem-dev
+          cd ua_upstream
+          make -j2 > ../native_results/unitedatom/build.log 2>&1
+          ls -l UnitedAtom pdb2cg1
+      - name: Prepare matching PDB alpha-carbon-only chain A input
+        shell: bash
+        run: |
+          mkdir -p ua_upstream/inputs
+          for pid in 3LN2 7RSA; do
+            curl -fsSL --retry 2 "https://files.rcsb.org/download/${pid}.pdb" -o "native_results/unitedatom/${pid}_raw.pdb"
+          done
+          python - <<'PY'
+          from pathlib import Path
+          for pid in ['3LN2','7RSA']:
+              src=Path(f'native_results/unitedatom/{pid}_raw.pdb')
+              t=[]
+              for l in src.read_text().splitlines():
+                  if l.startswith('ATOM') and l[21]=='A' and l[12:16].strip()=='CA':
+                      t.append(l)
+              out=Path(f'ua_upstream/inputs/{pid}_chainA_CA.pdb')
+              out.write_text('\n'.join(t)+'\nEND\n')
+              print(pid,'CA',len(t),'in',out)
+          PY
+      - name: Execute original UnitedAtom on silica and gold nanoparticle materials
+        shell: bash
+        run: |
+          set +e
+          cd ua_upstream
+          for pid in 3LN2 7RSA; do
+            for mat in silica gold; do
+              if [ "$mat" = silica ]; then pmf='surface/SiO2-Amorphous'; ham='hamaker/SiO2_Amorph.dat'; else pmf='surface/Au/111'; ham='hamaker/Metal.dat'; fi
+              cat > "inputs/${pid}_${mat}.config" <<EOF
+          output-directory = ../native_results/unitedatom/outputs_${pid}_${mat}
+          pdb-target = inputs/${pid}_chainA_CA.pdb
+          nanoparticle-radius = [5.0]
+          np-type = 1
+          pmf-directory = ${pmf}
+          hamaker-file = ${ham}
+          enable-surface
+          enable-core
+          enable-electrostatic
+          simulation-steps = 2000
+          potential-cutoff = 5.0
+          potential-size = 1000
+          angle-delta = 20.0
+          bjerum-length = 0.751
+          debye-length = 0.766
+          zeta-potential = [-0.02]
+          amino-acids = [ALA,ARG,ASN,ASP,CYS,GLN,GLU,GLY,HIS,ILE,LEU,LYS,MET,PHE,PRO,SER,THR,TRP,TYR,VAL]
+          amino-acid-charges = [0.0,1.0,0.0,-1.0,0.0,0.0,-1.0,0.0,0.5,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
+          amino-acid-radii = [0.323,0.429,0.362,0.356,0.352,0.386,0.376,0.285,0.302,0.401,0.401,0.405,0.402,0.421,0.362,0.328,0.357,0.449,0.425,0.377]
+          EOF
+              a=$(date +%s%N)
+              timeout 250 ./UnitedAtom --config-file="inputs/${pid}_${mat}.config" > "../native_results/unitedatom/${pid}_${mat}.log" 2>&1
+              code=$?
+              b=$(date +%s%N)
+              echo "${pid},${mat},$code,$(( (b-a)/1000000 ))" >> ../native_results/unitedatom/times_ms.csv
+              echo "UA ${pid} ${mat} exit $code"; tail -12 "../native_results/unitedatom/${pid}_${mat}.log"
+              cp "inputs/${pid}_${mat}.config" ../native_results/unitedatom/
+            done
+          done
+          find ../native_results/unitedatom -type f | head -30
+          test -f ../native_results/unitedatom/times_ms.csv
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-unitedatom-adsorption
+          path: native_results/unitedatom/
+          retention-days: 30
