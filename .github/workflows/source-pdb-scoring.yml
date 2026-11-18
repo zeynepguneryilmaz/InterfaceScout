@@ -1,0 +1,83 @@
+name: Frozen IS on source-verified candidate structures (no posthoc tuning)
+on:
+  push:
+    branches: [expanded-heldout-contact-evidence-2026-11-18]
+permissions:
+  contents: read
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install exact current frozen InterfaceScout dependencies
+        run: |
+          python -m pip install -q -r backend/requirements.txt
+          mkdir -p scored_structures
+      - name: Freeze all source candidate PDBs including negative cases
+        shell: bash
+        run: |
+          cat > scored_structures/score.py <<'PY'
+          import requests,sys,os,json,traceback,hashlib,csv
+          from pathlib import Path
+          sys.path.insert(0,str(Path('backend').resolve()))
+          from interface_engine import analyze_all_maps
+          d=Path('scored_structures')
+          targets=[
+           ('1MBN','A','citrate_gold','anionic','2019-myoglobin-citrate-AuNP'),
+           ('2HHB','A','citrate_gold','anionic','2019-hemoglobin-citrate-AuNP alpha-chain'),
+           ('2HHB','B','citrate_gold','anionic','2019-hemoglobin-citrate-AuNP beta-chain'),
+           ('2PTN','A','citrate_gold','anionic','2019-trypsin-citrate-AuNP'),
+           ('1UBQ','A','citrate_gold','anionic','experimental ubiquitin AuNP NMR'),
+           ('1UBQ','A','mesoporous_silica','hbond_acceptor','solid-state NMR ubiquitin-MCM41'),
+           ('1UBQ','A','polystyrene','hydrophobic','experimental ubiquitin polystyrene'),
+           ('1UBQ','A','silica_oligomers','hbond_acceptor','2025 silica MD ubiquitin'),
+           ('1A5R','A','silica_oligomers','hbond_acceptor','2025 silica MD SUMO1'),
+           ('2Y0G','A','silica_oligomers','hbond_acceptor','2025 silica MD EGFP'),
+           ('256L','A','silica_oligomers','hbond_acceptor','2025 silica MD T4 lysozyme'),
+           ('1AML','A','silica_oligomers','hbond_acceptor','2025 silica MD amyloid beta'),
+           ('1LYZ','A','carbon_nanotube','pi_carbon','2025 lysozyme SWCNT independent MD'),
+           ('1HRC','A','silica','hbond_acceptor','2019 horse cytochrome c silica'),
+          ]
+          s=requests.Session()
+          manifest=[]
+          for pdb,chain,material,primary,source in targets:
+              ident=f'{pdb}_{chain}'
+              try:
+                  orig=d/f'{ident}.pdb'
+                  if not orig.exists():
+                      r=s.get(f'https://files.rcsb.org/download/{pdb}.pdb',timeout=50);r.raise_for_status()
+                      raw=r.text
+                      clean=[x[:16]+' '+x[17:] if x[16]=='A' else x for x in raw.splitlines() if x.startswith('ATOM  ') and x[21]==chain and x[16] in (' ','A') and x[76:78].strip().upper() not in ('H','D')]
+                      if not clean:raise ValueError('No standard chain ATOM')
+                      orig.write_text('\n'.join(clean)+'\nEND\n')
+                  pdb_text=orig.read_text()
+                  digest=hashlib.sha256(pdb_text.encode()).hexdigest()
+                  ph=7.4
+                  result=analyze_all_maps(pdb_text=pdb_text,chain=chain,pH=ph)
+                  if ident not in [a.get('pdb_chain') for a in manifest]:
+                      js={'pdb':pdb,'chain':chain,'sha256':digest,'pH':ph,'exposed':result['diagnostics'].get('surface_residue_keys',[]),'maps':{}}
+                      for chem,val in result['maps'].items():
+                          js['maps'][chem]=[{'rank':i+1,'center':patch.get('center_key'),'members':patch['members']} for i,patch in enumerate(val['patches'])]
+                      (d/f'{ident}_frozen_all_channels.json').write_text(json.dumps(js,indent=2))
+                  top5=result['maps'][primary]['patches'][:5]
+                  selected=set().union(*(set(p['members']) for p in top5)) if top5 else set()
+                  exposed=result['diagnostics'].get('surface_residue_keys',[])
+                  manifest.append({'pdb_chain':ident,'material':material,'chem_primary_predeclared':primary,'source':source,'input_sha256':digest,'n_exposed':len(exposed),'top5_n_residues':len(selected),'top5_coverage':len(selected)/len(exposed) if exposed else None,'top5_members':sorted(selected),'status':'COMPUTED_NOT_VALIDATED'})
+                  print(ident,material,primary,'covered',len(selected),'exposed',len(exposed),flush=True)
+              except Exception as e:
+                  manifest.append({'pdb_chain':ident,'material':material,'chem_primary_predeclared':primary,'source':source,'status':'ERROR','error':str(e)})
+                  print('ERROR',ident,material,repr(e),flush=True)
+                  (d/f'ERROR_{ident}_{material}.txt').write_text(traceback.format_exc())
+          (d/'manifest.json').write_text(json.dumps(manifest,indent=2))
+          PY
+          python scored_structures/score.py | tee scored_structures/run.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frozen-IS-source-matched-PDBs-multimaterial
+          path: scored_structures/
+          retention-days: 30
