@@ -1,7 +1,7 @@
 name: Direct apo FcγRIIa held-out independent crystallographic PPI interface test
 on:
   push:
-    branches: [direct-apo-fcgr2a-holdout-2026-11-18]
+    branches: [direct-apo-Fcgr2a-holdout-2026-11-18]
 permissions:
   contents: read
 jobs:
