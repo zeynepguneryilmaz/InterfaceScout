@@ -1,0 +1,50 @@
+name: Enumerate public large MD ZIP and extract only small topology/coordinates by HTTP Range
+on:
+  push:
+    branches: [md-zenodo-trajectory-inventory-2026-11-18]
+permissions:
+  contents: read
+jobs:
+  enumerate-zip:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -q remotezip requests
+      - name: Read ZIP central directory via range and extract small topology files
+        run: |
+          cat > ziplisting.py <<'PY'
+          import json,os,traceback
+          from pathlib import Path
+          from remotezip import RemoteZip
+          url="https://zenodo.org/api/records/14982466/files/zenodo.zip/content"
+          outdir=Path('public_trajectory_zip_listing');outdir.mkdir(exist_ok=True)
+          rec={'source':url,'items':[]}
+          with RemoteZip(url, initial_buffer_size=1048576, session=None) as r:
+           infos=r.infolist()
+           for f in infos:
+            rec['items'].append({'file':f.filename,'size_uncompressed':f.file_size,'compressed_size':f.compress_size,'type':Path(f.filename).suffix.lower()})
+            print('ENTRY',f.filename,f.file_size,f.compress_size,flush=True)
+           for f in infos:
+            if not f.is_dir() and 0<f.file_size<3000000 and Path(f.filename).suffix.lower() in ('.gro','.pdb','.top','.itp','.mdp','.txt','.readme','.csv','.dat','.json'):
+             try:
+              bs=r.read(f.filename)
+              dst=outdir/'selected_small_files'/f.filename
+              dst.parent.mkdir(parents=True,exist_ok=True)
+              dst.write_bytes(bs)
+              print('READ',f.filename,len(bs),flush=True)
+             except Exception as e:print('CANNOT_READ',f.filename,repr(e),flush=True)
+          (outdir/'manifest.json').write_text(json.dumps(rec,indent=2))
+          
+          PY
+          python -u ziplisting.py | tee ziplisting.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: silica-md-raw-trajectory-directory-topology
+          path: |
+            public_trajectory_zip_listing/
+            ziplisting.log
