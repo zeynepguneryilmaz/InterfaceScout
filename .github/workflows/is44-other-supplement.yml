@@ -1,0 +1,27 @@
+name: IS44 retrieve remaining publicly mirrored SI
+on:
+  push:
+    branches: [is-44-adsorption-evidence-2026-11-19]
+    paths:
+      - analysis/is44_other_publisher_si.py
+      - .github/workflows/is44-other-supplement.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  retrieve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -q requests
+      - run: python analysis/is44_other_publisher_si.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: is44-remaining-nature-wiley-rsc-si
+          path: is44_other_supplements/
+          retention-days: 30
