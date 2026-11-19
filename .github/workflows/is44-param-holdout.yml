@@ -1,0 +1,29 @@
+name: IS44 frozen parameter independent 16-protein structural holdout
+on:
+  push:
+    branches: [is-44-adsorption-evidence-2026-11-19]
+    paths:
+      - analysis/is44_parameter_holdout.py
+      - .github/workflows/is44-param-holdout.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  holdout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -q -r backend/requirements.txt
+      - run: python analysis/is44_parameter_holdout.py | tee is44_parameter_holdout.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: is44-independent-16-protein-parameter-robustness
+          path: |
+            is44_independent_parameter_holdout/
+            is44_parameter_holdout.log
+          retention-days: 45
