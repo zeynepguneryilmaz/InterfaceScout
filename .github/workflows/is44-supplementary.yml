@@ -1,0 +1,32 @@
+name: Audit all 26 publications for open fulltexts and supplements
+on:
+  push:
+    branches: [is-44-adsorption-evidence-2026-11-19]
+    paths:
+      - 'analysis/is44_retrieve_supplementary.py'
+      - '.github/workflows/is44-supplementary.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  retrieve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install HTTP and XML readers
+        run: python -m pip install -q requests beautifulsoup4 lxml
+      - name: Retrieve public supplements and flag candidate residue text
+        run: python analysis/is44_retrieve_supplementary.py | tee is44_supplementary_log.txt
+      - name: Archive DOI and supplementary audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: is44-supplementary-literature-audit
+          path: |
+            is44_literature_supplement_audit/
+            is44_supplementary_log.txt
+          retention-days: 60
