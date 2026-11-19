@@ -1,0 +1,31 @@
+name: Fetch exact ACS Figshare and other supplementary artifacts for IS44
+on:
+  push:
+    branches: [is-44-adsorption-evidence-2026-11-19]
+    paths:
+      - analysis/is44_direct_si_figshare.py
+      - .github/workflows/is44-direct-supplement.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  supplement:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install libraries
+        run: python -m pip install -q requests
+      - name: Fetch actual files and extract PDF text 
+        run: python analysis/is44_direct_si_figshare.py | tee is44_direct_si.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: is44-direct-publisher-supplementary-files
+          path: |
+            is44_SI_direct/
+            is44_direct_si.log
+          retention-days: 60
