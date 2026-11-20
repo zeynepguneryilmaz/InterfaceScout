@@ -75,7 +75,7 @@ class ScopeRegressionTests(unittest.TestCase):
     def test_first_model_selected_without_auto_biological_assembly(self):
         # A two-model protein is *not* interpreted as two chains; preparation
         # explicitly selects the first PDB MODEL.
-        a="\n".join(line for line in PDB.splitlines() if line.strip() != "END") + "\n"
+        a="\n".join(line for line in PDB.splitlines() if line.startswith(("ATOM  ", "TER   "))) + "\n"
         multi="MODEL        1\n"+a+"ENDMDL\nMODEL        2\n"+a+"ENDMDL\nEND\n"
         one=analyze_all_maps(pdb_text=multi,chain="A",pH=7.4)
         self.assertEqual(one["structure_preparation"]["input_models"],2)
