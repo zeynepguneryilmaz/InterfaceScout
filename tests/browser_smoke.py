@@ -6,6 +6,8 @@ the actual viewer screenshots, checks ZIP contents and a two-PDB consensus.
 from __future__ import annotations
 
 from io import BytesIO
+import hashlib
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -27,6 +29,19 @@ def assert_export(download, label: str, multi: bool):
     if not path:
         raise AssertionError(label + ": browser has no downloaded ZIP")
     b = Path(path).read_bytes()
+    # Optional machine-readable release evidence: archive exactly the ZIP that
+    # passed the structural/content checks, never placeholder renderings.
+    evidence = os.environ.get("INTERFACESCOUT_ARTIFACT_DIR")
+    if evidence:
+        dest = Path(evidence)
+        dest.mkdir(parents=True, exist_ok=True)
+        target = dest / ("multi_pdb_browser_export.zip" if multi else "single_pdb_browser_export.zip")
+        target.write_bytes(b)
+        record = {"workflow": label, "file": target.name,
+                  "sha256": hashlib.sha256(b).hexdigest(),
+                  "bytes": len(b), "passed_export_checks": False}
+        (dest / (target.stem + ".json")).write_text(
+            json.dumps(record, indent=2), encoding="utf-8")
     with zipfile.ZipFile(BytesIO(b)) as archive:
         names = archive.namelist()
         bases = ["structures/InterfaceScout_1CRN_anionic_Bfactor"]
@@ -67,6 +82,11 @@ def assert_export(download, label: str, multi: bool):
                 raise AssertionError(label + ": consensus report absent")
             if "comparison/comparison_report.pdf" not in names:
                 raise AssertionError(label + ": comparison report absent")
+    if evidence:
+        record["passed_export_checks"] = True
+        record["n_archive_members"] = len(names)
+        (dest / (target.stem + ".json")).write_text(
+            json.dumps(record, indent=2), encoding="utf-8")
     print(f"{label}: PASS ({len(b):,} ZIP bytes; {len(names)} files)")
 
 

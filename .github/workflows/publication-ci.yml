@@ -29,6 +29,11 @@ jobs:
         run: python -m pip install --disable-pip-version-check -r backend/requirements.txt
       - name: Publication smoke tests
         run: python -m unittest discover -s tests -v
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: PDB B-factor exporter JavaScript regression tests
+        run: node --test tests/test_bfactor_export.cjs
       - name: JavaScript syntax checks
         shell: bash
         run: |
@@ -49,6 +54,31 @@ jobs:
         run: |
           call run_local.bat --check
           call start.bat --check
+
+  full-numerical-reproduction:
+    name: full-independent-231-map-reproduction
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install pinned calculation dependencies
+        run: python -m pip install --disable-pip-version-check -r backend/requirements.txt
+      - name: Recompute and independently check 21 inputs and all 231 maps
+        run: python validation/reproduce.py --suite full --output validation-evidence/numerical
+      - name: Preserve numerical report, output hashes and per-case data
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-v1.1.0-numerical-${{ github.sha }}
+          path: validation-evidence/numerical/
+          if-no-files-found: warn
+          retention-days: 90
 
   browser-smoke:
     name: browser-smoke (${{ matrix.os }})
@@ -72,7 +102,17 @@ jobs:
         if: runner.os == 'Linux'
         run: python -m playwright install-deps chromium
       - name: Actual UI and screenshot-backed ZIP cross-check
+        env:
+          INTERFACESCOUT_ARTIFACT_DIR: validation-evidence/browser
         run: python tests/browser_smoke.py
+      - name: Preserve real browser ZIP exports and manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-v1.1.0-browser-${{ runner.os }}-${{ github.sha }}
+          path: validation-evidence/browser/
+          if-no-files-found: warn
+          retention-days: 90
 
   large-structure-stress:
     name: large-structure-stress (${{ matrix.os }})

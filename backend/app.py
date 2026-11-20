@@ -20,7 +20,7 @@ BACKEND = Path(__file__).resolve().parent
 ROOT = BACKEND.parent
 FRONTEND = ROOT / "frontend"
 
-PUBLIC_VERSION = "1.0-publication"
+PUBLIC_VERSION = "1.1.0-rc1"
 app = FastAPI(title="InterfaceScout", version=PUBLIC_VERSION)
 
 

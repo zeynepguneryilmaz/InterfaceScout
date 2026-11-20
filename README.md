@@ -1,5 +1,7 @@
 # InterfaceScout
 
+> Software branch: **v1.1.0-rc1 (publication validation candidate)**. The previously published v1.0.0 tag and the main branch are retained unchanged. This candidate has not yet been promoted to a final release. Numerical model version remains `2.4.0-selected-parameters`; changes improve precision, identity correspondence, and exports. See `publication/README.md` for the release acceptance protocol and evidence matrix.
+
 [![Cross-platform CI](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/workflows/publication-ci.yml/badge.svg)](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/workflows/publication-ci.yml)
 
 InterfaceScout is an open-source **physicochemical protein-surface mapping and candidate-region analysis** tool for preliminary experimental or computational study design. It is not an adsorption-site predictor.
@@ -176,6 +178,8 @@ Each condition contains the same user-facing result types produced by InterfaceS
 ```bash
 python -m unittest discover -s tests -v
 python validation/verify_publication.py
+node --test tests/test_bfactor_export.cjs
+python validation/reproduce.py --suite full --output validation-evidence/numerical
 ```
 
 Cross-platform CI repeats these checks under Python 3.10, 3.11, and 3.12 on Windows, macOS, and Linux.
