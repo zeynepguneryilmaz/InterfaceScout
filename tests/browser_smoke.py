@@ -93,12 +93,18 @@ def main():
             raise RuntimeError("InterfaceScout server did not become healthy")
 
         with sync_playwright() as playwright:
-            browser = playwright.chromium.launch(
-                headless=True,
-                args=["--use-gl=angle", "--use-angle=swiftshader",
-                      "--enable-unsafe-swiftshader", "--enable-webgl",
-                      "--disable-dev-shm-usage"],
-            )
+            engine = os.environ.get("IS_BROWSER", "chromium").lower()
+            if engine not in ("chromium", "firefox", "webkit"):
+                raise ValueError(f"Unsupported browser test engine: {engine}")
+            launch_args = {"headless": True}
+            if engine == "chromium":
+                launch_args["args"] = [
+                    "--use-gl=angle", "--use-angle=swiftshader",
+                    "--enable-unsafe-swiftshader", "--enable-webgl",
+                    "--disable-dev-shm-usage",
+                ]
+            browser = getattr(playwright, engine).launch(**launch_args)
+            print(f"Browser engine: {engine}; platform={sys.platform}", flush=True)
             page = browser.new_page(viewport={"width": 1200, "height": 850},
                                     accept_downloads=True)
             page.on("pageerror", lambda error: print("BROWSER PAGE ERROR:", error))
