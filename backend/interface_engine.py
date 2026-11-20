@@ -6,6 +6,7 @@ returns every canonical surface-chemistry map used by the public application.
 from __future__ import annotations
 
 import urllib.request
+import hashlib
 from typing import Any, Dict, Optional
 
 import core
@@ -79,6 +80,7 @@ def _prepare_shared_context(
     surface_keys = [str(r["key"]) for r in core_result.get("surface_residues", []) if r.get("key")]
     return {
         "prepared": prepared,
+        "source_pdb_sha256": hashlib.sha256(raw.encode("utf-8")).hexdigest(),
         "prep_report": prep_report,
         "core_result": core_result,
         "ca_nodes": ca_nodes,
@@ -143,6 +145,7 @@ def _shared_response(context: dict, *, pdb_id: Optional[str], pH: float, ionic_m
         },
         "input": {
             "pdb_id": (pdb_id or "").strip().upper() or None,
+            "source_pdb_sha256": context["source_pdb_sha256"],
             "chain": context["prep_report"].get("selected_chain", "ALL"),
             "pH": float(pH),
             "ionic_mM": float(ionic_mM),
