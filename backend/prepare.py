@@ -236,7 +236,9 @@ def prepare_pdb_text(pdb_text: str, chain: str | None = None) -> Tuple[str, dict
         _residue_label(r)
         for c in active for r in c if not _is_standard_protein(r)
     ]
-    io = PDBIO()
+    # Preserve original MODEL serial when the input explicitly has MODEL records.
+    explicit_models = any(line.startswith("MODEL ") for line in pdb_text.splitlines())
+    io = PDBIO(use_model_flag=int(explicit_models))
     io.set_structure(structure)
     out = StringIO()
     try:
@@ -283,7 +285,7 @@ def prepare_pdb_text(pdb_text: str, chain: str | None = None) -> Tuple[str, dict
     report = {
         "policy": "first_model_standard_protein_heavy_atoms_one_altloc_per_residue",
         "input_models": len(models),
-        "selected_model": 1,
+        "selected_model": 1,\n        "model_policy": "first_model_only",\n        "selected_model_index": 0,\n        "selected_model_serial": int(first.serial_num) if explicit_models else None,
         "available_chains_first_model": available_chains,
         "selected_chain": ",".join(sorted(requested)) if requested else "ALL",
         "protein_residues_retained": len(retained),
