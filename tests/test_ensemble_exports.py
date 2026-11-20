@@ -45,7 +45,13 @@ def minimal_analysis():
     return {
         "input": {"pH": 7.4, "chain": "A"},
         "method": {"sasa_points_per_atom": 200, "patch_radius_A": 8},
-        "structure_preparation": {"selected_chain": "A"},
+        "structure_preparation": {
+            "selected_chain": "A",
+            "model_policy": "first_model_only",
+            "selected_model_index": 0,
+            "selected_model_serial": None,
+        },
+        "prepared_pdb": PDB,
         "scope": {"models_adsorption_induced_unfolding": False},
         "map_order": list(MAP_NAMES), "maps": maps,
         "diagnostics": {"surface_residue_keys": [residue_key]},

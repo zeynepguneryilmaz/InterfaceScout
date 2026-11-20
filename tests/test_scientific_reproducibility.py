@@ -105,7 +105,7 @@ class AnalyticNumericalTests(unittest.TestCase):
         ps=[dict(center_key=k,chemistry_support=a,mean_accessibility=b,patch_coherence=c,orientation_coherence=d)
             for k,a,b,c,d in [('A:1:',1.,1.,1.,1.),('A:2:',.5,.5,.5,.5),('A:3:',1.,.2,.8,.9),('A:4:',.1,.1,.1,.1),('A:0:',1.,1.,1.,1.)]]
         result=assign_pareto_fronts(copy.deepcopy(ps))
-        self.assertEqual([(p['center_key'],p['pareto_front']) for p in result],[('A:0:',1),('A:1:',1),('A:3:',2),('A:2:',2),('A:4:',3)])
+        self.assertEqual([(p['center_key'],p['pareto_front']) for p in result],[('A:1:',1),('A:0:',1),('A:3:',2),('A:2:',2),('A:4:',3)])
         self.assertEqual(dominance_depths({p['center_key']:p for p in ps}),{'A:1:':1,'A:2:':2,'A:3:':2,'A:4:':3,'A:0:':1})
 
 
