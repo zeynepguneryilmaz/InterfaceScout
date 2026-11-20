@@ -157,6 +157,13 @@ def main():
                 print("UI error:", page.locator("#isError").inner_text())
                 raise
 
+            if os.environ.get("IS_TEST_SCOPE", "full") == "single":
+                print("SINGLE-STRUCTURE BROWSER SCOPE PASS: "
+                      "no multi-PDB export claim for this browser/OS combination",
+                      flush=True)
+                browser.close()
+                return
+
             page.set_input_files("#isMultiFiles", [str(PDB), str(PDB)])
             page.wait_for_function("() => ensembleInputs.length === 2")
             page.locator("#isAnalyzeSet").click()
