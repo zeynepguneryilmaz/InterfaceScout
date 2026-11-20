@@ -28,6 +28,7 @@ def profile_rows(core_result: Mapping[str, Any]) -> list[dict[str, Any]]:
         rows.append({
             "key": str(r["key"]),
             "chain": str(r["chain"]),
+            "x": float(r["x"]), "y": float(r["y"]), "z": float(r["z"]),
             "res_seq": int(r["res_seq"]),
             "icode": str(r.get("icode", "")),
             "res_name": rn,
