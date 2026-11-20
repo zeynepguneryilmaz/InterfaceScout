@@ -11,7 +11,6 @@ from pydantic import BaseModel, Field
 from interface_engine import PUBLIC_MAP_SPECS, analyze_all_maps
 from model_settings import MODEL_VERSION
 from research_workflows import list_research_goals, compare_results, combine_maps
-from research_workflows import list_research_goals, compare_results, combine_maps
 
 BACKEND = Path(__file__).resolve().parent
 ROOT = BACKEND.parent
