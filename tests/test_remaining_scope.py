@@ -72,6 +72,20 @@ class ScopeRegressionTests(unittest.TestCase):
         self.assertEqual(acidic["input"]["pH"],2.0)
         self.assertEqual(basic["input"]["pH"],11.0)
 
+    def test_biological_assembly_remark_not_automatically_expanded(self):
+        # Deliberately supply transformations but only one coordinate chain.
+        # A PDB BIOMT remark is metadata; no assembly reconstruction is claimed.
+        assembly_remarks = (
+            "REMARK 350 BIOMT1   2  1.000000  0.000000  0.000000     40.00000\\n"
+            "REMARK 350 BIOMT2   2  0.000000  1.000000  0.000000      0.00000\\n"
+            "REMARK 350 BIOMT3   2  0.000000  0.000000  1.000000      0.00000\\n"
+        )
+        tagged = assembly_remarks + PDB
+        result = analyze_all_maps(pdb_text=tagged, pH=7.4)
+        self.assertEqual(len(result["residue_profiles"]), len(self.a["residue_profiles"]))
+        self.assertEqual(result["maps"], self.a["maps"])
+        self.assertEqual(result["structure_preparation"]["available_chains_first_model"], ["A"])
+
     def test_first_model_selected_without_auto_biological_assembly(self):
         # A two-model protein is *not* interpreted as two chains; preparation
         # explicitly selects the first PDB MODEL.
