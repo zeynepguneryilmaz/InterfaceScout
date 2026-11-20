@@ -113,6 +113,7 @@ def _identity_matched(
             "coverage": round(mapping["coverage_b"], 5),
             "reference_coverage": round(mapping["coverage_a"], 5),
             "chain_matches": mapping["chain_matches"],
+            "warnings": mapping["warnings"],
             "method": mapping["method"],
         })
     matched = set.intersection(*(set(m) for m in mappings))
