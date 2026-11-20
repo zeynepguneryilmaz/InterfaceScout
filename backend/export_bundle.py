@@ -10,6 +10,7 @@ import base64
 import csv
 from io import BytesIO, StringIO
 import json
+import hashlib
 import math
 import re
 import zipfile
@@ -538,6 +539,12 @@ def build_export_zip(payload: Mapping[str, Any]) -> bytes:
             pdb_text = item.get("pdb_text")
             if not isinstance(pdb_text, str) or not pdb_text:
                 raise ValueError(f"Missing original PDB for {name}")
+            recorded = analysis.get("input", {}).get("source_pdb_sha256")
+            if recorded and hashlib.sha256(pdb_text.encode("utf-8")).hexdigest() != recorded:
+                raise ValueError(
+                    f"{name}: original PDB no longer matches the analyzed input; "
+                    "run the analysis again before exporting results"
+                )
             base = f"structures/{safe}"
             z.writestr(f"{base}/original.pdb", pdb_text)
             z.writestr(f"{base}/analysis_complete.json",
