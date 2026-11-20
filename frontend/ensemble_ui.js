@@ -221,17 +221,17 @@ async function ensembleExportAll(){
     for(let i=0;i<source.length;i++){
       if(ensembleResult){ensembleActivate(i)}else{activeType="chemistry"}
       const screenshots=await ensembleCaptureEleven();
-      let combined=source[i].combined_maps||null;
+      // The interactive panel may show only the first 50 regions. Export
+      // always fetches the entire co-location set for reproducibility.
+      let combined=null;
       let combined_screenshot=null;
       if(selected.size>=2){
-        if(!combined || [...selected].some(key=>!combined.selected_maps.includes(key)) ||
-           combined.selected_maps.length!==selected.size){
-          const resp=await fetch("/combine",{method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({analysis:data,selected_maps:[...selected],max_regions:100})});
-          const value=await resp.json();if(!resp.ok)throw Error(value.detail||"Cannot combine maps");
-          combined=value;
-        }
+        const resp=await fetch("/combine",{method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({analysis:data,selected_maps:[...selected],max_regions:null})});
+        const value=await resp.json();
+        if(!resp.ok)throw Error(value.detail||"Cannot combine maps");
+        combined=value;
         activeType="composite";activeMap=null;paintCurrent(false);
         combined_screenshot=await ensembleCaptureScreenshot();
       }
@@ -306,4 +306,42 @@ const ensembleOriginalAnalyze=analyze;
 analyze=async function(){
   await ensembleOriginalAnalyze();
   ensembleRefresh();
+};
+
+// Changing selected chemistry channels after initial multi-PDB analysis must
+// also refresh exact/spatial intersection consensus without rerunning the core.
+let ensembleConsensusRefreshId=0;
+async function ensembleRefreshSelectedConsensus(){
+  if(!ensembleResult||!ensembleResult.consensus||ensembleBusy)return;
+  const requestId=++ensembleConsensusRefreshId;
+  const maps=selected.size>=2?[...selected]:[];
+  try{
+    const response=await fetch("/derive-consensus",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        structures:ensembleResult.structures.map(x=>({name:x.name,analysis:x.analysis})),
+        selected_maps:maps,
+      }),
+    });
+    const result=await response.json();
+    if(!response.ok)throw Error(result.detail||"Cannot refresh consensus");
+    if(requestId!==ensembleConsensusRefreshId||!ensembleResult)return;
+    ensembleResult.consensus=result;
+    ensembleMessage("",true);
+    if(ensembleConsensusKey)ensembleShowConsensus(ensembleConsensusKey);
+    else ensembleShowSetResults();
+  }catch(error){
+    if(requestId===ensembleConsensusRefreshId)
+      ensembleMessage("Map consensus refresh failed: "+error.message,true);
+  }
+}
+const ensemblePreviousToggleChem=toggleChem;
+toggleChem=function(key){
+  ensemblePreviousToggleChem(key);
+  ensembleRefreshSelectedConsensus();
+};
+const ensemblePreviousApplyGoal=decisionApplyGoal;
+decisionApplyGoal=function(){
+  ensemblePreviousApplyGoal();
+  ensembleRefreshSelectedConsensus();
 };

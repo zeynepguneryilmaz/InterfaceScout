@@ -178,7 +178,7 @@ def compare_results(a: Mapping[str, Any], b: Mapping[str, Any]) -> dict[str, Any
 
 
 def combine_maps(analysis: Mapping[str, Any], selected: Sequence[str],
-                 max_regions: int = 25) -> dict[str, Any]:
+                 max_regions: int | None = 25) -> dict[str, Any]:
     """Show exact seed overlap separately from spatial co-localization.
 
     Candidate neighborhoods are reused from the canonical single-map patches;
@@ -187,8 +187,8 @@ def combine_maps(analysis: Mapping[str, Any], selected: Sequence[str],
     names = list(dict.fromkeys(selected))
     if not 2 <= len(names) <= 11:
         raise ValueError("Select 2 to 11 distinct maps")
-    if not 1 <= max_regions <= 100:
-        raise ValueError("max_regions must be between 1 and 100")
+    if max_regions is not None and not 1 <= max_regions <= 10000:
+        raise ValueError("max_regions must be between 1 and 10000 or None for all regions")
     available = analysis.get("maps", {})
     unknown = [name for name in names if name not in available]
     if unknown:
@@ -245,7 +245,7 @@ def combine_maps(analysis: Mapping[str, Any], selected: Sequence[str],
         "n_exact_overlap": len(exact),
         "n_exposed_residues": exposed_n,
         "regions_total": len(regions),
-        "regions": regions[:max_regions],
+        "regions": regions if max_regions is None else regions[:max_regions],
         "region_rule": "Reuse single-map 8 A same-face patches; require distinct chemistry "
                        "seeds within the SAME patch to call spatial co-localization.",
         "important": "Distinct-residue co-localization is not exact residue intersection, "
