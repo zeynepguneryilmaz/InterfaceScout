@@ -1,0 +1,181 @@
+"""Deterministic regression checks for multi-PDB and complete output packages."""
+from __future__ import annotations
+
+import base64
+from io import BytesIO
+import sys
+import unittest
+import zipfile
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "backend"))
+
+from PIL import Image
+from openpyxl import load_workbook
+from ensemble import build_consensus
+from export_bundle import MAP_NAMES, build_export_zip, _bfactor_pdb
+from research_workflows import compare_results
+
+
+def minimal_analysis():
+    residue_key = "A:1:"
+    patch = {
+        "display_rank": 1, "pareto_front": 1,
+        "center_key": residue_key, "members": [residue_key],
+        "seed_members": [residue_key], "n_members": 1,
+        "n_chemistry_seeds": 1, "chemistry_support": 1.0,
+        "mean_accessibility": .42, "patch_coherence": .88,
+        "orientation_coherence": 1.0,
+        "member_residues": [{"key": residue_key, "chain": "A",
+                             "res_seq": 1, "icode": "", "res_name": "LYS"}],
+        "seed_residues": [{"key": residue_key, "chain": "A",
+                           "res_seq": 1, "icode": "", "res_name": "LYS"}],
+    }
+    maps = {}
+    for name in MAP_NAMES:
+        maps[name] = {
+            "label": name, "description": "Canonical test map",
+            "n_patches": 1, "n_pareto_primary_patches": 1,
+            "patches": [dict(patch)],
+            "residues": [{"key": residue_key, "chain": "A", "res_seq": 1,
+                          "res_name": "LYS", "scrsa": .42, "local_score": .42,
+                          "propensity": 100.0, "multiscale_persistence": 88.0}],
+        }
+    return {
+        "input": {"pH": 7.4, "chain": "A"},
+        "method": {"sasa_points_per_atom": 200, "patch_radius_A": 8},
+        "structure_preparation": {"selected_chain": "A"},
+        "scope": {"models_adsorption_induced_unfolding": False},
+        "map_order": list(MAP_NAMES), "maps": maps,
+        "diagnostics": {"surface_residue_keys": [residue_key]},
+        "residue_profiles": [{
+            "key": residue_key, "res_name": "LYS", "chain": "A",
+            "res_seq": 1, "icode": "",
+            "scrsa": .42, "scrsa_raw": .42, "sidechain_sasa": 68.0,
+            "surface_exposed": True, "charge_descriptor": .95,
+            "groups": ["lysine", "basic_sidechain"],
+        }],
+        "protein_properties": {
+            "n_residues": 1, "n_surface_residues": 1, "exposed_fraction": 1.0,
+            "total_sidechain_sasa_A2": 68.0,
+            "groups": {"lysine": {
+                "n_exposed_residues": 1, "exposed_residues": [residue_key],
+            }},
+        },
+    }
+
+
+def png_data_uri():
+    pic = Image.new("RGB", (270, 145), (225, 239, 249))
+    for x in range(12, 250):
+        for y in range(12, 128):
+            if (x - 130)**2 / 9800 + (y - 70)**2 / 2800 < 1:
+                pic.putpixel((x, y), (41 + x // 10, 80 + y // 4, 135))
+    out = BytesIO()
+    pic.save(out, format="PNG")
+    return "data:image/png;base64," + base64.b64encode(out.getvalue()).decode()
+
+
+PDB = (
+    "ATOM      1  N   LYS A   1      10.000  10.000  10.000  1.00 20.00           N\n"
+    "ATOM      2  CA  LYS A   1      11.000  10.000  10.000  1.00 20.00           C\n"
+    "ATOM      3  C   LYS A   1      11.000  11.000  10.000  1.00 20.00           C\n"
+    "ATOM      4  O   LYS A   1      11.000  12.000  10.000  1.00 20.00           O\n"
+    "END\n"
+)
+
+
+class MultiStructureExportTests(unittest.TestCase):
+    def setUp(self):
+        self.a = minimal_analysis()
+        self.b = minimal_analysis()
+        self.c = build_consensus([
+            {"name": "one", "analysis": self.a},
+            {"name": "two", "analysis": self.b},
+        ])
+        self.pic = png_data_uri()
+
+    def test_all_eleventh_maps_in_consensus(self):
+        self.assertEqual(self.c["n_matched_residues"], 1)
+        self.assertEqual(set(self.c["map_order"]), set(MAP_NAMES))
+        for key in MAP_NAMES:
+            r = self.c["maps"][key]["residues"][0]
+            self.assertEqual(r["compatible_fraction"], 1.0)
+            self.assertEqual(r["top1_membership_fraction"], 1.0)
+            self.assertEqual(self.c["maps"][key]["strict_top5_members"], ["A:1:"])
+
+    def test_consensus_fractions_are_not_probabilities(self):
+        self.b["maps"]["anionic"]["residues"] = []
+        self.b["maps"]["anionic"]["patches"] = []
+        c = build_consensus([
+            {"name": "one", "analysis": self.a},
+            {"name": "two", "analysis": self.b},
+        ])
+        r = c["maps"]["anionic"]["residues"][0]
+        self.assertEqual(r["compatible_fraction"], 0.5)
+        self.assertEqual(r["top5_membership_fraction"], 0.5)
+        self.assertEqual(c["maps"]["anionic"]["strict_top5_members"], [])
+
+    def test_reject_unmatched_numbering(self):
+        self.b["residue_profiles"][0]["key"] = "B:1:"
+        with self.assertRaisesRegex(ValueError, "80%"):
+            build_consensus([
+                {"name": "one", "analysis": self.a},
+                {"name": "two", "analysis": self.b},
+            ])
+
+    def test_bfactor_field_is_visualization_only(self):
+        binary = _bfactor_pdb(PDB, {"A:1:": 72.5}, "Test")
+        text = binary.decode()
+        self.assertIn("NOT EXPERIMENTAL", text)
+        atom = [line for line in text.splitlines() if line.startswith("ATOM")][0]
+        self.assertEqual(atom[60:66].strip(), "72.50")
+        self.assertEqual(atom[30:54], PDB.splitlines()[0][30:54])
+
+    def test_full_zip_contains_all_maps_and_reports(self):
+        comparison = compare_results(self.a, self.b)
+        comparison["structure_a"] = "one"
+        comparison["structure_b"] = "two"
+        result = build_export_zip({
+            "structures": [
+                {"name": name, "analysis": analysis, "pdb_text": PDB,
+                 "screenshots": {k: self.pic for k in MAP_NAMES},
+                 "combined_maps": None}
+                for name, analysis in [("one", self.a), ("two", self.b)]
+            ],
+            "consensus": self.c,
+            "comparison": [comparison],
+            "consensus_screenshots": {key: self.pic for key in MAP_NAMES},
+        })
+        with zipfile.ZipFile(BytesIO(result)) as z:
+            files = z.namelist()
+            for structure in ("one", "two"):
+                base = f"structures/{structure}"
+                self.assertEqual(len([f for f in files if
+                    f.startswith(f"{base}/pdf_maps/") and f.endswith(".pdf")]), 11)
+                self.assertEqual(len([f for f in files if
+                    f.startswith(f"{base}/screenshots/") and f.endswith(".png")]), 11)
+                self.assertTrue(z.read(f"{base}/full_report.pdf").startswith(b"%PDF"))
+                self.assertIn(f"{base}/csv/Protein_Residues.csv", files)
+                self.assertIn(f"{base}/csv/Map_Residue_Scores.csv", files)
+                self.assertIn(f"{base}/csv/All_Patches.csv", files)
+                self.assertIn(f"{base}/csv/Patch_Members.csv", files)
+                self.assertIn(f"{base}/complete_results.xlsx", files)
+                self.assertEqual(len([f for f in files if
+                    f.startswith(f"{base}/pdb_bfactor/") and f.endswith(".pdb")]), 44)
+                for key in MAP_NAMES:
+                    pdf = z.read(f"{base}/pdf_maps/{MAP_NAMES.index(key)+1:02d}_{key}.pdf")
+                    self.assertTrue(pdf.startswith(b"%PDF"), key)
+                wb = load_workbook(BytesIO(z.read(f"{base}/complete_results.xlsx")))
+                self.assertIn("Map_Residue_Scores", wb.sheetnames)
+            self.assertIn("consensus/consensus_report.pdf", files)
+            self.assertIn("comparison/comparison_report.pdf", files)
+            self.assertEqual(len([f for f in files if
+                f.startswith("consensus/pdb_bfactor/") and f.endswith(".pdb")]), 22)
+            self.assertIn("consensus/csv/Consensus_Map_Scores.csv", files)
+            self.assertIn("comparison/csv/Comparison_Maps.csv", files)
+
+
+if __name__ == "__main__":
+    unittest.main()
