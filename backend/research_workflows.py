@@ -9,6 +9,8 @@ from typing import Any, Mapping, Sequence
 
 from residue_matching import match_residues
 
+from residue_matching import match_residues
+
 RESEARCH_GOALS: dict[str, dict[str, Any]] = {
     "explore": {
         "label": "Explore a protein surface",
@@ -87,22 +89,19 @@ def _jaccard(a: set[str], b: set[str]) -> float | None:
 
 
 def compare_results(a: Mapping[str, Any], b: Mapping[str, Any]) -> dict[str, Any]:
-    """Compare two runs of the canonical engine, without learning new scores.
+    """Compare surface features after chain-aware, residue-identity sequence mapping.
 
-    Correspondence follows protein-sequence alignment, not external PDB labels.
-    Nonidentical residues or ambiguous chain assignments are excluded/rejected.
+    Chain labels and residue numbering are *display identifiers*, not residue
+    correspondence criteria. Never silently treat aligned substitutions as identical.
     """
-    left = {r["key"]: r for r in a.get("residue_profiles", [])}
-    right = {r["key"]: r for r in b.get("residue_profiles", [])}
+    left = {str(r["key"]): r for r in a.get("residue_profiles", [])}
+    right = {str(r["key"]): r for r in b.get("residue_profiles", [])}
     if not left or not right:
-        raise ValueError("Both analyses must contain residue_profiles from the canonical engine")
+        raise ValueError("Both analyses must contain canonical residue_profiles")
     correspondence = match_residues(list(left.values()), list(right.values()))
     a_to_b = correspondence["a_to_b"]
     b_to_a = correspondence["b_to_a"]
     eligible = set(a_to_b)
-    shared_keys = set(left) & set(right)
-    coverage = min(correspondence["coverage_a"], correspondence["coverage_b"])
-
     maps_a, maps_b = a.get("maps", {}), b.get("maps", {})
     if set(maps_a) != set(maps_b):
         raise ValueError("Map sets differ between structures")
@@ -110,19 +109,18 @@ def compare_results(a: Mapping[str, Any], b: Mapping[str, Any]) -> dict[str, Any
         raise ValueError("Use the same pH in both runs to isolate structural changes")
 
     residue_changes = []
-    exposed_a, exposed_b = 0, 0
+    exposed_a = exposed_b = 0
     for key in sorted(eligible):
-        ra, rb = left[key], right[a_to_b[key]]
+        key_b = a_to_b[key]
+        ra, rb = left[key], right[key_b]
         xa, xb = bool(ra.get("surface_exposed")), bool(rb.get("surface_exposed"))
         exposed_a += xa
         exposed_b += xb
         residue_changes.append({
-            "key": key, "key_b": a_to_b[key],
-            "res_name": ra["res_name"],
+            "key": key, "key_b": key_b, "res_name": ra["res_name"],
             "exposed_a": xa, "exposed_b": xb,
             "changed_exposure_class": xa != xb,
-            "scRSA_a": ra.get("scrsa_raw"),
-            "scRSA_b": rb.get("scrsa_raw"),
+            "scRSA_a": ra.get("scrsa_raw"), "scRSA_b": rb.get("scrsa_raw"),
             "delta_scRSA": round(float(rb.get("scrsa_raw", 0.0)) -
                                  float(ra.get("scrsa_raw", 0.0)), 5),
             "sidechain_sasa_a": ra.get("sidechain_sasa"),
@@ -130,15 +128,14 @@ def compare_results(a: Mapping[str, Any], b: Mapping[str, Any]) -> dict[str, Any
             "delta_sidechain_sasa": round(float(rb.get("sidechain_sasa", 0.0)) -
                                           float(ra.get("sidechain_sasa", 0.0)), 3),
         })
-
     compared_maps = []
     for name in a.get("map_order", maps_a.keys()):
         ma, mb = maps_a[name], maps_b[name]
         overlap = []
         for k in (1, 3, 5):
             x = _patch_members(ma, k, eligible)
-            y = {b_to_a[key] for key in _patch_members(mb, k)
-                 if key in b_to_a and b_to_a[key] in eligible}
+            # Convert B membership to the A/reference identifier space.
+            y = {b_to_a[r] for r in _patch_members(mb, k) if r in b_to_a}
             overlap.append({
                 "top_k": k, "jaccard": _jaccard(x, y),
                 "n_a": len(x), "n_b": len(y), "n_shared": len(x & y),
@@ -153,40 +150,37 @@ def compare_results(a: Mapping[str, Any], b: Mapping[str, Any]) -> dict[str, Any
             "key": name, "label": ma.get("label", name),
             "top1_center_a": pa[0].get("center_key") if pa else None,
             "top1_center_b": pb[0].get("center_key") if pb else None,
-            "top1_center_b_mapped_to_a": b_to_a.get(pb[0].get("center_key")) if pb else None,
+            "top1_center_b_in_a": b_to_a.get(pb[0].get("center_key")) if pb else None,
             "n_candidate_regions_a": len(pa), "n_candidate_regions_b": len(pb),
             "top_k": overlap,
         })
-
     return {
         "purpose": "Descriptive comparison of protein-surface candidates across two conformations",
         "structure_a": a.get("input", {}),
         "structure_b": b.get("input", {}),
         "mapping": {
+            "method": correspondence["method"],
             "n_positions_a": len(left), "n_positions_b": len(right),
-            "n_key_matches": len(shared_keys),
+            "n_key_matches": len(set(left) & set(right)),
             "n_identity_matches": len(eligible),
-            "coverage_of_shorter_structure": round(
-                len(eligible) / max(1, min(len(left), len(right))), 4),
-            "coverage_of_both_structures": round(coverage, 4),
+            "coverage_of_shorter_structure": round(len(eligible) / min(len(left), len(right)), 4),
             "coverage_a": round(correspondence["coverage_a"], 4),
             "coverage_b": round(correspondence["coverage_b"], 4),
             "chain_matches": correspondence["chain_matches"],
-            "warnings": correspondence["warnings"],
-            "method": correspondence["method"],
-            "reference_key_to_b": a_to_b,
-            "not_compared": sorted(set(left) - eligible),
+            "reference_to_comparison": a_to_b,
+            "not_compared_a": sorted(set(left) - eligible),
             "not_compared_b": sorted(set(right) - set(b_to_a)),
+            "not_compared": sorted((set(left) | set(right)) - eligible),
+            "warnings": correspondence["warnings"],
         },
         "accessibility": {
-            "n_exposed_matched_a": exposed_a,
-            "n_exposed_matched_b": exposed_b,
+            "n_exposed_matched_a": exposed_a, "n_exposed_matched_b": exposed_b,
             "n_exposure_status_changes": sum(r["changed_exposure_class"] for r in residue_changes),
         },
         "map_comparisons": compared_maps,
         "residue_changes": residue_changes,
-        "interpretation": "Jaccard measures overlap of ranked region MEMBERS at fixed Top-K, "
-                          "not adsorption prediction accuracy, energy, or conformation probability.",
+        "interpretation": "Jaccard measures identity-aligned ranked-region members at fixed Top-K, "
+                          "not adsorption prediction accuracy or conformation probabilities.",
     }
 
 
