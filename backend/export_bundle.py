@@ -348,7 +348,8 @@ def map_pdf(structure_name: str, analysis: Mapping[str, Any], key: str, png: byt
 
 
 def report_pdf(structure_name: str, analysis: Mapping[str, Any],
-               images: Mapping[str, bytes], combined: Mapping[str, Any] | None) -> bytes:
+               images: Mapping[str, bytes], combined: Mapping[str, Any] | None,
+               combined_image: bytes | None = None) -> bytes:
     def build(story: list):
         story.append(_p("Full 11-channel protein-surface analysis; not an adsorption prediction."))
         for section in ("input", "method", "structure_preparation", "scope"):
@@ -363,6 +364,11 @@ def report_pdf(structure_name: str, analysis: Mapping[str, Any],
         for key, value in prop.get("groups", {}).items():
             story.append(_p(f"{key}: {value.get('n_exposed_residues')} exposed, "
                             f"{', '.join(value.get('exposed_residues', []))}", True))
+        story.append(_p("Complete direct protein residue properties"))
+        _table(story, ["Residue", "Type", "Exposed", "Side-chain SASA", "scRSA", "Charge"],
+            [[r.get("key"), r.get("res_name"), r.get("surface_exposed"),
+              r.get("sidechain_sasa"), r.get("scrsa_raw"), r.get("charge_descriptor")]
+             for r in analysis.get("residue_profiles", [])], [106, 58, 67, 109, 81, 102])
         story.append(PageBreak())
         for index, key in enumerate(analysis["map_order"]):
             m = analysis["maps"][key]
@@ -398,6 +404,9 @@ def report_pdf(structure_name: str, analysis: Mapping[str, Any],
             story.append(_p("Selected channels: " + ", ".join(combined.get("selected_maps", []))))
             story.append(_p("Exact same-residue overlap: " +
                             ", ".join(combined.get("exact_same_residue_overlap", []))))
+            if combined_image is not None:
+                story.append(_p("Selected channels: actual 3D viewer composite screenshot"))
+                _screenshot(story, combined_image)
             for region in combined.get("regions", []):
                 story.append(_p(
                     f'{region.get("source_map")} {region.get("source_center_key")}: '
@@ -524,7 +533,9 @@ def build_export_zip(payload: Mapping[str, Any]) -> bytes:
                     z.writestr(f"{base}/combined/selected_combination.png", blob)
             _add_csv_and_xlsx(z, base, structure_tables(name, analysis, combined))
             z.writestr(f"{base}/full_report.pdf",
-                       report_pdf(name, analysis, images, combined))
+                       report_pdf(name, analysis, images, combined,
+                                  _image_bytes(item['combined_screenshot'])
+                                  if item.get('combined_screenshot') else None))
 
         if consensus:
             base = "consensus"
