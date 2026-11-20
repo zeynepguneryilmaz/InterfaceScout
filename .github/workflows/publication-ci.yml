@@ -132,15 +132,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {os: macos-15, engine: chromium}
-          - {os: macos-15, engine: firefox}
-          - {os: macos-15, engine: webkit}
-          - {os: ubuntu-24.04, engine: firefox}
-          - {os: ubuntu-24.04, engine: webkit}
+          - {os: macos-15, engine: chromium, scope: full}
+          - {os: macos-15, engine: firefox, scope: full}
+          - {os: macos-15, engine: webkit, scope: single}
+          - {os: ubuntu-24.04, engine: firefox, scope: full}
+          - {os: ubuntu-24.04, engine: webkit, scope: full}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 40
     env:
       IS_BROWSER: ${{ matrix.engine }}
+      IS_TEST_SCOPE: ${{ matrix.scope }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
