@@ -178,7 +178,9 @@ function ensembleShowConsensus(k){
   if(!ensembleResult||!ensembleResult.consensus)return;
   ensembleConsensusKey=k;
   const c=ensembleResult.consensus.maps[k];
-  const byKey=new Map(c.residues.map(r=>[r.key,r.top5_membership_fraction]));
+  const structureName = ensembleResult.structures[ensembleActiveIndex].name;
+  const nativeIds = (ensembleResult.consensus.reference_to_structure_keys||{})[structureName]||{};
+  const byKey=new Map(c.residues.map(r=>[nativeIds[r.key]||r.key,r.top5_membership_fraction]));
   rebuildViewer(false);
   for(const r of (data.residue_profiles||[])){
     const frequency=byKey.get(r.key)||0;
