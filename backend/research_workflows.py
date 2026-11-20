@@ -166,17 +166,17 @@ def compare_results(a: Mapping[str, Any], b: Mapping[str, Any]) -> dict[str, Any
             "n_positions_a": len(left), "n_positions_b": len(right),
             "n_key_matches": len(shared_keys),
             "n_identity_matches": len(eligible),
-            "coverage_of_shorter_structure": round(coverage, 4),
+            "coverage_of_shorter_structure": round(
+                len(eligible) / max(1, min(len(left), len(right))), 4),
+            "coverage_of_both_structures": round(coverage, 4),
             "coverage_a": round(correspondence["coverage_a"], 4),
             "coverage_b": round(correspondence["coverage_b"], 4),
             "chain_matches": correspondence["chain_matches"],
             "warnings": correspondence["warnings"],
             "method": correspondence["method"],
             "reference_key_to_b": a_to_b,
-            "not_compared": {
-                "structure_a": sorted(set(left) - eligible),
-                "structure_b": sorted(set(right) - set(b_to_a)),
-            },
+            "not_compared": sorted(set(left) - eligible),
+            "not_compared_b": sorted(set(right) - set(b_to_a)),
         },
         "accessibility": {
             "n_exposed_matched_a": exposed_a,
