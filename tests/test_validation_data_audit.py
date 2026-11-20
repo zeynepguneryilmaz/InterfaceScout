@@ -33,7 +33,7 @@ class IndependentEvidenceAudit(unittest.TestCase):
         self.assertEqual(set(case_ids), set(result_ids))
         self.assertEqual(len(case_ids), 9)
         for c in self.manifest["cases"]:
-            self.assertRegex(c["doi"], r"^10\\.\\d{4,9}/\\S+$")
+            self.assertRegex(c["doi"], r"^10\.\d{4,9}/\S+$")
             self.assertTrue(c.get("source_url", "").startswith("https://"))
             self.assertTrue(c.get("evidence", ""))
             self.assertTrue(c.get("pdb_id", ""))
@@ -61,7 +61,7 @@ class IndependentEvidenceAudit(unittest.TestCase):
     def test_validation_is_not_mislabeled_independent(self):
         policy = self.manifest["policy"]
         self.assertIn("literature", policy["purpose"])
-        self.assertIn("locked", policy["prediction_ordering"])
+        self.assertIn("before experimental", policy["prediction_ordering"])
         self.assertEqual(policy["model_settings_locked_before_scoring"]["sasa_points_per_atom"], 200)
         self.assertEqual(policy["model_settings_locked_before_scoring"]["multiscale_radii_A"], [6.0, 9.0])
 
