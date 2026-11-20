@@ -12,14 +12,14 @@
 </style>
 </head>
 <body>
-<header><div class="brand"><img src="/logo.png" alt="InterfaceScout"><div><h1>InterfaceScout</h1><p>One calculation · all surface-chemistry maps</p></div></div><div class="status" id="status">Checking backend…</div></header>
+<header><div class="brand"><img src="/logo.png" alt="InterfaceScout"><div><h1>InterfaceScout</h1><p>Physicochemical protein surface mapping · research decision support</p></div></div><div class="status" id="status">Checking backend…</div></header>
 <div class="wrap">
 <aside>
   <div class="section"><h3>1 · Protein</h3><div class="field"><label>PDB ID</label><div class="row" style="grid-template-columns:1fr 80px"><input class="input" id="pdbId" value="4F5S"><button class="btn secondary" onclick="fetchPdb()">Fetch</button></div></div><div class="drop" onclick="document.getElementById('file').click()">or load a local PDB file<input type="file" id="file" accept=".pdb" style="display:none" onchange="loadFile(event)"></div><div class="field" style="margin-top:8px"><label>Chain (optional; comma-separated)</label><input class="input" id="chain" placeholder="e.g., A or A,B" onchange="handleChainChange()"></div></div>
-  <div class="section"><h3>2 · Solution</h3><div class="row"><div class="field"><label>pH</label><input class="input" id="pH" type="number" step="0.1" value="7.4"></div><div class="field"><label>Ionic strength (mM)</label><input class="input" id="ionic" type="number" value="150"></div></div><div class="field"><label>Temperature (K)</label><input class="input" id="temp" type="number" value="298"></div></div>
+  <div class="section"><h3>2 · Solution</h3><div class="row"><div class="field"><label>pH</label><input class="input" id="pH" type="number" step="0.1" value="7.4"></div><div class="field"><label>Ionic strength (mM)</label><input class="input" id="ionic" type="number" value="150"></div></div><div class="field"><label>Temperature (K)</label><input class="input" id="temp" type="number" value="298"></div><div class="note">Only pH affects the current scoring model. Ionic strength and temperature are saved as run metadata, not physical screening or thermal terms.</div></div>
   <button class="btn" id="run" onclick="analyze()" disabled>Analyze</button>
   <div class="section" style="margin-top:14px"><h3>3 · Export</h3><button class="btn secondary" id="excelBtn" disabled onclick="exportExcel()">Download complete Excel</button><button class="btn secondary" style="margin-top:7px" id="pdbBtn" disabled onclick="exportCurrentPdb()">Download current B-factor PDB</button><div class="note" style="margin-top:8px">Excel contains all maps, residue values, patch metrics, and run/method settings. Each PDB writes the displayed map's 0–100 residue propensity into the PDB B-factor field.</div></div>
-  <div class="note">InterfaceScout calculates every single-channel surface-chemistry map in one run. Select two or more chemistry classes after analysis to create a <b>Composite overlay</b>. No material-specific weights are assumed.</div>
+  <div class="note">Protein-side properties and the 11 material-compatibility maps are different outputs. Select two or more maps to inspect exact same-residue intersection and 3D co-localization. No material-specific fitted weights are assumed.</div>
   <div class="error" id="error"></div>
 </aside>
 <main>
@@ -76,5 +76,6 @@ function exportCurrentPdb(){if(!data||!pdbText)return;let t=bfactorRows(),txt=re
 function downloadText(n,t,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type}));a.download=n;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')resetView()});window.addEventListener('resize',()=>{if(viewer&&typeof viewer.resize==='function')viewer.resize()});startup();syncRepresentationButtons();baseStructure();
 </script>
+<script src="/decision_workflow.js"></script>
 </body>
 </html>
