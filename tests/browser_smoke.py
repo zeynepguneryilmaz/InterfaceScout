@@ -118,6 +118,25 @@ def main():
                 timeout=120_000,
             )
             print("Single-PDB UI: 11 maps computed")
+            # Cross-browser capability classification: a browser/CI VM without
+            # WebGL cannot render/record molecular PNGs. Numerical tables must
+            # still work and users must get a visible, truthful explanation.
+            webgl_state = page.evaluate(
+                "() => ({viewerReady: !!viewer, reason: viewerUnavailableReason})"
+            )
+            if webgl_state["reason"]:
+                warning = page.locator("#viewer [role=alert]").inner_text()
+                if "requires WebGL" not in warning:
+                    raise AssertionError("3D WebGL failure is not explained to the user")
+                if not page.locator("#results").inner_text():
+                    raise AssertionError("Protein chemistry results lost after WebGL failure")
+                print(f"WEBGL UNAVAILABLE / NUMERICAL FALLBACK PASS: {engine}; "
+                      "3D images and screenshot PDFs require a WebGL-enabled browser",
+                      flush=True)
+                browser.close()
+                return
+            if not webgl_state["viewerReady"]:
+                raise AssertionError("3D viewer unexpectedly unavailable without explanation")
             # Exercise actual multi-chemistry intersection selection in the UI.
             page.evaluate("() => { if(selected.has('anionic')) toggleChem('anionic'); }")
             page.evaluate("() => toggleChem('hydrophobic')")
