@@ -20,6 +20,7 @@ from model_settings import (
     PARAMETER_SELECTION,
 )
 from prepare import prepare_pdb_text
+from protein_properties import profile_rows, summarize_profiles
 
 PUBLIC_MAP_SPECS = [
     ("anionic", "anionic", "Anionic surface", "Negatively charged surface chemistry, including exposed anionic or carboxylate-rich groups."),
@@ -198,7 +199,10 @@ def analyze_all_maps(
     order = [spec[0] for spec in specs]
 
     out = _shared_response(context, pdb_id=pdb_id, pH=pH, ionic_mM=ionic_mM, temp_K=temp_K)
+    profiles = profile_rows(context["core_result"])
     out.update({
+        "residue_profiles": profiles,
+        "protein_properties": summarize_profiles(profiles),
         "n_maps": len(order),
         "map_order": order,
         "initial_map": order[0] if order else None,
