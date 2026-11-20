@@ -218,11 +218,13 @@ def consensus_tables(consensus: Mapping[str, Any]) -> dict[str, list[dict[str, A
             "Top5_majority": len(m["majority_top5_members"]),
             "Top1_centers": m["top1_centers_by_structure"],
         })
+    combined = consensus.get("combined_consensus") or {}
     return {
         "Consensus_Residues": list(consensus.get("residues", [])),
         "Consensus_Map_Scores": rows,
         "Consensus_Summary": summary,
         "Residue_Matching": list(consensus.get("matching", [])),
+        "Combined_Consensus": list(combined.get("residues", [])),
     }
 
 
@@ -429,6 +431,20 @@ def consensus_pdf(consensus: Mapping[str, Any], images: Mapping[str, bytes]) -> 
             [[r["key"], f'{r["n_exposed"]}/{r["n_structures"]}',
               r["exposure_fraction"], r["scRSA_min"], r["scRSA_max"]]
              for r in consensus["residues"]], [130, 100, 90, 90, 99])
+        combined = consensus.get("combined_consensus")
+        if combined:
+            story.append(PageBreak())
+            story.append(Paragraph("Selected-map consensus", STYLES["ISheading"]))
+            story.append(_p("Selected maps: " + ", ".join(combined["selected_maps"])))
+            story.append(_p(combined["note"]))
+            story.append(_p("Strict same-residue overlap: " +
+                            ", ".join(combined["strict_exact_intersection"])))
+            story.append(_p("Strict spatial co-location membership: " +
+                            ", ".join(combined["strict_spatial_colocation_members"])))
+            _table(story, ["Residue", "Exact overlap N", "Exact fraction", "Co-location N", "Co-location fraction"],
+                [[r["key"], r["exact_intersection_n"], r["exact_intersection_fraction"],
+                  r["co_location_n"], r["co_location_fraction"]]
+                 for r in combined["residues"]], [120, 103, 97, 102, 101])
         for key in consensus["map_order"]:
             m = consensus["maps"][key]
             story.append(PageBreak())
@@ -560,6 +576,18 @@ def build_export_zip(payload: Mapping[str, Any]) -> bytes:
                                r["key"]: 100.0 * float(r["compatible_fraction"])
                                for r in consensus["maps"][key]["residues"]
                            }, f"{key}: compatible-residue percentage across input structures"))
+            combined_consensus = consensus.get("combined_consensus")
+            if combined_consensus:
+                z.writestr(f"{base}/pdb_bfactor/selected_maps_exact_intersection_frequency_Bfactor.pdb",
+                    _bfactor_pdb(representative, {
+                        r["key"]: 100.0 * float(r["exact_intersection_fraction"])
+                        for r in combined_consensus["residues"]
+                    }, "selected maps: exact overlap percentage across structures"))
+                z.writestr(f"{base}/pdb_bfactor/selected_maps_colocation_frequency_Bfactor.pdb",
+                    _bfactor_pdb(representative, {
+                        r["key"]: 100.0 * float(r["co_location_fraction"])
+                        for r in combined_consensus["residues"]
+                    }, "selected maps: spatial co-location percentage across structures"))
             z.writestr(f"{base}/consensus_report.pdf", consensus_pdf(consensus, images))
 
         if comparisons:
