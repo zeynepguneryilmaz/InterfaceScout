@@ -117,10 +117,14 @@ def _identity_matched(
             "method": mapping["method"],
         })
     matched = set.intersection(*(set(m) for m in mappings))
-    for d, m in zip(details, mappings):
+    for d, m, run in zip(details, mappings, runs):
         d["consensus_positions"] = len(matched)
-        d["excluded_residues"] = sorted(set(m) - matched)
-    if len(matched) / max(len(reference), 1) < 0.8:
+        d["excluded_residues"] = sorted(
+            {str(r["key"]) for r in run["analysis"]["residue_profiles"]} -
+            {m[key] for key in matched})
+        d["consensus_coverage"] = round(
+            len(matched) / max(len(run["analysis"]["residue_profiles"]), 1), 5)
+    if any(d["consensus_coverage"] < 0.8 for d in details):
         raise ValueError("Fewer than 80% of reference residues match every structure. "
                          "Check that all structures represent the same assembly.")
     return matched, details, mappings
@@ -285,6 +289,8 @@ def build_consensus(runs: list[dict[str, Any]]) -> dict[str, Any]:
         "structure_names": names,
         "n_matched_residues": len(allowed),
         "matching": mapping_details,
+        "reference_to_structure_keys": {r["name"]: {k: v for k, v in mappings[i].items() if k in allowed}
+                                        for i, r in enumerate(runs)},
         "residues": residue_results,
         "combined_consensus": combined_consensus,
         "maps": consensus_maps,
