@@ -35,7 +35,19 @@ const $=id=>document.getElementById(id);const esc=x=>String(x??'').replace(/[&<>
 function selectedChains(){return ($('chain')?.value||'').split(',').map(x=>x.trim()).filter(Boolean)}
 function chainSelection(){let cs=selectedChains();if(!cs.length)return {};if(cs.length===1)return {chain:cs[0]};return {or:cs.map(chain=>({chain}))}}
 function chainDisplay(){let cs=selectedChains();return cs.length?cs.join(', '):'all chains'}
-function initViewer(){if(!viewer&&window.$3Dmol)viewer=$3Dmol.createViewer($('viewer'),{backgroundColor:'#edf1f6'})}
+let viewerUnavailableReason=null;
+function initViewer(){
+  if(viewer||!window.$3Dmol)return;
+  try{
+    viewer=$3Dmol.createViewer($('viewer'),{backgroundColor:'#edf1f6'});
+    viewerUnavailableReason=null;
+  }catch(error){
+    viewer=null;
+    viewerUnavailableReason='Interactive 3D visualization requires WebGL. This browser or environment could not initialize WebGL. Enable hardware acceleration or use a WebGL-enabled browser; numerical map tables remain available.';
+    $('viewer').innerHTML='<div role="alert" style="padding:24px;line-height:1.5;color:#a61b27;max-width:420px;margin:auto">'+esc(viewerUnavailableReason)+'</div>';
+    console.warn('InterfaceScout 3D viewer unavailable:',error);
+  }
+}
 function clearHoverLabel(){if(viewer&&hoverLabel){try{viewer.removeLabel(hoverLabel)}catch(e){}hoverLabel=null}}
 function bindResidueHover(){if(!viewer||typeof viewer.setHoverable!=='function')return;viewer.setHoverable(chainSelection(),true,(atom,v)=>{if(!atom)return;clearHoverLabel();hoverLabel=v.addLabel(`${atom.resn||'Residue'} ${atom.resi??''} · chain ${atom.chain||'—'}`,{position:{x:atom.x,y:atom.y,z:atom.z},backgroundColor:'#172033',backgroundOpacity:.92,fontColor:'#fff',fontSize:12,borderThickness:0,padding:5,inFront:true});v.render()},(atom,v)=>{clearHoverLabel();v.render()})}
 function syncRepresentationButtons(){[['repCartoon','cartoon'],['repSurface','surface'],['repBoth','both']].forEach(([id,m])=>{let e=$(id);if(e)e.classList.toggle('on',representation===m)})}
