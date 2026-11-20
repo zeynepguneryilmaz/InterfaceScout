@@ -285,7 +285,10 @@ def prepare_pdb_text(pdb_text: str, chain: str | None = None) -> Tuple[str, dict
     report = {
         "policy": "first_model_standard_protein_heavy_atoms_one_altloc_per_residue",
         "input_models": len(models),
-        "selected_model": 1,\n        "model_policy": "first_model_only",\n        "selected_model_index": 0,\n        "selected_model_serial": int(first.serial_num) if explicit_models else None,
+        "selected_model": 1,
+        "model_policy": "first_model_only",
+        "selected_model_index": 0,
+        "selected_model_serial": int(first.serial_num) if explicit_models else None,
         "available_chains_first_model": available_chains,
         "selected_chain": ",".join(sorted(requested)) if requested else "ALL",
         "protein_residues_retained": len(retained),

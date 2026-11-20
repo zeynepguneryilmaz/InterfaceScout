@@ -4,7 +4,8 @@ This module contains only the shared protein preparation-independent numerical
 kernel used by the public InterfaceScout application and publication
 reproducibility scripts. It implements the current 200-point Shrake-Rupley
 side-chain accessibility calculation and 6/9 A multiscale chemistry mapping.
-No GNM, RIN, APBS, DSSP, material presets, or legacy 5/8 A model are used.\nFull floating-point precision is retained through ranking; presentation rounds only.
+No GNM, RIN, APBS, DSSP, material presets, or legacy 5/8 A model are used.
+Full floating-point precision is retained through ranking; presentation rounds only.
 """
 from __future__ import annotations
 
