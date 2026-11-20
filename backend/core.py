@@ -330,7 +330,12 @@ def chemistry_map(surface: List[Dict[str, Any]], distances: np.ndarray, key: str
             "multiscale_geomean": round(float(geomean[i]), 3),
             "compatible_members_8A": [surface[j]["key"] for j in range(n) if distances[i, j] <= COARSE_PATCH_RADIUS_A and local[j] > 0],
         })
-    patch_centers.sort(key=lambda x: (-x["multiscale_persistence"], -x["multiscale_geomean"], x["center_key"]))
+    # Coordinates, not chain IDs or residue numbers, resolve exact numerical ties.
+    # Labels are output identifiers only and must not alter candidate rank.
+    coords_by_key = {r["key"]: (r["x"], r["y"], r["z"]) for r in surface}
+    patch_centers.sort(key=lambda x: (-x["multiscale_persistence"],
+                                      -x["multiscale_geomean"],
+                                      coords_by_key[x["center_key"]]))
 
     members = []
     for i, row in enumerate(surface):
@@ -349,7 +354,8 @@ def chemistry_map(surface: List[Dict[str, Any]], distances: np.ndarray, key: str
             "ebase_metadata_kcal_mol": ebase, "mechanism": mechanism,
             "ionization_sensitive": row["ionization_sensitive"], "bfactor": row["bfactor"],
         })
-    members.sort(key=lambda x: (-x["propensity"], -x["multiscale_persistence"], x["key"]))
+    members.sort(key=lambda x: (-x["propensity"], -x["multiscale_persistence"],
+                                coords_by_key[x["key"]]))
 
     repulsive = []
     for i, row in enumerate(surface):
