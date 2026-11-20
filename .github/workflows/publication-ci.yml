@@ -24,6 +24,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
@@ -65,6 +67,8 @@ jobs:
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -94,6 +98,8 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -128,6 +134,8 @@ jobs:
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -146,6 +154,8 @@ jobs:
     timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -164,6 +174,8 @@ jobs:
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -179,6 +191,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 1
       - uses: actions/setup-python@v5
         with:
@@ -210,3 +223,41 @@ jobs:
             dist/InterfaceScout_v1.1.0_rc1_publication_bundle.zip.sha256
           if-no-files-found: error
           retention-days: 90
+
+  publication-prerelease:
+    name: publish-v1.1.0-rc1-prerelease-after-full-acceptance
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'release/v1.1.0-validation' }}
+    needs: [publication-package]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: InterfaceScout_v1.1.0_rc1_PUBLICATION_BUNDLE-${{ github.sha }}
+          path: dist
+      - name: Publish only the SHA-exact validated source tree as an immutable pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          MERGE_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Verify the tested PR merge tree and tagged branch head are identical.
+          git fetch origin "$MERGE_SHA" --depth=1
+          git diff --exit-code "$MERGE_SHA" "$HEAD_SHA" --
+          if gh release view v1.1.0-rc1 >/dev/null 2>&1; then
+            echo "v1.1.0-rc1 already exists; refusing to replace an archived version" >&2
+            exit 1
+          fi
+          gh release create v1.1.0-rc1 \
+            dist/InterfaceScout_v1.1.0_rc1_publication_bundle.zip \
+            dist/InterfaceScout_v1.1.0_rc1_publication_bundle.zip.sha256 \
+            --target "$HEAD_SHA" --prerelease --latest=false \
+            --title "InterfaceScout v1.1.0-rc1 — validated publication candidate" \
+            --notes-file publication/CHANGELOG.md
