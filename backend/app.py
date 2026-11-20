@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 
 from interface_engine import PUBLIC_MAP_SPECS, analyze_all_maps
 from model_settings import MODEL_VERSION
+from research_workflows import list_research_goals, compare_results, combine_maps
 
 BACKEND = Path(__file__).resolve().parent
 ROOT = BACKEND.parent
@@ -26,6 +27,39 @@ class AnalyzeRequest(BaseModel):
     pH: float = Field(7.4, ge=0.0, le=14.0)
     ionic_mM: float = Field(150.0, ge=0.0)
     temp_K: float = Field(298.0, gt=0.0)
+
+class CompareRequest(BaseModel):
+    structure_a: AnalyzeRequest
+    structure_b: AnalyzeRequest
+
+
+class CombineRequest(BaseModel):
+    analysis: dict
+    selected_maps: list[str] = Field(min_length=2, max_length=11)
+    max_regions: int = Field(25, ge=1, le=100)
+
+
+@app.get("/research-goals")
+def research_goals():
+    return list_research_goals()
+
+
+@app.post("/compare")
+def compare(req: CompareRequest):
+    try:
+        a = analyze_all_maps(**req.structure_a.model_dump())
+        b = analyze_all_maps(**req.structure_b.model_dump())
+        return compare_results(a, b)
+    except (KeyError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/combine")
+def combine(req: CombineRequest):
+    try:
+        return combine_maps(req.analysis, req.selected_maps, req.max_regions)
+    except (KeyError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @app.get("/health")
