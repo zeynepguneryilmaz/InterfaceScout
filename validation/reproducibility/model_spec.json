@@ -1,0 +1,440 @@
+{
+  "model_version": "2.4.0-selected-parameters",
+  "public_version": "1.0-publication",
+  "parameters": {
+    "sasa_probe_A": 1.4,
+    "sasa_points_per_atom": 200,
+    "scrsa_threshold": 0.05,
+    "multiscale_radii_A": [
+      6.0,
+      9.0
+    ],
+    "patch_radius_A": 8.0
+  },
+  "reference_sidechain_asa": {
+    "ALA": 69.23,
+    "ARG": 200.35,
+    "ASN": 106.25,
+    "ASP": 102.06,
+    "CYS": 96.69,
+    "GLN": 140.58,
+    "GLU": 134.61,
+    "GLY": 32.28,
+    "HIS": 147.0,
+    "ILE": 137.91,
+    "LEU": 140.76,
+    "LYS": 162.5,
+    "MET": 156.08,
+    "PHE": 163.9,
+    "PRO": 119.65,
+    "SER": 78.16,
+    "THR": 101.67,
+    "TRP": 210.89,
+    "TYR": 176.61,
+    "VAL": 114.14
+  },
+  "pka": {
+    "ASP": 3.9,
+    "GLU": 4.1,
+    "HIS": 6.5,
+    "CYS": 8.3,
+    "TYR": 10.1,
+    "LYS": 10.5,
+    "ARG": 12.5
+  },
+  "chemistries": {
+    "cationic": {
+      "label": "Cationic surface",
+      "surface_group": "cationic",
+      "description": "Compatibility with positively charged surface groups.",
+      "favorable": {
+        "ASP": [
+          0.0,
+          "electrostatic + H-bond",
+          "deprotonated"
+        ],
+        "GLU": [
+          0.0,
+          "electrostatic + H-bond",
+          "deprotonated"
+        ],
+        "TYR": [
+          0.0,
+          "H-bond",
+          null
+        ],
+        "SER": [
+          0.0,
+          "H-bond",
+          null
+        ],
+        "THR": [
+          0.0,
+          "H-bond",
+          null
+        ],
+        "ASN": [
+          0.0,
+          "H-bond",
+          null
+        ],
+        "GLN": [
+          0.0,
+          "H-bond",
+          null
+        ]
+      },
+      "repulsive": {}
+    },
+    "anionic": {
+      "label": "Anionic surface",
+      "surface_group": "anionic",
+      "description": "Compatibility with negatively charged surface groups.",
+      "favorable": {
+        "LYS": [
+          0.0,
+          "electrostatic + H-bond",
+          "protonated"
+        ],
+        "ARG": [
+          0.0,
+          "electrostatic + H-bond",
+          "protonated"
+        ],
+        "HIS": [
+          0.0,
+          "electrostatic",
+          "protonated"
+        ],
+        "SER": [
+          0.0,
+          "H-bond donor",
+          null
+        ],
+        "THR": [
+          0.0,
+          "H-bond donor",
+          null
+        ]
+      },
+      "repulsive": {
+        "ASP": [
+          0.0,
+          "like-charge repulsion",
+          "deprotonated"
+        ],
+        "GLU": [
+          0.0,
+          "like-charge repulsion",
+          "deprotonated"
+        ]
+      }
+    },
+    "hbond_donor": {
+      "label": "H-bond donor surface",
+      "surface_group": "H-bond donor",
+      "description": "Compatibility with surfaces capable of donating hydrogen bonds.",
+      "favorable": {
+        "TYR": [
+          0.0,
+          "H-bond acceptor",
+          null
+        ],
+        "ASP": [
+          0.0,
+          "H-bond acceptor",
+          null
+        ],
+        "GLU": [
+          0.0,
+          "H-bond acceptor",
+          null
+        ],
+        "SER": [
+          0.0,
+          "H-bond",
+          null
+        ],
+        "THR": [
+          0.0,
+          "H-bond",
+          null
+        ],
+        "ASN": [
+          0.0,
+          "H-bond",
+          null
+        ],
+        "GLN": [
+          0.0,
+          "H-bond",
+          null
+        ]
+      },
+      "repulsive": {}
+    },
+    "hbond_acceptor": {
+      "label": "H-bond acceptor surface",
+      "surface_group": "H-bond acceptor",
+      "description": "Compatibility with surfaces capable of accepting hydrogen bonds.",
+      "favorable": {
+        "LYS": [
+          0.0,
+          "H-bond donor",
+          "protonated"
+        ],
+        "ARG": [
+          0.0,
+          "H-bond donor",
+          "protonated"
+        ],
+        "SER": [
+          0.0,
+          "H-bond donor",
+          null
+        ],
+        "THR": [
+          0.0,
+          "H-bond donor",
+          null
+        ],
+        "TRP": [
+          0.0,
+          "indole-NH donor",
+          null
+        ]
+      },
+      "repulsive": {}
+    },
+    "pi_carbon": {
+      "label": "π / aromatic surface",
+      "surface_group": "aromatic / graphitic",
+      "description": "Compatibility with aromatic or graphitic-like surface chemistry.",
+      "favorable": {
+        "PHE": [
+          0.0,
+          "π-associated",
+          null
+        ],
+        "TRP": [
+          0.0,
+          "π-associated",
+          null
+        ],
+        "TYR": [
+          0.0,
+          "π-associated",
+          null
+        ],
+        "ARG": [
+          0.0,
+          "cation-π",
+          "protonated"
+        ],
+        "LYS": [
+          0.0,
+          "cation-π",
+          "protonated"
+        ],
+        "HIS": [
+          0.0,
+          "π-associated / cation-π",
+          "auxiliary_only"
+        ]
+      },
+      "repulsive": {}
+    },
+    "hydrophobic": {
+      "label": "Hydrophobic surface",
+      "surface_group": "nonpolar",
+      "description": "Compatibility with nonpolar surface chemistry.",
+      "favorable": {
+        "ALA": [
+          0.0,
+          "hydrophobic contact",
+          null
+        ],
+        "VAL": [
+          0.0,
+          "hydrophobic contact",
+          null
+        ],
+        "LEU": [
+          0.0,
+          "hydrophobic contact",
+          null
+        ],
+        "ILE": [
+          0.0,
+          "hydrophobic contact",
+          null
+        ],
+        "MET": [
+          0.0,
+          "hydrophobic contact",
+          null
+        ],
+        "PHE": [
+          0.0,
+          "hydrophobic contact",
+          null
+        ],
+        "TRP": [
+          0.0,
+          "hydrophobic contact",
+          null
+        ],
+        "PRO": [
+          0.0,
+          "hydrophobic contact",
+          null
+        ]
+      },
+      "repulsive": {}
+    },
+    "oxide": {
+      "label": "Metal-oxide surface",
+      "surface_group": "oxide",
+      "description": "Primary compatibility with exposed oxide metal sites through deprotonated carboxylates.",
+      "favorable": {
+        "ASP": [
+          0.0,
+          "carboxylate-metal coordination",
+          "deprotonated"
+        ],
+        "GLU": [
+          0.0,
+          "carboxylate-metal coordination",
+          "deprotonated"
+        ]
+      },
+      "repulsive": {}
+    },
+    "hydroxyapatite": {
+      "label": "Calcium/phosphate charged sites",
+      "surface_group": "calcium/phosphate charged sites",
+      "description": "Charged-site compatibility with calcium/phosphate-rich interfaces.",
+      "favorable": {
+        "ASP": [
+          0.0,
+          "carboxylate-Ca complementarity",
+          "deprotonated"
+        ],
+        "GLU": [
+          0.0,
+          "carboxylate-Ca complementarity",
+          "deprotonated"
+        ],
+        "ARG": [
+          0.0,
+          "charged-site complementarity",
+          "protonated"
+        ],
+        "LYS": [
+          0.0,
+          "charged-site complementarity",
+          "protonated"
+        ],
+        "HIS": [
+          0.0,
+          "charged-site complementarity",
+          "protonated"
+        ]
+      },
+      "repulsive": {}
+    },
+    "metal_coord": {
+      "label": "Transition-metal coordination",
+      "surface_group": "transition-metal coordination",
+      "description": "Compatibility with accessible transition-metal coordination sites.",
+      "favorable": {
+        "HIS": [
+          0.0,
+          "imidazole-metal coordination",
+          null
+        ],
+        "CYS": [
+          0.0,
+          "sulfur-metal coordination",
+          null
+        ],
+        "ASP": [
+          0.0,
+          "carboxylate-metal coordination",
+          "deprotonated"
+        ],
+        "GLU": [
+          0.0,
+          "carboxylate-metal coordination",
+          "deprotonated"
+        ],
+        "MET": [
+          0.0,
+          "thioether-metal coordination",
+          null
+        ]
+      },
+      "repulsive": {}
+    },
+    "gold": {
+      "label": "Soft-metal sulfur affinity",
+      "surface_group": "soft-metal sulfur affinity",
+      "description": "Soft-metal-like surface affinity dominated by exposed sulfur-containing side chains.",
+      "favorable": {
+        "CYS": [
+          0.0,
+          "soft-metal sulfur affinity",
+          null
+        ],
+        "MET": [
+          0.0,
+          "weak sulfur coordination",
+          null
+        ]
+      },
+      "repulsive": {}
+    },
+    "phosphate": {
+      "label": "Phosphate-rich surface",
+      "surface_group": "phosphate-rich",
+      "description": "Compatibility with phosphate-rich surface chemistry.",
+      "favorable": {
+        "ARG": [
+          0.0,
+          "phosphate-guanidinium",
+          "protonated"
+        ],
+        "LYS": [
+          0.0,
+          "phosphate-ammonium",
+          "protonated"
+        ],
+        "HIS": [
+          0.0,
+          "electrostatic",
+          "protonated"
+        ],
+        "SER": [
+          0.0,
+          "H-bond",
+          null
+        ]
+      },
+      "repulsive": {}
+    }
+  },
+  "public_to_internal": {
+    "anionic": "anionic",
+    "cationic": "cationic",
+    "hydrophobic": "hydrophobic",
+    "pi_carbon": "pi_carbon",
+    "hbond_donor": "hbond_donor",
+    "hbond_acceptor": "hbond_acceptor",
+    "oxide": "oxide",
+    "calcium_phosphate": "hydroxyapatite",
+    "metal_coord": "metal_coord",
+    "soft_metal_sulfur": "gold",
+    "phosphate": "phosphate"
+  },
+  "provenance": "Declared tables from P0 b30a248; shared specification, not experimental ground truth"
+}

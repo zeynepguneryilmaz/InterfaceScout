@@ -27,7 +27,7 @@ def _local_maxima(channel: dict, geometry: dict) -> List[dict]:
         key=lambda r: (
             -float(r.get("multiscale_persistence", 0.0)),
             -float(r.get("multiscale_geomean", 0.0)),
-            str(r.get("center_key")),
+            tuple(float(x) for x in geometry["coords"][str(r["center_key"])]),
         )
     )
 
@@ -52,8 +52,8 @@ def _patch_around_center(center: dict, chemistry_rows: Dict[str, dict], geometry
     ]
     if ckey not in members:
         members.append(ckey)
-    members = sorted(set(members))
-    seeds = sorted(k for k in members if k in chemistry_rows)
+    members = sorted(set(members), key=lambda k: tuple(geometry["coords"][k]))
+    seeds = [k for k in members if k in chemistry_rows]
     return {"center": ckey, "center_row": center, "members": members, "seeds": seeds}
 
 
@@ -76,6 +76,8 @@ def _patch_descriptors(patch: dict, geometry: dict) -> dict:
 
     return {
         "center_key": patch["center"],
+        "center_coordinate_A": [round(float(v), 5)
+                                for v in geometry["coords"][patch["center"]]],
         "center_residue": meta.get(patch["center"]),
         "members": members,
         "seed_members": seeds,
@@ -125,7 +127,7 @@ def assign_pareto_fronts(patches: List[dict]) -> List[dict]:
             int(p["pareto_front"]),
             -float(p["patch_coherence"]),
             -float(p["chemistry_support"]),
-            str(p.get("center_key", "")),
+            tuple(p.get("center_coordinate_A", [])),
         )
     )
     for rank, p in enumerate(patches, start=1):

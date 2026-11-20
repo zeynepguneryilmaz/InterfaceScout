@@ -1,0 +1,15 @@
+id,feature,method,expected,primary_evidence,blocking
+T01,Isolated first installation,Start released launcher and call HTTP endpoints on 3 operating systems,API healthy and 11 maps,CI first-install-smoke jobs,true
+T02,Multi-version Python,Run unittest discovery on 3 OS x Python 3.10 3.11 3.12,9 of 9 matrix jobs successful,CI test jobs,true
+T03,Scientific numeric reconstruction,Run independently checked PDB to all maps for 21 conditions,231 maps plus hashes pass,validation-evidence/numerical/verification.json,true
+T04,Independent SASA sampling,Reconstruct atom occlusion for two raw PDBs,Declared numerical tolerances pass,validation/reproducibility/oracle.py and numerical report,true
+T05,Label and numbering invariance,Analyze relabeled renumbered 1CRN and compare all 11 maps,Equivalent correspondence and patch geography,tests/test_structure_identity.py,true
+T06,Homomer chain ambiguity,Same-sequence repeated-chain permutations,Unique supported assignments or explicit error,tests/test_structure_identity_regression.py,true
+T07,Input integrity,Altloc missing atoms multiple MODEL duplicates invalid mmCIF,Prepared coordinates and warnings or explicit rejections,tests/test_structure_identity.py,true
+T08,Precision and extreme pH,Numeric boundary tests and no premature rounding,Positive tiny scores retained,tests/test_precision_regressions.py,true
+T09,PDB model-safe scoring export,Explicit MODEL records with repeated residue IDs,Only analyzed first model exported,tests/test_model_export.py and tests/test_bfactor_export.cjs,true
+T10,Real browser rendered 3D export,Analyze 1CRN and ZIP with actual map screenshots and PDF images on 3 OS,Single and multi PDB ZIP pass checks,validation-evidence/browser/*/single_pdb_browser_export.zip,true
+T11,Large PDB stress,Analyze bundled ~2626 residue first-model input,11 maps and complete exports,CI large-structure-stress jobs,true
+T12,Oligomeric burial and exports,Analyze 1U8F monomer/tetramer and SASA difference,11 maps tetramer and correct export,CI gapdh-tetramer-stress jobs,true
+T13,Historical frozen record,Check parameter and 7 plus 2 benchmark aggregate record,Historical summary consistency pass,validation/verify_publication.py,true
+T14,Publication package integrity,Build from checked source and generated evidence,Manifest checksums and strict acceptance,publication/build_package.py and CI publication-package job,true

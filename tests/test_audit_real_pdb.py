@@ -81,7 +81,7 @@ class RealPdbIntegrationTests(unittest.TestCase):
                 self.assertIn(top["jaccard"], (1.0, None))
         self.assertIsNotNone(consensus["combined_consensus"])
 
-    def test_unmatched_chains_are_still_independently_analyzed(self):
+    def test_relabelled_chains_are_matched_and_still_independently_analyzed(self):
         renamed = "\n".join(
             line[:21] + "B" + line[22:] if line.startswith("ATOM  ")
             and len(line) > 21 and line[21] == "A" else line
@@ -92,10 +92,12 @@ class RealPdbIntegrationTests(unittest.TestCase):
             {"name": "B", "pdb_text": renamed, "chain": "B"},
         ])
         self.assertEqual(len(result["structures"]), 2)
-        self.assertIsNone(result["consensus"])
-        self.assertTrue(result["consensus_unavailable_reason"])
-        self.assertEqual(len(result["comparison_skipped"]), 1)
-        self.assertFalse(result["comparison"])
+        self.assertIsNotNone(result["consensus"])
+        self.assertIsNone(result["consensus_unavailable_reason"])
+        self.assertEqual(len(result["comparison_skipped"]), 0)
+        self.assertEqual(len(result["comparison"]), 1)
+        self.assertEqual(result["consensus"]["n_matched_residues"],
+                         len(self.one["residue_profiles"]))
         for s in result["structures"]:
             self.assertEqual(s["analysis"]["n_maps"], 11)
 

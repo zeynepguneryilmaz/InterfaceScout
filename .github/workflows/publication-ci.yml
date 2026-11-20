@@ -7,6 +7,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: interfacescout-publication-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -20,6 +24,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
@@ -29,6 +35,11 @@ jobs:
         run: python -m pip install --disable-pip-version-check -r backend/requirements.txt
       - name: Publication smoke tests
         run: python -m unittest discover -s tests -v
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: PDB B-factor exporter JavaScript regression tests
+        run: node --test tests/test_bfactor_export.cjs
       - name: JavaScript syntax checks
         shell: bash
         run: |
@@ -50,6 +61,33 @@ jobs:
           call run_local.bat --check
           call start.bat --check
 
+  full-numerical-reproduction:
+    name: full-independent-231-map-reproduction
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install pinned calculation dependencies
+        run: python -m pip install --disable-pip-version-check -r backend/requirements.txt
+      - name: Recompute and independently check 21 inputs and all 231 maps
+        run: python validation/reproduce.py --suite full --output validation-evidence/numerical
+      - name: Preserve numerical report, output hashes and per-case data
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-v1.1.0-numerical-${{ github.sha }}
+          path: validation-evidence/numerical/
+          if-no-files-found: warn
+          retention-days: 90
+
   browser-smoke:
     name: browser-smoke (${{ matrix.os }})
     strategy:
@@ -60,6 +98,8 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -72,7 +112,17 @@ jobs:
         if: runner.os == 'Linux'
         run: python -m playwright install-deps chromium
       - name: Actual UI and screenshot-backed ZIP cross-check
+        env:
+          INTERFACESCOUT_ARTIFACT_DIR: validation-evidence/browser
         run: python tests/browser_smoke.py
+      - name: Preserve real browser ZIP exports and manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interfacescout-v1.1.0-browser-${{ runner.os }}-${{ github.sha }}
+          path: validation-evidence/browser/
+          if-no-files-found: warn
+          retention-days: 90
 
   large-structure-stress:
     name: large-structure-stress (${{ matrix.os }})
@@ -84,6 +134,8 @@ jobs:
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -102,6 +154,8 @@ jobs:
     timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -120,8 +174,98 @@ jobs:
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: First-time virtual environment setup, launcher, and HTTP API smoke
         run: python tests/first_launch_smoke.py
+
+
+  publication-package:
+    name: strict-publication-bundle
+    needs: [test, browser-smoke, large-structure-stress, gapdh-tetramer-stress, first-install-smoke, full-numerical-reproduction]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          name: interfacescout-v1.1.0-numerical-${{ github.sha }}
+          path: validation-evidence/numerical
+      - uses: actions/download-artifact@v4
+        with:
+          name: interfacescout-v1.1.0-browser-Linux-${{ github.sha }}
+          path: validation-evidence/browser/Linux
+      - uses: actions/download-artifact@v4
+        with:
+          name: interfacescout-v1.1.0-browser-Windows-${{ github.sha }}
+          path: validation-evidence/browser/Windows
+      - uses: actions/download-artifact@v4
+        with:
+          name: interfacescout-v1.1.0-browser-macOS-${{ github.sha }}
+          path: validation-evidence/browser/macOS
+      - name: Check numerical/browser evidence and package tested source
+        run: python publication/build_package.py --evidence-dir validation-evidence --output dist/InterfaceScout_v1.1.0_rc1_publication_bundle.zip
+      - name: Keep the publication ZIP and its SHA-256 digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: InterfaceScout_v1.1.0_rc1_PUBLICATION_BUNDLE-${{ github.sha }}
+          path: |
+            dist/InterfaceScout_v1.1.0_rc1_publication_bundle.zip
+            dist/InterfaceScout_v1.1.0_rc1_publication_bundle.zip.sha256
+          if-no-files-found: error
+          retention-days: 90
+
+  publication-prerelease:
+    name: publish-v1.1.0-rc1-prerelease-after-full-acceptance
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'release/v1.1.0-validation' }}
+    needs: [publication-package]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: InterfaceScout_v1.1.0_rc1_PUBLICATION_BUNDLE-${{ github.sha }}
+          path: dist
+      - name: Publish only the SHA-exact validated source tree as an immutable pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Source jobs and the archival builder checked out the PR head SHA.
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          (cd dist && sha256sum -c InterfaceScout_v1.1.0_rc1_publication_bundle.zip.sha256)
+          python - "$HEAD_SHA" <<'PY'
+          import json,sys,zipfile
+          path="dist/InterfaceScout_v1.1.0_rc1_publication_bundle.zip"
+          with zipfile.ZipFile(path) as archive:
+              meta=json.loads(archive.read("PACKAGE_MANIFEST.json"))
+          assert meta["git_commit"]==sys.argv[1], "Archive was generated from another revision"
+          assert meta["numerical_verification"]["status"]=="PASS"
+          assert meta["browser_verification"]["status"]=="PASS"
+          PY
+          if gh release view v1.1.0-rc1 >/dev/null 2>&1; then
+            echo "v1.1.0-rc1 already exists; refusing to replace an archived version" >&2
+            exit 1
+          fi
+          gh release create v1.1.0-rc1 \
+            dist/InterfaceScout_v1.1.0_rc1_publication_bundle.zip \
+            dist/InterfaceScout_v1.1.0_rc1_publication_bundle.zip.sha256 \
+            --target "$HEAD_SHA" --prerelease --latest=false \
+            --title "InterfaceScout v1.1.0-rc1 — validated publication candidate" \
+            --notes-file publication/CHANGELOG.md

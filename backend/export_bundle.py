@@ -562,6 +562,10 @@ def build_export_zip(payload: Mapping[str, Any]) -> bytes:
                 )
             base = f"structures/{safe}"
             z.writestr(f"{base}/original.pdb", pdb_text)
+            prepared_pdb = analysis.get("prepared_pdb")
+            if not isinstance(prepared_pdb, str) or not prepared_pdb.strip():
+                raise ValueError(f"{name}: missing analyzed prepared PDB for model-safe export")
+            z.writestr(f"{base}/prepared_analyzed.pdb", prepared_pdb)
             z.writestr(f"{base}/analysis_complete.json",
                        json.dumps(analysis, ensure_ascii=False, indent=2))
             for i, key in enumerate(MAP_NAMES, start=1):
@@ -570,11 +574,11 @@ def build_export_zip(payload: Mapping[str, Any]) -> bytes:
                 z.writestr(f"{base}/pdf_maps/{subname}.pdf",
                            map_pdf(name, analysis, key, images[key]))
                 z.writestr(f"{base}/pdb_bfactor/{subname}_Bfactor.pdb",
-                           _bfactor_pdb(pdb_text, _map_scores(analysis, key),
+                           _bfactor_pdb(prepared_pdb, _map_scores(analysis, key),
                                         f"{key}: canonical propensity"))
                 for k in (1, 3, 5):
                     z.writestr(f"{base}/pdb_bfactor/{subname}_Top{k}_Bfactor.pdb",
-                               _bfactor_pdb(pdb_text,
+                               _bfactor_pdb(prepared_pdb,
                                             _topk_scores(analysis["maps"][key], k),
                                             f"{key}: Top-{k} region membership"))
             combined = item.get("combined_maps")
@@ -582,7 +586,7 @@ def build_export_zip(payload: Mapping[str, Any]) -> bytes:
                 z.writestr(f"{base}/combined/combined_maps.json",
                            json.dumps(combined, ensure_ascii=False, indent=2))
                 z.writestr(f"{base}/combined/selected_exact_overlap_Bfactor.pdb",
-                           _bfactor_pdb(pdb_text,
+                           _bfactor_pdb(prepared_pdb,
                                {key: 100.0 for key in combined.get("exact_same_residue_overlap", [])},
                                "exact intersection of selected channel chemistry seeds"))
                 if item.get("combined_screenshot"):
@@ -603,7 +607,9 @@ def build_export_zip(payload: Mapping[str, Any]) -> bytes:
             z.writestr(f"{base}/consensus_complete.json",
                        json.dumps(consensus, ensure_ascii=False, indent=2))
             _add_csv_and_xlsx(z, base, consensus_tables(consensus))
-            representative = structures[0]["pdb_text"]
+            representative = structures[0]["analysis"].get("prepared_pdb")
+            if not representative:
+                raise ValueError("Consensus export lacks the prepared reference structure")
             for i, key in enumerate(MAP_NAMES, start=1):
                 label = f"{i:02d}_{key}"
                 z.writestr(f"{base}/screenshots/{label}_Top5_frequency.png", images[key])
