@@ -55,15 +55,27 @@ def analyze_structure_set(
             "are not equilibrium probabilities or kinetic predictions."
         ),
     }
+    # Independent analyses always succeed for valid inputs. Consensus/comparison
+    # are additional operations requiring matched residues, not prerequisites.
+    out["comparison_skipped"] = []
+    out["consensus_unavailable_reason"] = None
     if len(runs) > 1:
-        out["consensus"] = build_consensus(runs)
-        out["comparison"] = [
-            {
-                "structure_a": a["name"], "structure_b": b["name"],
-                **compare_results(a["analysis"], b["analysis"]),
-            }
-            for a, b in combinations(runs, 2)
-        ]
+        try:
+            out["consensus"] = build_consensus(runs)
+        except ValueError as exc:
+            out["consensus_unavailable_reason"] = str(exc)
+        for a, b in combinations(runs, 2):
+            try:
+                item = compare_results(a["analysis"], b["analysis"])
+            except ValueError as exc:
+                out["comparison_skipped"].append({
+                    "structure_a": a["name"], "structure_b": b["name"],
+                    "reason": str(exc),
+                })
+            else:
+                out["comparison"].append({
+                    "structure_a": a["name"], "structure_b": b["name"], **item,
+                })
     return out
 
 
