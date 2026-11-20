@@ -41,6 +41,20 @@ The research report can be exported to JSON; the original complete Excel and map
 B-factor PDB exports remain available. The original chemistry engine is frozen and **has
 not been recalibrated to maximize experimental adsorption contacts**.
 
+## Multi-PDB, consensus, and complete exports
+
+The original single-PDB Analyze, map visualization, composite overlay, complete Excel and current-map B-factor PDB export remain in place.
+
+**Single structure:** load a PDB by ID or local file and select Analyze. The new **Complete export** button downloads a single ZIP containing all 11 independently colored map screenshots, 11 separate map PDF documents, 11 separate canonical-score B-factor PDBs, additional Top-1/3/5 region-membership B-factor PDBs, every original input structure, detailed per-residue/per-patch CSV tables, an Excel workbook, complete structured JSON and a PDF report that contains **actual 3Dmol viewer screenshots** for all 11 maps. If a selected multi-channel intersection is available, the ZIP also contains intersection tables and a combined-map screenshot.
+
+**Multiple structures:** upload several local PDBs at once or add by PDB ID using the Multi-PDB panel (1–20 structures). Each PDB is analyzed separately using the same 11 chemistry channels, and each retains a complete independent export directory. The application shows pairwise comparison tables, including changes in side-chain accessibility and Top-1/3/5 residue-set overlap.
+
+For two or more structures, consensus is calculated **only for residue positions that have the same chain, residue number, insertion code and residue identity**; insufficiently matched structures are rejected. The consensus shows per-residue accessibility, chemical-channel compatibility and Top-1/3/5 member frequency, as well as strict (all structures) and majority (more than half) shared residue sets. Map intersections can also be described across the structures. Consensus visualizations can be viewed in the original 3D viewer, and the ZIP includes a consensus report PDF, per-map consensus screenshots, detailed CSV/Excel files, and consensus-frequency B-factor PDBs (display scale 0–100).
+
+**Interpretation:** consensus frequencies describe the *supplied structure collection*; they are not equilibrium occupancies, binding probabilities, contact predictions or conformational time courses. The downloaded B-factor column contains InterfaceScout visualization numbers, **not** experimental crystallographic B-factors. The ZIP generator refuses to substitute fake images when viewer screenshots cannot be captured.
+
+**Intentionally not implemented:** raw MD trajectories, GNM, ANM and RINpy. Researchers can export previously simulated selected frames as PDB files and compare them, but no trajectory analysis or elastic-network conformer generation is claimed.
+
 ## Publication model
 
 The frozen publication model uses:
