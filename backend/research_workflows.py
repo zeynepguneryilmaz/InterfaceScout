@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Sequence
 
+from residue_matching import match_residues
+
 RESEARCH_GOALS: dict[str, dict[str, Any]] = {
     "explore": {
         "label": "Explore a protein surface",
@@ -87,20 +89,19 @@ def _jaccard(a: set[str], b: set[str]) -> float | None:
 def compare_results(a: Mapping[str, Any], b: Mapping[str, Any]) -> dict[str, Any]:
     """Compare two runs of the canonical engine, without learning new scores.
 
-    Residue keys must correspond. We do not silently align sequences or
-    interpret different residue names at the same position as identical.
+    Correspondence follows protein-sequence alignment, not external PDB labels.
+    Nonidentical residues or ambiguous chain assignments are excluded/rejected.
     """
     left = {r["key"]: r for r in a.get("residue_profiles", [])}
     right = {r["key"]: r for r in b.get("residue_profiles", [])}
     if not left or not right:
         raise ValueError("Both analyses must contain residue_profiles from the canonical engine")
+    correspondence = match_residues(list(left.values()), list(right.values()))
+    a_to_b = correspondence["a_to_b"]
+    b_to_a = correspondence["b_to_a"]
+    eligible = set(a_to_b)
     shared_keys = set(left) & set(right)
-    eligible = {key for key in shared_keys
-                if left[key].get("res_name") == right[key].get("res_name")}
-    coverage = len(eligible) / max(1, min(len(left), len(right)))
-    if coverage < 0.8:
-        raise ValueError("Residue mapping is insufficient (<80% identity-matched coverage). "
-                         "Supply matched chains and residue numbering, or align/renumber structures first.")
+    coverage = min(correspondence["coverage_a"], correspondence["coverage_b"])
 
     maps_a, maps_b = a.get("maps", {}), b.get("maps", {})
     if set(maps_a) != set(maps_b):
@@ -111,12 +112,12 @@ def compare_results(a: Mapping[str, Any], b: Mapping[str, Any]) -> dict[str, Any
     residue_changes = []
     exposed_a, exposed_b = 0, 0
     for key in sorted(eligible):
-        ra, rb = left[key], right[key]
+        ra, rb = left[key], right[a_to_b[key]]
         xa, xb = bool(ra.get("surface_exposed")), bool(rb.get("surface_exposed"))
         exposed_a += xa
         exposed_b += xb
         residue_changes.append({
-            "key": key,
+            "key": key, "key_b": a_to_b[key],
             "res_name": ra["res_name"],
             "exposed_a": xa, "exposed_b": xb,
             "changed_exposure_class": xa != xb,
@@ -135,7 +136,9 @@ def compare_results(a: Mapping[str, Any], b: Mapping[str, Any]) -> dict[str, Any
         ma, mb = maps_a[name], maps_b[name]
         overlap = []
         for k in (1, 3, 5):
-            x, y = _patch_members(ma, k, eligible), _patch_members(mb, k, eligible)
+            x = _patch_members(ma, k, eligible)
+            y = {b_to_a[key] for key in _patch_members(mb, k)
+                 if key in b_to_a and b_to_a[key] in eligible}
             overlap.append({
                 "top_k": k, "jaccard": _jaccard(x, y),
                 "n_a": len(x), "n_b": len(y), "n_shared": len(x & y),
@@ -150,6 +153,7 @@ def compare_results(a: Mapping[str, Any], b: Mapping[str, Any]) -> dict[str, Any
             "key": name, "label": ma.get("label", name),
             "top1_center_a": pa[0].get("center_key") if pa else None,
             "top1_center_b": pb[0].get("center_key") if pb else None,
+            "top1_center_b_mapped_to_a": b_to_a.get(pb[0].get("center_key")) if pb else None,
             "n_candidate_regions_a": len(pa), "n_candidate_regions_b": len(pb),
             "top_k": overlap,
         })
@@ -163,7 +167,15 @@ def compare_results(a: Mapping[str, Any], b: Mapping[str, Any]) -> dict[str, Any
             "n_key_matches": len(shared_keys),
             "n_identity_matches": len(eligible),
             "coverage_of_shorter_structure": round(coverage, 4),
-            "not_compared": sorted((set(left) | set(right)) - eligible),
+            "coverage_a": round(correspondence["coverage_a"], 4),
+            "coverage_b": round(correspondence["coverage_b"], 4),
+            "chain_matches": correspondence["chain_matches"],
+            "method": correspondence["method"],
+            "reference_key_to_b": a_to_b,
+            "not_compared": {
+                "structure_a": sorted(set(left) - eligible),
+                "structure_b": sorted(set(right) - set(b_to_a)),
+            },
         },
         "accessibility": {
             "n_exposed_matched_a": exposed_a,
