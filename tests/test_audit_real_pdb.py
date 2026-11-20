@@ -140,6 +140,10 @@ class RealPdbIntegrationTests(unittest.TestCase):
             self.assertEqual({row["Map"] for row in rows}, set(MAP_NAMES))
             self.assertIn(base + "/csv/Map_Favorable_Residues.csv", names)
             self.assertIn("analysis_warnings.json", names)
+        # A stale or changed structure must never receive another structure's scores.
+        payload["structures"][0]["pdb_text"] = self.pdb + "\nREMARK 999 altered after analysis\n"
+        with self.assertRaisesRegex(ValueError, "no longer matches"):
+            build_export_zip(payload)
 
     def test_request_validation_for_multi_structure(self):
         request = StructureSetRequest.model_validate({
