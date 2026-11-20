@@ -88,14 +88,15 @@ class DecisionWorkflowTests(unittest.TestCase):
         self.assertLess(out["map_comparisons"][0]["top_k"][0]["jaccard"], 1.0)
         self.assertIn("adsorption", out["interpretation"])
 
-    def test_reject_unmatched_chains(self):
+    def test_compare_renamed_chains(self):
         b = analysis(
             [{"center_key": "B:1:", "members": ["B:1:"]}],
             [{"center_key": "B:2:", "members": ["B:2:"]}],
             [res("B:1:"), res("B:2:", "LEU"), res("B:3:", "ALA")],
         )
-        with self.assertRaises(ValueError):
-            compare_results(self.a, b)
+        result = compare_results(self.a, b)
+        self.assertEqual(result["mapping"]["n_identity_matches"], 3)
+        self.assertEqual(result["mapping"]["chain_matches"][0]["chain_b"], "B")
 
 if __name__ == "__main__":
     unittest.main()

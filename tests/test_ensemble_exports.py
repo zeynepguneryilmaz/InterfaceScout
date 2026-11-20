@@ -117,8 +117,8 @@ class MultiStructureExportTests(unittest.TestCase):
         self.assertEqual(r["top5_membership_fraction"], 0.5)
         self.assertEqual(c["maps"]["anionic"]["strict_top5_members"], [])
 
-    def test_reject_unmatched_numbering(self):
-        self.b["residue_profiles"][0]["key"] = "B:1:"
+    def test_reject_unrelated_residue_identity(self):
+        self.b["residue_profiles"][0]["res_name"] = "GLU"
         with self.assertRaisesRegex(ValueError, "80%"):
             build_consensus([
                 {"name": "one", "analysis": self.a},

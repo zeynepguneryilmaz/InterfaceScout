@@ -10,6 +10,7 @@ from typing import Any, Mapping
 
 from interface_engine import analyze_all_maps
 from research_workflows import compare_results, combine_maps
+from residue_matching import match_residues
 
 
 def analyze_structure_set(
@@ -90,30 +91,43 @@ def _patch_members(map_row: Mapping[str, Any], top_k: int,
     }
 
 
-def _identity_matched(runs: list[dict[str, Any]]) -> tuple[set[str], list[dict[str, Any]]]:
-    identities = [
-        {str(r["key"]): str(r["res_name"]) for r in run["analysis"]["residue_profiles"]}
-        for run in runs
-    ]
-    matched = set.intersection(*(set(d) for d in identities))
-    matched = {key for key in matched if len({d[key] for d in identities}) == 1}
-    details = []
-    for i, d in enumerate(identities):
-        coverage = len(matched) / max(len(d), 1)
+def _identity_matched(
+    runs: list[dict[str, Any]],
+) -> tuple[set[str], list[dict[str, Any]], list[dict[str, str]]]:
+    """Map every analysis onto the reference structure using sequence identity."""
+    reference = runs[0]["analysis"]["residue_profiles"]
+    mappings = [{str(row["key"]): str(row["key"]) for row in reference}]
+    details = [{
+        "structure": runs[0]["name"], "residues": len(reference),
+        "matched_positions": len(reference), "coverage": 1.0,
+        "chain_matches": [], "method": "reference structure",
+    }]
+    for run in runs[1:]:
+        profiles = run["analysis"]["residue_profiles"]
+        mapping = match_residues(reference, profiles)
+        mappings.append(mapping["a_to_b"])
         details.append({
-            "structure": runs[i]["name"],
-            "residues": len(d),
-            "matched_positions": len(matched),
-            "coverage": round(coverage, 5),
-            "excluded_residues": sorted(set(d) - matched),
+            "structure": run["name"],
+            "residues": len(profiles),
+            "matched_positions": mapping["n_matched"],
+            "coverage": round(mapping["coverage_b"], 5),
+            "reference_coverage": round(mapping["coverage_a"], 5),
+            "chain_matches": mapping["chain_matches"],
+            "warnings": mapping["warnings"],
+            "method": mapping["method"],
         })
-        if coverage < 0.80:
-            raise ValueError(
-                "Consensus requires at least 80% identity-matched residue keys for every "
-                f"structure; {runs[i]['name']} has {coverage:.1%}. Align chain IDs and "
-                "residue numbering or analyze separately."
-            )
-    return matched, details
+    matched = set.intersection(*(set(m) for m in mappings))
+    for d, m, run in zip(details, mappings, runs):
+        d["consensus_positions"] = len(matched)
+        d["excluded_residues"] = sorted(
+            {str(r["key"]) for r in run["analysis"]["residue_profiles"]} -
+            {m[key] for key in matched})
+        d["consensus_coverage"] = round(
+            len(matched) / max(len(run["analysis"]["residue_profiles"]), 1), 5)
+    if any(d["consensus_coverage"] < 0.8 for d in details):
+        raise ValueError("Fewer than 80% of reference residues match every structure. "
+                         "Check that all structures represent the same assembly.")
+    return matched, details, mappings
 
 
 def build_consensus(runs: list[dict[str, Any]]) -> dict[str, Any]:
@@ -129,12 +143,15 @@ def build_consensus(runs: list[dict[str, Any]]) -> dict[str, Any]:
     if any(list(r["analysis"]["map_order"]) != map_order for r in runs[1:]):
         raise ValueError("Inconsistent map definitions")
 
-    allowed, mapping_details = _identity_matched(runs)
+    allowed, mapping_details, mappings = _identity_matched(runs)
     n = len(runs)
     profiles = [
-        {str(row["key"]): row for row in r["analysis"]["residue_profiles"]}
-        for r in runs
+        {key_a: raw[str(key_b)] for key_a, key_b in mapping.items()
+         if str(key_b) in raw}
+        for r, mapping in zip(runs, mappings)
+        for raw in [{str(row["key"]): row for row in r["analysis"]["residue_profiles"]}]
     ]
+    reverse_mappings = [{v: k for k, v in mapping.items()} for mapping in mappings]
     residue_results = []
     for key in sorted(allowed):
         rows = [r[key] for r in profiles]
@@ -156,12 +173,19 @@ def build_consensus(runs: list[dict[str, Any]]) -> dict[str, Any]:
     for name in map_order:
         map_rows = [r["analysis"]["maps"][name] for r in runs]
         compatible = [
-            {str(x["key"]) for x in m["residues"] if float(x.get("local_score") or 0) > 0}
-            & allowed
-            for m in map_rows
+            {reverse[str(x["key"])] for x in m["residues"]
+             if float(x.get("local_score") or 0) > 0
+             and str(x["key"]) in reverse} & allowed
+            for m, reverse in zip(map_rows, reverse_mappings)
         ]
-        at_top = {k: [_patch_members(m, k, allowed) for m in map_rows]
-                  for k in (1, 3, 5)}
+        at_top = {
+            k: [
+                {reverse[key] for key in _patch_members(m, k, set(reverse))
+                 if reverse[key] in allowed}
+                for m, reverse in zip(map_rows, reverse_mappings)
+            ]
+            for k in (1, 3, 5)
+        }
         rrows = []
         for key in sorted(allowed):
             count = sum(key in cs for cs in compatible)
@@ -212,18 +236,19 @@ def build_consensus(runs: list[dict[str, Any]]) -> dict[str, Any]:
         selections = [tuple(c.get("selected_maps", [])) for c in combinations]
         if len(set(selections)) == 1 and len(selections[0]) >= 2:
             exact_sets = [
-                set(c.get("exact_same_residue_overlap", [])) & allowed
-                for c in combinations
+                {reverse[key] for key in c.get("exact_same_residue_overlap", [])
+                 if key in reverse and reverse[key] in allowed}
+                for c, reverse in zip(combinations, reverse_mappings)
             ]
             spatial_sets = [
                 {
-                    str(key)
+                    reverse[str(key)]
                     for region in c.get("regions", [])
                     if region.get("all_maps_colocated")
                     for key in region.get("member_keys", [])
-                    if str(key) in allowed
+                    if str(key) in reverse and reverse[str(key)] in allowed
                 }
-                for c in combinations
+                for c, reverse in zip(combinations, reverse_mappings)
             ]
             rows = []
             for key in sorted(allowed):
@@ -264,12 +289,14 @@ def build_consensus(runs: list[dict[str, Any]]) -> dict[str, Any]:
         "structure_names": names,
         "n_matched_residues": len(allowed),
         "matching": mapping_details,
+        "reference_to_structure_keys": {r["name"]: {k: v for k, v in mappings[i].items() if k in allowed}
+                                        for i, r in enumerate(runs)},
         "residues": residue_results,
         "combined_consensus": combined_consensus,
         "maps": consensus_maps,
         "map_order": map_order,
         "method": (
-            "Identity-matched residue positions across user-supplied structures; "
+            "Sequence-aligned identity-matched residue positions in reference numbering; "
             "scRSA and each original 11-channel map re-evaluated separately. "
             "A residue's consensus frequency is the number of input structures "
             "where that feature is present divided by the total number of structures."

@@ -29,8 +29,11 @@ The new decision-support layer keeps two physically distinct data types separate
 **Conformational comparison** accepts a second PDB file or PDB ID and compares the
 same canonical analyses under the same pH. Outputs include accessibility changes,
 per-channel Top-1/3/5 region-membership Jaccard overlaps, and added/removed residues.
-The user must provide matched residue numbering/chain identities (the program checks
-mapping identity and rejects insufficient overlap); it does not silently match unrelated proteins.
+Residues are matched by chain-aware protein-sequence alignment, so different chain labels,
+residue numbering offsets and insertion codes do not by themselves invalidate comparisons.
+The input structures must still represent the same protein/assembly; at least 80% of residues
+on both sides must match by amino-acid identity. Ambiguous equivalent-chain assignments are
+rejected rather than silently paired. Original PDB identifiers remain in analysis/export labels.
 
 **Out of scope:** GNM, ANM, residue-interaction-network analysis, adsorption pose prediction,
 adsorption-induced unfolding, binding free energies and simulation of dynamics. If users
@@ -49,7 +52,7 @@ The original single-PDB Analyze, map visualization, composite overlay, complete 
 
 **Multiple structures:** upload several local PDBs at once or add by PDB ID using the Multi-PDB panel (1–20 structures). Each PDB is analyzed separately using the same 11 chemistry channels, and each retains a complete independent export directory. The application shows pairwise comparison tables, including changes in side-chain accessibility and Top-1/3/5 residue-set overlap.
 
-For two or more structures, consensus is calculated **only for residue positions that have the same chain, residue number, insertion code and residue identity**; insufficiently matched structures are rejected. The consensus shows per-residue accessibility, chemical-channel compatibility and Top-1/3/5 member frequency, as well as strict (all structures) and majority (more than half) shared residue sets. Map intersections can also be described across the structures. Consensus visualizations can be viewed in the original 3D viewer, and the ZIP includes a consensus report PDF, per-map consensus screenshots, detailed CSV/Excel files, and consensus-frequency B-factor PDBs (display scale 0–100).
+For two or more structures, consensus uses **identity-matched residues after sequence alignment**. Results refer to the first structure's residue numbering; every structure's original identifiers remain available through the mapping report. Structures with insufficient matching or unresolved repeated-chain ambiguity are rejected from consensus. The consensus shows per-residue accessibility, chemical-channel compatibility and Top-1/3/5 member frequency, as well as strict (all structures) and majority (more than half) shared residue sets. Map intersections can also be described across the structures. Consensus visualizations can be viewed in the original 3D viewer, and the ZIP includes a consensus report PDF, per-map consensus screenshots, detailed CSV/Excel files, and consensus-frequency B-factor PDBs (display scale 0–100).
 
 **Interpretation:** consensus frequencies describe the *supplied structure collection*; they are not equilibrium occupancies, binding probabilities, contact predictions or conformational time courses. The downloaded B-factor column contains InterfaceScout visualization numbers, **not** experimental crystallographic B-factors. The ZIP generator refuses to substitute fake images when viewer screenshots cannot be captured.
 
@@ -79,8 +82,8 @@ InterfaceScout calculates anionic, cationic, hydrophobic, π/aromatic, H-bond do
 
 ## Inputs
 
-- PDB ID or local PDB file
-- optional chain selection
+- PDB ID or local PDB file (legacy PDB format; mmCIF is explicitly rejected rather than silently misread)
+- optional chain selection; each structure can have its own selection in Multi-PDB
 - pH (affects the current scoring)
 - ionic strength (saved as metadata only)
 - temperature (saved as metadata only)
@@ -147,6 +150,8 @@ bash start.sh
 ```
 
 The local application opens at `http://localhost:8000`.
+
+**Structure-input integrity:** InterfaceScout checks that selected canonical protein residues have Cα atoms; chooses one occupancy-supported residue-level alternate conformer; and reports discarded noncanonical/hetero residues, incomplete backbone and first-model-only analysis. A clean input-reading result does **not** imply absent cofactors, glycosylation, or missing side-chain atoms are scientifically irrelevant. PDB-only support remains a technical limitation, especially for large mmCIF-only assemblies.
 
 The browser libraries required for 3D visualization and Excel export are vendored in `frontend/vendor/`, so a **local PDB file can be analyzed without CDN access after installation**. Fetching by PDB ID still requires network access to the RCSB Protein Data Bank.
 
