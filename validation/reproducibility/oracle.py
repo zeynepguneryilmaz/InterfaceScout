@@ -186,7 +186,7 @@ def verify_map(rows, all_rows, channel, public_map, chemistry, ph, checks):
     def face(a,b):
         return sum(x*y for x,y in zip(normals[a],normals[b]))>0
     radius=cfg["parameters"]["patch_radius_A"]
-    priority=sorted(centers,key=lambda k:(-centers[k]["multiscale_persistence"],-centers[k]["multiscale_geomean"],k))
+    priority=sorted(centers,key=lambda k:(-centers[k]["multiscale_persistence"],-centers[k]["multiscale_geomean"],tuple(bykey[k]["coord"])))
     retained=[]
     for key in priority:
         if not any(distances[key,k]<=radius and face(key,k) for k in retained):
@@ -196,8 +196,8 @@ def verify_map(rows, all_rows, channel, public_map, chemistry, ph, checks):
     patches={p["center_key"]:p for p in public_map["patches"]}
     checks.equal(set(patches),set(retained),"selected patch centers")
     for key,p in patches.items():
-        ids=sorted({k for k in bykey if distances[key,k]<=radius and face(key,k)}|{key})
-        seeds=sorted(k for k in ids if k in members and members[k]["local_score"]>0)
+        ids=sorted({k for k in bykey if distances[key,k]<=radius and face(key,k)}|{key}, key=lambda k:tuple(bykey[k]["coord"]))
+        seeds=[k for k in ids if k in members and members[k]["local_score"]>0]
         checks.equal(p["members"],ids,chemistry+"/"+key+" members")
         checks.equal(p["seed_members"],seeds,chemistry+"/"+key+" seeds")
         checks.equal(p["n_members"],len(ids),"member count")
@@ -217,7 +217,7 @@ def verify_map(rows, all_rows, channel, public_map, chemistry, ph, checks):
         near[field]=dict(min_positive_gap=min(gaps,default=None),
             adjacent_gaps_within_tolerance=sum(b-a<=ATOL+RTOL*abs(b) for a,b in zip(distinct,distinct[1:])))
     checks.near_ties[chemistry]=near
-    order=sorted(patches,key=lambda k:(fronts[k],-patches[k]["patch_coherence"],-patches[k]["chemistry_support"],k))
+    order=sorted(patches,key=lambda k:(fronts[k],-patches[k]["patch_coherence"],-patches[k]["chemistry_support"],tuple(bykey[k]["coord"])))
     checks.equal(list(patches),order,"patch ranking")
     for rank,key in enumerate(order,1):
         checks.equal(patches[key]["pareto_front"],fronts[key],"Pareto front")
