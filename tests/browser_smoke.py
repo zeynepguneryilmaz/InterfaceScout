@@ -53,6 +53,10 @@ def assert_export(download, label: str, multi: bool):
                 rgb_c = im_c.convert("RGB")
                 if ImageChops.difference(rgb_a, rgb_c).getbbox() is None:
                     raise AssertionError(label + ": different maps exported identical screenshots")
+            if base + "/combined/selected_combination.png" not in names:
+                raise AssertionError(label + ": selected-map screenshot is missing")
+            if base + "/csv/Map_Colocation.csv" not in names:
+                raise AssertionError(label + ": map co-location CSV is missing")
             with zipfile.ZipFile(BytesIO(b)) as second:
                 map_pdf = second.read(base + "/pdf_maps/01_anionic.pdf")
                 full_pdf = second.read(base + "/full_report.pdf")
@@ -108,6 +112,15 @@ def main():
                 timeout=120_000,
             )
             print("Single-PDB UI: 11 maps computed")
+            # Exercise actual multi-chemistry intersection selection in the UI.
+            page.evaluate("() => { if(selected.has('anionic')) toggleChem('anionic'); }")
+            page.evaluate("() => toggleChem('hydrophobic')")
+            page.evaluate("() => toggleChem('pi_carbon')")
+            page.wait_for_function(
+                "() => decisionCombo !== null && decisionCombo.selected_maps.length === 2",
+                timeout=60_000,
+            )
+            print("Two-map intersection/co-location completed")
             try:
                 with page.expect_download(timeout=180_000) as dinfo:
                     page.locator("#isFullExport").click()
