@@ -170,6 +170,7 @@ def compare_results(a: Mapping[str, Any], b: Mapping[str, Any]) -> dict[str, Any
             "coverage_a": round(correspondence["coverage_a"], 4),
             "coverage_b": round(correspondence["coverage_b"], 4),
             "chain_matches": correspondence["chain_matches"],
+            "warnings": correspondence["warnings"],
             "method": correspondence["method"],
             "reference_key_to_b": a_to_b,
             "not_compared": {
