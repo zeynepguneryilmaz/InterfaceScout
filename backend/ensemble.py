@@ -36,7 +36,8 @@ def analyze_structure_set(
                 pH=pH, ionic_mM=ionic_mM, temp_K=temp_K,
             )
             combined = (
-                combine_maps(analysis, combined_maps) if combined_maps and len(combined_maps) >= 2
+                combine_maps(analysis, combined_maps, max_regions=None)
+                if combined_maps and len(combined_maps) >= 2
                 else None
             )
         except Exception as exc:
