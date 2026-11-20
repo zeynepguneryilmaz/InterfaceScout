@@ -2,9 +2,44 @@
 
 [![Cross-platform CI](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/workflows/publication-ci.yml/badge.svg)](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/workflows/publication-ci.yml)
 
-InterfaceScout is an open-source tool for identifying and prioritizing plausible **protein-side contact regions** at material interfaces from a protein structure and solution conditions.
+InterfaceScout is an open-source **physicochemical protein-surface mapping and candidate-region analysis** tool for preliminary experimental or computational study design. It is not an adsorption-site predictor.
 
-The program prepares the selected protein structure once and calculates 11 canonical surface-chemistry maps. Candidate surface patches are prioritized using chemistry support, side-chain accessibility, patch coherence, and coarse orientation coherence without material-specific fitted weights.
+The program prepares the selected protein structure once and calculates 11 canonical surface-chemistry maps. Candidate surface patches are ranked using chemistry support, side-chain accessibility, patch coherence, and coarse orientation coherence without material-specific fitted weights. The ranked candidates identify structural regions worth examining, not observed adsorption sites.
+
+## Research-first workflows (new, opt-in interface)
+
+The **Research question** selector offers five practical starting workflows: exploring an unfamiliar
+protein, planning noncovalent protein–material experiments, selecting residues for surface
+immobilization/labeling, preparing computational interface simulations, and comparing provided
+protein conformations. These choices are **suggestions only**: users can select any of the
+11 maps and never need to identify a particular material to begin.
+
+The new decision-support layer keeps two physically distinct data types separate:
+
+1. **Direct protein-side descriptors:** side-chain solvent accessibility, exposed residue
+   identities and simple, explicitly defined amino-acid groups such as nonpolar, aromatic,
+   cysteine, lysine, acidic and basic residues. These groups are descriptive; they do not
+   calculate microscopic chemical reactivity, reaction rates or a full electrostatic potential.
+2. **Eleven canonical compatibility maps:** unchanged chemistry rules and patch ranking.
+   Users can inspect maps independently or combine two or more. Combination reports
+   **exact residue intersection** separately from **spatial co-localization** of different
+   compatible residues within the same existing 8 Å patch. Combined maps are not fitted
+   adsorption scores.
+
+**Conformational comparison** accepts a second PDB file or PDB ID and compares the
+same canonical analyses under the same pH. Outputs include accessibility changes,
+per-channel Top-1/3/5 region-membership Jaccard overlaps, and added/removed residues.
+The user must provide matched residue numbering/chain identities (the program checks
+mapping identity and rejects insufficient overlap); it does not silently match unrelated proteins.
+
+**Out of scope:** GNM, ANM, residue-interaction-network analysis, adsorption pose prediction,
+adsorption-induced unfolding, binding free energies and simulation of dynamics. If users
+already have an MD trajectory, they can export representative structures as PDB files and
+compare them using this workflow. Native XTC/TRR/DCD parsing is not implemented.
+
+The research report can be exported to JSON; the original complete Excel and map-labelled
+B-factor PDB exports remain available. The original chemistry engine is frozen and **has
+not been recalibrated to maximize experimental adsorption contacts**.
 
 ## Publication model
 
@@ -32,19 +67,20 @@ InterfaceScout calculates anionic, cationic, hydrophobic, π/aromatic, H-bond do
 
 - PDB ID or local PDB file
 - optional chain selection
-- pH
-- ionic strength
-- temperature
+- pH (affects the current scoring)
+- ionic strength (saved as metadata only)
+- temperature (saved as metadata only)
+- second PDB file or PDB ID for optional same-protein comparison
 
 In the current model, **pH enters the scoring calculation**. Ionic strength and temperature are retained as run metadata and should not be interpreted as explicit electrostatic-screening or thermal-response calculations.
 
 ## Intended scope and limitations
 
-InterfaceScout is intended for coarse **contact-region prioritization** when a folded protein structure is an informative representation of the adsorbing state and the material interface can be related to one or more canonical chemistry classes.
+InterfaceScout is intended for **reproducible characterization of accessible physicochemical protein-surface regions**, and for comparing candidate regions across user-provided structures. Material-compatibility maps support hypothesis generation rather than adsorption claims.
 
-The current validation most directly supports folded globular proteins and folded oligomeric proteins under conditions where large adsorption-induced structural rearrangements are not dominant. Use more cautiously for intrinsically disordered proteins, strongly unfolding/restructuring adsorption regimes, membrane-embedded systems, covalent attachment, or systems whose relevant chemistry depends critically on cofactors, glycans, lipids, non-standard residues, or other hetero components removed by the standard preparation policy.
+The existing chemistry-based publication benchmark is limited and does not establish general adsorption predictive performance. Structural characterization is most straightforward for folded globular proteins and folded oligomeric proteins with representative atomic structures. Use more cautiously for intrinsically disordered proteins, strongly unfolding/restructuring adsorption regimes, membrane-embedded systems, covalent attachment, or systems whose relevant chemistry depends critically on cofactors, glycans, lipids, non-standard residues, or other hetero components removed by the standard preparation policy.
 
-InterfaceScout does **not** predict absolute adsorption free energy, adsorbed amount, atomistically unique binding orientation, adsorption kinetics, or adsorption-induced unfolding. Ranked patches are plausible protein-side regions for experimental follow-up or higher-resolution simulation, not exact atomistic binding sites.
+InterfaceScout does **not** predict absolute adsorption free energy, adsorbed amount, atomistically unique binding orientation, adsorption kinetics, or adsorption-induced unfolding. Ranked patches are interpretable protein-side candidate regions for experimental follow-up or higher-resolution simulation, not exact atomistic binding sites or predicted final contacts.
 
 The literature benchmark contains seven primary conditions and two secondary challenge cases. The transferrin-polystyrene and catalase-polystyrene cases are retained specifically to expose the limitation of a static folded-state model when adsorption-associated structural change is important. See `validation/README.md`.
 
@@ -52,6 +88,7 @@ The literature benchmark contains seven primary conditions and two secondary cha
 
 1. **Complete Excel workbook** with run/method information, map definitions, residue-level values, ranked patches, and patch members for all 11 maps.
 2. **B-factor PDB** for the displayed map, with the 0-100 InterfaceScout residue propensity written to the standard B-factor field.
+3. **Research decision report (JSON)** including direct protein properties, chosen maps, optional co-localization analysis and optional PDB comparison.
 
 ## Installation and use
 
