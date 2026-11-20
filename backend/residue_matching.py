@@ -119,25 +119,35 @@ def match_residues(
             with_coordinates = [c for c in tied if c["cost"] is not None]
             if len(with_coordinates) == len(tied):
                 with_coordinates.sort(key=lambda c: c["cost"])
-                if (len(with_coordinates) == 1 or
-                        with_coordinates[1]["cost"] - with_coordinates[0]["cost"] > 1e-3):
+                # Only use raw coordinate proximity when the two inputs share
+                # nearly the same global frame.  After a rotation, a small
+                # difference between two large costs is not valid evidence.
+                if (with_coordinates[0]["cost"] < 2.0 and
+                        (len(with_coordinates) == 1 or
+                         with_coordinates[1]["cost"] - with_coordinates[0]["cost"] > 1e-3)):
                     head = with_coordinates[0]
+                    head["assignment_basis"] = "coordinate_consistent"
                 else:
                     same = [c for c in tied if c["same_label"]]
                     if len(same) == 1:
                         head = same[0]
+                        head["assignment_basis"] = "identical_chain_label_assumed"
                     else:
                         raise ValueError(
-                            "Ambiguous equivalent protein-chain assignment: specify "
-                            "an explicit chain subset or supply consistently labelled chains.")
+                            "Ambiguous repeated protein-chain assignment after "
+                            "sequence alignment. Orient structures consistently, "
+                            "choose corresponding chain subsets, or supply an "
+                            "explicit structural alignment.")
             else:
                 same = [c for c in tied if c["same_label"]]
                 if len(same) == 1:
                     head = same[0]
+                    head["assignment_basis"] = "identical_chain_label_assumed"
                 else:
                     raise ValueError(
                         "Ambiguous equivalent protein-chain assignment; provide "
                         "matching chain identities for repeated homologous chains.")
+        head.setdefault("assignment_basis", "unique_sequence")
         selected.append(head)
         used_a.add(head["left"])
         used_b.add(head["right"])
@@ -160,7 +170,14 @@ def match_residues(
         "a_to_b": a_to_b,
         "b_to_a": {v: k for k, v in a_to_b.items()},
         "chain_matches": [{"chain_a": c["left"], "chain_b": c["right"],
-                           "n_identity_matches": c["count"]} for c in selected],
+                           "n_identity_matches": c["count"],
+                           "assignment_basis": c["assignment_basis"]} for c in selected],
+        "warnings": [
+            "Repeated-chain assignment assumed matching chain labels because "
+            "coordinates did not establish a unique correspondence. Verify "
+            "chain assignments before interpreting conformational changes."
+        ] if any(c["assignment_basis"] == "identical_chain_label_assumed"
+                 for c in selected) else [],
         "coverage_a": coverage_a, "coverage_b": coverage_b,
         "method": "chain-aware sequence alignment with identity-only residue correspondence",
         "n_matched": len(a_to_b),
