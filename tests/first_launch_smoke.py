@@ -11,6 +11,7 @@ from pathlib import Path
 import subprocess
 import sys
 import time
+import tempfile
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,12 +36,19 @@ def main():
         cmd = ["bash", str(ROOT / "run_local.sh")]
     print("Running full first-time launcher:", cmd, platform.platform(), flush=True)
     t0 = time.perf_counter()
-    p = subprocess.run(cmd, cwd=str(ROOT), capture_output=True,
-                       text=True, timeout=360, errors="replace")
-    print("Launcher stdout (last 2500 chars):", p.stdout[-2500:], flush=True)
-    if p.returncode:
-        print("Launcher stderr (last 2500 chars):", p.stderr[-2500:], flush=True)
-    assert p.returncode == 0, f"First-run launcher exited with code {p.returncode}"
+    # Windows' start.bat spawns a detached server and opens a browser. Avoid
+    # PIPE capture: child processes may retain inherited pipe write handles,
+    # causing communicate() to hang despite the launcher having exited.
+    with tempfile.TemporaryFile(mode="w+t", encoding="utf-8") as log:
+        p = subprocess.run(cmd, cwd=str(ROOT), stdout=log,
+                           stderr=subprocess.STDOUT, timeout=320)
+        log.seek(0)
+        output = log.read()
+    print("Launcher output (last 2500 chars):", output[-2500:], flush=True)
+    assert p.returncode == 0, (
+        f"First-run launcher exited with code {p.returncode}: "
+        + output[-2000:]
+    )
 
     base = "http://127.0.0.1:8000"
     for _ in range(35):
