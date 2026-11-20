@@ -15,6 +15,25 @@ from Bio.PDB import PDBParser, PDBIO, Select
 from Bio.PDB.Polypeptide import is_aa
 
 _BACKBONE = {"N", "CA", "C", "O"}
+# Canonical heavy side-chain atoms. Incomplete residues remain analyzable, but
+# their SASA and chemistry maps must be flagged as structurally uncertain.
+_SIDECHAIN_ATOMS = {
+    "ALA": {"CB"}, "ARG": {"CB", "CG", "CD", "NE", "CZ", "NH1", "NH2"},
+    "ASN": {"CB", "CG", "OD1", "ND2"}, "ASP": {"CB", "CG", "OD1", "OD2"},
+    "CYS": {"CB", "SG"}, "GLN": {"CB", "CG", "CD", "OE1", "NE2"},
+    "GLU": {"CB", "CG", "CD", "OE1", "OE2"}, "GLY": set(),
+    "HIS": {"CB", "CG", "ND1", "CD2", "CE1", "NE2"},
+    "ILE": {"CB", "CG1", "CG2", "CD1"},
+    "LEU": {"CB", "CG", "CD1", "CD2"},
+    "LYS": {"CB", "CG", "CD", "CE", "NZ"},
+    "MET": {"CB", "CG", "SD", "CE"},
+    "PHE": {"CB", "CG", "CD1", "CD2", "CE1", "CE2", "CZ"},
+    "PRO": {"CB", "CG", "CD"}, "SER": {"CB", "OG"},
+    "THR": {"CB", "OG1", "CG2"},
+    "TRP": {"CB", "CG", "CD1", "CD2", "NE1", "CE2", "CE3", "CZ2", "CZ3", "CH2"},
+    "TYR": {"CB", "CG", "CD1", "CD2", "CE1", "CE2", "CZ", "OH"},
+    "VAL": {"CB", "CG1", "CG2"},
+}
 
 
 def _parse_chain_selection(chain: str | None) -> set[str] | None:
@@ -144,6 +163,7 @@ def prepare_pdb_text(pdb_text: str, chain: str | None = None) -> Tuple[str, dict
     alternate_count = 0
     ambiguous_alternates: list[str] = []
     incomplete: list[str] = []
+    incomplete_sidechains: list[str] = []
     for residue in retained:
         choice, ambiguous = _choose_altloc(residue)
         choices[id(residue)] = choice
@@ -159,6 +179,10 @@ def prepare_pdb_text(pdb_text: str, chain: str | None = None) -> Tuple[str, dict
         missing = _BACKBONE - available
         if missing:
             incomplete.append(f"{_residue_label(residue)} missing {','.join(sorted(missing))}")
+        missing_sc = _SIDECHAIN_ATOMS.get(residue.resname.strip().upper(), set()) - available
+        if missing_sc:
+            incomplete_sidechains.append(
+                f"{_residue_label(residue)} missing {','.join(sorted(missing_sc))}")
 
     nonstandard = [
         _residue_label(r)
@@ -184,6 +208,10 @@ def prepare_pdb_text(pdb_text: str, chain: str | None = None) -> Tuple[str, dict
         warnings.append(
             f"{len(incomplete)} protein residues have incomplete backbone atoms; "
             "side-chain SASA may be biased by other missing atoms")
+    if incomplete_sidechains:
+        warnings.append(
+            f"{len(incomplete_sidechains)} protein residues have missing heavy "
+            "side-chain atoms; exposed chemistry and scRSA may be underestimated")
     if alternate_count:
         warnings.append(
             f"Selected one residue-level alternate conformation for "
@@ -203,6 +231,7 @@ def prepare_pdb_text(pdb_text: str, chain: str | None = None) -> Tuple[str, dict
         "alternate_residues_resolved": alternate_count,
         "ambiguous_alternate_residues": ambiguous_alternates,
         "incomplete_backbone_residues": incomplete,
+        "incomplete_sidechain_residues": incomplete_sidechains,
         "excluded_nonstandard_residues": nonstandard[:100],
         "n_excluded_nonstandard_residues": len(nonstandard),
         "explicit_hydrogens_removed": True,
