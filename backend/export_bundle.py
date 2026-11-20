@@ -18,6 +18,7 @@ from typing import Any, Mapping
 from xml.sax.saxutils import escape
 
 from PIL import Image as PILImage
+from ensemble import build_consensus
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
 from reportlab.lib import colors
@@ -522,6 +523,20 @@ def build_export_zip(payload: Mapping[str, Any]) -> bytes:
         raise ValueError("Export requires one to 20 previously analyzed PDB structures")
     consensus = payload.get("consensus")
     comparisons = payload.get("comparison") or []
+    # Rebuild consensus from the exact per-structure analyses and currently
+    # exported selected-map intersections. Never export a stale consensus
+    # when the user changes the chosen maps after the initial multi-PDB run.
+    if consensus is not None:
+        if len(structures) < 2:
+            raise ValueError("Consensus requires multiple structures")
+        consensus = build_consensus([
+            {
+                "name": str(item.get("name") or f"Structure_{i + 1}"),
+                "analysis": item["analysis"],
+                "combined_maps": item.get("combined_maps"),
+            }
+            for i, item in enumerate(structures)
+        ])
     master = BytesIO()
     used: set[str] = set()
     with zipfile.ZipFile(master, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=6) as z:
