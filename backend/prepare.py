@@ -67,17 +67,22 @@ def _choose_altloc(residue) -> tuple[str | None, bool]:
     Shared blank-altloc atoms are always retained. For genuinely ambiguous
     equal occupancies choose lexicographically but disclose the ambiguity.
     """
-    groups: dict[str, float] = defaultdict(float)
+    groups: dict[str, list[float]] = defaultdict(list)
     for atom in residue.get_unpacked_list():
         if not _heavy(atom):
             continue
         label = str(atom.get_altloc()).strip()
         if label:
             occupancy = atom.get_occupancy()
-            groups[label] += max(0.0, float(occupancy)) if occupancy is not None else 0.0
+            groups[label].append(
+                max(0.0, float(occupancy)) if occupancy is not None else 0.0)
     if not groups:
         return None, False
-    order = sorted(groups.items(), key=lambda pair: (-pair[1], pair[0]))
+    # Average, not sum: alternate conformations may list different numbers
+    # of atoms, so summing occupancies biases selection toward the larger one.
+    order = sorted(
+        ((label, sum(values) / len(values)) for label, values in groups.items()),
+        key=lambda pair: (-pair[1], pair[0]))
     ambiguous = len(order) > 1 and abs(order[0][1] - order[1][1]) < 1e-9
     return order[0][0], ambiguous
 
