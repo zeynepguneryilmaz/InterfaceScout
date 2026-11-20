@@ -110,6 +110,41 @@ class FirstModelHeavyAtomSelect(Select):
         return 1 if not altloc or altloc == choice else 0
 
 
+def _check_duplicate_coordinate_records(text: str) -> None:
+    """Refuse duplicate atom identities that permissive PDBParser may drop.
+
+    A/B altlocs are distinct atom identities. Multiple MODEL blocks are not
+    combined: only the first model contributes to canonical analysis.
+    """
+    explicit_models = any(line.startswith("MODEL ") for line in text.splitlines())
+    in_first = not explicit_models
+    model_started = False
+    seen: set[tuple[str, str, str, str, str]] = set()
+    for line in text.splitlines():
+        if line.startswith("MODEL "):
+            if model_started:
+                break
+            model_started = True
+            in_first = True
+            continue
+        if line.startswith("ENDMDL"):
+            break
+        if not in_first or not line.startswith(("ATOM  ", "HETATM")):
+            continue
+        # Include record class and residue name so polymer and hetero atoms
+        # cannot overwrite each other; duplicate first-model ATOM records
+        # with the same altloc are nevertheless an error.
+        identity = (
+            line[0:6], line[12:16], line[16:17], line[17:27],
+            line[21:22],
+        )
+        if identity in seen:
+            raise ValueError(
+                "Duplicate first-model atom record (atom/altloc/residue ID): "
+                + line[12:27].strip())
+        seen.add(identity)
+
+
 def prepare_pdb_text(pdb_text: str, chain: str | None = None) -> Tuple[str, dict]:
     """Validate first-model protein coordinates and normalize PDB input.
 
@@ -126,8 +161,13 @@ def prepare_pdb_text(pdb_text: str, chain: str | None = None) -> Tuple[str, dict
     if not any(line.startswith(("ATOM  ", "HETATM")) for line in pdb_text.splitlines()):
         raise ValueError("PDB input has no ATOM/HETATM coordinate records")
 
+    _check_duplicate_coordinate_records(pdb_text)
     parser = PDBParser(QUIET=True)
-    structure = parser.get_structure("interfacescout_input", StringIO(pdb_text))
+    try:
+        structure = parser.get_structure("interfacescout_input", StringIO(pdb_text))
+    except Exception as exc:
+        raise ValueError("Cannot parse PDB coordinates or residue identifiers: "
+                         + str(exc)) from exc
     models = list(structure.get_models())
     if not models:
         raise ValueError("No structural model found in PDB input")
@@ -191,7 +231,13 @@ def prepare_pdb_text(pdb_text: str, chain: str | None = None) -> Tuple[str, dict
     io = PDBIO()
     io.set_structure(structure)
     out = StringIO()
-    io.save(out, FirstModelHeavyAtomSelect(chain, choices))
+    try:
+        io.save(out, FirstModelHeavyAtomSelect(chain, choices))
+    except Exception as exc:
+        raise ValueError(
+            "Selected structure cannot be represented in the legacy PDB "
+            "format (check chain IDs, atom serials, or residue-number range): "
+            + str(exc)) from exc
     normalized = out.getvalue()
     if not any(line.startswith("ATOM  ") for line in normalized.splitlines()):
         raise ValueError("Prepared structure contains no standard protein ATOM records")
