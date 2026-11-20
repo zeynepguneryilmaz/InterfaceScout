@@ -154,11 +154,29 @@ def structure_tables(name: str, analysis: Mapping[str, Any],
     rows = []
     for r in analysis.get("residue_profiles", []):
         rows.append({"Structure": name, **r, "groups": ";".join(r.get("groups", []))})
-    maps, patches, members, interactions = [], [], [], []
+    maps, favorable_rows, patches, members, interactions = [], [], [], [], []
+    all_residues = list(analysis.get("residue_profiles", []))
     for key in analysis["map_order"]:
         m = analysis["maps"][key]
-        for r in m.get("residues", []):
-            maps.append({"Structure": name, "Map": key, **r})
+        favorable = {str(r["key"]): r for r in m.get("residues", [])}
+        for r in all_residues:
+            mapped = favorable.get(str(r["key"]))
+            maps.append({
+                "Structure": name, "Map": key,
+                "ResidueKey": r["key"], "ResidueName": r["res_name"],
+                "Chain": r["chain"], "ResidueNumber": r["res_seq"],
+                "InsertionCode": r.get("icode", ""),
+                "SidechainSASA_A2": r.get("sidechain_sasa"),
+                "scRSA_raw": r.get("scrsa_raw"),
+                "SurfaceExposed": bool(r.get("surface_exposed")),
+                "ChemistrySeed": bool(mapped is not None and float(mapped.get("local_score") or 0) > 0),
+                "LocalScore": float(mapped.get("local_score") or 0) if mapped else 0.0,
+                "Propensity": float(mapped.get("propensity") or 0) if mapped else 0.0,
+                # Undefined for non-favorable residues; do not conflate with a real zero.
+                "MultiscalePersistence": mapped.get("multiscale_persistence") if mapped else None,
+            })
+        favorable_rows.extend({"Structure": name, "Map": key, **r}
+                              for r in m.get("residues", []))
         for patch in m.get("patches", []):
             p = dict(patch)
             p.pop("center_residue", None)
@@ -193,6 +211,7 @@ def structure_tables(name: str, analysis: Mapping[str, Any],
         "Run_Metadata": metadata,
         "Protein_Residues": rows,
         "Map_Residue_Scores": maps,
+        "Map_Favorable_Residues": favorable_rows,
         "All_Patches": patches,
         "Patch_Members": members,
         "Map_Colocation": interactions,
