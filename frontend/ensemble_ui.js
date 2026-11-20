@@ -299,3 +299,11 @@ resetAnalysisForNewProtein=function(){
   const old=$("isSetResults");if(old)old.innerHTML="";
   ensembleRefresh();
 };
+
+// The original Analyze button is asynchronous. Enable complete ZIP export
+// only after the canonical single-structure analysis has completed.
+const ensembleOriginalAnalyze=analyze;
+analyze=async function(){
+  await ensembleOriginalAnalyze();
+  ensembleRefresh();
+};
