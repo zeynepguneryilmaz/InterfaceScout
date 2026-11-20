@@ -165,3 +165,44 @@ jobs:
           python-version: "3.12"
       - name: First-time virtual environment setup, launcher, and HTTP API smoke
         run: python tests/first_launch_smoke.py
+
+
+  publication-package:
+    name: strict-publication-bundle
+    needs: [test, browser-smoke, large-structure-stress, gapdh-tetramer-stress, first-install-smoke, full-numerical-reproduction]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          name: interfacescout-v1.1.0-numerical-${{ github.sha }}
+          path: validation-evidence/numerical
+      - uses: actions/download-artifact@v4
+        with:
+          name: interfacescout-v1.1.0-browser-Linux-${{ github.sha }}
+          path: validation-evidence/browser/Linux
+      - uses: actions/download-artifact@v4
+        with:
+          name: interfacescout-v1.1.0-browser-Windows-${{ github.sha }}
+          path: validation-evidence/browser/Windows
+      - uses: actions/download-artifact@v4
+        with:
+          name: interfacescout-v1.1.0-browser-macOS-${{ github.sha }}
+          path: validation-evidence/browser/macOS
+      - name: Check numerical/browser evidence and package tested source
+        run: python publication/build_package.py --evidence-dir validation-evidence --output dist/InterfaceScout_v1.1.0_rc1_publication_bundle.zip
+      - name: Keep the publication ZIP and its SHA-256 digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: InterfaceScout_v1.1.0_rc1_PUBLICATION_BUNDLE-${{ github.sha }}
+          path: |
+            dist/InterfaceScout_v1.1.0_rc1_publication_bundle.zip
+            dist/InterfaceScout_v1.1.0_rc1_publication_bundle.zip.sha256
+          if-no-files-found: error
+          retention-days: 90
