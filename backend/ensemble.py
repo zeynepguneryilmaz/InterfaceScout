@@ -193,12 +193,66 @@ def build_consensus(runs: list[dict[str, Any]]) -> dict[str, Any]:
                     "patch sets. It does not imply one spatially contiguous consensus patch.",
         }
 
+    combined_consensus = None
+    combinations = [run.get("combined_maps") for run in runs]
+    if all(combinations):
+        selections = [tuple(c.get("selected_maps", [])) for c in combinations]
+        if len(set(selections)) == 1 and len(selections[0]) >= 2:
+            exact_sets = [
+                set(c.get("exact_same_residue_overlap", [])) & allowed
+                for c in combinations
+            ]
+            spatial_sets = [
+                {
+                    str(key)
+                    for region in c.get("regions", [])
+                    if region.get("all_maps_colocated")
+                    for key in region.get("member_keys", [])
+                    if str(key) in allowed
+                }
+                for c in combinations
+            ]
+            rows = []
+            for key in sorted(allowed):
+                exact_n = sum(key in entry for entry in exact_sets)
+                spatial_n = sum(key in entry for entry in spatial_sets)
+                rows.append({
+                    "key": key,
+                    "res_name": profiles[0][key]["res_name"],
+                    "exact_intersection_n": exact_n,
+                    "exact_intersection_fraction": round(exact_n / n, 5),
+                    "co_location_n": spatial_n,
+                    "co_location_fraction": round(spatial_n / n, 5),
+                })
+            combined_consensus = {
+                "selected_maps": list(selections[0]),
+                "residues": rows,
+                "strict_exact_intersection": [
+                    row["key"] for row in rows if row["exact_intersection_n"] == n
+                ],
+                "majority_exact_intersection": [
+                    row["key"] for row in rows if row["exact_intersection_n"] >= (n // 2 + 1)
+                ],
+                "strict_spatial_colocation_members": [
+                    row["key"] for row in rows if row["co_location_n"] == n
+                ],
+                "majority_spatial_colocation_members": [
+                    row["key"] for row in rows if row["co_location_n"] >= (n // 2 + 1)
+                ],
+                "note": (
+                    "Co-localization frequency is descriptive membership in at least "
+                    "one same-patch multi-chemistry candidate per structure, "
+                    "NOT an experimentally observed interface or one persistent 3D region."
+                ),
+            }
+
     return {
         "n_structures": n,
         "structure_names": names,
         "n_matched_residues": len(allowed),
         "matching": mapping_details,
         "residues": residue_results,
+        "combined_consensus": combined_consensus,
         "maps": consensus_maps,
         "map_order": map_order,
         "method": (
