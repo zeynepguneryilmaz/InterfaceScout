@@ -170,7 +170,7 @@ def compare_results(a: Mapping[str, Any], b: Mapping[str, Any]) -> dict[str, Any
             "reference_to_comparison": a_to_b,
             "not_compared_a": sorted(set(left) - eligible),
             "not_compared_b": sorted(set(right) - set(b_to_a)),
-            "not_compared": sorted((set(left) | set(right)) - eligible),
+            "not_compared": sorted(set(left) - eligible) + sorted(set(right) - set(b_to_a)),
             "warnings": correspondence["warnings"],
         },
         "accessibility": {
