@@ -616,6 +616,15 @@ def build_export_zip(payload: Mapping[str, Any]) -> bytes:
             z.writestr(f"{base}/comparison_complete.json",
                        json.dumps(comparisons, ensure_ascii=False, indent=2))
 
+        warnings = {
+            "consensus_unavailable_reason": payload.get("consensus_unavailable_reason"),
+            "comparison_skipped": payload.get("comparison_skipped", []),
+        }
+        z.writestr("analysis_warnings.json",
+                   json.dumps(warnings, ensure_ascii=False, indent=2))
+        if warnings["comparison_skipped"]:
+            z.writestr("comparison/skipped_comparisons.csv",
+                       _csv_bytes(list(warnings["comparison_skipped"])))
         z.writestr("README_EXPORT.txt", (
             "InterfaceScout research data package\n"
             "Every original PDB has 11 full map PDFs, viewer screenshots, "
