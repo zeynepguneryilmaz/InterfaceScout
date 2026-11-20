@@ -244,13 +244,21 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          MERGE_SHA: ${{ github.sha }}
         shell: bash
         run: |
           set -euo pipefail
-          # Verify the tested PR merge tree and tagged branch head are identical.
-          git fetch origin "$MERGE_SHA" --depth=1
-          git diff --exit-code "$MERGE_SHA" "$HEAD_SHA" --
+          # Source jobs and the archival builder checked out the PR head SHA.
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          (cd dist && sha256sum -c InterfaceScout_v1.1.0_rc1_publication_bundle.zip.sha256)
+          python - "$HEAD_SHA" <<'PY'
+          import json,sys,zipfile
+          path="dist/InterfaceScout_v1.1.0_rc1_publication_bundle.zip"
+          with zipfile.ZipFile(path) as archive:
+              meta=json.loads(archive.read("PACKAGE_MANIFEST.json"))
+          assert meta["git_commit"]==sys.argv[1], "Archive was generated from another revision"
+          assert meta["numerical_verification"]["status"]=="PASS"
+          assert meta["browser_verification"]["status"]=="PASS"
+          PY
           if gh release view v1.1.0-rc1 >/dev/null 2>&1; then
             echo "v1.1.0-rc1 already exists; refusing to replace an archived version" >&2
             exit 1
