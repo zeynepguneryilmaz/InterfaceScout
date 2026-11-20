@@ -122,10 +122,19 @@ def match_residues(
                 # Only use raw coordinate proximity when the two inputs share
                 # nearly the same global frame.  After a rotation, a small
                 # difference between two large costs is not valid evidence.
-                if (with_coordinates[0]["cost"] < 2.0 and
-                        (len(with_coordinates) == 1 or
-                         with_coordinates[1]["cost"] - with_coordinates[0]["cost"] > 1e-3)):
-                    head = with_coordinates[0]
+                best = with_coordinates[0]
+                competing = [
+                    candidate for candidate in with_coordinates[1:]
+                    if candidate["left"] == best["left"] or
+                       candidate["right"] == best["right"]
+                ]
+                # Two noncompeting matches can both have zero cost; they should
+                # be accepted one by one.  Only alternative pairings of the
+                # SAME chain make a match ambiguous.
+                if (best["cost"] < 2.0 and
+                        (not competing or
+                         min(c["cost"] for c in competing) - best["cost"] > 1e-3)):
+                    head = best
                     head["assignment_basis"] = "coordinate_consistent"
                 else:
                     same = [c for c in tied if c["same_label"]]
