@@ -29,7 +29,7 @@ function ensembleSetup(){
   $("results").insertAdjacentHTML("afterend",'<section id="isSetResults" class="results" style="padding-top:0"></section>');
   ensembleRefresh();
 }
-function ensembleMessage(text,error=false){(error?$("isError"):$("isStatus")).textContent=text;}
+function ensembleMessage(text,error=false){(error?$("isError"):$("isStatus")).textContent=text;if(text&&typeof console!=="undefined")console.info("InterfaceScout export:",text);}
 function ensembleRefresh(){
   let root=$("isQueued");
   if(!root)return;

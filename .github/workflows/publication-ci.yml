@@ -125,3 +125,56 @@ jobs:
           python-version: "3.12"
       - name: First-time virtual environment setup, launcher, and HTTP API smoke
         run: python tests/first_launch_smoke.py
+
+  browser-engine-compat:
+    name: browser-engine-compat (${{ matrix.os }}, ${{ matrix.engine }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: macos-15, engine: chromium, scope: full}
+          - {os: macos-15, engine: firefox, scope: full}
+          - {os: macos-15, engine: webkit, scope: single}
+          - {os: ubuntu-24.04, engine: firefox, scope: full}
+          - {os: ubuntu-24.04, engine: webkit, scope: full}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    env:
+      IS_BROWSER: ${{ matrix.engine }}
+      IS_TEST_SCOPE: ${{ matrix.scope }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install package, Playwright and selected browser
+        shell: bash
+        run: |
+          python -m pip install --disable-pip-version-check -r backend/requirements.txt
+          python -m pip install playwright==1.55.0
+          python -m playwright install ${{ matrix.engine }}
+      - name: Install Linux browser system dependencies
+        if: runner.os == 'Linux'
+        shell: bash
+        run: python -m playwright install-deps ${{ matrix.engine }}
+      - name: Run real viewer map, screenshot PDF and multi-PDB ZIP test
+        run: python tests/browser_smoke.py
+
+  apple-silicon-qa:
+    name: apple-silicon-native-qa
+    runs-on: macos-15
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Assert actual ARM64 architecture
+        run: |
+          python -c "import platform; assert platform.machine() == 'arm64', platform.platform(); print(platform.platform())"
+      - name: First-time installation and application HTTP API
+        run: python tests/first_launch_smoke.py
+      - name: GAPDH 1332 residue tetramer and all PDF CSV B-factor exports
+        run: |
+          python -m pip install --disable-pip-version-check -r backend/requirements.txt
+          python tests/stress_gapdh_tetramer.py

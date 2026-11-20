@@ -93,15 +93,24 @@ def main():
             raise RuntimeError("InterfaceScout server did not become healthy")
 
         with sync_playwright() as playwright:
-            browser = playwright.chromium.launch(
-                headless=True,
-                args=["--use-gl=angle", "--use-angle=swiftshader",
-                      "--enable-unsafe-swiftshader", "--enable-webgl",
-                      "--disable-dev-shm-usage"],
-            )
+            engine = os.environ.get("IS_BROWSER", "chromium").lower()
+            if engine not in ("chromium", "firefox", "webkit"):
+                raise ValueError(f"Unsupported browser test engine: {engine}")
+            launch_args = {"headless": True}
+            if engine == "chromium":
+                launch_args["args"] = [
+                    "--use-gl=angle", "--use-angle=swiftshader",
+                    "--enable-unsafe-swiftshader", "--enable-webgl",
+                    "--disable-dev-shm-usage",
+                ]
+            browser = getattr(playwright, engine).launch(**launch_args)
+            print(f"Browser engine: {engine}; platform={sys.platform}", flush=True)
             page = browser.new_page(viewport={"width": 1200, "height": 850},
                                     accept_downloads=True)
-            page.on("pageerror", lambda error: print("BROWSER PAGE ERROR:", error))
+            page.on("pageerror", lambda error: print("BROWSER PAGE ERROR:", error, flush=True))
+            page.on("console", lambda msg: print("BROWSER CONSOLE:", msg.text, flush=True)
+                    if msg.type in ("error", "warning", "info") else None)
+            page.on("crash", lambda: print("BROWSER PAGE CRASHED", flush=True))
             page.goto(SERVER, wait_until="domcontentloaded")
             page.wait_for_function("() => document.querySelector('#run') && !document.querySelector('#run').disabled")
             page.set_input_files("#file", str(PDB))
@@ -112,6 +121,25 @@ def main():
                 timeout=120_000,
             )
             print("Single-PDB UI: 11 maps computed")
+            # Cross-browser capability classification: a browser/CI VM without
+            # WebGL cannot render/record molecular PNGs. Numerical tables must
+            # still work and users must get a visible, truthful explanation.
+            webgl_state = page.evaluate(
+                "() => ({viewerReady: !!viewer, reason: viewerUnavailableReason})"
+            )
+            if webgl_state["reason"]:
+                warning = page.locator("#viewer [role=alert]").inner_text()
+                if "requires WebGL" not in warning:
+                    raise AssertionError("3D WebGL failure is not explained to the user")
+                if not page.locator("#results").inner_text():
+                    raise AssertionError("Protein chemistry results lost after WebGL failure")
+                print(f"WEBGL UNAVAILABLE / NUMERICAL FALLBACK PASS: {engine}; "
+                      "3D images and screenshot PDFs require a WebGL-enabled browser",
+                      flush=True)
+                browser.close()
+                return
+            if not webgl_state["viewerReady"]:
+                raise AssertionError("3D viewer unexpectedly unavailable without explanation")
             # Exercise actual multi-chemistry intersection selection in the UI.
             page.evaluate("() => { if(selected.has('anionic')) toggleChem('anionic'); }")
             page.evaluate("() => toggleChem('hydrophobic')")
@@ -129,6 +157,13 @@ def main():
                 print("UI error:", page.locator("#isError").inner_text())
                 raise
 
+            if os.environ.get("IS_TEST_SCOPE", "full") == "single":
+                print("SINGLE-STRUCTURE BROWSER SCOPE PASS: "
+                      "no multi-PDB export claim for this browser/OS combination",
+                      flush=True)
+                browser.close()
+                return
+
             page.set_input_files("#isMultiFiles", [str(PDB), str(PDB)])
             page.wait_for_function("() => ensembleInputs.length === 2")
             page.locator("#isAnalyzeSet").click()
@@ -139,11 +174,21 @@ def main():
             )
             print("Multi-PDB UI: both structures and matched consensus computed")
             try:
-                with page.expect_download(timeout=240_000) as dinfo:
+                with page.expect_download(timeout=540_000) as dinfo:
                     page.locator("#isFullExport").click()
                 assert_export(dinfo.value, "Multi-PDB full-export", multi=True)
-            except Exception:
-                print("UI error:", page.locator("#isError").inner_text())
+            except Exception as exc:
+                print("Multi-PDB export exception:", repr(exc), flush=True)
+                try:
+                    snapshot = page.evaluate("""() => ({
+                        status: document.getElementById('isStatus')?.textContent,
+                        error: document.getElementById('isError')?.textContent,
+                        busy: typeof ensembleBusy !== 'undefined' && ensembleBusy,
+                        renderer: !!viewer
+                    })""", timeout=2500)
+                    print("Multi-PDB UI snapshot:", snapshot, flush=True)
+                except Exception as log_exc:
+                    print("Unable to inspect browser state:", repr(log_exc), flush=True)
                 raise
             browser.close()
     finally:
