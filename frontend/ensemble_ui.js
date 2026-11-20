@@ -1,5 +1,5 @@
 /* Additive multi-PDB/consensus/complete-export UI. All original controls remain. */
-let ensembleInputs=[], ensembleResult=null, ensembleActiveIndex=0, ensembleBusy=false;
+let ensembleInputs=[], ensembleAnalyzedInputs=[], ensembleResult=null, ensembleActiveIndex=0, ensembleBusy=false;
 let ensembleConsensusKey=null, ensembleSavedSnapshot=null;
 
 function ensembleSetup(){
@@ -97,6 +97,7 @@ async function ensembleAnalyzeSet(){
     const obj=await res.json();
     if(!res.ok)throw Error(obj.detail||"Unable to analyze the structure set");
     ensembleResult=obj;
+    ensembleAnalyzedInputs=ensembleInputs.map(x=>({...x}));
     ensembleActiveIndex=0;
     ensembleActivate(0);
     ensembleMessage("Analyzed "+obj.n_structures+" PDB structures; all 11 maps retained for every structure.");
@@ -107,8 +108,8 @@ function ensembleActivate(index){
   if(!ensembleResult||!ensembleResult.structures[index])return;
   const x=ensembleResult.structures[index];
   ensembleActiveIndex=index;ensembleConsensusKey=null;
-  pdbText=ensembleInputs[index].pdb_text;structureName=x.name;data=x.analysis;
-  $("chain").value=ensembleInputs[index].chain||"";
+  pdbText=ensembleAnalyzedInputs[index].pdb_text;structureName=x.name;data=x.analysis;
+  $("chain").value=ensembleAnalyzedInputs[index].chain||"";
   $("excelBtn").disabled=false;$("pdbBtn").disabled=false;
   activeType="chemistry";activeMap=data.initial_map;focusedPatchRank=null;
   decisionCompare=null;decisionCombo=x.combined_maps||null;decisionComboError="";
@@ -225,7 +226,7 @@ async function ensembleExportAll(){
       }
       exported.push({
         name:source[i].name, analysis:data,
-        pdb_text:ensembleResult?ensembleInputs[i].pdb_text:pdbText,
+        pdb_text:ensembleResult?ensembleAnalyzedInputs[i].pdb_text:pdbText,
         screenshots, combined_maps:combined,combined_screenshot,
       });
     }
