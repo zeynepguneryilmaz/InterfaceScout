@@ -187,6 +187,9 @@ def prepare_pdb_text(pdb_text: str, chain: str | None = None) -> Tuple[str, dict
     retained = [r for c in active for r in c if _is_standard_protein(r)]
     if not retained:
         raise ValueError("Selected chain(s) contain no standard protein residues")
+    disordered_residue_identities = [
+        _residue_label(r) for r in retained if int(r.is_disordered()) == 2
+    ]
     labels = [_residue_label(r) for r in retained]
     if len(labels) != len(set(labels)):
         raise ValueError("Duplicate protein residue chain/sequence/insertion identifiers")
@@ -258,6 +261,11 @@ def prepare_pdb_text(pdb_text: str, chain: str | None = None) -> Tuple[str, dict
         warnings.append(
             f"{len(incomplete_sidechains)} protein residues have missing heavy "
             "side-chain atoms; exposed chemistry and scRSA may be underestimated")
+    if disordered_residue_identities:
+        warnings.append(
+            f"{len(disordered_residue_identities)} residue positions have alternate "
+            "amino-acid identities (microheterogeneity); Biopython's selected "
+            "identity is analyzed, not a chemically averaged residue")
     if alternate_count:
         warnings.append(
             f"Selected one residue-level alternate conformation for "
@@ -276,6 +284,7 @@ def prepare_pdb_text(pdb_text: str, chain: str | None = None) -> Tuple[str, dict
         "protein_residues_retained": len(retained),
         "alternate_residues_resolved": alternate_count,
         "ambiguous_alternate_residues": ambiguous_alternates,
+        "disordered_residue_identities": disordered_residue_identities,
         "incomplete_backbone_residues": incomplete,
         "incomplete_sidechain_residues": incomplete_sidechains,
         "excluded_nonstandard_residues": nonstandard[:100],
