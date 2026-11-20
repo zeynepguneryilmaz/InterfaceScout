@@ -40,7 +40,7 @@ class CompareRequest(BaseModel):
 class CombineRequest(BaseModel):
     analysis: dict
     selected_maps: list[str] = Field(min_length=2, max_length=11)
-    max_regions: int = Field(25, ge=1, le=100)
+    max_regions: Optional[int] = Field(25, ge=1, le=10000)
 
 
 
