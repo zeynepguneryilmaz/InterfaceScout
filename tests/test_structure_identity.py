@@ -127,6 +127,15 @@ class StructureIdentityRegression(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "C-alpha"):
             prepare_pdb_text(truncated)
 
+    def test_duplicate_atom_record_is_rejected(self):
+        first_atom = next(
+            l for l in self.raw.splitlines() if l.startswith("ATOM  "))
+        lines = self.raw.splitlines()
+        index = lines.index(first_atom)
+        lines.insert(index + 1, first_atom)
+        with self.assertRaisesRegex(ValueError, "Duplicate first-model atom"):
+            prepare_pdb_text("\n".join(lines) + "\n", chain="A")
+
     def test_warns_on_incomplete_sidechain(self):
         first_sidechain = next(
             l for l in self.raw.splitlines()
