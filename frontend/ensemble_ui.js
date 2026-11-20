@@ -9,7 +9,7 @@ function ensembleSetup(){
   const place=$("run").closest("aside")||document.querySelector("aside");
   place.insertAdjacentHTML("beforeend",
     '<div class="section"><h3>Multi-PDB analysis (no trajectory)</h3>'+
-    '<div class="note">One or several PDB structures. Each structure retains all 11 original maps. For multiple matching structures, compare and report descriptive residue consensus.</div>'+
+    '<div class="note">Each structure retains 11 original maps. Residue positions are sequence-aligned for comparison. Set chain selection separately per structure; leave blank to include all protein chains.</div>'+
     '<div class="field" style="margin-top:9px"><label>Upload one or several PDB files</label>'+
     '<input id="isMultiFiles" class="input" type="file" accept=".pdb" multiple onchange="ensembleLoadFiles(this.files)"></div>'+
     '<div class="is-inline" style="margin:7px 0">'+
@@ -34,7 +34,11 @@ function ensembleRefresh(){
   let root=$("isQueued");
   if(!root)return;
   root.innerHTML=ensembleInputs.length?
-    ensembleInputs.map((x,i)=>'<div class="is-set">'+esc(x.name)+' · '+esc(x.chain||"all chains")+
+    ensembleInputs.map((x,i)=>'<div class="is-set">'+esc(x.name)+
+      ' <label style="margin-left:8px">Chain(s): '+
+      '<input class="input" style="display:inline-block;width:82px" value="'+esc(x.chain||"")+
+      '" placeholder="All" onchange="ensembleSetChain('+i+',this.value)" '+
+      'aria-label="Chain IDs for '+esc(x.name)+'"></label>'+
       ' <button class="workAction" onclick="ensembleRemove('+i+')">Remove</button></div>').join("")+
       '<p>'+ensembleInputs.length+' PDB structures queued (maximum 20).</p>':
     "No structures added yet. You may export a single PDB from the existing analysis.";
@@ -59,7 +63,7 @@ async function ensembleLoadFiles(filelist){
   try{
     for(const f of Array.from(filelist||[])){
       if(!/\.pdb$/i.test(f.name))throw Error("Only PDB files are supported for this release: "+f.name);
-      ensembleAddInput({name:f.name,pdb_text:await f.text(),chain:$("chain").value.trim()||null});
+      ensembleAddInput({name:f.name,pdb_text:await f.text(),chain:null});
     }
     ensembleRefresh();
   }catch(e){ensembleMessage(e.message,true)}
@@ -78,13 +82,19 @@ async function ensembleFetchId(){
     ensembleMessage("Retrieving "+id+"...");
     const res=await fetch("https://files.rcsb.org/download/"+id+".pdb");
     if(!res.ok)throw Error("Unable to retrieve PDB "+id);
-    ensembleAddInput({name:id,pdb_text:await res.text(),chain:$("chain").value.trim()||null});
+    ensembleAddInput({name:id,pdb_text:await res.text(),chain:null});
     ensembleRefresh();ensembleMessage("Added "+id);
     ensembleMessage("",true);
   }catch(e){ensembleMessage(e.message,true)}
 }
-function ensembleRemove(i){ensembleInputs.splice(i,1);ensembleRefresh()}
-function ensembleClearQueue(){ensembleInputs=[];ensembleRefresh()}
+function ensembleSetChain(i,value){
+  if(!ensembleInputs[i])return;
+  ensembleInputs[i].chain=String(value||"").trim()||null;
+  ensembleResult=null;ensembleAnalyzedInputs=[];ensembleConsensusKey=null;
+  ensembleRefresh();
+}
+function ensembleRemove(i){ensembleInputs.splice(i,1);ensembleResult=null;ensembleRefresh()}
+function ensembleClearQueue(){ensembleInputs=[];ensembleResult=null;ensembleRefresh()}
 async function ensembleAnalyzeSet(){
   if(ensembleBusy||!ensembleInputs.length)return;
   ensembleBusy=true;ensembleRefresh();ensembleMessage("",true);
