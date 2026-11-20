@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 from interface_engine import PUBLIC_MAP_SPECS, analyze_all_maps
 from model_settings import MODEL_VERSION
 from research_workflows import list_research_goals, compare_results, combine_maps
-from ensemble import analyze_structure_set
+from ensemble import analyze_structure_set, build_consensus
 from export_bundle import build_export_zip
 
 BACKEND = Path(__file__).resolve().parent
@@ -57,6 +57,32 @@ class StructureSetRequest(BaseModel):
     ionic_mM: float = Field(150.0, ge=0.0)
     temp_K: float = Field(298.0, gt=0.0)
     combined_maps: Optional[list[str]] = None
+
+
+class DeriveConsensusRequest(BaseModel):
+    structures: list[dict] = Field(..., min_length=2, max_length=20)
+    selected_maps: list[str] = Field(default_factory=list, max_length=11)
+
+
+@app.post("/derive-consensus")
+def derive_consensus(req: DeriveConsensusRequest):
+    """Recompute descriptive consensus from existing analyses (no re-analysis)."""
+    try:
+        selected = list(dict.fromkeys(req.selected_maps))
+        if len(selected) == 1:
+            raise ValueError("Select either zero or at least two chemistry maps")
+        runs = []
+        for item in req.structures:
+            analysis = item["analysis"]
+            runs.append({
+                "name": item["name"],
+                "analysis": analysis,
+                "combined_maps": combine_maps(analysis, selected, max_regions=None)
+                if selected else None,
+            })
+        return build_consensus(runs)
+    except (KeyError, ValueError, TypeError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 class ExportRequest(BaseModel):
