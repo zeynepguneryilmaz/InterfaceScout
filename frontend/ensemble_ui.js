@@ -126,6 +126,11 @@ function ensembleShowSetResults(){
     '<p>Each PDB has all 11 canonical maps and the original Excel / B-factor exports.</p>'+
     '<div class="is-tabs">'+buttons+'</div></div>';
   const c=ensembleResult.consensus;
+  if(!c && ensembleResult.consensus_unavailable_reason){
+    html+='<div class="is-set"><h3 style="font-size:14px">Consensus not available</h3>'+
+      '<p>'+esc(ensembleResult.consensus_unavailable_reason)+
+      '</p><p>Each input PDB remains independently analyzed; no artificial consensus was calculated.</p></div>';
+  }
   if(c){
     html+='<div class="is-set"><h3 style="font-size:14px">Structure consensus</h3>'+
       '<p>Only matched residue identities are compared. 100% means present in all supplied structures; this is not binding probability.</p>'+
@@ -150,6 +155,12 @@ function ensembleShowSetResults(){
         '</tbody></table></details>';
     }
     html+='</div>';
+  }
+  if((ensembleResult.comparison_skipped||[]).length){
+    html+='<div class="is-set"><h3 style="font-size:14px">Unmatched structure comparisons</h3>'+
+      ensembleResult.comparison_skipped.map(function(x){
+        return '<p>'+esc(x.structure_a)+' / '+esc(x.structure_b)+': '+esc(x.reason)+'</p>';
+      }).join("")+'</div>';
   }
   root.innerHTML=html;
 }
@@ -245,7 +256,9 @@ async function ensembleExportAll(){
     ensembleMessage("Assembling PDF reports, every CSV, Excel, images and B-factor PDBs...");
     const result=await fetch("/export-package",{method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({structures:exported,consensus,comparison,consensus_screenshots})});
+      body:JSON.stringify({structures:exported,consensus,comparison,consensus_screenshots,
+        comparison_skipped:ensembleResult?.comparison_skipped||[],
+        consensus_unavailable_reason:ensembleResult?.consensus_unavailable_reason||null})});
     if(!result.ok){
       let details;
       try{details=(await result.json()).detail}catch(e){details="Export failed"}
@@ -276,3 +289,21 @@ async function ensembleExportAll(){
   }
 }
 ensembleSetup();
+
+// Changing the original single-PDB input must invalidate the old multi-PDB result;
+// otherwise the 'complete export' button can silently export stale structures.
+const ensembleOriginalResetAnalysis=resetAnalysisForNewProtein;
+resetAnalysisForNewProtein=function(){
+  ensembleResult=null;ensembleAnalyzedInputs=[];ensembleConsensusKey=null;
+  ensembleOriginalResetAnalysis();
+  const old=$("isSetResults");if(old)old.innerHTML="";
+  ensembleRefresh();
+};
+
+// The original Analyze button is asynchronous. Enable complete ZIP export
+// only after the canonical single-structure analysis has completed.
+const ensembleOriginalAnalyze=analyze;
+analyze=async function(){
+  await ensembleOriginalAnalyze();
+  ensembleRefresh();
+};

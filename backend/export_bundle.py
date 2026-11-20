@@ -10,6 +10,7 @@ import base64
 import csv
 from io import BytesIO, StringIO
 import json
+import hashlib
 import math
 import re
 import zipfile
@@ -154,11 +155,29 @@ def structure_tables(name: str, analysis: Mapping[str, Any],
     rows = []
     for r in analysis.get("residue_profiles", []):
         rows.append({"Structure": name, **r, "groups": ";".join(r.get("groups", []))})
-    maps, patches, members, interactions = [], [], [], []
+    maps, favorable_rows, patches, members, interactions = [], [], [], [], []
+    all_residues = list(analysis.get("residue_profiles", []))
     for key in analysis["map_order"]:
         m = analysis["maps"][key]
-        for r in m.get("residues", []):
-            maps.append({"Structure": name, "Map": key, **r})
+        favorable = {str(r["key"]): r for r in m.get("residues", [])}
+        for r in all_residues:
+            mapped = favorable.get(str(r["key"]))
+            maps.append({
+                "Structure": name, "Map": key,
+                "ResidueKey": r["key"], "ResidueName": r["res_name"],
+                "Chain": r["chain"], "ResidueNumber": r["res_seq"],
+                "InsertionCode": r.get("icode", ""),
+                "SidechainSASA_A2": r.get("sidechain_sasa"),
+                "scRSA_raw": r.get("scrsa_raw"),
+                "SurfaceExposed": bool(r.get("surface_exposed")),
+                "ChemistrySeed": bool(mapped is not None and float(mapped.get("local_score") or 0) > 0),
+                "LocalScore": float(mapped.get("local_score") or 0) if mapped else 0.0,
+                "Propensity": float(mapped.get("propensity") or 0) if mapped else 0.0,
+                # Undefined for non-favorable residues; do not conflate with a real zero.
+                "MultiscalePersistence": mapped.get("multiscale_persistence") if mapped else None,
+            })
+        favorable_rows.extend({"Structure": name, "Map": key, **r}
+                              for r in m.get("residues", []))
         for patch in m.get("patches", []):
             p = dict(patch)
             p.pop("center_residue", None)
@@ -193,6 +212,7 @@ def structure_tables(name: str, analysis: Mapping[str, Any],
         "Run_Metadata": metadata,
         "Protein_Residues": rows,
         "Map_Residue_Scores": maps,
+        "Map_Favorable_Residues": favorable_rows,
         "All_Patches": patches,
         "Patch_Members": members,
         "Map_Colocation": interactions,
@@ -519,6 +539,12 @@ def build_export_zip(payload: Mapping[str, Any]) -> bytes:
             pdb_text = item.get("pdb_text")
             if not isinstance(pdb_text, str) or not pdb_text:
                 raise ValueError(f"Missing original PDB for {name}")
+            recorded = analysis.get("input", {}).get("source_pdb_sha256")
+            if recorded and hashlib.sha256(pdb_text.encode("utf-8")).hexdigest() != recorded:
+                raise ValueError(
+                    f"{name}: original PDB no longer matches the analyzed input; "
+                    "run the analysis again before exporting results"
+                )
             base = f"structures/{safe}"
             z.writestr(f"{base}/original.pdb", pdb_text)
             z.writestr(f"{base}/analysis_complete.json",
@@ -597,6 +623,15 @@ def build_export_zip(payload: Mapping[str, Any]) -> bytes:
             z.writestr(f"{base}/comparison_complete.json",
                        json.dumps(comparisons, ensure_ascii=False, indent=2))
 
+        warnings = {
+            "consensus_unavailable_reason": payload.get("consensus_unavailable_reason"),
+            "comparison_skipped": payload.get("comparison_skipped", []),
+        }
+        z.writestr("analysis_warnings.json",
+                   json.dumps(warnings, ensure_ascii=False, indent=2))
+        if warnings["comparison_skipped"]:
+            z.writestr("comparison/skipped_comparisons.csv",
+                       _csv_bytes(list(warnings["comparison_skipped"])))
         z.writestr("README_EXPORT.txt", (
             "InterfaceScout research data package\n"
             "Every original PDB has 11 full map PDFs, viewer screenshots, "

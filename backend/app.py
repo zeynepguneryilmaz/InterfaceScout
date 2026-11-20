@@ -64,6 +64,8 @@ class ExportRequest(BaseModel):
     consensus: Optional[dict] = None
     comparison: list[dict] = Field(default_factory=list)
     consensus_screenshots: dict[str, str] = Field(default_factory=dict)
+    comparison_skipped: list[dict] = Field(default_factory=list)
+    consensus_unavailable_reason: Optional[str] = None
 
 
 @app.post("/structure-set")
