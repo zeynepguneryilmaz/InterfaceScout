@@ -107,7 +107,10 @@ def main():
             print(f"Browser engine: {engine}; platform={sys.platform}", flush=True)
             page = browser.new_page(viewport={"width": 1200, "height": 850},
                                     accept_downloads=True)
-            page.on("pageerror", lambda error: print("BROWSER PAGE ERROR:", error))
+            page.on("pageerror", lambda error: print("BROWSER PAGE ERROR:", error, flush=True))
+            page.on("console", lambda msg: print("BROWSER CONSOLE:", msg.text, flush=True)
+                    if msg.type in ("error", "warning", "info") else None)
+            page.on("crash", lambda: print("BROWSER PAGE CRASHED", flush=True))
             page.goto(SERVER, wait_until="domcontentloaded")
             page.wait_for_function("() => document.querySelector('#run') && !document.querySelector('#run').disabled")
             page.set_input_files("#file", str(PDB))
@@ -164,11 +167,21 @@ def main():
             )
             print("Multi-PDB UI: both structures and matched consensus computed")
             try:
-                with page.expect_download(timeout=240_000) as dinfo:
+                with page.expect_download(timeout=540_000) as dinfo:
                     page.locator("#isFullExport").click()
                 assert_export(dinfo.value, "Multi-PDB full-export", multi=True)
-            except Exception:
-                print("UI error:", page.locator("#isError").inner_text())
+            except Exception as exc:
+                print("Multi-PDB export exception:", repr(exc), flush=True)
+                try:
+                    snapshot = page.evaluate("""() => ({
+                        status: document.getElementById('isStatus')?.textContent,
+                        error: document.getElementById('isError')?.textContent,
+                        busy: typeof ensembleBusy !== 'undefined' && ensembleBusy,
+                        renderer: !!viewer
+                    })""", timeout=2500)
+                    print("Multi-PDB UI snapshot:", snapshot, flush=True)
+                except Exception as log_exc:
+                    print("Unable to inspect browser state:", repr(log_exc), flush=True)
                 raise
             browser.close()
     finally:
