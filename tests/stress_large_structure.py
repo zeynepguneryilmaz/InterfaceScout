@@ -24,7 +24,37 @@ sys.path.insert(0, str(ROOT / "backend"))
 from interface_engine import analyze_all_maps
 from export_bundle import MAP_NAMES, build_export_zip
 
-PDB_FILE = ROOT / "examples" / "1JNJ" / "InterfaceScout_1JNJ_anionic_Bfactor.pdb"
+CANDIDATES = [
+    ROOT / "examples" / "4F5S" / "InterfaceScout_4F5S_anionic_Bfactor.pdb",
+    ROOT / "examples" / "1SUV" / "InterfaceScout_1SUV_hydrophobic_Bfactor.pdb",
+    ROOT / "examples" / "1TGU" / "InterfaceScout_1TGU_hydrophobic_Bfactor.pdb",
+    ROOT / "examples" / "3ECA" / "InterfaceScout_3ECA_cationic_Bfactor.pdb",
+    ROOT / "examples" / "1JNJ" / "InterfaceScout_1JNJ_anionic_Bfactor.pdb",
+]
+
+
+def first_model_residue_count(pdb: str) -> int:
+    rows = set()
+    for line in pdb.splitlines():
+        if line.startswith("ENDMDL"):
+            break
+        if line.startswith("ATOM  "):
+            rows.add((line[21:22], line[22:26], line[26:27]))
+    return len(rows)
+
+
+def choose_large_first_model() -> tuple[Path, str, int]:
+    options = []
+    for path in CANDIDATES:
+        if path.is_file():
+            pdb = path.read_text("utf-8")
+            options.append((path, pdb, first_model_residue_count(pdb)))
+    assert options, "No example PDB available for stress test"
+    path, pdb, n = max(options, key=lambda p: p[2])
+    assert n > 300, f"No stress fixture with >300 first-model residues; counts: " + (
+        ", ".join(f"{p.name}: {c}" for p, _, c in options)
+    )
+    return path, pdb, n
 
 
 def png_uri(seed: int) -> str:
@@ -39,16 +69,17 @@ def png_uri(seed: int) -> str:
 
 
 def main():
-    assert PDB_FILE.is_file(), f"Missing larger example PDB: {PDB_FILE}"
-    pdb = PDB_FILE.read_text("utf-8")
-    assert len(pdb) > 1_000_000, "Stress fixture is unexpectedly small"
+    fixture, pdb, model_residues = choose_large_first_model()
+    print(f"Selected {fixture.name}, first model has {model_residues} residues "
+          f"({len(pdb):,} file bytes)", flush=True)
+    assert len(pdb) > 500_000, "Selected stress fixture is too small"
 
     started = perf_counter()
     analysis = analyze_all_maps(pdb_text=pdb, pH=7.4)
     duration_analyze = perf_counter() - started
     assert analysis["n_maps"] == 11
     n = len(analysis["residue_profiles"])
-    assert n > 300, f"Unexpectedly few protein residues: {n}"
+    assert n > 300, f"Unexpectedly few standard residues after preparation: {n}"
     assert len(analysis["map_order"]) == 11
     assert analysis["input"]["source_pdb_sha256"]
     print(f"Large PDB {len(pdb):,} bytes, {n} residues; 11 maps: {duration_analyze:.1f} sec",
@@ -57,7 +88,7 @@ def main():
     started = perf_counter()
     blob = build_export_zip({
         "structures": [{
-            "name": "large_1JNJ",
+            "name": "large_protein",
             "analysis": analysis,
             "pdb_text": pdb,
             "screenshots": {
@@ -74,7 +105,7 @@ def main():
     with zipfile.ZipFile(BytesIO(blob)) as z:
         assert z.testzip() is None
         names = z.namelist()
-        base = "structures/large_1JNJ/"
+        base = "structures/large_protein/"
         assert sum(f.startswith(base + "pdf_maps/") and f.endswith(".pdf")
                    for f in names) == 11
         assert sum(f.startswith(base + "screenshots/") and f.endswith(".png")
