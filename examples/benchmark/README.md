@@ -1,15 +1,13 @@
-# Literature-localization benchmark
+# Archived literature-localization benchmark
 
-`results/benchmark_case_results.csv` is a **verbatim copy** of `validation/benchmark_case_results.csv` in the same repository revision.
+The results are maintained only once, at **[`validation/benchmark_case_results.csv`](../../validation/benchmark_case_results.csv)**. Experimental source provenance and regions are in **[`validation/benchmark_manifest.json`](../../validation/benchmark_manifest.json)**.
 
-It contains 7 primary and 2 secondary cases. The accompanying experiment-level provenance and experimental localization annotations remain in [the canonical manifest](../../validation/benchmark_manifest.json).
+There are 7 primary and 2 secondary cases. These benchmark records are separate from the descriptive 44-condition literature coverage and the existing 16-PDB archived examples.
 
-To verify the frozen parameter-selection and aggregate checks from the repository root:
+Run publication-integrity checks from the repository root:
 
 ```bash
 python validation/verify_publication.py
 ```
 
-The two secondary cases reflect the difficulty of applying a static native-state protein model to adsorption-induced structural changes. The listed values must not be interpreted as binding energies, adsorption rates or atomistic docking accuracy.
-
-For other results, use the built-in application **Complete export** and archive the exact files with the associated input PDB and version information.
+The secondary cases illustrate limitations of applying a static native-state fold to adsorption-associated structural changes. Do not interpret these values as adsorption free energies or predicted docking orientations.
