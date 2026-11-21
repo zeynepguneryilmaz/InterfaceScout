@@ -6,6 +6,16 @@ InterfaceScout is an open-source **physicochemical protein-surface mapping and c
 
 The program prepares the selected protein structure once and calculates 11 canonical surface-chemistry maps. Candidate surface patches are ranked using chemistry support, side-chain accessibility, patch coherence, and coarse orientation coherence without material-specific fitted weights. The ranked candidates identify structural regions worth examining, not observed adsorption sites.
 
+## Quick start — three clear workflows
+
+1. **Single protein:** Load a local PDB file or retrieve a PDB ID, adjust pH if relevant and select **Analyze**. Inspect any of the 11 chemistry maps independently or select several to investigate exact residue overlap and co-localization.
+2. **Compare two:** Analyze the first structure, select a second PDB (file or ID), then choose **Compare 11 maps**. Both structures are independently analyzed across all 11 maps. Matched-residue comparisons and consensus are provided when the structures permit valid matching.
+3. **Multi-PDB:** Upload or queue a set of PDB structures, then select **Analyze selected PDBs**. Explore each structure, matched-residue comparisons and descriptive consensus where applicable.
+
+**One complete download:** **Download complete results · ZIP** always includes all **11 maps for each analyzed structure**, regardless of the individual map or combination selected on screen. For each structure it includes 11 per-map PDFs, 11 genuine browser-captured 3D PNG screenshots embedded in the PDF reports, a complete Excel workbook covering all channels, per-residue/per-patch CSVs, the original PDB, 11 canonical B-factor PDBs, Top-1/3/5 membership B-factor PDBs and detailed JSON. For Compare and Multi-PDB, each protein gets its own complete export directory, with pairwise/consensus outputs when defined. Choosing multiple channels only adds overlap/co-localization content; it never filters out any of the 11 canonical channels.
+
+Advanced solution metadata and individual-file downloads are available from expandable sections. pH affects the current computation; ionic strength and temperature are recorded as metadata only.
+
 ## Research-first workflows (new, opt-in interface)
 
 The **Research question** selector offers five practical starting workflows: exploring an unfamiliar

@@ -179,11 +179,21 @@ async function decisionCompareStructures(){
       second=await r.text();decisionSecondName=id;
     }
     const env={pH:Number($("pH").value),ionic_mM:Number($("ionic").value),temp_K:Number($("temp").value)};
-    const request={structure_a:Object.assign({pdb_text:pdbText,chain:$("chain").value.trim()||null},env),
-      structure_b:Object.assign({pdb_text:second,chain:$("secondChain").value.trim()||null},env)};
-    const r=await fetch("/compare",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(request)});
+    // Compare mode uses the same full 11-map structure-set analysis as multi-PDB.
+    // This enables complete export for BOTH structures, not just the active one.
+    const inputs=[
+      {name:String(structureName||"first"),pdb_text:pdbText,chain:$("chain").value.trim()||null},
+      {name:String(decisionSecondName||id||"second").replace(/\.pdb$/i,""),pdb_text:second,chain:$("secondChain").value.trim()||null},
+    ];
+    if(inputs[0].name===inputs[1].name)inputs[1].name+="_2";
+    const r=await fetch("/structure-set",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({structures:inputs,...env,combined_maps:selected.size>=2?[...selected]:null})});
     const x=await r.json();if(!r.ok)throw Error(x.detail||"Structure comparison failed");
-    decisionCompare=x;render();
+    if(!x.comparison?.length)throw Error(x.comparison_skipped?.[0]?.reason||"Structures cannot be compared by matched residues");
+    decisionCompare=x.comparison[0];
+    ensembleResult=x;ensembleAnalyzedInputs=inputs;
+    ensembleActiveIndex=0;ensembleConsensusKey=null;
+    render();ensembleRefresh();
   }catch(e){$("decisionCompareError").textContent=e.message}
   finally{button.disabled=false}
 }
