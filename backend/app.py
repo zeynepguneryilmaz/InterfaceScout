@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from interface_engine import PUBLIC_MAP_SPECS, analyze_all_maps
-from model_settings import MODEL_VERSION
+from model_settings import MODEL_VERSION, PUBLIC_VERSION
 from research_workflows import list_research_goals, compare_results, combine_maps
 from ensemble import analyze_structure_set, build_consensus
 from export_bundle import build_export_zip
@@ -20,7 +20,6 @@ BACKEND = Path(__file__).resolve().parent
 ROOT = BACKEND.parent
 FRONTEND = ROOT / "frontend"
 
-PUBLIC_VERSION = "1.0-publication"
 app = FastAPI(title="InterfaceScout", version=PUBLIC_VERSION)
 
 
