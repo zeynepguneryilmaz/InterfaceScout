@@ -1,6 +1,30 @@
 /* Additive multi-PDB/consensus/complete-export UI. All original controls remain. */
 let ensembleInputs=[], ensembleAnalyzedInputs=[], ensembleResult=null, ensembleActiveIndex=0, ensembleBusy=false;
 let ensembleConsensusKey=null, ensembleSavedSnapshot=null;
+let ensembleDownloadUrl=null;
+function ensembleReadyLink(){
+  let link=$("isReadyDownload");
+  if(!link){
+    link=document.createElement("a");
+    link.id="isReadyDownload";
+    link.className="btn secondary";
+    link.style.cssText="display:none;text-align:center;text-decoration:none;margin-top:10px;font-size:13px";
+    link.textContent="Save completed ZIP";
+    const button=$("isFullExport");
+    button.insertAdjacentElement("afterend",link);
+  }
+  return link;
+}
+function ensembleClearDownload(){
+  const link=ensembleReadyLink();
+  link.style.display="none";
+  link.removeAttribute("href");
+  if(ensembleDownloadUrl){
+    URL.revokeObjectURL(ensembleDownloadUrl);
+    ensembleDownloadUrl=null;
+  }
+}
+
 
 function ensembleSetup(){
   let css=document.createElement("style");
@@ -206,6 +230,7 @@ async function ensembleCaptureEleven(){
   return shots;
 }
 async function ensembleExportAll(){
+  ensembleClearDownload();
   if(ensembleBusy)return;
   if(!data&&!ensembleResult){ensembleMessage("Analyze a PDB first",true);return}
   const backup={
@@ -265,12 +290,26 @@ async function ensembleExportAll(){
       throw Error(typeof details==="string"?details:JSON.stringify(details));
     }
     const blob=await result.blob();
-    const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download="InterfaceScout_"+(source.length>1?"MultiPDB":safe(source[0].name))+
+    const signature=new Uint8Array(await blob.slice(0,4).arrayBuffer());
+    if(blob.size<100 || signature[0]!==0x50 || signature[1]!==0x4b)
+      throw Error("The server did not return a valid ZIP archive.");
+    const filename="InterfaceScout_"+(source.length>1?"MultiPDB":safe(source[0].name))+
       "_Complete_Results.zip";
-    document.body.appendChild(link);link.click();link.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),2000);
-    ensembleMessage("Complete ZIP created for "+source.length+" structure(s).");
+    // This request follows many asynchronous image/PDF operations. Browsers,
+    // especially Windows Chrome/Edge, may suppress a programmatic download
+    // after the originating user gesture has expired. Preserve a REAL link
+    // so the user can always explicitly save the verified ZIP.
+    ensembleDownloadUrl=URL.createObjectURL(blob);
+    const link=ensembleReadyLink();
+    link.href=ensembleDownloadUrl;
+    link.download=filename;
+    link.style.display="block";
+    link.textContent="Save completed ZIP · "+(blob.size/1048576).toFixed(1)+" MB";
+    link.setAttribute("aria-label","Save "+filename);
+    // Retain existing auto-download for browsers that allow it, and keep the
+    // manual link available indefinitely until another export or page unload.
+    link.click();
+    ensembleMessage("ZIP ready ("+(blob.size/1048576).toFixed(1)+" MB). If the browser did not download it automatically, select ‘Save completed ZIP’ above. Check the browser's download permissions and Downloads folder.");
   }catch(e){ensembleMessage(e.message,true)}
   finally{
     ensembleBusy=false;
