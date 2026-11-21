@@ -1,0 +1,53 @@
+name: Verify downloaded rc1 archives on Windows macOS Linux
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/verify-rc1-archives.yml'
+      - 'tests/verify_release_runtime.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-release:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            platform: Windows
+          - os: macos-15-intel
+            platform: macOS
+          - os: ubuntu-24.04
+            platform: Linux
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download the PUBLISHED OS-specific ZIP
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p release_test
+          gh release download v1.1.0-rc1 -p "InterfaceScout-v1.1.0-rc1-${{ matrix.platform }}-source.zip" -D release_test
+          python - <<'PY'
+          import pathlib,zipfile
+          files=list(pathlib.Path('release_test').glob('*.zip'))
+          assert len(files)==1, files
+          with zipfile.ZipFile(files[0]) as z:
+              assert z.testzip() is None
+              z.extractall('release_test')
+          print('Downloaded and verified:',files[0])
+          PY
+      - name: Install RELEASE dependencies
+        run: python -m pip install --disable-pip-version-check -r release_test/InterfaceScout/backend/requirements.txt
+      - name: Launch extracted app and test its API
+        run: python tests/verify_release_runtime.py release_test/InterfaceScout tests/fixtures/4AKE_A.pdb
