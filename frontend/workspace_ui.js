@@ -106,6 +106,8 @@
         if(typeof data!=="undefined" && data && typeof render==="function")render();
       }
     }
+    const ready=next==="single"?Boolean(typeof data!=="undefined"&&data):Boolean(ensembleResult);
+    full.disabled=!ready;
     if(typeof viewer!=="undefined"&&viewer&&typeof viewer.resize==="function"){
       requestAnimationFrame(()=>viewer.resize());
     }
@@ -113,5 +115,12 @@
   head.querySelectorAll("[data-workspace-target]").forEach(button=>
     button.addEventListener("click",()=>mode(button.dataset.workspaceTarget)));
   mode("single");
+  const refresh=ensembleRefresh;
+  ensembleRefresh=function(){
+    refresh();
+    const modeName=document.body.dataset.workspaceMode||"single";
+    full.disabled=modeName==="single"?!(typeof data!=="undefined"&&data):!ensembleResult;
+  };
+  ensembleRefresh();
   window.workspaceSetMode=mode;
 })();
