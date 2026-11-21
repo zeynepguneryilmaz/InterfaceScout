@@ -114,7 +114,7 @@ The same InterfaceScout source repository works on Windows, macOS and Linux. Use
 | macOS | `bash run_local.sh` | `bash start.command` | [macOS](docs/INSTALL_MACOS.md) |
 | Linux | `bash run_local.sh` | `bash start.sh` | [Linux](docs/INSTALL_LINUX.md) |
 
-For verified demonstrations and files produced by the program, visit **[examples/](examples/README.md)**. The benchmark includes archived case-level results; the 1LYZ example includes an executable script that writes genuine results after the application is run. Results not yet generated are clearly marked as such.
+For a tagged GitHub Release, the [platform packaging workflow](.github/workflows/platform-release.yml) will attach three source archives: `InterfaceScout-<version>-Windows-source.zip`, `InterfaceScout-<version>-macOS-source.zip`, and `InterfaceScout-<version>-Linux-source.zip`. These are OS-tailored **source distributions** with the application and platform launcher, **not** precompiled binaries. Release archives are created only after the changes are merged and a new `v*` tag is published; opening this pull request does not create a release.\n\nFor verified demonstrations and files produced by the program, visit **[examples/](examples/README.md)**. The benchmark includes archived case-level results; the 1LYZ example includes an executable script that writes genuine results after the application is run. Results not yet generated are clearly marked as such.
 
 **SSL / certificate error during initial pip install:** see the relevant platform guide. A self-signed certificate chain is an environment trust issue, not a chemical mapping error; do not bypass TLS verification.
 
