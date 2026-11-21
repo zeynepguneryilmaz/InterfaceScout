@@ -87,6 +87,16 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & extracted/InterfaceScout/backend/.venv/Scripts/python.exe extracted/InterfaceScout/backend/dependency_check.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Prove Windows launcher installs without access to PyPI
+        shell: pwsh
+        run: |
+          Remove-Item extracted/InterfaceScout/backend/.venv -Recurse -Force
+          $env:PIP_NO_INDEX = "1"
+          $env:PIP_INDEX_URL = "https://invalid.example.invalid/simple"
+          cmd /c "cd /d extracted\\InterfaceScout && call run_local.bat --no-pause"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & extracted/InterfaceScout/backend/.venv/Scripts/python.exe extracted/InterfaceScout/backend/dependency_check.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Test extracted app server and real 11-channel analysis
         shell: pwsh
         run: |
