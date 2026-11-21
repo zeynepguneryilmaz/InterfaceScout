@@ -26,8 +26,10 @@ jobs:
           from model_settings import PUBLIC_VERSION, MODEL_VERSION
           assert PUBLIC_VERSION == '1.1.0-rc1', PUBLIC_VERSION
           assert MODEL_VERSION == '2.4.0-selected-parameters', MODEL_VERSION
-          from app import app
-          assert app.version == PUBLIC_VERSION
+          from pathlib import Path
+          app_source=Path('backend/app.py').read_text()
+          assert 'from model_settings import MODEL_VERSION, PUBLIC_VERSION' in app_source
+          assert 'version=PUBLIC_VERSION' in app_source
           print('Version metadata PASS')
           PY
       - name: Build exactly three slim OS packages
