@@ -14,15 +14,24 @@ The program prepares the selected protein structure once and calculates 11 canon
 
 **One complete download:** **Download complete results · ZIP** always includes all **11 maps for each analyzed structure**, regardless of the individual map or combination selected on screen. For each structure it includes 11 per-map PDFs, 11 genuine browser-captured 3D PNG screenshots embedded in the PDF reports, a complete Excel workbook covering all channels, per-residue/per-patch CSVs, the original PDB, 11 canonical B-factor PDBs, Top-1/3/5 membership B-factor PDBs and detailed JSON. For Compare and Multi-PDB, each protein gets its own complete export directory, with pairwise/consensus outputs when defined. Choosing multiple channels only adds overlap/co-localization content; it never filters out any of the 11 canonical channels.
 
+After export generation, **Save completed ZIP** remains visible as a direct download link
+if Windows Chrome/Edge or another browser blocks the delayed automatic download.
+The link remains valid in the current browser page until another export is made or
+the page is closed. Successful server-side ZIP generation is not the same as
+a browser-confirmed save; use the explicit link if nothing appears in Downloads.
+
 Advanced solution metadata and individual-file downloads are available from expandable sections. pH affects the current computation; ionic strength and temperature are recorded as metadata only.
 
 ## Research-first workflows (new, opt-in interface)
 
-The **Research question** selector offers five practical starting workflows: exploring an unfamiliar
-protein, planning noncovalent protein–material experiments, selecting residues for surface
-immobilization/labeling, preparing computational interface simulations, and comparing provided
-protein conformations. These choices are **suggestions only**: users can select any of the
-11 maps and never need to identify a particular material to begin.
+The **Explore with a preset** selector offers explicit user-directed visual combinations:
+independent viewing of all eleven maps, hydrophobic + aromatic, cationic + H-bond donor,
+anionic + H-bond acceptor, and sulfur-affinity + metal-coordination neighborhoods.
+Each choice explains the chemistry it juxtaposes and is **not an algorithmic recommendation
+or an adsorption prediction**. Every one of the eleven canonical maps remains available.
+The H-bond donor and acceptor channels are intentionally **not** joined by an assumed
+exact same-residue intersection: donor/acceptor complementarity and spatial co-location
+must be interpreted separately.
 
 The new decision-support layer keeps two physically distinct data types separate:
 
