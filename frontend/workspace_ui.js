@@ -5,7 +5,7 @@
   const sections=Array.from(side.querySelectorAll(".section"));
   const get=(name)=>sections.find(section=>section.querySelector("h3")?.textContent.toLowerCase().includes(name));
   const panels={
-    protein:get("protein"),solution:get("solution"),research:get("research question"),
+    protein:get("protein"),solution:get("solution"),research:get("explore with a preset"),
     compare:get("compare conformations"),multi:get("multi-pdb"),legacy:get("export"),
     complete:get("complete export")
   };
