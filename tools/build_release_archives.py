@@ -28,7 +28,8 @@ LAUNCHERS = {
 
 def included_files(platform: str) -> list[Path]:
     selected = []
-    for relative in COMMON + LAUNCHERS[platform]:
+    extra = ("wheelhouse/windows",) if platform == "Windows" and (ROOT / "wheelhouse/windows").exists() else ()
+    for relative in COMMON + LAUNCHERS[platform] + extra:
         source = ROOT / relative
         if not source.exists():
             raise FileNotFoundError(f"Required release item missing: {relative}")
