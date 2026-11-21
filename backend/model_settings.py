@@ -7,7 +7,7 @@ was not fitted to experimental adsorption labels.
 """
 from __future__ import annotations
 
-PUBLIC_VERSION = "1.0-publication"
+PUBLIC_VERSION = "1.1.0-rc1"
 MODEL_VERSION = "2.4.0-selected-parameters"
 
 SASA_PROBE_A = 1.40

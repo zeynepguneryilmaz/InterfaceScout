@@ -1,0 +1,170 @@
+name: Finalize rc1 downloads and preserve legacy evidence
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/finalize-rc1-release.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    outputs:
+      commit_sha: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check consistent release metadata
+        run: |
+          python - <<'PY'
+          import sys
+          sys.path.insert(0, 'backend')
+          from model_settings import PUBLIC_VERSION, MODEL_VERSION
+          assert PUBLIC_VERSION == '1.1.0-rc1', PUBLIC_VERSION
+          assert MODEL_VERSION == '2.4.0-selected-parameters', MODEL_VERSION
+          from pathlib import Path
+          app_source=Path('backend/app.py').read_text()
+          assert 'from model_settings import MODEL_VERSION, PUBLIC_VERSION' in app_source
+          assert 'version=PUBLIC_VERSION' in app_source
+          print('Version metadata PASS')
+          PY
+      - name: Build exactly three slim OS packages
+        run: |
+          set -euo pipefail
+          python tools/build_release_archives.py --out dist --version v1.1.0-rc1
+          (cd dist && sha256sum -c SHA256SUMS.txt)
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          a=sorted(Path('dist').glob('*.zip'))
+          assert len(a)==3,a
+          for f in a:
+              with ZipFile(f) as z:
+                  assert z.testzip() is None, f
+                  names=set(z.namelist())
+                  for need in ('InterfaceScout/backend/app.py','InterfaceScout/backend/model_settings.py','InterfaceScout/frontend/index.html','InterfaceScout/examples/README.md'):
+                      assert need in names,(f,need)
+                  assert not any('/tests/' in name or '/tools/' in name for name in names)
+          print('All three slim archives validated')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rc1-tested-platform-packages
+          path: |
+            dist/*.zip
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+
+  test:
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            platform: Windows
+          - os: macos-15-intel
+            platform: macOS
+          - os: ubuntu-24.04
+            platform: Linux
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: rc1-tested-platform-packages
+          path: dist
+      - name: Extract matching platform package and check integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          f=Path('dist/InterfaceScout-v1.1.0-rc1-${{ matrix.platform }}-source.zip')
+          assert f.is_file(), f
+          with ZipFile(f) as z:
+              assert z.testzip() is None
+              z.extractall('release_test')
+          print('Extracted', f)
+          PY
+      - name: Install pinned dependencies from extracted release
+        run: python -m pip install --disable-pip-version-check -r release_test/InterfaceScout/backend/requirements.txt
+      - name: Test actual extracted application launcher health and 11 chemistry maps
+        run: python tests/verify_release_runtime.py release_test/InterfaceScout tests/fixtures/4AKE_A.pdb
+
+  publish:
+    needs: [build, test]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: rc1-tested-platform-packages
+          path: dist
+      - name: Preserve the 117 MB original publication evidence in separate archive
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p evidence verify
+          old=InterfaceScout_v1.1.0_rc1_publication_bundle.zip
+          gh release download v1.1.0-rc1 --pattern "$old" --dir evidence
+          test -s "evidence/$old"
+          sha256sum "evidence/$old" > evidence/LEGACY_SHA256.txt
+          etag=evidence-v1.1.0-rc1
+          if ! gh release view "$etag" >/dev/null 2>&1; then
+            gh release create "$etag" --target "$GITHUB_SHA" --prerelease --title "InterfaceScout rc1 - archived validation evidence" --notes "Archive of the original publication bundle, including historical browser exports and numerical validation artifacts. This is NOT the application installer. For Windows, macOS or Linux download the three platform archives from v1.1.0-rc1."
+          fi
+          gh release upload "$etag" "evidence/$old" evidence/LEGACY_SHA256.txt --clobber
+          gh release download "$etag" --pattern "$old" --dir verify
+          cmp "evidence/$old" "verify/$old"
+          sha256sum "verify/$old"
+          echo 'Legacy validation evidence preserved and byte-for-byte verified.'
+      - name: Update rc1 tag only after three OS tests and evidence preservation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git tag -f v1.1.0-rc1 "$GITHUB_SHA"
+          git push --force origin refs/tags/v1.1.0-rc1:refs/tags/v1.1.0-rc1
+      - name: Replace three platform assets and remove redundant generic bundles
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag=v1.1.0-rc1
+          gh release upload "$tag" dist/*-source.zip --clobber
+          for obsolete in InterfaceScout_v1.1.0_rc1_publication_bundle.zip InterfaceScout_v1_1_0_rc1_publication_bundle.zip SHA256SUMS.txt; do
+            gh release delete-asset "$tag" "$obsolete" --yes
+          done
+          python - <<'PY'
+          import pathlib, subprocess
+          old=subprocess.check_output(['gh','release','view','v1.1.0-rc1','--json','body','--jq','.body'],text=True)
+          marker='\n\n## Current downloads (2026-11-21)'
+          old=old.split(marker,1)[0]
+          sums=pathlib.Path('dist/SHA256SUMS.txt').read_text()
+          notes=old+marker+'\n\nChoose the Windows, macOS or Linux source archive below. These packages require Python 3.10-3.12; they are not standalone binaries. Original numerical and browser-validation evidence has been retained under the separate **evidence-v1.1.0-rc1** archive.\n\nSHA-256 checksums:\n\n```text\n'+sums+'```\n'
+          pathlib.Path('dist/release_notes.md').write_text(notes)
+          PY
+          gh release edit "$tag" --notes-file dist/release_notes.md
+          gh release view "$tag" --json assets --jq '.assets[].name' | sort > dist/assets_actual.txt
+          cat dist/assets_actual.txt
+          test "$(wc -l < dist/assets_actual.txt)" -eq 3
+          grep -Fqx InterfaceScout-v1.1.0-rc1-Windows-source.zip dist/assets_actual.txt
+          grep -Fqx InterfaceScout-v1.1.0-rc1-macOS-source.zip dist/assets_actual.txt
+          grep -Fqx InterfaceScout-v1.1.0-rc1-Linux-source.zip dist/assets_actual.txt
+          echo 'Release contains exactly three verified OS-specific downloads.'
