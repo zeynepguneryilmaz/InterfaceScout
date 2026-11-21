@@ -16,8 +16,9 @@ ROOT = Path(__file__).resolve().parents[1]
 IGNORED_DIRS = {".git", ".venv", "venv", "__pycache__", ".pytest_cache",
                 ".mypy_cache", ".idea", ".vscode", ".tox", "dist", "build"}
 IGNORED_FILES = {".DS_Store", "startup_log.txt"}
+# Distributable application files only. Keep tests and packaging tools in GitHub.
 COMMON = ("backend", "frontend", "docs", "examples", "validation",
-          "tests", "tools", "README.md", "LICENSE", "CITATION.cff")
+          "README.md", "LICENSE", "CITATION.cff")
 LAUNCHERS = {
     "Windows": ("run_local.bat", "start.bat"),
     "macOS": ("run_local.sh", "start.command"),
@@ -44,21 +45,17 @@ def included_files(platform: str) -> list[Path]:
 
 def build(out_dir: Path, version: str) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
-    all_files = set()
+    # Avoid retaining obsolete generic archives from earlier packaging runs.
+    for obsolete in out_dir.glob("InterfaceScout_*_publication_bundle.zip"):
+        obsolete.unlink()
     for platform in LAUNCHERS:
         archive = out_dir / f"InterfaceScout-{version}-{platform}-source.zip"
         with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED,
                              compresslevel=8) as output:
             for path in included_files(platform):
-                all_files.add(path)
                 name = "InterfaceScout/" + path.relative_to(ROOT).as_posix()
                 output.write(path, name)
         print(f"{archive.name}: {archive.stat().st_size:,} bytes")
-    bundle = out_dir / f"InterfaceScout_{version.replace('-', '_').replace('.', '_')}_publication_bundle.zip"
-    with zipfile.ZipFile(bundle, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=8) as output:
-        for path in sorted(all_files):
-            output.write(path, "InterfaceScout/" + path.relative_to(ROOT).as_posix())
-    print(f"{bundle.name}: {bundle.stat().st_size:,} bytes")
     checksums = []
     for path in sorted(out_dir.glob("*.zip")):
         checksums.append(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}")
