@@ -14,19 +14,20 @@ The program prepares the selected protein structure once and calculates 11 canon
 
 **One complete download:** **Download complete results · ZIP** always includes all **11 maps for each analyzed structure**, regardless of the individual map or combination selected on screen. For each structure it includes 11 per-map PDFs, 11 genuine browser-captured 3D PNG screenshots embedded in the PDF reports, a complete Excel workbook covering all channels, per-residue/per-patch CSVs, the original PDB, 11 canonical B-factor PDBs, Top-1/3/5 membership B-factor PDBs and detailed JSON. For Compare and Multi-PDB, each protein gets its own complete export directory, with pairwise/consensus outputs when defined. Choosing multiple channels only adds overlap/co-localization content; it never filters out any of the 11 canonical channels.
 
-After export generation, **Save completed ZIP** remains visible as a direct download link
-if Windows Chrome/Edge or another browser blocks the delayed automatic download.
-The link remains valid in the current browser page until another export is made or
-the page is closed. Successful server-side ZIP generation is not the same as
-a browser-confirmed save; use the explicit link if nothing appears in Downloads.
+Complete Results now assembles a ZIP **on the local InterfaceScout Python server**
+and starts a native browser attachment download. A visible **Download ZIP now**
+link points to that same file and can be clicked again if the browser did not
+save it automatically. This is a normal HTTP download, not a short-lived browser
+Blob link. Prepared downloads expire after one hour, and the local server keeps
+at most 20 recent exports. All 11 maps are included for every structure.
 
 Advanced solution metadata and individual-file downloads are available from expandable sections. pH affects the current computation; ionic strength and temperature are recorded as metadata only.
 
 ## Research-first workflows (new, opt-in interface)
 
-The **Explore with a preset** selector offers explicit user-directed visual combinations:
-independent viewing of all eleven maps, hydrophobic + aromatic, cationic + H-bond donor,
-anionic + H-bond acceptor, and sulfur-affinity + metal-coordination neighborhoods.
+The **Quick views** panel applies a compact set of chemistry views immediately with one click:
+independent viewing of all eleven maps, hydrophobic + aromatic, positive + H-bond donor,
+and negative + H-bond acceptor neighborhoods.
 Each choice explains the chemistry it juxtaposes and is **not an algorithmic recommendation
 or an adsorption prediction**. Every one of the eleven canonical maps remains available.
 The H-bond donor and acceptor channels are intentionally **not** joined by an assumed
