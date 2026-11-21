@@ -107,7 +107,7 @@
       }
     }
     const ready=next==="single"?Boolean(typeof data!=="undefined"&&data):Boolean(ensembleResult);
-    full.disabled=!ready;
+    full.disabled=!ready||Boolean(ensembleBusy);
     if(typeof viewer!=="undefined"&&viewer&&typeof viewer.resize==="function"){
       requestAnimationFrame(()=>viewer.resize());
     }
@@ -119,7 +119,7 @@
   ensembleRefresh=function(){
     refresh();
     const modeName=document.body.dataset.workspaceMode||"single";
-    full.disabled=modeName==="single"?!(typeof data!=="undefined"&&data):!ensembleResult;
+    full.disabled=Boolean(ensembleBusy)||(modeName==="single"?!(typeof data!=="undefined"&&data):!ensembleResult);
   };
   ensembleRefresh();
   window.workspaceSetMode=mode;
