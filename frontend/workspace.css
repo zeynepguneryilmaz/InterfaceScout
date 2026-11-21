@@ -54,3 +54,11 @@ main{grid-template-rows:minmax(420px,61vh) auto}
 .workspace-empty{background:#fff;border:1px solid #ece7e9;border-radius:16px;padding:26px;max-width:600px}
 .workspace-empty strong{font-size:18px}
 @media(max-width:900px){aside{max-height:none;overflow:visible;padding:20px}.wrap{grid-template-columns:1fr}main{grid-template-rows:minmax(370px,52vh) auto}.results{padding:18px}.workspace-title{font-size:20px}}
+
+/* Single-tap, unobtrusive chemistry presets. */
+.preset-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:8px 0 5px}
+.preset-chip{min-height:45px;padding:10px 8px;font-size:11px;line-height:1.35;font-weight:650;text-align:center;cursor:pointer;color:#655660;background:#fff;border:1px solid #e6dee1;border-radius:11px}
+.preset-chip:hover{background:#faf3f6;border-color:#bda3b1}
+.preset-chip[aria-pressed="true"]{color:#623d51;border-color:#916c80;background:#f6eef2;box-shadow:0 0 0 1px #916c8022}
+.preset-chip:focus-visible{outline:2px solid #946f83;outline-offset:2px}
+#isReadyDownload{position:relative;display:block;border:2px solid #805a6e!important;background:#fcf4f7!important;color:#593c50!important;font-weight:750!important;min-height:44px;line-height:24px}
