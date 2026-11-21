@@ -52,7 +52,17 @@ rem Do not contact PyPI on subsequent launches if the pinned versions are presen
 "%VENV_PY%" "%BACKEND%\dependency_check.py" >nul 2>&1
 if errorlevel 1 (
   echo Installing missing or mismatched InterfaceScout dependencies...
-  "%VENV_PY%" -m pip install --disable-pip-version-check -r "%BACKEND%\requirements.txt"
+  "%VENV_PY%" -c "import sys; print(str(sys.version_info.major)+'.'+str(sys.version_info.minor))" > "%TEMP%\interfacescout_python_version.txt"
+  set /p "PY_VER=" < "%TEMP%\interfacescout_python_version.txt"
+  del "%TEMP%\interfacescout_python_version.txt" >nul 2>&1
+  set "WHEEL_DIR=%ROOT%wheelhouse\windows\py!PY_VER!"
+  if exist "!WHEEL_DIR!\*.whl" (
+    echo Installing offline from bundled Windows wheels for Python !PY_VER!...
+    "%VENV_PY%" -m pip install --disable-pip-version-check --no-index --find-links "!WHEEL_DIR!" -r "%BACKEND%\requirements.txt"
+  ) else (
+    echo No bundled wheelhouse found; trying secure PyPI installation...
+    "%VENV_PY%" -m pip install --disable-pip-version-check -r "%BACKEND%\requirements.txt"
+  )
   if errorlevel 1 goto :dependency_failed
   "%VENV_PY%" "%BACKEND%\dependency_check.py"
   if errorlevel 1 goto :dependency_failed
