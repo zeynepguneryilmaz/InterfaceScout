@@ -28,3 +28,10 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.bak
+
+# Generated local 1LYZ example outputs (keep results/README.md tracked)
+examples/1LYZ/results/*.json
+examples/1LYZ/results/*.csv
+examples/1LYZ/results/*.xlsx
+examples/1LYZ/results/*.pdb
+examples/1LYZ/results/*.zip
