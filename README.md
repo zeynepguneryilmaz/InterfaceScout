@@ -106,77 +106,21 @@ The literature benchmark contains seven primary conditions and two secondary cha
 
 ## Installation and use
 
-The same InterfaceScout source repository works on Windows, macOS and Linux. Use the platform-specific guide below; **you do not need to download separate example ZIPs**:
+This is **one cross-platform application**, not three separate codebases. Use Python **3.10–3.12**.
 
-| Platform | First-time setup | Subsequent launch | Guide |
+| Platform | First setup | Subsequent launch | Instructions |
 |---|---|---|---|
-| Windows | `run_local.bat` | `start.bat` | [Windows](docs/INSTALL_WINDOWS.md) |
-| macOS | `bash run_local.sh` | `bash start.command` | [macOS](docs/INSTALL_MACOS.md) |
-| Linux | `bash run_local.sh` | `bash start.sh` | [Linux](docs/INSTALL_LINUX.md) |
+| Windows | `run_local.bat` | `start.bat` | [Windows guide](docs/INSTALL_WINDOWS.md) |
+| macOS | `bash run_local.sh` | `bash start.command` | [macOS guide](docs/INSTALL_MACOS.md) |
+| Linux | `bash run_local.sh` | `bash start.sh` | [Linux guide](docs/INSTALL_LINUX.md) |
 
-For a tagged GitHub Release, the [platform packaging workflow](.github/workflows/platform-release.yml) will attach three source archives: `InterfaceScout-<version>-Windows-source.zip`, `InterfaceScout-<version>-macOS-source.zip`, and `InterfaceScout-<version>-Linux-source.zip`. These are OS-tailored **source distributions** with the application and platform launcher, **not** precompiled binaries. Release archives are created only after the changes are merged and a new `v*` tag is published; opening this pull request does not create a release.\n\nFor verified demonstrations and files produced by the program, visit **[examples/](examples/README.md)**. The benchmark includes archived case-level results; the 1LYZ example includes an executable script that writes genuine results after the application is run. Results not yet generated are clearly marked as such.
+The local interface is at **http://localhost:8000**. After dependencies are installed, subsequent launches do not run pip. For pip SSL certificate-chain errors, follow the relevant platform guide rather than disabling certificate verification. Local PDB files work without a network connection after installation; PDB ID retrieval still requires RCSB access.
 
-**SSL / certificate error during initial pip install:** see the relevant platform guide. A self-signed certificate chain is an environment trust issue, not a chemical mapping error; do not bypass TLS verification.
-
-InterfaceScout supports **Python 3.10-3.12**. The pinned dependency set is tested on Windows, macOS, and Linux by GitHub Actions.
-
-### Windows
-
-First setup:
-
-```text
-run_local.bat
-```
-
-Subsequent launches:
-
-```text
-start.bat
-```
-
-### macOS
-
-First setup:
-
-```bash
-bash run_local.sh
-```
-
-Subsequent launches can use `start.command`.
-
-### Linux
-
-First setup:
-
-```bash
-bash run_local.sh
-```
-
-Subsequent launches:
-
-```bash
-bash start.sh
-```
-
-The local application opens at `http://localhost:8000`.
-
-The browser libraries required for 3D visualization and Excel export are vendored in `frontend/vendor/`, so a **local PDB file can be analyzed without CDN access after installation**. Fetching by PDB ID still requires network access to the RCSB Protein Data Bank.
+When a new `v*` tag is published, the [release workflow](.github/workflows/platform-release.yml) builds Windows, macOS and Linux **source archives** containing the corresponding launchers. These are not standalone `.exe`/`.app` binaries.
 
 ## Examples
 
-Parameter-robustness development panel:
-
-```text
-1CRN  1R69  1SHG  2PPN  4AKE  1OMP  1TIM  5CSC
-```
-
-Literature comparison:
-
-```text
-4F5S  2VUF  2CBA (pH 6.3 and 8.3)  1UBQ  1JNJ  3ECA  1SUV  1TGU
-```
-
-Each condition contains the same user-facing result types produced by InterfaceScout: a complete Excel workbook and a B-factor PDB.
+See the [examples index](examples/README.md) for the existing **16-protein, 17-condition** archive of real Excel and annotated-PDB exports, the [1LYZ reproducible example](examples/1LYZ/README.md), and the frozen benchmark source in [validation](validation/README.md). The example exporter needs a running InterfaceScout app and does not invent absent results.
 
 ## Reproducibility checks
 
