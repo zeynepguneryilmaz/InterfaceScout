@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 import zipfile
+import hashlib
 
 ROOT = Path(__file__).resolve().parents[1]
 IGNORED_DIRS = {".git", ".venv", "venv", "__pycache__", ".pytest_cache",
@@ -43,14 +44,25 @@ def included_files(platform: str) -> list[Path]:
 
 def build(out_dir: Path, version: str) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
+    all_files = set()
     for platform in LAUNCHERS:
         archive = out_dir / f"InterfaceScout-{version}-{platform}-source.zip"
         with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED,
                              compresslevel=8) as output:
             for path in included_files(platform):
+                all_files.add(path)
                 name = "InterfaceScout/" + path.relative_to(ROOT).as_posix()
                 output.write(path, name)
         print(f"{archive.name}: {archive.stat().st_size:,} bytes")
+    bundle = out_dir / f"InterfaceScout_{version.replace('-', '_').replace('.', '_')}_publication_bundle.zip"
+    with zipfile.ZipFile(bundle, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=8) as output:
+        for path in sorted(all_files):
+            output.write(path, "InterfaceScout/" + path.relative_to(ROOT).as_posix())
+    print(f"{bundle.name}: {bundle.stat().st_size:,} bytes")
+    checksums = []
+    for path in sorted(out_dir.glob("*.zip")):
+        checksums.append(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}")
+    (out_dir / "SHA256SUMS.txt").write_text("\\n".join(checksums) + "\\n", encoding="utf-8")
 
 
 if __name__ == "__main__":
