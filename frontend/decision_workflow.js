@@ -183,7 +183,7 @@ async function decisionCompareStructures(){
     // This enables complete export for BOTH structures, not just the active one.
     const inputs=[
       {name:String(structureName||"first"),pdb_text:pdbText,chain:$("chain").value.trim()||null},
-      {name:String(decisionSecondName||id||"second"),pdb_text:second,chain:$("secondChain").value.trim()||null},
+      {name:String(decisionSecondName||id||"second").replace(/\.pdb$/i,""),pdb_text:second,chain:$("secondChain").value.trim()||null},
     ];
     if(inputs[0].name===inputs[1].name)inputs[1].name+="_2";
     const r=await fetch("/structure-set",{method:"POST",headers:{"Content-Type":"application/json"},
