@@ -1,6 +1,6 @@
 # Windows installation and launch
 
-InterfaceScout v1.1.0-rc1 uses Python **3.10–3.12**. Extract the **Windows** Release ZIP completely into a normal directory (not a temporary ZIP preview).
+InterfaceScout 1.0 uses Python **3.10–3.12**. Extract the repository source ZIP or a verified Windows Release ZIP completely into a normal directory (not a temporary ZIP preview).
 
 ## First-time setup
 
@@ -10,7 +10,7 @@ Double-click `run_local.bat` or run it in Command Prompt:
 run_local.bat
 ```
 
-The script creates `backend\.venv` if it does not already exist, checks pinned dependencies, and installs only if they are missing or incompatible. The published Windows package includes **offline wheels for Python 3.10, 3.11, and 3.12 (Windows x64)**. If the matching wheelhouse is included, the installation runs with `--no-index`, without contacting PyPI. If installation fails, the command window stays open and explains where to look. For subsequent runs, use `start.bat`, which does not contact PyPI.
+The script creates `backend\.venv` if it does not already exist, checks pinned dependencies, and installs only if they are missing or incompatible. A verified Windows release package may include **offline wheels for Python 3.10, 3.11, and 3.12 (Windows x64)**; the standard GitHub repository source ZIP does **not** include them. If a matching wheelhouse is included, installation uses `--no-index`; otherwise the launcher obtains dependencies using pip. If installation fails, the command window stays open and explains where to look. For subsequent runs, use `start.bat`, which does not contact PyPI.
 
 ## CERTIFICATE_VERIFY_FAILED or self-signed certificate
 
@@ -50,7 +50,7 @@ See [examples](../examples/README.md) for verified protein demonstrations.
 
 ## Offline wheelhouse layout
 
-The Windows Release archive includes `wheelhouse/windows/py3.10/`, `py3.11/`, and `py3.12/` with the exact pinned dependencies and their transitive binary wheels for 64-bit Windows. Do not move these directories outside the extracted application folder. Python x86 (32-bit) is not supported by these wheels. The startup script chooses the matching wheelhouse automatically; a corporate SSL certificate is not needed to **install those bundled wheels**.
+Windows release archives that explicitly advertise offline support include `wheelhouse/windows/py3.10/`, `py3.11/`, and `py3.12/` with pinned dependencies and their transitive binary wheels for 64-bit Windows. If your package includes a wheelhouse, do not move those directories outside the extracted application folder. Python x86 (32-bit) is not supported by these wheels. The startup script chooses the matching wheelhouse automatically; a corporate SSL certificate is not needed to **install bundled wheels**.
 
 **Note:** Fetching an external PDB by ID later still requires normal HTTPS access to RCSB. Use an uploaded local PDB if the network certificate chain also affects RCSB access.
 
