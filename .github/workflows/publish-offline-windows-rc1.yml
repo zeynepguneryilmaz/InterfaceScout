@@ -27,6 +27,11 @@ jobs:
             dest="wheelhouse/windows/py3.${minor}"
             mkdir -p "$dest"
             python -m pip download --disable-pip-version-check --only-binary=:all: --platform win_amd64 --implementation cp --python-version "3.${minor}" --abi "cp3${minor}" --dest "$dest" -r backend/requirements.txt
+            # Cross-target pip download runs on Python 3.12 and can omit extras
+            # guarded by python_version < 3.11, even when targeting cp310.
+            if [ "$minor" = "10" ]; then
+              python -m pip download --disable-pip-version-check --only-binary=:all: --platform win_amd64 --implementation cp --python-version 3.10 --abi cp310 --dest "$dest" 'exceptiongroup>=1.0.2'
+            fi
             test "$(find "$dest" -maxdepth 1 -name '*.whl' | wc -l)" -ge 8
           done
       - name: Build Windows, macOS and Linux packages
