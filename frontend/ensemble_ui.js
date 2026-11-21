@@ -19,10 +19,7 @@ function ensembleClearDownload(){
   const link=ensembleReadyLink();
   link.style.display="none";
   link.removeAttribute("href");
-  if(ensembleDownloadUrl){
-    URL.revokeObjectURL(ensembleDownloadUrl);
-    ensembleDownloadUrl=null;
-  }
+  ensembleDownloadUrl=null;
 }
 
 
@@ -279,7 +276,9 @@ async function ensembleExportAll(){
       }
     }
     ensembleMessage("Assembling PDF reports, every CSV, Excel, images and B-factor PDBs...");
-    const result=await fetch("/export-package",{method:"POST",
+    // Generate on the local Python server. A regular GET attachment works
+    // when Chrome/Edge block delayed javascript Blob downloads.
+    const result=await fetch("/export-package/prepare",{method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({structures:exported,consensus,comparison,consensus_screenshots,
         comparison_skipped:ensembleResult?.comparison_skipped||[],
@@ -289,27 +288,23 @@ async function ensembleExportAll(){
       try{details=(await result.json()).detail}catch(e){details="Export failed"}
       throw Error(typeof details==="string"?details:JSON.stringify(details));
     }
-    const blob=await result.blob();
-    const signature=new Uint8Array(await blob.slice(0,4).arrayBuffer());
-    if(blob.size<100 || signature[0]!==0x50 || signature[1]!==0x4b)
-      throw Error("The server did not return a valid ZIP archive.");
-    const filename="InterfaceScout_"+(source.length>1?"MultiPDB":safe(source[0].name))+
-      "_Complete_Results.zip";
-    // This request follows many asynchronous image/PDF operations. Browsers,
-    // especially Windows Chrome/Edge, may suppress a programmatic download
-    // after the originating user gesture has expired. Preserve a REAL link
-    // so the user can always explicitly save the verified ZIP.
-    ensembleDownloadUrl=URL.createObjectURL(blob);
+    const prepared=await result.json();
+    if(!prepared.download_url || !prepared.download_url.startsWith("/export-package/download/") ||
+       !/^[0-9a-f]{32}$/.test(prepared.download_url.split("/").pop()))
+      throw Error("The server returned an invalid download link.");
     const link=ensembleReadyLink();
-    link.href=ensembleDownloadUrl;
-    link.download=filename;
+    link.href=prepared.download_url;
+    link.download=prepared.filename||"InterfaceScout_Complete_Results.zip";
     link.style.display="block";
-    link.textContent="Save completed ZIP · "+(blob.size/1048576).toFixed(1)+" MB";
-    link.setAttribute("aria-label","Save "+filename);
-    // Retain existing auto-download for browsers that allow it, and keep the
-    // manual link available indefinitely until another export or page unload.
-    link.click();
-    ensembleMessage("ZIP ready ("+(blob.size/1048576).toFixed(1)+" MB). If the browser did not download it automatically, select ‘Save completed ZIP’ above. Check the browser's download permissions and Downloads folder.");
+    link.textContent="Download ZIP now · "+(prepared.bytes/1048576).toFixed(1)+" MB";
+    link.setAttribute("aria-label","Download complete research ZIP");
+    // A server-served attachment does not rely on a transient blob URL and
+    // can be downloaded again with an explicit click for up to one hour.
+    window.location.assign(prepared.download_url);
+    link.scrollIntoView({behavior:"smooth",block:"nearest"});
+    ensembleMessage("Complete ZIP prepared on your computer ("+
+      (prepared.bytes/1048576).toFixed(1)+
+      " MB). Your browser should start the download. Otherwise click ‘Download ZIP now’ above.");
   }catch(e){ensembleMessage(e.message,true)}
   finally{
     ensembleBusy=false;

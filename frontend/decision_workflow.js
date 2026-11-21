@@ -2,16 +2,14 @@
 /* User-chosen visual exploration presets, not automated chemistry predictions.
    All eleven maps are always calculated and exported. */
 const chemistryPresets=[
-  {id:"individual",label:"Explore all 11 maps individually",maps:[],
-   rationale:"Inspect each canonical map on its own. No intersection or combined score is implied."},
+  {id:"individual",label:"All 11 maps",maps:[],
+   rationale:"All maps are available individually, without an imposed overlap."},
   {id:"hydrophobic_aromatic",label:"Hydrophobic + aromatic",maps:["hydrophobic","pi_carbon"],
-   rationale:"Inspect spatial co-localization of hydrophobic and aromatic-compatible regions. These channels are related, not independent evidence of adsorption."},
-  {id:"cationic_donor",label:"Cationic + H-bond donor",maps:["cationic","hbond_donor"],
-   rationale:"Explore neighborhoods with positive-compatible and donor-compatible signatures. Distinct residue chemistry may occur within one 8 Å patch."},
-  {id:"anionic_acceptor",label:"Anionic + H-bond acceptor",maps:["anionic","hbond_acceptor"],
-   rationale:"Explore neighborhoods with negative-compatible and acceptor-compatible signatures. Co-location does not imply binding to a specific surface."},
-  {id:"sulfur_coordination",label:"Sulfur affinity + metal coordination",maps:["soft_metal_sulfur","metal_coord"],
-   rationale:"Compare where sulfur-affinity and transition-metal coordination channels occur nearby. They describe different possible interfacial chemistries, not one fitted metal-binding score."}
+   rationale:"Explore nearby hydrophobic and aromatic-compatible surface regions."},
+  {id:"cationic_donor",label:"Positive + donor",maps:["cationic","hbond_donor"],
+   rationale:"Explore neighborhoods with positive-compatible and hydrogen-bond donor features."},
+  {id:"anionic_acceptor",label:"Negative + acceptor",maps:["anionic","hbond_acceptor"],
+   rationale:"Explore neighborhoods with negative-compatible and hydrogen-bond acceptor features."}
 ];
 let decisionGoal="individual",decisionCombo=null,decisionCompare=null;
 let decisionSecondPdb=null,decisionSecondName="",decisionComboError="",decisionRequestId=0;
@@ -20,11 +18,10 @@ function decisionInstall(){
   style.textContent=".workPanel{background:#fff;border:1px solid #dfe4ec;border-radius:8px;margin:10px 0;padding:12px}.workPanel h3{font-size:14px;margin:3px 0 9px}.workPanel p,.workNote{font-size:12px;color:#667085;line-height:1.48}.workMetric{display:inline-block;margin:0 17px 8px 0;font-size:12px}.workAction{font-size:11px;border:1px solid #dfe4ec;border-radius:6px;background:#fff;padding:5px 7px;cursor:pointer;color:#2563eb}.workError{color:#b42318;font-size:12px}";
   document.head.appendChild(style);
   $("run").insertAdjacentHTML("beforebegin",
-    '<div class="section"><h3>Explore with a preset</h3>'+
-    '<div class="field"><label for="researchGoal">Chemistry view</label><select class="input" id="researchGoal" onchange="decisionChooseGoal(this.value)"></select></div>'+
-    '<div class="note" id="goalExplanation" style="margin:8px 0"></div>'+
-    '<button class="btn secondary" type="button" onclick="decisionApplyGoal()">Apply preset</button>'+
-    '<div class="workNote">A preset changes only which maps you see together. All 11 are still calculated and exported. Combined results describe spatial co-location, not binding or a new chemistry score.</div></div>');
+    '<div class="section"><h3>Quick views</h3>'+
+    '<div id="presetChips" class="preset-chips" role="group" aria-label="Quick chemistry views"></div>'+
+    '<p id="goalExplanation" class="workspace-quiet" aria-live="polite"></p>'+
+    '<p class="workspace-quiet">One click changes the view. All 11 maps remain in the download. Multi-map views show nearby chemistry, not predicted binding.</p></div>');
   const exportSection=$("excelBtn").closest(".section");
   exportSection.insertAdjacentHTML("afterend",
     '<div class="section"><h3>Compare conformations</h3>'+
@@ -37,17 +34,24 @@ function decisionInstall(){
   $("results").insertAdjacentHTML("afterend",
     '<div id="decisionExport" style="padding:0 16px 15px;display:none">'+
     '<button class="btn secondary" onclick="decisionExportReport()">Export research report (JSON)</button></div>');
-  $("researchGoal").innerHTML=chemistryPresets.map(p=>
-    '<option value="'+esc(p.id)+'">'+esc(p.label)+'</option>').join("");
+  $("presetChips").innerHTML=chemistryPresets.map(p=>
+    '<button type="button" class="preset-chip" data-preset="'+esc(p.id)+
+    '" aria-pressed="false" title="'+esc(p.rationale)+
+    '" onclick="decisionChooseGoal(this.dataset.preset)">'+esc(p.label)+'</button>').join("");
   decisionChooseGoal("individual");
 }
 function decisionChooseGoal(id){
   const p=chemistryPresets.find(x=>x.id===id)||chemistryPresets[0];
   decisionGoal=p.id;
   $("goalExplanation").textContent=p.rationale;
+  document.querySelectorAll("#presetChips .preset-chip").forEach(button=>{
+    button.setAttribute("aria-pressed",String(button.dataset.preset===p.id));
+  });
+  // A quick view is applied immediately: no dropdown + Apply step.
+  if(data)decisionApplyGoal();
 }
 function decisionApplyGoal(){
-  if(!data){$("error").textContent="Analyze a protein first to apply a preset.";return;}
+  if(!data)return;
   const p=chemistryPresets.find(x=>x.id===decisionGoal)||chemistryPresets[0];
   const keys=p.maps.filter(k=>Object.hasOwn(data.maps,k));
   decisionCombo=null;decisionComboError="";

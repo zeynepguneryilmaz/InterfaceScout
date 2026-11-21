@@ -4,9 +4,14 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Optional
 from io import BytesIO
+import os
+import time
+import uuid
+import tempfile
+import threading
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -116,6 +121,75 @@ def export_package(req: ExportRequest):
     return StreamingResponse(
         BytesIO(data), media_type="application/zip",
         headers={"Content-Disposition": 'attachment; filename="InterfaceScout_complete_results.zip"'},
+    )
+
+
+# Prepared exports are stored under a private temporary directory on the
+# LOCAL application server, not in a browser Blob URL. The browser can request
+# a normal GET/download directly, even after long-running screenshot work.
+_EXPORT_DIRECTORY = Path(tempfile.mkdtemp(prefix="interfacescout_exports_"))
+_EXPORT_TTL_SECONDS = 60 * 60
+_EXPORT_LIMIT = 20
+_EXPORT_LOCK = threading.Lock()
+_EXPORT_FILES: dict[str, tuple[Path, float]] = {}
+
+
+def _clean_expired_exports(now: float) -> None:
+    # Called only while holding _EXPORT_LOCK.
+    for token, (path, created) in list(_EXPORT_FILES.items()):
+        if now - created > _EXPORT_TTL_SECONDS or not path.exists():
+            path.unlink(missing_ok=True)
+            _EXPORT_FILES.pop(token, None)
+
+
+@app.post("/export-package/prepare")
+def prepare_export_package(req: ExportRequest):
+    """Generate the full archive on disk and issue a temporary GET download."""
+    try:
+        archive = build_export_zip(req.model_dump())
+    except (KeyError, ValueError, TypeError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    token = uuid.uuid4().hex
+    path = _EXPORT_DIRECTORY / (token + ".zip")
+    # Write atomically: never advertise a partially written ZIP.
+    draft = _EXPORT_DIRECTORY / (token + ".tmp")
+    try:
+        draft.write_bytes(archive)
+        os.replace(draft, path)
+    finally:
+        draft.unlink(missing_ok=True)
+
+    with _EXPORT_LOCK:
+        now = time.time()
+        _clean_expired_exports(now)
+        while len(_EXPORT_FILES) >= _EXPORT_LIMIT:
+            oldest = min(_EXPORT_FILES, key=lambda t: _EXPORT_FILES[t][1])
+            _EXPORT_FILES.pop(oldest)[0].unlink(missing_ok=True)
+        _EXPORT_FILES[token] = (path, now)
+    return {
+        "download_url": "/export-package/download/" + token,
+        "filename": "InterfaceScout_Complete_Results.zip",
+        "bytes": path.stat().st_size,
+        "expires_in_seconds": _EXPORT_TTL_SECONDS,
+        "message": "Ready for direct browser download",
+    }
+
+
+@app.get("/export-package/download/{token}")
+def download_prepared_export(token: str):
+    """Serve a prepared ZIP with native browser attachment semantics."""
+    with _EXPORT_LOCK:
+        _clean_expired_exports(time.time())
+        entry = _EXPORT_FILES.get(token)
+    if entry is None or not entry[0].is_file():
+        raise HTTPException(status_code=404, detail="This export has expired. Prepare a new download.")
+    return FileResponse(
+        path=entry[0],
+        media_type="application/zip",
+        filename="InterfaceScout_Complete_Results.zip",
+        content_disposition_type="attachment",
+        headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"},
     )
 
 
