@@ -62,7 +62,7 @@ def build(out_dir: Path, version: str) -> None:
     checksums = []
     for path in sorted(out_dir.glob("*.zip")):
         checksums.append(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}")
-    (out_dir / "SHA256SUMS.txt").write_text("\\n".join(checksums) + "\\n", encoding="utf-8")
+    (out_dir / "SHA256SUMS.txt").write_text("\n".join(checksums) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":
