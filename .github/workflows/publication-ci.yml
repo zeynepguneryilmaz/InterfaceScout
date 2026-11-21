@@ -1,0 +1,160 @@
+name: Cross-platform publication CI
+
+on:
+  push:
+    branches: [main, publication-hardening-2026-10-05]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-15-intel]
+        python-version: ["3.10", "3.11", "3.12"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install pinned backend dependencies
+        run: python -m pip install --disable-pip-version-check -r backend/requirements.txt
+      - name: Publication smoke tests
+        run: python -m unittest discover -s tests -v
+      - name: JavaScript syntax checks
+        shell: bash
+        run: |
+          node --check frontend/decision_workflow.js
+          node --check frontend/ensemble_ui.js
+      - name: Frozen validation checks
+        run: python validation/verify_publication.py
+      - name: Unix launcher checks
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          bash run_local.sh --check
+          bash start.sh --check
+          bash start.command --check
+      - name: Windows launcher checks
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          call run_local.bat --check
+          call start.bat --check
+          call "Create Desktop Shortcut.bat" --check
+      - name: macOS branded desktop app smoke
+        if: runner.os == 'macOS' && matrix.python-version == '3.12'
+        shell: bash
+        run: |
+          bash "Create Desktop App.command" --check
+          testhome="$(mktemp -d)"
+          HOME="$testhome" bash "Create Desktop App.command"
+          test -s "$testhome/Desktop/InterfaceScout.app/Contents/Resources/AppIcon.icns"
+          test -x "$testhome/Desktop/InterfaceScout.app/Contents/MacOS/InterfaceScout"
+          rm -rf "$testhome"
+      - name: Linux branded desktop entry smoke
+        if: runner.os == 'Linux' && matrix.python-version == '3.12'
+        shell: bash
+        run: |
+          bash "Create Desktop Shortcut.sh" --check
+          testhome="$(mktemp -d)"
+          HOME="$testhome" bash "Create Desktop Shortcut.sh"
+          grep -Fq "InterfaceScout" "$testhome/Desktop/InterfaceScout.desktop"
+          grep -Fq "Icon=" "$testhome/Desktop/InterfaceScout.desktop"
+          rm -rf "$testhome"
+
+  browser-smoke:
+    name: browser-smoke (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install application and Playwright
+        run: |
+          python -m pip install --disable-pip-version-check -r backend/requirements.txt
+          python -m pip install playwright==1.55.0
+          python -m playwright install chromium
+      - name: Install Linux Chromium system libraries
+        if: runner.os == 'Linux'
+        run: python -m playwright install-deps chromium
+      - name: Actual UI and screenshot-backed ZIP cross-check
+        run: python tests/browser_smoke.py
+      - name: Render and verify real PDF previews
+        if: runner.os == 'Linux'
+        run: |
+          python -m pip install pypdfium2==4.30.0 pypdf==5.9.0
+          python tests/render_pdf_previews.py
+      - name: Attach real 3D screenshot and rendered PDF proofs
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: InterfaceScout-Surface-Atlas-PDF-preview
+          path: dist/pdf_preview/*
+          if-no-files-found: error
+
+  large-structure-stress:
+    name: large-structure-stress (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned dependencies
+        run: python -m pip install --disable-pip-version-check -r backend/requirements.txt
+      - name: Real large protein and all-data ZIP/PDF/CSV stress
+        run: python tests/stress_large_structure.py
+
+  gapdh-tetramer-stress:
+    name: gapdh-tetramer-stress (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned backend dependencies
+        run: python -m pip install --disable-pip-version-check -r backend/requirements.txt
+      - name: Experimentally deposited 1U8F GAPDH monomer/tetramer 11-map and export stress
+        run: python tests/stress_gapdh_tetramer.py
+
+  first-install-smoke:
+    name: first-install-smoke (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: First-time virtual environment setup, launcher, and HTTP API smoke
+        run: python tests/first_launch_smoke.py

@@ -1,0 +1,53 @@
+name: Build platform source distributions
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version label for archive names'
+        required: true
+        default: 'manual-preview'
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build Windows macOS and Linux source packages
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+        run: |
+          set -euo pipefail
+          python tools/build_release_archives.py --out dist --version "$RELEASE_VERSION"
+          (cd dist && sha256sum -c SHA256SUMS.txt)
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          archives = sorted(Path("dist").glob("*.zip"))
+          assert len(archives) == 3, archives
+          for archive in archives:
+              with ZipFile(archive) as z:
+                  assert z.testzip() is None
+                  names = set(z.namelist())
+                  for path in ("InterfaceScout/backend/app.py", "InterfaceScout/frontend/index.html", "InterfaceScout/examples/README.md", "InterfaceScout/README.md"):
+                      assert path in names, (archive, path)
+                  assert "InterfaceScout/tests/test_publication_smoke.py" not in names
+          print("Three distribution archives verified.")
+          PY
+      - name: Keep artifacts for workflow/manual review
+        uses: actions/upload-artifact@v4
+        with:
+          name: InterfaceScout-platform-source-distributions
+          path: |
+            dist/*.zip
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+      - name: Archive output
+        run: echo "Manual packaging preview completed; release publication is managed separately."

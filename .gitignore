@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Runtime / log artifacts
+*.log
+startup_log.txt
+
+# Locally generated validation/reproduction data
+publication_data/
+backend/selection_pdbs/
+backend/experimental_predictions/
+backend/experimental_comparison/
+backend/core_parameter_selection_consensus.json
+
+# OS / editor artifacts
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.bak
+
+# Generated local 1LYZ example outputs (keep results/README.md tracked)
+examples/1LYZ/results/*.json
+examples/1LYZ/results/*.csv
+examples/1LYZ/results/*.xlsx
+examples/1LYZ/results/*.pdb
+examples/1LYZ/results/*.zip
+
+# Release build output
+dist/

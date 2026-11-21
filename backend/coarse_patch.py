@@ -1,0 +1,156 @@
+"""Coarse protein-surface patch construction for InterfaceScout."""
+from __future__ import annotations
+
+from typing import Dict, List
+
+import numpy as np
+
+from geometry import (
+    build_surface_geometry,
+    ca_distance,
+    same_face,
+    patch_orientation_coherence,
+    patch_diameter_A,
+)
+from model_settings import COARSE_PATCH_RADIUS_A
+
+PATCH_SCALE_A = COARSE_PATCH_RADIUS_A
+
+
+def _local_maxima(channel: dict, geometry: dict) -> List[dict]:
+    rows = [
+        r for r in channel.get("patch_centers", [])
+        if r.get("center_key") in geometry["coords"]
+        and float(r.get("multiscale_persistence", 0.0)) > 0.0
+    ]
+    rows.sort(
+        key=lambda r: (
+            -float(r.get("multiscale_persistence", 0.0)),
+            -float(r.get("multiscale_geomean", 0.0)),
+            str(r.get("center_key")),
+        )
+    )
+
+    kept: List[dict] = []
+    for row in rows:
+        key = str(row["center_key"])
+        if any(
+            ca_distance(key, str(prev["center_key"]), geometry) <= PATCH_SCALE_A
+            and same_face(key, str(prev["center_key"]), geometry)
+            for prev in kept
+        ):
+            continue
+        kept.append(row)
+    return kept
+
+
+def _patch_around_center(center: dict, chemistry_rows: Dict[str, dict], geometry: dict) -> dict:
+    ckey = str(center["center_key"])
+    members = [
+        key for key in geometry["coords"]
+        if ca_distance(ckey, key, geometry) <= PATCH_SCALE_A and same_face(ckey, key, geometry)
+    ]
+    if ckey not in members:
+        members.append(ckey)
+    members = sorted(set(members))
+    seeds = sorted(k for k in members if k in chemistry_rows)
+    return {"center": ckey, "center_row": center, "members": members, "seeds": seeds}
+
+
+def _patch_descriptors(patch: dict, geometry: dict) -> dict:
+    members = list(patch["members"])
+    seeds = list(patch["seeds"])
+    center = patch["center_row"]
+
+    chemistry_fraction = float(len(seeds) / len(members)) if members else 0.0
+    patch_coherence = float(center.get("multiscale_persistence", 0.0)) / 100.0
+    access_vals = [float(geometry["scrsa"].get(k, 0.0)) for k in members]
+    accessibility = float(np.mean(access_vals)) if access_vals else 0.0
+    orientation = patch_orientation_coherence(members, geometry)
+
+    meta = geometry["meta"]
+    rows = [meta[k] for k in members if k in meta]
+    seed_rows = [meta[k] for k in seeds if k in meta]
+    chains = sorted({r["chain"] for r in rows})
+    resseqs = [int(r["res_seq"]) for r in rows]
+
+    return {
+        "center_key": patch["center"],
+        "center_residue": meta.get(patch["center"]),
+        "members": members,
+        "seed_members": seeds,
+        "n_members": len(members),
+        "n_chemistry_seeds": len(seeds),
+        "chains": chains,
+        "residue_span_min": min(resseqs) if resseqs else None,
+        "residue_span_max": max(resseqs) if resseqs else None,
+        "member_residues": rows,
+        "seed_residues": seed_rows,
+        "diameter_A": patch_diameter_A(members, geometry),
+        "chemistry_support": chemistry_fraction,
+        "mean_accessibility": accessibility,
+        "patch_coherence": patch_coherence,
+        "orientation_coherence": orientation,
+        "spatial_coherence": "fixed 8 A local neighbourhood around a chemistry-patch maximum",
+    }
+
+
+def _dominates(a: dict, b: dict) -> bool:
+    fields = (
+        "chemistry_support",
+        "mean_accessibility",
+        "patch_coherence",
+        "orientation_coherence",
+    )
+    av = [float(a[f]) for f in fields]
+    bv = [float(b[f]) for f in fields]
+    return all(x >= y for x, y in zip(av, bv)) and any(x > y for x, y in zip(av, bv))
+
+
+def assign_pareto_fronts(patches: List[dict]) -> List[dict]:
+    remaining = set(range(len(patches)))
+    front = 1
+    while remaining:
+        current = []
+        for i in remaining:
+            if not any(_dominates(patches[j], patches[i]) for j in remaining if j != i):
+                current.append(i)
+        for i in current:
+            patches[i]["pareto_front"] = front
+        remaining -= set(current)
+        front += 1
+
+    patches.sort(
+        key=lambda p: (
+            int(p["pareto_front"]),
+            -float(p["patch_coherence"]),
+            -float(p["chemistry_support"]),
+            str(p.get("center_key", "")),
+        )
+    )
+    for rank, p in enumerate(patches, start=1):
+        p["display_rank"] = rank
+        p["classification"] = (
+            "primary plausible interface" if p["pareto_front"] == 1 else "alternative interface"
+        )
+    return patches
+
+
+def build_coarse_patches(*, v1_result: dict, chemistry: str, ca_nodes: List[dict]) -> List[dict]:
+    channel = v1_result.get("chemistries", {}).get(chemistry)
+    if not channel:
+        raise ValueError(f"Unknown or unavailable chemistry channel: {chemistry}")
+
+    geometry = build_surface_geometry(v1_result, ca_nodes)
+    chemistry_rows = {
+        str(r["key"]): r
+        for r in channel.get("residues", [])
+        if r.get("key") and float(r.get("local_score", 0.0)) > 0.0
+    }
+    if not chemistry_rows:
+        return []
+
+    maxima = _local_maxima(channel, geometry)
+    raw_patches = [_patch_around_center(c, chemistry_rows, geometry) for c in maxima]
+    patches = [_patch_descriptors(p, geometry) for p in raw_patches]
+    return assign_pareto_fronts(patches)

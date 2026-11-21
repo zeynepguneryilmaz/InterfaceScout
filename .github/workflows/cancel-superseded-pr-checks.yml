@@ -1,0 +1,23 @@
+name: Cancel superseded InterfaceScout PR checks
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/cancel-superseded-pr-checks.yml
+permissions:
+  actions: write
+  contents: read
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel only obsolete development test runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          for id in 44959044045 44959175089 44959799274 44959812865 44959833699 44959833766 44959983284 44959999926; do
+            gh api --method POST "repos/$GH_REPO/actions/runs/$id/cancel" >/dev/null 2>&1 || true
+          done
+          echo "Superseded PR checks cancelled or already complete."

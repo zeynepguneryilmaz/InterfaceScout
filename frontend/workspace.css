@@ -1,0 +1,64 @@
+/* InterfaceScout workspace — progressive disclosure; scientific maps remain unchanged. */
+:root{--bg:#f7f6f3;--card:#fff;--line:#e6e3de;--text:#292936;--muted:#747583;--blue:#62516d;--purple:#704658;--soft:#f6eef1}
+body{background:var(--bg);font-family:Inter,"Segoe UI",Arial,sans-serif;color:var(--text)}
+header{height:76px;padding:0 28px;border-color:var(--line);background:#ffffffed}
+.brand h1{letter-spacing:-.7px;font-size:21px;font-weight:700}
+.brand p{font-size:11px;letter-spacing:.08px}
+.brand img{border-radius:14px}
+.wrap{grid-template-columns:344px minmax(0,1fr);min-height:calc(100vh - 76px)}
+aside{padding:24px 19px;background:#fcfbf9;border-right:1px solid var(--line);max-height:calc(100vh - 76px);overflow-y:auto}
+.section{margin:0 0 20px}
+.section h3,.groupTitle{font-size:11px;color:#7a4f61;font-weight:700;letter-spacing:.65px;text-transform:uppercase}
+.field label{font-size:12px;margin-bottom:7px;color:#6e6e78}
+.input{font-size:13px;padding:12px;border-radius:12px;border:1px solid #dad8d6;min-height:42px}
+.input:focus-visible{outline:2px solid #aa8c9a;outline-offset:1px}
+.btn{background:#644557;border-radius:12px;padding:12px 14px;font-size:13px;box-shadow:none;transition:transform .14s,background .14s}
+.btn:hover{background:#523647;transform:translateY(-1px)}
+.btn.secondary{color:#554453;background:#fff;border:1px solid #e1dce0;box-shadow:none}
+.btn.secondary:hover{background:#faf5f7}
+.drop{padding:19px 13px;border-radius:13px;border:1px dashed #c5b6bd;background:#fff9fb;font-size:12px;line-height:1.7}
+.drop:hover{border-color:#8f6b7b;background:#fff3f7}
+.note{background:#f8f7f5;border-color:#eae6e2;border-radius:12px;padding:12px;font-size:11px}
+main{grid-template-rows:minmax(420px,61vh) auto}
+.viewerWrap{background:#f3f2ef;border-bottom:1px solid #e6e3de}
+.viewerTool{border-radius:12px;background:#ffffffeb;border:1px solid #e3dfe0;font-size:12px;padding:9px 11px}
+.viewerTool.on{border-color:#a98499;background:#f5ebf0;color:#694457}
+.viewerHint{background:#3b3340cc;border-radius:9px}
+.results{padding:22px 24px 32px}
+.mapTab,.check{font-size:12px;padding:8px 12px;border-color:#e4dde0;background:white}
+.mapTab.on,.check.on{background:#f5ebf0;border-color:#aa8d9c;color:#673e53}
+.metric,.patch,.workPanel,.is-set{border:1px solid #e8e3e3;border-radius:14px;background:#fff}
+.patch{padding:17px}.patch.primary{background:#fffcfd;border-color:#cdb9c2}
+.workspace-top{padding:0 0 18px}
+.workspace-eyebrow{color:#886f7d;letter-spacing:1.8px;font-weight:750;font-size:10px}
+.workspace-title{font-size:21px;line-height:1.15;letter-spacing:-.55px;margin:8px 0 7px}
+.workspace-subtitle{font-size:12px;line-height:1.6;color:#74727a;margin:0 0 15px}
+.workspace-modes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:4px;background:#efecea;border-radius:14px}
+.workspace-mode{border:0;border-radius:11px;background:transparent;padding:11px 4px;font-size:11px;line-height:1.2;color:#716e75;cursor:pointer;font-weight:650}
+.workspace-mode[aria-pressed="true"]{background:#fff;color:#633f53;box-shadow:0 2px 9px #49374012}
+.workspace-mode:focus-visible{outline:2px solid #9c7285;outline-offset:2px}
+.workspace-hidden{display:none!important}
+.workspace-settings{margin-top:9px;background:#fff;border-radius:12px;border:1px solid #e7e2e4;padding:11px 12px}
+.workspace-settings summary,.workspace-more summary{cursor:pointer;font-weight:650;color:#554652;font-size:12px}
+.workspace-settings .field{margin-top:10px}
+.workspace-export{background:#fff;border:1px solid #ded5d9;border-radius:16px;padding:15px;margin:17px 0;box-shadow:0 5px 18px #452f4110}
+.workspace-export h3{margin:0 0 5px;font-size:14px;letter-spacing:-.2px}
+.workspace-export p{font-size:12px;line-height:1.5;color:#77727a;margin:0 0 12px}
+.workspace-export #isFullExport{font-size:13px;background:#644557;color:white;width:100%;margin:0}
+.workspace-export .is-errors{margin-top:10px}
+.workspace-export .is-progress{font-size:11px;color:#694457}
+.workspace-more{margin:12px 0 0;border-top:1px solid #eee9eb;padding-top:10px}
+.workspace-more .section{margin:12px 0 0}
+.workspace-more .btn{margin-top:7px}
+.workspace-quiet{font-size:11px;color:#7a737b;margin-top:8px}
+.workspace-empty{background:#fff;border:1px solid #ece7e9;border-radius:16px;padding:26px;max-width:600px}
+.workspace-empty strong{font-size:18px}
+@media(max-width:900px){aside{max-height:none;overflow:visible;padding:20px}.wrap{grid-template-columns:1fr}main{grid-template-rows:minmax(370px,52vh) auto}.results{padding:18px}.workspace-title{font-size:20px}}
+
+/* Single-tap, unobtrusive chemistry presets. */
+.preset-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:8px 0 5px}
+.preset-chip{min-height:45px;padding:10px 8px;font-size:11px;line-height:1.35;font-weight:650;text-align:center;cursor:pointer;color:#655660;background:#fff;border:1px solid #e6dee1;border-radius:11px}
+.preset-chip:hover{background:#faf3f6;border-color:#bda3b1}
+.preset-chip[aria-pressed="true"]{color:#623d51;border-color:#916c80;background:#f6eef2;box-shadow:0 0 0 1px #916c8022}
+.preset-chip:focus-visible{outline:2px solid #946f83;outline-offset:2px}
+#isReadyDownload{position:relative;display:block;border:2px solid #805a6e!important;background:#fcf4f7!important;color:#593c50!important;font-weight:750!important;min-height:44px;line-height:24px}
