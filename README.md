@@ -106,6 +106,18 @@ The literature benchmark contains seven primary conditions and two secondary cha
 
 ## Installation and use
 
+The same InterfaceScout source repository works on Windows, macOS and Linux. Use the platform-specific guide below; **you do not need to download separate example ZIPs**:
+
+| Platform | First-time setup | Subsequent launch | Guide |
+|---|---|---|---|
+| Windows | `run_local.bat` | `start.bat` | [Windows](docs/INSTALL_WINDOWS.md) |
+| macOS | `bash run_local.sh` | `bash start.command` | [macOS](docs/INSTALL_MACOS.md) |
+| Linux | `bash run_local.sh` | `bash start.sh` | [Linux](docs/INSTALL_LINUX.md) |
+
+For verified demonstrations and files produced by the program, visit **[examples/](examples/README.md)**. The benchmark includes archived case-level results; the 1LYZ example includes an executable script that writes genuine results after the application is run. Results not yet generated are clearly marked as such.
+
+**SSL / certificate error during initial pip install:** see the relevant platform guide. A self-signed certificate chain is an environment trust issue, not a chemical mapping error; do not bypass TLS verification.
+
 InterfaceScout supports **Python 3.10-3.12**. The pinned dependency set is tested on Windows, macOS, and Linux by GitHub Actions.
 
 ### Windows
