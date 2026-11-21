@@ -35,3 +35,6 @@ examples/1LYZ/results/*.csv
 examples/1LYZ/results/*.xlsx
 examples/1LYZ/results/*.pdb
 examples/1LYZ/results/*.zip
+
+# Release build output
+dist/
