@@ -15,6 +15,7 @@ from urllib.request import urlopen
 import zipfile
 
 from PIL import Image, ImageChops
+from openpyxl import load_workbook
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -42,6 +43,21 @@ def assert_export(download, label: str, multi: bool):
                     f"{label}: unexpected map outputs for {base}, "
                     f"PDF={len(pdfs)}, screenshot={len(screenshots)}, PDB={len(bfactor)}"
                 )
+            # Selection changes presentation, never the full scientific export:
+            # every Excel workbook must contain scores for all eleven maps.
+            workbook = load_workbook(BytesIO(archive.read(base + "/complete_results.xlsx")), read_only=True, data_only=True)
+            assert "Map_Residue_Scores" in workbook.sheetnames
+            sheet = workbook["Map_Residue_Scores"]
+            headers = [cell.value for cell in next(sheet.iter_rows(max_row=1))]
+            map_col = headers.index("Map")
+            exported_maps = {row[map_col] for row in sheet.iter_rows(min_row=2, values_only=True)}
+            expected = {
+                "anionic", "cationic", "hydrophobic", "pi_carbon", "hbond_donor",
+                "hbond_acceptor", "oxide", "calcium_phosphate", "metal_coord",
+                "soft_metal_sulfur", "phosphate",
+            }
+            assert exported_maps == expected, (label, exported_maps)
+            workbook.close()
             a = archive.read(base + "/screenshots/01_anionic.png")
             c = archive.read(base + "/screenshots/03_hydrophobic.png")
             with Image.open(BytesIO(a)) as im_a, Image.open(BytesIO(c)) as im_c:
