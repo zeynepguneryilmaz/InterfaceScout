@@ -95,10 +95,16 @@
     $("run")?.classList.toggle("workspace-hidden",next==="multi");
     const results=$("isSetResults");
     if(results)results.classList.toggle("workspace-hidden",next==="single");
-    if(prev!==next && typeof ensembleResult!=="undefined" && ensembleResult){
-      ensembleResult=null;ensembleAnalyzedInputs=[];ensembleConsensusKey=null;
-      if(results)results.innerHTML="";
-      if(typeof ensembleRefresh==="function")ensembleRefresh();
+    if(prev!==next){
+      if(typeof ensembleResult!=="undefined" && ensembleResult){
+        ensembleResult=null;ensembleAnalyzedInputs=[];ensembleConsensusKey=null;
+        if(results)results.innerHTML="";
+        if(typeof ensembleRefresh==="function")ensembleRefresh();
+      }
+      if(typeof decisionCompare!=="undefined" && decisionCompare){
+        decisionCompare=null;
+        if(typeof data!=="undefined" && data && typeof render==="function")render();
+      }
     }
     if(typeof viewer!=="undefined"&&viewer&&typeof viewer.resize==="function"){
       requestAnimationFrame(()=>viewer.resize());
