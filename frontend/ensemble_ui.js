@@ -289,7 +289,8 @@ async function ensembleExportAll(){
       throw Error(typeof details==="string"?details:JSON.stringify(details));
     }
     const prepared=await result.json();
-    if(!prepared.download_url||!/^\\/export-package\\/download\\/[0-9a-f]{32}$/.test(prepared.download_url))
+    if(!prepared.download_url || !prepared.download_url.startsWith("/export-package/download/") ||
+       !/^[0-9a-f]{32}$/.test(prepared.download_url.split("/").pop()))
       throw Error("The server returned an invalid download link.");
     const link=ensembleReadyLink();
     link.href=prepared.download_url;
