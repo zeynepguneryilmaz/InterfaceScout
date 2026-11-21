@@ -85,6 +85,9 @@ function decisionDirectProperties(){
 function decisionFormat(x){return x===null||x===undefined?"—":Number(x).toFixed(3)}
 function decisionComboPanel(){
   if(selected.size<2)return "";
+  const donorAcceptorNote=selected.has("hbond_donor")&&selected.has("hbond_acceptor")
+    ? '<p class="workNote"><b>Interpretation note:</b> H-bond donor and acceptor are complementary interactions. Their exact same-residue intersection is not itself a binding criterion; some residues can have both capabilities. Examine the channels separately or inspect distinct residues in one neighborhood.</p>'
+    : "";
   if(decisionComboError)return '<div class="workPanel"><p class="workError">'+esc(decisionComboError)+'</p></div>';
   if(!decisionCombo)return '<div class="workPanel"><p>Calculating same-residue intersection and spatial co-localization…</p></div>';
   const c=decisionCombo,all=c.regions.filter(function(x){return x.all_maps_colocated});
@@ -93,7 +96,7 @@ function decisionComboPanel(){
     return '<tr><td>'+esc(r.source_center_key)+'</td><td>'+r.n_represented_maps+'/'+selected.size+'</td>'+
       '<td>'+esc(tag)+'</td><td><button class="workAction" onclick="decisionHighlightRegion('+i+')">Highlight</button></td></tr>';
   }).join("");
-  return '<div class="workPanel"><h3>Combined maps — spatial co-localization</h3>'+
+  return '<div class="workPanel"><h3>Combined maps — spatial co-localization</h3>'+donorAcceptorNote+
     '<p><b>Exact intersection</b>: same residue supports every selected channel. <b>Co-localization</b>: different residues supporting selected channels within one existing 8 Å patch. Not a combined binding score.</p>'+
     '<span class="workMetric"><b>'+c.n_exact_overlap+'</b> exactly shared residues</span>'+
     '<span class="workMetric"><b>'+all.length+'</b> fully co-localized candidate patches (shown)</span>'+
@@ -210,7 +213,7 @@ async function decisionCompareStructures(){
 function decisionExportReport(){
   if(!data)return;
   const report={scope:"Descriptive structural decision support, not adsorption prediction",
-    research_goal:decisionGoal,inputs:data.input,engine_version:data.version,method:data.method,
+    chemistry_preset:decisionGoal,inputs:data.input,engine_version:data.version,method:data.method,
     protein_properties:data.protein_properties,selected_maps:Array.from(selected),
     map_combinations:decisionCombo,conformation_comparison:decisionCompare,
     warnings:["No adsorption free energy, unique pose or unfolding prediction",
