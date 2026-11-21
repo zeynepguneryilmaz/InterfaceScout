@@ -10,11 +10,11 @@ Double-click `run_local.bat` or run it in Command Prompt:
 run_local.bat
 ```
 
-The script creates `backend\.venv` if it does not already exist, checks the exact pinned dependencies and installs only if they are missing or incompatible. If installation fails, the command window stays open and explains where to look. For subsequent runs, use `start.bat`, which does not contact PyPI.
+The script creates `backend\.venv` if it does not already exist, checks pinned dependencies, and installs only if they are missing or incompatible. The published Windows package includes **offline wheels for Python 3.10, 3.11, and 3.12 (Windows x64)**. If the matching wheelhouse is included, the installation runs with `--no-index`, without contacting PyPI. If installation fails, the command window stays open and explains where to look. For subsequent runs, use `start.bat`, which does not contact PyPI.
 
 ## CERTIFICATE_VERIFY_FAILED or self-signed certificate
 
-The secure HTTPS connection used by pip cannot verify a certificate from the current network. Corporate/university HTTPS interception and custom trust-store configuration are common causes, but the specific origin must be confirmed locally.
+If you are installing from an older or source-only package without offline wheels, the secure HTTPS connection used by pip cannot verify a certificate from the current network. Corporate/university HTTPS interception and custom trust-store configuration are common causes, but the specific origin must be confirmed locally.
 
 **Do not use `--trusted-host`, `--cert ""`, `PYTHONHTTPSVERIFY=0`, or disable certificate verification.**
 
@@ -47,3 +47,9 @@ Use `run_local.bat` instead of `start.bat` if the environment has not been fully
 - The local interface opens at http://localhost:8000.
 
 See [examples](../examples/README.md) for verified protein demonstrations.
+
+## Offline wheelhouse layout
+
+The Windows Release archive includes `wheelhouse/windows/py3.10/`, `py3.11/`, and `py3.12/` with the exact pinned dependencies and their transitive binary wheels for 64-bit Windows. Do not move these directories outside the extracted application folder. Python x86 (32-bit) is not supported by these wheels. The startup script chooses the matching wheelhouse automatically; a corporate SSL certificate is not needed to **install those bundled wheels**.
+
+**Note:** Fetching an external PDB by ID later still requires normal HTTPS access to RCSB. Use an uploaded local PDB if the network certificate chain also affects RCSB access.
