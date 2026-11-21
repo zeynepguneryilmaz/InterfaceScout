@@ -112,6 +112,10 @@ def main():
                 timeout=120_000,
             )
             print("Single-PDB UI: 11 maps computed")
+            assert page.locator('.workspace-mode[aria-pressed="true"]').inner_text() == "Single protein"
+            assert page.locator("#isFullExport").is_visible()
+            assert not page.locator("#isMultiFiles").is_visible()
+            assert page.locator("#run").is_visible()
             # Exercise actual multi-chemistry intersection selection in the UI.
             page.evaluate("() => { if(selected.has('anionic')) toggleChem('anionic'); }")
             page.evaluate("() => toggleChem('hydrophobic')")
@@ -129,6 +133,30 @@ def main():
                 print("UI error:", page.locator("#isError").inner_text())
                 raise
 
+            # Compare workflow must export BOTH structures and all eleven maps,
+            # independent of whichever chemistry chips are currently selected.
+            page.locator('[data-workspace-target="compare"]').click()
+            assert page.locator("#secondFile").is_visible()
+            assert not page.locator("#isMultiFiles").is_visible()
+            page.set_input_files("#secondFile", str(PDB))
+            page.wait_for_function("() => typeof decisionSecondPdb === 'string'")
+            page.locator("#compareDecisionButton").click()
+            page.wait_for_function(
+                "() => ensembleResult !== null && ensembleResult.n_structures === 2 "
+                "&& decisionCompare !== null",
+                timeout=150_000,
+            )
+            try:
+                with page.expect_download(timeout=240_000) as dinfo:
+                    page.locator("#isFullExport").click()
+                assert_export(dinfo.value, "Compare-two full export", multi=True)
+            except Exception:
+                print("Compare UI error:", page.locator("#isError").inner_text())
+                raise
+
+            page.locator('[data-workspace-target="multi"]').click()
+            assert page.locator("#isMultiFiles").is_visible()
+            assert not page.locator("#secondFile").is_visible()
             page.set_input_files("#isMultiFiles", [str(PDB), str(PDB)])
             page.wait_for_function("() => ensembleInputs.length === 2")
             page.locator("#isAnalyzeSet").click()
