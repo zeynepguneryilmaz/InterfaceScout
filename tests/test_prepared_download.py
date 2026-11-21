@@ -24,7 +24,7 @@ class PreparedDownloadTests(unittest.TestCase):
         self.assertGreater(result["bytes"], 100)
         response = app.download_prepared_export(url.rsplit("/", 1)[-1])
         self.assertEqual(response.media_type, "application/zip")
-        self.assertEqual(response.path.read_bytes(), b.getvalue())
+        self.assertEqual(Path(response.path).read_bytes(), b.getvalue())
         self.assertEqual(response.headers.get("cache-control"), "no-store")
         self.assertEqual(response.filename, "InterfaceScout_Complete_Results.zip")
 
