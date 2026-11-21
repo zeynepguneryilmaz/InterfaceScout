@@ -39,7 +39,7 @@
   if(researchReport)more.appendChild(researchReport);
   exportPanel.appendChild(more);
   if(panels.complete)panels.complete.remove();
-  side.insertBefore(exportPanel,side.querySelector("#error")||null);
+  side.appendChild(exportPanel);
   const condition=panels.solution;
   const row=condition.querySelector(".row");
   if(row){
@@ -95,7 +95,7 @@
     $("run")?.classList.toggle("workspace-hidden",next==="multi");
     const results=$("isSetResults");
     if(results)results.classList.toggle("workspace-hidden",next==="single");
-    if(prev==="multi"&&next!=="multi"&&typeof ensembleResult!=="undefined"){
+    if(prev!==next && typeof ensembleResult!=="undefined" && ensembleResult){
       ensembleResult=null;ensembleAnalyzedInputs=[];ensembleConsensusKey=null;
       if(results)results.innerHTML="";
       if(typeof ensembleRefresh==="function")ensembleRefresh();
