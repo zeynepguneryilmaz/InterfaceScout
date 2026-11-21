@@ -31,7 +31,7 @@ def call(url: str, data: dict | None = None):
 
 def main():
     if sys.platform == "win32":
-        cmd = ["cmd", "/c", str(ROOT / "run_local.bat")]
+        cmd = ["cmd", "/c", str(ROOT / "run_local.bat"), "--no-pause"]
     else:
         cmd = ["bash", str(ROOT / "run_local.sh")]
     print("Running full first-time launcher:", cmd, platform.platform(), flush=True)
