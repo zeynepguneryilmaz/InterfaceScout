@@ -128,6 +128,17 @@ def main():
                 timeout=120_000,
             )
             print("Single-PDB UI: 11 maps computed")
+            # Presets are transparent user choices, not unexplained predictions.
+            presets = page.locator("#researchGoal option").all_text_contents()
+            assert all("Suggest" not in p for p in presets)
+            assert not any("donor + acceptor" in p.lower() for p in presets)
+            page.locator("#researchGoal").select_option("hydrophobic_aromatic")
+            page.get_by_role("button", name="Apply preset").click()
+            page.wait_for_function("() => selected.has('hydrophobic') && selected.has('pi_carbon') && selected.size === 2")
+            page.wait_for_function("() => decisionCombo !== null && decisionCombo.selected_maps.length === 2")
+            page.locator("#researchGoal").select_option("individual")
+            page.get_by_role("button", name="Apply preset").click()
+            page.wait_for_function("() => selected.size === 1")
             assert page.locator('.workspace-mode[aria-pressed="true"]').inner_text() == "Single protein"
             assert page.locator("#isFullExport").is_visible()
             assert not page.locator("#isMultiFiles").is_visible()
@@ -145,6 +156,16 @@ def main():
                 with page.expect_download(timeout=180_000) as dinfo:
                     page.locator("#isFullExport").click()
                 assert_export(dinfo.value, "Single-PDB full-export", multi=False)
+                # Retry manually with a *real user click* on a persistent link.
+                # Windows Chrome/Edge can block the programmatic click following
+                # a long screenshot/PDF generation process.
+                ready = page.locator("#isReadyDownload")
+                assert ready.is_visible()
+                assert ready.get_attribute("href").startswith("blob:")
+                assert ready.get_attribute("download").endswith("_Complete_Results.zip")
+                with page.expect_download(timeout=30_000) as manual_download:
+                    ready.click()
+                assert_export(manual_download.value, "Manual save retry", multi=False)
             except Exception as e:
                 print("UI error:", page.locator("#isError").inner_text())
                 raise

@@ -1,15 +1,30 @@
 /* InterfaceScout research workflow extensions. No ANM, GNM, or network analysis. */
-let decisionGoals=[],decisionGoal="explore",decisionCombo=null,decisionCompare=null;
+/* User-chosen visual exploration presets, not automated chemistry predictions.
+   All eleven maps are always calculated and exported. */
+const chemistryPresets=[
+  {id:"individual",label:"Explore all 11 maps individually",maps:[],
+   rationale:"Inspect each canonical map on its own. No intersection or combined score is implied."},
+  {id:"hydrophobic_aromatic",label:"Hydrophobic + aromatic",maps:["hydrophobic","pi_carbon"],
+   rationale:"Inspect spatial co-localization of hydrophobic and aromatic-compatible regions. These channels are related, not independent evidence of adsorption."},
+  {id:"cationic_donor",label:"Cationic + H-bond donor",maps:["cationic","hbond_donor"],
+   rationale:"Explore neighborhoods with positive-compatible and donor-compatible signatures. Distinct residue chemistry may occur within one 8 Å patch."},
+  {id:"anionic_acceptor",label:"Anionic + H-bond acceptor",maps:["anionic","hbond_acceptor"],
+   rationale:"Explore neighborhoods with negative-compatible and acceptor-compatible signatures. Co-location does not imply binding to a specific surface."},
+  {id:"sulfur_coordination",label:"Sulfur affinity + metal coordination",maps:["soft_metal_sulfur","metal_coord"],
+   rationale:"Compare where sulfur-affinity and transition-metal coordination channels occur nearby. They describe different possible interfacial chemistries, not one fitted metal-binding score."}
+];
+let decisionGoal="individual",decisionCombo=null,decisionCompare=null;
 let decisionSecondPdb=null,decisionSecondName="",decisionComboError="",decisionRequestId=0;
 function decisionInstall(){
   const style=document.createElement("style");
   style.textContent=".workPanel{background:#fff;border:1px solid #dfe4ec;border-radius:8px;margin:10px 0;padding:12px}.workPanel h3{font-size:14px;margin:3px 0 9px}.workPanel p,.workNote{font-size:12px;color:#667085;line-height:1.48}.workMetric{display:inline-block;margin:0 17px 8px 0;font-size:12px}.workAction{font-size:11px;border:1px solid #dfe4ec;border-radius:6px;background:#fff;padding:5px 7px;cursor:pointer;color:#2563eb}.workError{color:#b42318;font-size:12px}";
   document.head.appendChild(style);
   $("run").insertAdjacentHTML("beforebegin",
-    '<div class="section"><h3>Research question</h3><select class="input" id="researchGoal" onchange="decisionChooseGoal(this.value)"><option value="explore">Explore protein surface</option></select>'+
-    '<div class="note" id="goalExplanation" style="margin:8px 0">All 11 maps remain available.</div>'+
-    '<button class="btn secondary" type="button" onclick="decisionApplyGoal()">Suggest maps</button>'+
-    '<div class="workNote">Suggestions do not modify chemistry scores.</div></div>');
+    '<div class="section"><h3>Explore with a preset</h3>'+
+    '<div class="field"><label for="researchGoal">Chemistry view</label><select class="input" id="researchGoal" onchange="decisionChooseGoal(this.value)"></select></div>'+
+    '<div class="note" id="goalExplanation" style="margin:8px 0"></div>'+
+    '<button class="btn secondary" type="button" onclick="decisionApplyGoal()">Apply preset</button>'+
+    '<div class="workNote">A preset changes only which maps you see together. All 11 are still calculated and exported. Combined results describe spatial co-location, not binding or a new chemistry score.</div></div>');
   const exportSection=$("excelBtn").closest(".section");
   exportSection.insertAdjacentHTML("afterend",
     '<div class="section"><h3>Compare conformations</h3>'+
@@ -22,35 +37,30 @@ function decisionInstall(){
   $("results").insertAdjacentHTML("afterend",
     '<div id="decisionExport" style="padding:0 16px 15px;display:none">'+
     '<button class="btn secondary" onclick="decisionExportReport()">Export research report (JSON)</button></div>');
-  fetch("/research-goals").then(function(r){return r.json()}).then(function(goals){
-    decisionGoals=goals;
-    $("researchGoal").innerHTML=goals.map(function(g){
-      return '<option value="'+esc(g.id)+'">'+esc(g.label)+'</option>';
-    }).join("");
-    decisionChooseGoal("explore");
-  }).catch(function(){ $("goalExplanation").textContent="Research-goal descriptions unavailable."; });
+  $("researchGoal").innerHTML=chemistryPresets.map(p=>
+    '<option value="'+esc(p.id)+'">'+esc(p.label)+'</option>').join("");
+  decisionChooseGoal("individual");
 }
 function decisionChooseGoal(id){
-  decisionGoal=id;
-  const g=decisionGoals.find(function(x){return x.id===id});
-  if(g)$("goalExplanation").textContent=g.question+" "+g.caution;
+  const p=chemistryPresets.find(x=>x.id===id)||chemistryPresets[0];
+  decisionGoal=p.id;
+  $("goalExplanation").textContent=p.rationale;
 }
 function decisionApplyGoal(){
-  if(!data){$("error").textContent="Analyze your protein first.";return}
-  const g=decisionGoals.find(function(x){return x.id===decisionGoal});
-  if(!g)return;
-  const keys=(g.recommended_maps||[]).filter(function(k){return Boolean(data.maps[k])});
-  decisionCombo=null;
-  if(keys.length){
+  if(!data){$("error").textContent="Analyze a protein first to apply a preset.";return;}
+  const p=chemistryPresets.find(x=>x.id===decisionGoal)||chemistryPresets[0];
+  const keys=p.maps.filter(k=>Object.hasOwn(data.maps,k));
+  decisionCombo=null;decisionComboError="";
+  if(keys.length>=2){
     selected=new Set(keys);
-    activeType=keys.length>1?"composite":"chemistry";
-    if(keys.length===1)activeMap=keys[0];
+    activeType="composite";activeMap=null;
   }else{
+    selected=new Set([data.initial_map]);
     activeType="chemistry";activeMap=data.initial_map;
   }
-  $("error").textContent=keys.length?"":"This goal does not require preset maps. Choose any relevant channels.";
+  $("error").textContent="";
   render();
-  if(selected.size>1)decisionRefreshCombo();
+  if(keys.length>=2)decisionRefreshCombo();
 }
 function decisionDirectProperties(){
   if(!data||!data.protein_properties)return "";
@@ -75,6 +85,9 @@ function decisionDirectProperties(){
 function decisionFormat(x){return x===null||x===undefined?"—":Number(x).toFixed(3)}
 function decisionComboPanel(){
   if(selected.size<2)return "";
+  const donorAcceptorNote=selected.has("hbond_donor")&&selected.has("hbond_acceptor")
+    ? '<p class="workNote"><b>Interpretation note:</b> H-bond donor and acceptor are complementary interactions. Their exact same-residue intersection is not itself a binding criterion; some residues can have both capabilities. Examine the channels separately or inspect distinct residues in one neighborhood.</p>'
+    : "";
   if(decisionComboError)return '<div class="workPanel"><p class="workError">'+esc(decisionComboError)+'</p></div>';
   if(!decisionCombo)return '<div class="workPanel"><p>Calculating same-residue intersection and spatial co-localization…</p></div>';
   const c=decisionCombo,all=c.regions.filter(function(x){return x.all_maps_colocated});
@@ -83,7 +96,7 @@ function decisionComboPanel(){
     return '<tr><td>'+esc(r.source_center_key)+'</td><td>'+r.n_represented_maps+'/'+selected.size+'</td>'+
       '<td>'+esc(tag)+'</td><td><button class="workAction" onclick="decisionHighlightRegion('+i+')">Highlight</button></td></tr>';
   }).join("");
-  return '<div class="workPanel"><h3>Combined maps — spatial co-localization</h3>'+
+  return '<div class="workPanel"><h3>Combined maps — spatial co-localization</h3>'+donorAcceptorNote+
     '<p><b>Exact intersection</b>: same residue supports every selected channel. <b>Co-localization</b>: different residues supporting selected channels within one existing 8 Å patch. Not a combined binding score.</p>'+
     '<span class="workMetric"><b>'+c.n_exact_overlap+'</b> exactly shared residues</span>'+
     '<span class="workMetric"><b>'+all.length+'</b> fully co-localized candidate patches (shown)</span>'+
@@ -200,7 +213,7 @@ async function decisionCompareStructures(){
 function decisionExportReport(){
   if(!data)return;
   const report={scope:"Descriptive structural decision support, not adsorption prediction",
-    research_goal:decisionGoal,inputs:data.input,engine_version:data.version,method:data.method,
+    chemistry_preset:decisionGoal,inputs:data.input,engine_version:data.version,method:data.method,
     protein_properties:data.protein_properties,selected_maps:Array.from(selected),
     map_combinations:decisionCombo,conformation_comparison:decisionCompare,
     warnings:["No adsorption free energy, unique pose or unfolding prediction",
