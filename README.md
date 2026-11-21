@@ -1,182 +1,147 @@
+<div align="center">
+
+<img src="frontend/logo.png" alt="InterfaceScout logo" width="112">
+
 # InterfaceScout
 
-[![Cross-platform CI](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/workflows/publication-ci.yml/badge.svg)](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/workflows/publication-ci.yml)
+**Physicochemical protein-surface mapping for research-driven candidate-region analysis**
 
-InterfaceScout is an open-source **physicochemical protein-surface mapping and candidate-region analysis** tool for preliminary experimental or computational study design. It is not an adsorption-site predictor.
+[![Cross-platform tests](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/workflows/publication-ci.yml/badge.svg)](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/workflows/publication-ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-6A3245.svg)](LICENSE)
+[![Python 3.10–3.12](https://img.shields.io/badge/Python-3.10%E2%80%933.12-628D78.svg)](#installation)
+[![Version 1.0.0](https://img.shields.io/badge/version-1.0.0-6A3245.svg)](CITATION.cff)
 
-The program prepares the selected protein structure once and calculates 11 canonical surface-chemistry maps. Candidate surface patches are ranked using chemistry support, side-chain accessibility, patch coherence, and coarse orientation coherence without material-specific fitted weights. The ranked candidates identify structural regions worth examining, not observed adsorption sites.
+*Explore accessible surface chemistry. Compare structures. Prioritize regions for experimental or computational follow-up.*
 
-## Quick start — three clear workflows
+</div>
 
-1. **Single protein:** Load a local PDB file or retrieve a PDB ID, adjust pH if relevant and select **Analyze**. Inspect any of the 11 chemistry maps independently or select several to investigate exact residue overlap and co-localization.
-2. **Compare two:** Analyze the first structure, select a second PDB (file or ID), then choose **Compare 11 maps**. Both structures are independently analyzed across all 11 maps. Matched-residue comparisons and consensus are provided when the structures permit valid matching.
-3. **Multi-PDB:** Upload or queue a set of PDB structures, then select **Analyze selected PDBs**. Explore each structure, matched-residue comparisons and descriptive consensus where applicable.
+---
 
-**One complete download:** **Download complete results · ZIP** always includes all **11 maps for each analyzed structure**, regardless of the individual map or combination selected on screen. For each structure it includes 11 per-map PDFs, 11 genuine browser-captured 3D PNG screenshots embedded in the PDF reports, a complete Excel workbook covering all channels, per-residue/per-patch CSVs, the original PDB, 11 canonical B-factor PDBs, Top-1/3/5 membership B-factor PDBs and detailed JSON. For Compare and Multi-PDB, each protein gets its own complete export directory, with pairwise/consensus outputs when defined. Choosing multiple channels only adds overlap/co-localization content; it never filters out any of the 11 canonical channels.
+## Overview
 
-Complete Results now assembles a ZIP **on the local InterfaceScout Python server**
-and starts a native browser attachment download. A visible **Download ZIP now**
-link points to that same file and can be clicked again if the browser did not
-save it automatically. This is a normal HTTP download, not a short-lived browser
-Blob link. Prepared downloads expire after one hour, and the local server keeps
-at most 20 recent exports. All 11 maps are included for every structure.
+**InterfaceScout** is a locally run, open-source tool for characterizing the accessible physicochemical landscape of protein structures. From a PDB structure, it calculates **11 complementary surface-chemistry maps**, displays candidate regions in an interactive 3D viewer, and exports traceable residue- and patch-level results.
 
-Advanced solution metadata and individual-file downloads are available from expandable sections. pH affects the current computation; ionic strength and temperature are recorded as metadata only.
+It is designed for researchers investigating **protein–material interfaces**, surface accessibility, biomolecular interactions, and conformational differences. It helps formulate testable hypotheses and choose regions for subsequent experiments or higher-resolution simulations.
 
-## Research-first workflows (new, opt-in interface)
+> **Scientific scope:** InterfaceScout identifies and compares *protein-side physicochemical candidate regions*. It does **not** predict experimentally observed adsorption sites, binding orientations, adsorption free energies, kinetics, or adsorption-induced conformational change.
 
-The **Quick views** panel applies a compact set of chemistry views immediately with one click:
-independent viewing of all eleven maps, hydrophobic + aromatic, positive + H-bond donor,
-and negative + H-bond acceptor neighborhoods.
-Each choice explains the chemistry it juxtaposes and is **not an algorithmic recommendation
-or an adsorption prediction**. Every one of the eleven canonical maps remains available.
-The H-bond donor and acceptor channels are intentionally **not** joined by an assumed
-exact same-residue intersection: donor/acceptor complementarity and spatial co-location
-must be interpreted separately.
+## What you can do
 
-The new decision-support layer keeps two physically distinct data types separate:
+| Workflow | Purpose |
+| --- | --- |
+| **Explore a protein** | Inspect all 11 chemistry maps, the surface-accessible residues, and ranked candidate patches |
+| **Combine maps** | Compare exact residue intersections **separately** from spatial co-localization within an 8 Å patch |
+| **Use Quick Views** | Open curated, descriptive map combinations without configuring individual channel weights |
+| **Compare two structures** | Examine changes in accessibility and Top-1/3/5 patch-membership sets across compatible PDB structures |
+| **Analyze multiple PDBs** | Analyze each structure independently, with matched-residue comparisons and descriptive consensus where valid |
+| **Export complete evidence** | Save all 11 maps per structure, navigable PDFs, real 3D screenshots, tabular data, annotated PDBs, and machine-readable JSON |
 
-1. **Direct protein-side descriptors:** side-chain solvent accessibility, exposed residue
-   identities and simple, explicitly defined amino-acid groups such as nonpolar, aromatic,
-   cysteine, lysine, acidic and basic residues. These groups are descriptive; they do not
-   calculate microscopic chemical reactivity, reaction rates or a full electrostatic potential.
-2. **Eleven canonical compatibility maps:** unchanged chemistry rules and patch ranking.
-   Users can inspect maps independently or combine two or more. Combination reports
-   **exact residue intersection** separately from **spatial co-localization** of different
-   compatible residues within the same existing 8 Å patch. Combined maps are not fitted
-   adsorption scores.
+### The 11 surface maps
 
-**Conformational comparison** accepts a second PDB file or PDB ID and compares the
-same canonical analyses under the same pH. Outputs include accessibility changes,
-per-channel Top-1/3/5 region-membership Jaccard overlaps, and added/removed residues.
-The user must provide matched residue numbering/chain identities (the program checks
-mapping identity and rejects insufficient overlap); it does not silently match unrelated proteins.
+| # | Map | Protein-side feature examined |
+| --- | --- | --- |
+| 01 | Anionic surface | Compatibility with negatively charged surface chemistry |
+| 02 | Cationic surface | Compatibility with positively charged surface chemistry |
+| 03 | Hydrophobic | Nonpolar exposed regions |
+| 04 | π / aromatic | Aromatic surface features |
+| 05 | H-bond donor | Potential hydrogen-bond donor features |
+| 06 | H-bond acceptor | Potential hydrogen-bond acceptor features |
+| 07 | Metal-oxide | Chemistry rules associated with metal-oxide interfaces |
+| 08 | Calcium/phosphate charged-site | Charged-site chemistry relevant to calcium/phosphate contexts |
+| 09 | Transition-metal coordination | Candidate coordinating-residue environments |
+| 10 | Soft-metal sulfur-affinity | Sulfur-associated surface features |
+| 11 | Phosphate-rich surface | Chemistry rules associated with phosphate-rich interfaces |
 
-**Out of scope:** GNM, ANM, residue-interaction-network analysis, adsorption pose prediction,
-adsorption-induced unfolding, binding free energies and simulation of dynamics. If users
-already have an MD trajectory, they can export representative structures as PDB files and
-compare them using this workflow. Native XTC/TRR/DCD parsing is not implemented.
+These are **chemistry-informed descriptors**, not measured affinities or calibrated material-specific adsorption probabilities. Every run calculates all 11 maps; choosing a view never removes channels from the complete export.
 
-The research report can be exported to JSON; the original complete Excel and map-labelled
-B-factor PDB exports remain available. The original chemistry engine is frozen and **has
-not been recalibrated to maximize experimental adsorption contacts**.
+## Get started
 
-## Multi-PDB, consensus, and complete exports
+### Requirements
 
-The original single-PDB Analyze, map visualization, composite overlay, complete Excel and current-map B-factor PDB export remain in place.
+- **Windows, macOS, or Linux**
+- **Python 3.10, 3.11, or 3.12**
+- A modern browser with WebGL support for 3D visualization
+- Internet access for the initial dependency installation and optional PDB-ID retrieval; **local PDB files can be analyzed offline after installation**
 
-**Single structure:** load a PDB by ID or local file and select Analyze. The new **Complete export** button downloads a single ZIP containing all 11 independently colored map screenshots, 11 separate map PDF documents, 11 separate canonical-score B-factor PDBs, additional Top-1/3/5 region-membership B-factor PDBs, every original input structure, detailed per-residue/per-patch CSV tables, an Excel workbook, complete structured JSON and a PDF report that contains **actual 3Dmol viewer screenshots** for all 11 maps. If a selected multi-channel intersection is available, the ZIP also contains intersection tables and a combined-map screenshot.
+### Installation
 
-**Multiple structures:** upload several local PDBs at once or add by PDB ID using the Multi-PDB panel (1–20 structures). Each PDB is analyzed separately using the same 11 chemistry channels, and each retains a complete independent export directory. The application shows pairwise comparison tables, including changes in side-chain accessibility and Top-1/3/5 residue-set overlap.
+Download a repository ZIP using **Code → Download ZIP**, extract it completely, and launch from the extracted InterfaceScout folder. When verified release packages become available, they will appear under [Releases](https://github.com/zeynepguneryilmaz/InterfaceScout/releases).
 
-For two or more structures, consensus is calculated **only for residue positions that have the same chain, residue number, insertion code and residue identity**; insufficiently matched structures are rejected. The consensus shows per-residue accessibility, chemical-channel compatibility and Top-1/3/5 member frequency, as well as strict (all structures) and majority (more than half) shared residue sets. Map intersections can also be described across the structures. Consensus visualizations can be viewed in the original 3D viewer, and the ZIP includes a consensus report PDF, per-map consensus screenshots, detailed CSV/Excel files, and consensus-frequency B-factor PDBs (display scale 0–100).
+| Operating system | First launch | Later launches | Guide |
+| --- | --- | --- | --- |
+| Windows | Double-click `run_local.bat` | `start.bat` | [Windows](docs/INSTALL_WINDOWS.md) |
+| macOS | `bash run_local.sh` | `bash start.command` | [macOS](docs/INSTALL_MACOS.md) |
+| Linux | `bash run_local.sh` | `bash start.sh` | [Linux](docs/INSTALL_LINUX.md) |
 
-**Interpretation:** consensus frequencies describe the *supplied structure collection*; they are not equilibrium occupancies, binding probabilities, contact predictions or conformational time courses. The downloaded B-factor column contains InterfaceScout visualization numbers, **not** experimental crystallographic B-factors. The ZIP generator refuses to substitute fake images when viewer screenshots cannot be captured.
+Open **http://localhost:8000** if the browser does not open automatically. These are Python-backed local launchers, **not** stand-alone executables. Optional branded desktop shortcuts are documented in the platform guides.
 
-**Intentionally not implemented:** raw MD trajectories, GNM, ANM and RINpy. Researchers can export previously simulated selected frames as PDB files and compare them, but no trajectory analysis or elastic-network conformer generation is claimed.
+**Windows note:** A future Windows release bundle may include local dependency wheels for supported Python versions; a repository source ZIP does not contain that wheelhouse. See the [Windows installation guide](docs/INSTALL_WINDOWS.md) for secure setup and certificate troubleshooting.
 
-## Publication model
+### First analysis
 
-The frozen publication model uses:
+1. Enter a **PDB ID** or upload a **local PDB file**; choose a chain if required.
+2. Set **pH** if relevant, then click **Analyze**.
+3. Browse individual chemistry maps or select a Quick View; rotate the 3D structure and inspect ranked patches.
+4. Optionally combine channels to distinguish **shared residues** from **nearby but distinct residues**.
+5. Select **Download complete results · ZIP** to obtain the complete 11-map evidence package.
 
-- Shrake-Rupley probe radius: **1.40 Å**
-- Shrake-Rupley sampling: **200 points/atom**
-- exposed-side-chain threshold: **scRSA ≥ 0.05**
-- multiscale aggregation radii: **6 and 9 Å**
-- coarse patch radius: **8 Å**
+For comparison workflows, supply another PDB representing the **same protein** with compatible residue identifiers, or add structures through **Multi-PDB**. No trajectory parsing or hidden automatic structure alignment is performed.
 
-The origin of these values is deliberately separated:
+## Results and interpretation
 
-- **200 points/atom** was the lowest tested sampling level that met the predefined numerical-convergence criteria against a 1000-points/atom reference on an eight-protein, adsorption-label-free development panel.
-- **6/9 Å** ranked first among ten candidate radius pairs in the label-free consensus analysis. The earlier 5/8 Å pair ranked second and is not used by the publication model.
-- **8 Å** is a predefined coarse geometric contact-region scale. It was not optimized against the literature adsorption benchmark.
+The complete ZIP includes, for **each analyzed structure**, all 11 map PDFs, original structure data, 3D map screenshots captured from the browser viewer, an Excel workbook, per-residue and per-patch CSVs, annotated B-factor PDBs, and detailed JSON. Where applicable, multi-structure exports add matched-residue comparisons and consensus. A **Complete Surface Atlas** PDF provides navigable chemistry-map pages, a linked contents section, and provenance information. The optional publication PNG tool renders the selected real 3D view at 1920 × 1080 pixels.
 
-The frozen selection evidence is retained in `validation/parameter_selection.json`.
+| Readout | Appropriate interpretation |
+| --- | --- |
+| Ranked patch colors | Categorical *patch rank*, **not** a continuous affinity heatmap |
+| Per-residue scores | Calculated model descriptors; inspect numerical values in CSV/XLSX |
+| Overlap | Exact shared residue membership across selected maps |
+| Co-localization | Distinct compatible residues close within the existing patch scale |
+| Multi-PDB consensus frequency | Fraction of the **supplied structures** with membership; not an equilibrium population or adsorption probability |
+| B-factor PDB values | InterfaceScout display values written to the B-factor field; **not crystallographic temperature factors** |
 
-## Surface-chemistry maps
+Comparisons require the same **chain ID, residue number, insertion code, and residue identity** for matched positions. Unmatched proteins must not be interpreted as conformational comparisons.
 
-InterfaceScout calculates anionic, cationic, hydrophobic, π/aromatic, H-bond donor, H-bond acceptor, metal-oxide, calcium/phosphate charged-site, transition-metal coordination, soft-metal sulfur-affinity, and phosphate-rich surface maps in one run.
+### Inputs and model settings
 
-## Inputs
+| Parameter | Current treatment |
+| --- | --- |
+| Structure | PDB ID or uploaded PDB |
+| Chain | Optional selection |
+| pH | Used in the current scoring model |
+| Ionic strength and temperature | Stored as run metadata; **not** explicitly modeled as screening or temperature effects |
+| Shrake–Rupley probe radius | 1.40 Å |
+| Sampling | 200 points per atom |
+| Side-chain exposure threshold | scRSA ≥ 0.05 |
+| Multiscale neighborhood radii | 6 and 9 Å |
+| Coarse patch scale | 8 Å |
 
-- PDB ID or local PDB file
-- optional chain selection
-- pH (affects the current scoring)
-- ionic strength (saved as metadata only)
-- temperature (saved as metadata only)
-- second PDB file or PDB ID for optional same-protein comparison
+The sampling level and neighborhood radii were selected by **label-free numerical/consensus analysis**, not by fitting experimental adsorption contacts. The patch scale was predefined geometrically. Parameter provenance and tests are documented in [validation](validation/README.md) and [parameter_selection.json](validation/parameter_selection.json); the computational model version is tracked separately from the public software release version.
 
-In the current model, **pH enters the scoring calculation**. Ionic strength and temperature are retained as run metadata and should not be interpreted as explicit electrostatic-screening or thermal-response calculations.
+### Limitations
 
-## Intended scope and limitations
+InterfaceScout is best interpreted as **structural characterization and hypothesis generation**, especially for folded proteins represented by suitable atomic structures. Use particular caution for intrinsically disordered proteins, adsorptive unfolding, membrane-embedded proteins, missing glycans/cofactors, nonstandard residues, and chemistry driven by species discarded during structure preparation.
 
-InterfaceScout is intended for **reproducible characterization of accessible physicochemical protein-surface regions**, and for comparing candidate regions across user-provided structures. Material-compatibility maps support hypothesis generation rather than adsorption claims.
+It does **not** simulate dynamics, compute adsorption pose or free energy, measure protein corona formation, or assign experimentally confirmed binding sites. For a collection of simulation conformers, export representative PDB frames before comparison; native XTC, TRR, and DCD trajectory ingestion is not available. Prior benchmarking does not establish general adsorption predictive accuracy.
 
-The existing chemistry-based publication benchmark is limited and does not establish general adsorption predictive performance. Structural characterization is most straightforward for folded globular proteins and folded oligomeric proteins with representative atomic structures. Use more cautiously for intrinsically disordered proteins, strongly unfolding/restructuring adsorption regimes, membrane-embedded systems, covalent attachment, or systems whose relevant chemistry depends critically on cofactors, glycans, lipids, non-standard residues, or other hetero components removed by the standard preparation policy.
+## Reproducibility and development
 
-InterfaceScout does **not** predict absolute adsorption free energy, adsorbed amount, atomistically unique binding orientation, adsorption kinetics, or adsorption-induced unfolding. Ranked patches are interpretable protein-side candidate regions for experimental follow-up or higher-resolution simulation, not exact atomistic binding sites or predicted final contacts.
-
-The literature benchmark contains seven primary conditions and two secondary challenge cases. The transferrin-polystyrene and catalase-polystyrene cases are retained specifically to expose the limitation of a static folded-state model when adsorption-associated structural change is important. See `validation/README.md`.
-
-## Outputs
-
-1. **Complete Excel workbook** with run/method information, map definitions, residue-level values, ranked patches, and patch members for all 11 maps.
-2. **B-factor PDB** for the displayed map, with the 0-100 InterfaceScout residue propensity written to the standard B-factor field.
-3. **Research decision report (JSON)** including direct protein properties, chosen maps, optional co-localization analysis and optional PDB comparison.
-
-## Installation and use
-
-This is **one cross-platform application**, not three separate codebases. Use Python **3.10–3.12**.
-
-| Platform | First setup | Subsequent launch | Instructions |
-|---|---|---|---|
-| Windows | `run_local.bat` | `start.bat` | [Windows guide](docs/INSTALL_WINDOWS.md) |
-| macOS | `bash run_local.sh` | `bash start.command` | [macOS guide](docs/INSTALL_MACOS.md) |
-| Linux | `bash run_local.sh` | `bash start.sh` | [Linux guide](docs/INSTALL_LINUX.md) |
-
-The local interface is at **http://localhost:8000**. After dependencies are installed, subsequent launches do not run pip. For pip SSL certificate-chain errors, follow the relevant platform guide rather than disabling certificate verification. Local PDB files work without a network connection after installation; PDB ID retrieval still requires RCSB access.
-
-When a new `v*` tag is published, the [release workflow](.github/workflows/platform-release.yml) builds Windows, macOS and Linux **source archives** containing the corresponding launchers. These are not standalone `.exe`/`.app` binaries.
-
-## Examples
-
-See the [examples index](examples/README.md) for the existing **16-protein, 17-condition** archive of real Excel and annotated-PDB exports, the [1LYZ reproducible example](examples/1LYZ/README.md), and the frozen benchmark source in [validation](validation/README.md). The example exporter needs a running InterfaceScout app and does not invent absent results.
-
-## Reproducibility checks
+Run the test suite from the repository root after installing the backend requirements:
 
 ```bash
+python -m pip install -r backend/requirements.txt
 python -m unittest discover -s tests -v
 python validation/verify_publication.py
 ```
 
-Cross-platform CI repeats these checks under Python 3.10, 3.11, and 3.12 on Windows, macOS, and Linux.
+[Cross-platform CI](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/workflows/publication-ci.yml) tests supported Python versions across Windows, macOS, and Linux. A failing or pending CI run is **not** a verified release. Large-structure and browser checks are separate from the core unit tests. The compact [examples index](examples/README.md) documents available workflows; some historical generated example results are preserved in the private development archive rather than bundled in this public source repository.
 
-## License
+## Citation, licensing and acknowledgments
 
-InterfaceScout is released under the MIT License. See `LICENSE`.
+If InterfaceScout supports your research, please **cite the software** using [CITATION.cff](CITATION.cff). Cite a related peer-reviewed publication when one is available; no unpublished article is presented as an existing citation.
 
-## Citation
+**InterfaceScout's original code and documentation are licensed under the [MIT License](LICENSE)**, copyright © 2026 Ö. Zeynep Güner Yılmaz. MIT allows reuse and modification, including commercial reuse, subject to its notice conditions. Embedded third-party libraries retain **their own licenses**; see [Third-party notices](THIRD_PARTY_NOTICES.md).
 
-Citation metadata are provided in `CITATION.cff`. Please cite the associated InterfaceScout publication once bibliographic details are available.
+3D molecular visualization uses [3Dmol.js](https://github.com/3dmol/3Dmol.js); browser spreadsheet handling uses [SheetJS Community Edition](https://docs.sheetjs.com/). These dependencies do not imply endorsement of InterfaceScout by their authors.
 
-## Branding and desktop launchers
-
-The approved InterfaceScout icon is used consistently as `frontend/logo.png` (in-app header), `frontend/favicon.png` (browser tab), and `assets/InterfaceScout.ico` (Windows shortcut). The macOS app builder uses the same logo to make an `.icns` icon, while the Linux desktop entry uses the PNG. The surrounding square is part of the app icon; everything outside its rounded corners is transparent. The original atom-style mark is replaced, not packaged as a second competing logo.
-
-
-## Research PDF: Surface Atlas
-
-The Complete Results ZIP retains **all 11 individual map PDFs** with a visual first-page summary, a categorical rank-color guide that matches the actual browser viewer, the first five ranked regions, and complete ranked-patch / residue appendices. Every analyzed protein also has both `full_report.pdf` (the legacy filename) and `Complete_Surface_Atlas.pdf` (the same complete 11-map visual report), keeping compatibility with existing scripts.
-
-**Scientific interpretation:** Browser map colors indicate ranked patch membership, not a continuous propensity gradient. The PDFs must not be read as continuous numeric heatmaps. Numeric values (scRSA, local scores, propensity, persistence, accessibility) remain in the actual tables and Excel/CSV exports. The PDF includes true browser-rendered 3D screenshots, not server-generated molecular poses. Consensus Top-5 membership fractions are derived from the supplied structures, not measured binding probabilities. No user data are filtered from ZIPs when changing quick views.
-
-Cross-platform browser CI exports a real-data example (`1CRN_hydrophobic_map.pdf`, `1CRN_Complete_Surface_Atlas.pdf`), renders the first pages, and attaches the proofs to the workflow run for visual review.
-
-## Surface Atlas PDF navigation, identity, and publication graphics
-
-- **Protein identity** uses the original PDB `HEADER` accession and `COMPND MOLECULE` annotations when present. Identifiers provided in a PDB-ID request are explicitly labeled as *requested*, not independently verified against a PDB header. No protein name is inferred from an uploaded filename. Every complete atlas records the selected chain, model version, UTC export time and input identity provenance. Source coordinates and analysis parameters remain unchanged.
-- **Navigable reports:** the Complete Surface Atlas PDF contains a clickable contents page, native PDF sidebar bookmarks for all eleven chemistry channels and full-data sections, plus an appendix for all original model/solution settings. The consensus and comparison PDFs also provide native clickable navigation. Atlas map tables emphasize **chemistry support**, accessibility, patch size and ranked center residues; no score weights are changed.
-- **Evidence-grounded P1–P3 annotations:** the real browser-rendered map images place small labels outside their patch-center atoms and join them with a short leader line to those atoms. The line is visual annotation, not a simulated contact.
-- **Opposite-side image when useful:** only if two of the top three patch centers lie on opposite hemispheres of the submitted protein (center-radial cosine below −0.35), an additional actual viewer capture is made after 180° rotation. It is saved as `*_reverse.png` and included on a separate PDF page. An optional secondary capture never replaces or prevents the required eleven primary maps. Reverse views are of **the same protein**, not a second conformation or a superposition.
-- **Publication PNG:** the expandable **Individual files and advanced downloads** section contains **Render publication PNG**. With an individual chemistry map open, this asks the current 3Dmol viewer to re-render the same structure at 1920×1080, verifies actual output pixel dimensions and offers a genuine PNG download. This is **not interpolation or an AI drawing**. The regular complete ZIP continues to contain *all eleven* canonical map PDFs, screenshots, PDBs and tabular files regardless of a selected Quick View or publication snapshot. The scientific values in XLSX/CSV/JSON are authoritative.
-- **Interpretation:** individual map screenshot colors indicate *categorical patch rank*, not continuous score magnitude. Consensus gradients indicate the fraction of supplied structures with Top-5 membership, not adsorption probability. Comparison Top-5 Jaccard quantifies matched-residue set overlap, not model accuracy. There is no automatic conformational alignment inferred solely from two separate 3D snapshots.
+For problems or reproducible bug reports, open a [GitHub issue](https://github.com/zeynepguneryilmaz/InterfaceScout/issues) and include the operating system, Python version, PDB identifier (or a safely shareable minimal input), and steps to reproduce. Avoid uploading confidential structures or unpublished data to public issues.
