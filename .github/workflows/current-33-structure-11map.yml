@@ -1,0 +1,36 @@
+name: Current 33 literature PDBs 11-map technical verification
+on:
+  push:
+    paths:
+      - '.github/workflows/current-33-structure-11map.yml'
+      - 'validation/evaluate_current_33_and_controls.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  current-selected-structures:
+    name: selected-33-and-controls-shard-${{ matrix.shard }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned engine dependencies
+        run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install gemmi==0.7.4
+      - name: Fetch assembly coordinates and calculate all 11 maps
+        run: python -u validation/evaluate_current_33_and_controls.py --shard ${{ matrix.shard }} --shards 6
+      - name: Save outcomes, including failed PDB IDs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: current33-map-results-${{ matrix.shard }}
+          path: selected_33_results/shard_${{ matrix.shard }}/
+          if-no-files-found: warn
