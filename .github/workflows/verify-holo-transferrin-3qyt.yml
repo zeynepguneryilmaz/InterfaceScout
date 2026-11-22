@@ -1,0 +1,32 @@
+name: Verify unmutated holo transferrin 3QYT coordinates and maps
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/verify-holo-transferrin-3qyt.yml'
+      - 'validation/check_3QYT_holo_transferrin.py'
+jobs:
+  holo-3qyt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install scientific dependencies
+        run: |
+          pip install -r backend/requirements.txt
+          pip install gemmi==0.7.4
+      - name: Test real mutant-free holo transferrin 3QYT coordinates and 11 maps
+        run: python -u validation/check_3QYT_holo_transferrin.py
+      - name: Archive actual PDB, atomic QC, and 11 map evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: holo-transferrin-3qyt-real-coordinate-qa
+          path: |
+            holo_transferrin_3QYT_validation/3QYT_comparison.json
+            holo_transferrin_3QYT_validation/3QYT.cif
+            holo_transferrin_3QYT_validation/3QYT-assembly1.cif
+          if-no-files-found: warn
