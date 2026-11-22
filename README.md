@@ -6,7 +6,7 @@
 
 **Physicochemical protein-surface mapping for research-driven candidate-region analysis**
 
-[![Cross-platform tests](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/workflows/publication-ci.yml/badge.svg)](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/workflows/publication-ci.yml)
+[![Cross-platform tests](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/workflows/publication-ci.yml/badge.svg?branch=main&event=push)](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/workflows/publication-ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-6A3245.svg)](LICENSE)
 [![Python 3.10–3.12](https://img.shields.io/badge/Python-3.10%E2%80%933.12-628D78.svg)](#installation)
 [![Version 1.0.0](https://img.shields.io/badge/version-1.0.0-6A3245.svg)](CITATION.cff)
