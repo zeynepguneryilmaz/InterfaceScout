@@ -6,6 +6,7 @@ ranking, or claim to predict adsorption states, contact energies, or kinetics.
 from __future__ import annotations
 
 from typing import Any, Mapping, Sequence
+from regional_chemistry import annotate_regions
 
 RESEARCH_GOALS: dict[str, dict[str, Any]] = {
     "explore": {
@@ -239,11 +240,13 @@ def combine_maps(analysis: Mapping[str, Any], selected: Sequence[str],
                        r["n_members"], r["source_center_key"] or ""),
     )
     exposed_n = len(analysis.get("diagnostics", {}).get("surface_residue_keys", []))
+    regional_method = annotate_regions(analysis, names, regions)
     return {
         "selected_maps": names,
         "exact_same_residue_overlap": sorted(exact),
         "n_exact_overlap": len(exact),
         "n_exposed_residues": exposed_n,
+        "regional_profile_method": regional_method,
         "regions_total": len(regions),
         "regions": regions if max_regions is None else regions[:max_regions],
         "region_rule": "Reuse single-map 8 A same-face patches; require distinct chemistry "
