@@ -1,0 +1,23 @@
+name: QA six replacement PDB structures
+on:
+  push:
+    paths:
+      - .github/workflows/qa-six-replacements.yml
+  workflow_dispatch:
+jobs:
+  six_qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install gemmi requests
+      - name: Inspect six PDB coordinate files
+        run: python validation/qa_six_replacements.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: six-replacement-PDB-QA
+          path: six_candidate_qa/six_results.json
