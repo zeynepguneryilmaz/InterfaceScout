@@ -1,0 +1,35 @@
+name: Scientific QA of 48 PDB structures
+on:
+  push:
+    paths:
+      - .github/workflows/scientific-qa-48.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  wwpdb-cath-and-11maps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned InterfaceScout and audit dependencies
+        run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install gemmi==0.7.4 requests
+      - name: Download wwPDB validation, CATH domains, and coordinates for all 48
+        run: python validation/final_panel_quality_48.py
+      - name: Run all 11 maps against 48 prepared biological assemblies
+        if: success()
+        run: python validation/final_panel_compat_48.py
+      - name: Upload scientific audit outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: InterfaceScout-48-Scientific-QA
+          path: |
+            final_panel_qa/*.csv
+            final_panel_qa/*.json
+          if-no-files-found: warn
