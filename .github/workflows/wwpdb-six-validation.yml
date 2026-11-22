@@ -1,0 +1,23 @@
+name: Independent wwPDB validation for six panel proteins
+on:
+  push:
+    paths:
+      - .github/workflows/wwpdb-six-validation.yml
+  workflow_dispatch:
+jobs:
+  validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install requests
+      - name: Inspect wwPDB validation XML
+        run: python validation/wwpdb_six_validation.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wwpdb-six-validation-metrics
+          path: wwpdb_six_validation/metrics.json
