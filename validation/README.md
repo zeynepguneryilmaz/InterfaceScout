@@ -25,3 +25,11 @@ python validation/verify_publication.py
 to recompute the manuscript-level aggregate checks from the frozen case-level results and verify the selected development parameters.
 
 This is a spatial-concordance validation of **candidate protein-side contact regions**, not of atomistic docking, adsorption free energy, adsorption amount, unique bound orientation, or adsorption-induced unfolding.
+
+## Regional Chemistry Profile (descriptive; no trained combined score)
+
+The retained Regional Chemistry Profile exposes **three** different explanations of an existing combined-map patch: each selected channel's mean canonical local support, its count/fraction of supporting surface residues, and the minimum *distinct-residue* Cα separation between different channels. These data do not rerank original single-map Pareto patches and do not predict contacts or affinity. All PDF, CSV, Excel, JSON, and complete ZIP outputs use the same backend definitions.
+
+The [full equations, scope and 48-protein information audit](REGIONAL_CHEMISTRY_EVIDENCE_AND_METHOD.md) explain the decision to keep these descriptors but omit regional contrast (affine duplicate) and the minimum-over-channels combined scalar (repackaged data that could look like a fitted rank).
+
+Run the normal test suite to verify invariance and end-to-end exports. The frozen label-free audit is available in the [successful GitHub Actions job](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45054941106). It is not an experimental interface-site performance validation.

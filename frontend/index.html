@@ -19,8 +19,8 @@
   <div class="section"><h3>1 · Protein</h3><div class="field"><label>PDB ID</label><div class="row" style="grid-template-columns:1fr 80px"><input class="input" id="pdbId" value="4F5S"><button class="btn secondary" onclick="fetchPdb()">Fetch</button></div></div><div class="drop" onclick="document.getElementById('file').click()">or load a local PDB file<input type="file" id="file" accept=".pdb" style="display:none" onchange="loadFile(event)"></div><div class="field" style="margin-top:8px"><label>Chain (optional; comma-separated)</label><input class="input" id="chain" placeholder="e.g., A or A,B" onchange="handleChainChange()"></div></div>
   <div class="section"><h3>2 · Solution</h3><div class="row"><div class="field"><label>pH</label><input class="input" id="pH" type="number" step="0.1" value="7.4"></div><div class="field"><label>Ionic strength (mM)</label><input class="input" id="ionic" type="number" value="150"></div></div><div class="field"><label>Temperature (K)</label><input class="input" id="temp" type="number" value="298"></div><div class="note">Only pH affects the current scoring model. Ionic strength and temperature are saved as run metadata, not physical screening or thermal terms.</div></div>
   <button class="btn" id="run" onclick="analyze()" disabled>Analyze</button>
-  <div class="section" style="margin-top:14px"><h3>3 · Export</h3><button class="btn secondary" id="excelBtn" disabled onclick="exportExcel()">Download complete Excel</button><button class="btn secondary" style="margin-top:7px" id="pdbBtn" disabled onclick="exportCurrentPdb()">Download current B-factor PDB</button><div class="note" style="margin-top:8px">Excel contains all maps, residue values, patch metrics, and run/method settings. Each PDB writes the displayed map's 0–100 residue propensity into the PDB B-factor field.</div></div>
-  <div class="note">Protein-side properties and the 11 material-compatibility maps are different outputs. Select two or more maps to inspect exact same-residue intersection and 3D co-localization. No material-specific fitted weights are assumed.</div>
+  <div class="section" style="margin-top:14px"><h3>3 · Export</h3><button class="btn secondary" id="excelBtn" disabled onclick="exportExcel()">Download complete Excel</button><button class="btn secondary" style="margin-top:7px" id="pdbBtn" disabled onclick="exportCurrentPdb()">Download current B-factor PDB</button><div class="note" style="margin-top:8px">Excel contains all 11 maps, residue values, patch metrics, and run/method settings. When two or more maps are selected, Regional Chemistry Profile tables are also included. Each PDB writes the displayed map's 0–100 residue propensity into the PDB B-factor field.</div></div>
+  <div class="note">Protein-side properties and the 11 material-compatibility maps are different outputs. Select two or more maps to inspect exact residue overlap, 3D co-localization, and per-region chemical support, residue fraction and pairwise proximity. These are descriptive, not material-specific binding predictions.</div>
   <div class="error" id="error"></div>
 </aside>
 <main>
@@ -69,7 +69,46 @@ function patchWorkbookRows(){let rows=[];data.map_order.forEach(k=>{let m=data.m
 function patchMemberRows(){let rows=[];data.map_order.forEach(k=>{let m=data.maps[k];(m.patches||[]).forEach(p=>{let seeds=new Set(p.seed_members||[]);(p.member_residues||[]).forEach(r=>rows.push({MapKey:k,MapLabel:m.label,PatchRank:p.display_rank,ParetoFront:p.pareto_front,ResidueKey:r.key||'',Chain:r.chain,ResidueNumber:r.res_seq,InsertionCode:r.icode||'',ResidueName:r.res_name,IsChemistrySeed:seeds.has(r.key)}))})});return rows}
 function setSheetWidths(ws,rows,max=28){if(!rows.length)return;let keys=Object.keys(rows[0]);ws['!cols']=keys.map(k=>({wch:Math.min(max,Math.max(k.length+2,...rows.slice(0,200).map(r=>String(r[k]??'').length+1)))}));ws['!autofilter']={ref:ws['!ref']}}
 function addJsonSheet(wb,name,rows){let ws=XLSX.utils.json_to_sheet(rows.length?rows:[{Info:'No data'}]);setSheetWidths(ws,rows.length?rows:[{Info:'No data'}]);XLSX.utils.book_append_sheet(wb,ws,name)}
-function exportExcel(){if(!data)return;if(!window.XLSX){$('error').textContent='Excel export library is unavailable.';return}let wb=XLSX.utils.book_new();let run=[{Parameter:'engine',Value:data.engine},{Parameter:'model_version',Value:data.version},{Parameter:'public_version',Value:data.public_version||''},...flattenObject(data.input,'input'),...flattenObject(data.structure_preparation,'structure_preparation'),...flattenObject(data.method,'method'),...flattenObject(data.scope,'scope'),...flattenObject(data.diagnostics,'diagnostics'),...flattenObject(data.composite_policy,'composite_policy')];addJsonSheet(wb,'Run_Method',run);let defs=data.map_order.map(k=>{let m=data.maps[k];return {MapKey:k,MapLabel:m.label,Description:m.description,InternalChemistryKey:m.internal_chemistry_key,PatchCount:m.n_patches,ParetoFront1Count:m.n_pareto_primary_patches}});addJsonSheet(wb,'Map_Definitions',defs);addJsonSheet(wb,'Residue_Values',residueWorkbookRows());addJsonSheet(wb,'Patches',patchWorkbookRows());addJsonSheet(wb,'Patch_Members',patchMemberRows());if(selected.size>=2){let cr=compositeRows().map(r=>({ResidueKey:r.key,Chain:r.chain,ResidueNumber:r.res_seq,InsertionCode:r.icode||'',ResidueName:r.res_name,CompositeSupport:r.value,SupportingChannelCount:r.n_channels,DominantChemistry:r.dominant||'',SupportingChemistries:r.channels.map(c=>c.key).join(';')}));addJsonSheet(wb,'Composite_Selected',cr)}XLSX.writeFile(wb,`InterfaceScout_${safe(structureName)}_all_results.xlsx`,{compression:true})}
+function regionalWorkbookSheets(wb,combo){
+  const channels=[],pairs=[],method=[];
+  (combo.regions||[]).forEach((r,i)=>{
+    const p=r.regional_profile||{},means=p.mean_local_support_by_map||{},
+      fractions=p.supporting_residue_fraction_by_map||{},counts=p.supporting_residue_count_by_map||{};
+    const common={RegionOrdinal:i+1,SourceMap:r.source_map,CenterResidueKey:r.source_center_key,
+      RegionMemberCount:(r.member_keys||[]).length,MapsRepresented:r.n_represented_maps,
+      AllMapsColocated:!!r.all_maps_colocated,ExactAllMapOverlap:!!r.has_exact_all_map_seed_overlap};
+    (combo.selected_maps||[]).forEach(map=>channels.push({...common,Map:map,
+      MeanLocalSupport_0_1:means[map]??null,SupportingResidueCount:counts[map]??null,
+      SupportingResidueFraction_0_1:fractions[map]??null,MethodVersion:p.method_version||''}));
+    Object.entries(p.intermap_distinct_CA_distances_A||{}).forEach(([pair,d])=>{
+      const [mapA,mapB]=pair.split('|');
+      pairs.push({...common,MapA:mapA,MapB:mapB,MinimumDistinctResidueCA_A:d,
+        DistanceAvailable:d!=null,MethodVersion:p.method_version||''});
+    });
+  });
+  const m=combo.regional_profile_method||{};
+  Object.entries({MethodVersion:m.method_version,SelectedMaps:(combo.selected_maps||[]).join(';'),
+    CalculatedRegions:(combo.regions||[]).length,TotalCombinedRegions:combo.regions_total,
+    RankingUnchanged:m.ranking_unchanged,UsesExperimentalLabels:m.experimental_labels_used,
+    UsesFittedWeights:m.no_fitted_weights===true?false:null,
+    CrossChannelCoordinatesAvailable:m.regional_proximity_available,
+    Scope:"Descriptive protein-side properties, not adsorption affinity, site or pose prediction",
+    ...(m.definition||{}),InferenceWarning:m.inference_warning||''})
+    .forEach(([Item,Value])=>method.push({Item,Value}));
+  addJsonSheet(wb,'Regional_Channels',channels);
+  addJsonSheet(wb,'Regional_Pair_Distances',pairs);
+  addJsonSheet(wb,'Regional_Method',method);
+}
+async function exportExcel(){if(!data)return;const exportAnalysis=data, exportSelected=[...selected];if(!window.XLSX){$('error').textContent='Excel export library is unavailable.';return}let wb=XLSX.utils.book_new();let run=[{Parameter:'engine',Value:data.engine},{Parameter:'model_version',Value:data.version},{Parameter:'public_version',Value:data.public_version||''},...flattenObject(data.input,'input'),...flattenObject(data.structure_preparation,'structure_preparation'),...flattenObject(data.method,'method'),...flattenObject(data.scope,'scope'),...flattenObject(data.diagnostics,'diagnostics'),...flattenObject(data.composite_policy,'composite_policy')];addJsonSheet(wb,'Run_Method',run);let defs=data.map_order.map(k=>{let m=data.maps[k];return {MapKey:k,MapLabel:m.label,Description:m.description,InternalChemistryKey:m.internal_chemistry_key,PatchCount:m.n_patches,ParetoFront1Count:m.n_pareto_primary_patches}});addJsonSheet(wb,'Map_Definitions',defs);addJsonSheet(wb,'Residue_Values',residueWorkbookRows());addJsonSheet(wb,'Patches',patchWorkbookRows());addJsonSheet(wb,'Patch_Members',patchMemberRows());if(selected.size>=2){let cr=compositeRows().map(r=>({ResidueKey:r.key,Chain:r.chain,ResidueNumber:r.res_seq,InsertionCode:r.icode||'',ResidueName:r.res_name,CompositeSupport:r.value,SupportingChannelCount:r.n_channels,DominantChemistry:r.dominant||'',SupportingChemistries:r.channels.map(c=>c.key).join(';')}));addJsonSheet(wb,'Composite_Selected',cr)}if(exportSelected.length>=2){
+  try{
+    const response=await fetch('/combine',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({analysis:exportAnalysis,selected_maps:exportSelected,max_regions:null})});
+    const combo=await response.json();
+    if(!response.ok)throw Error(combo.detail||'Regional profile calculation failed');
+    if(data!==exportAnalysis){$('error').textContent='Structure changed while exporting; retry Excel.';return}
+    regionalWorkbookSheets(wb,combo);
+  }catch(e){$('error').textContent='Regional Excel export failed: '+String(e.message||e);return}
+}XLSX.writeFile(wb,`InterfaceScout_${safe(structureName)}_all_results.xlsx`,{compression:true})}
 function bfactorRows(){if(activeType==='chemistry'){return {label:data.maps[activeMap].label,key:activeMap,kind:'canonical propensity',rows:(data.maps[activeMap].residues||[]).map(r=>({...r,value:num(r.propensity)??0}))}}return {label:[...selected].map(k=>data.maps[k].label).join(' + '),key:'composite_overlay',kind:'derived composite overlay',rows:compositeRows()}}
 function pdbLookup(rows){let m=new Map();rows.forEach(r=>{let key=`${String(r.chain||'').trim()}|${parseInt(r.res_seq,10)}|${String(r.icode||'').trim()}`;let v=Math.max(0,Math.min(100,num(r.value)??0));m.set(key,v)});return m}
 function rewriteBfactorPdb(rows,label,kind){let lookup=pdbLookup(rows),lines=pdbText.replace(/\r/g,'').split('\n'),out=lines.map(line=>{if(!/^(ATOM  |HETATM)/.test(line))return line;let padded=line.padEnd(66,' '),chain=padded.slice(21,22).trim(),resi=parseInt(padded.slice(22,26).trim(),10),icode=padded.slice(26,27).trim(),v=lookup.get(`${chain}|${resi}|${icode}`)??0,b=Number(v).toFixed(2).padStart(6,' ');return padded.slice(0,60)+b+padded.slice(66)});let remarks=[`REMARK 900 INTERFACESCOUT B-FACTOR TRACK`,`REMARK 900 MAP: ${label}`,`REMARK 900 FIELD: ${kind}; NORMALIZED RANGE 0-100`,`REMARK 900 B-FACTOR VALUES ARE INTERFACESCOUT SCORES, NOT EXPERIMENTAL CRYSTALLOGRAPHIC B-FACTORS`];return remarks.concat(out).join('\n')}

@@ -23,3 +23,7 @@ The frozen parameter-selection evidence is retained at `validation/parameter_sel
 The web application's **Complete export** creates per-structure map screenshots, detailed CSV/Excel/JSON tables and annotated PDB/PDF outputs. The archived two-file example sets above are a *subset* of the full export, not evidence that each contains every screenshot or every channel's B-factor PDB.
 
 To generate an up-to-date 1LYZ output, use `python examples/1LYZ/run_example.py` with the app running; see the example README for limitations.
+
+## Regional Chemistry Profile in new exports
+
+The current software version can additionally export a **descriptive** Regional Chemistry Profile when at least two chemistry maps are selected. Its tables contain numeric per-channel mean local support, supporting residue fraction/count, and minimum Cα separation between *different residues* supporting different channels. The report PDF summarizes the first 20 regions, while complete CSV/Excel and JSON retain the full selected region set. Original archived example workbooks above predate this optional feature and must not be relabeled as if they already contained it. See the [README](../README.md#regional-chemistry-profile-only-when-two-or-more-maps-are-selected) and [validation rationale](../validation/REGIONAL_CHEMISTRY_EVIDENCE_AND_METHOD.md).

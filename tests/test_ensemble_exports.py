@@ -15,7 +15,8 @@ from PIL import Image
 from openpyxl import load_workbook
 from ensemble import build_consensus
 from export_bundle import MAP_NAMES, build_export_zip, _bfactor_pdb
-from research_workflows import compare_results
+from research_workflows import combine_maps, compare_results
+from export_bundle import structure_tables, regional_profile_tables
 
 
 def minimal_analysis():
@@ -148,6 +149,69 @@ class MultiStructureExportTests(unittest.TestCase):
         self.assertIsInstance(item["input_b"],dict)
         self.assertEqual(item["input_a"]["chain"],"A")
         self.assertEqual(item["input_b"]["chain"],"A")
+
+    def test_regional_profile_numeric_tables_and_complete_zip(self):
+        # Even a deliberately empty/stale client combination must be rebuilt
+        # from the original unchanged 11 canonical maps during export.
+        combined = combine_maps(self.a, ["anionic", "hydrophobic"], max_regions=None)
+        self.assertEqual(combined["regions_total"], 1)
+        tables = structure_tables("one", self.a, combined)
+        self.assertIn("Regional_Channels", tables)
+        self.assertIn("Regional_Pair_Distances", tables)
+        self.assertIn("Regional_Method", tables)
+        channels = tables["Regional_Channels"]
+        self.assertEqual(len(channels), 2)
+        self.assertEqual({r["Map"] for r in channels}, {"anionic", "hydrophobic"})
+        for row in channels:
+            self.assertAlmostEqual(row["MeanLocalSupport_0_1"], .42)
+            self.assertEqual(row["SupportingResidueCount"], 1)
+            self.assertEqual(row["SupportingResidueFraction_0_1"], 1.0)
+        self.assertEqual(len(tables["Regional_Pair_Distances"]), 1)
+        self.assertIsNone(tables["Regional_Pair_Distances"][0]["MinimumDistinctResidueCA_A"])
+        self.assertEqual(
+            {r["Item"] for r in tables["Regional_Method"]} &
+            {"RankingUnchanged", "UsesExperimentalLabels", "UsesFittedWeights"},
+            {"RankingUnchanged", "UsesExperimentalLabels", "UsesFittedWeights"})
+        unselected = structure_tables("one", self.a, None)
+        self.assertNotIn("Regional_Channels", unselected)
+        stale = dict(combined)
+        stale["regions"] = []  # simulates a stale or UI-truncated payload
+        stale["regions_total"] = 0
+        packed = build_export_zip({
+            "structures": [{
+                "name": "one", "analysis": self.a, "pdb_text": PDB,
+                "screenshots": {k: self.pic for k in MAP_NAMES},
+                "combined_maps": stale, "combined_screenshot": self.pic
+            }]
+        })
+        with zipfile.ZipFile(BytesIO(packed)) as z:
+            base = "structures/one"
+            for tab in ("Regional_Channels", "Regional_Pair_Distances", "Regional_Method"):
+                self.assertIn(f"{base}/csv/{tab}.csv", z.namelist())
+            import csv, json
+            from io import StringIO
+            rows = list(csv.DictReader(StringIO(
+                z.read(base + "/csv/Regional_Channels.csv").decode("utf-8-sig"))))
+            self.assertEqual(len(rows), 2)
+            self.assertEqual({r["Map"] for r in rows}, {"anionic", "hydrophobic"})
+            self.assertEqual(float(rows[0]["MeanLocalSupport_0_1"]), .42)
+            self.assertEqual(float(rows[0]["SupportingResidueFraction_0_1"]), 1.0)
+            full = json.loads(z.read(base + "/combined/combined_maps.json"))
+            self.assertEqual(full["regions_total"], 1)
+            self.assertEqual(len(full["regions"]), 1)
+            self.assertEqual(full["regional_profile_method"]["method_version"],
+                             "regional-chemistry-descriptive-v2")
+            self.assertFalse(full["regional_profile_method"]["experimental_labels_used"])
+            self.assertNotIn("weakest_mean_support", full["regions"][0]["regional_profile"])
+            self.assertNotIn("relative_to_candidate_median_by_map",
+                             full["regions"][0]["regional_profile"])
+            wb = load_workbook(BytesIO(z.read(base + "/complete_results.xlsx")),
+                               read_only=True, data_only=True)
+            for tab in ("Regional_Channels", "Regional_Pair_Distances", "Regional_Method"):
+                self.assertIn(tab, wb.sheetnames)
+            self.assertEqual(wb["Regional_Channels"].max_row, 3)
+            wb.close()
+            self.assertTrue(z.read(base + "/Complete_Surface_Atlas.pdf").startswith(b"%PDF"))
 
     def test_full_zip_contains_all_maps_and_reports(self):
         comparison = compare_results(self.a, self.b)

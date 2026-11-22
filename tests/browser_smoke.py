@@ -59,6 +59,7 @@ def assert_export(download, label: str, multi: bool):
                 "soft_metal_sulfur", "phosphate",
             }
             assert exported_maps == expected, (label, exported_maps)
+            workbook_tabs = set(workbook.sheetnames)
             workbook.close()
             for extra in reverse:
                 stem=extra.rsplit("/",1)[-1].replace("_reverse.png","")
@@ -78,6 +79,28 @@ def assert_export(download, label: str, multi: bool):
                 raise AssertionError(label + ": selected-map screenshot is missing")
             if base + "/csv/Map_Colocation.csv" not in names:
                 raise AssertionError(label + ": map co-location CSV is missing")
+            # Regional Chemistry Profile must use the same complete selected
+            # map results as the UI, including long numeric export tables.
+            for regional_tab in ("Regional_Channels", "Regional_Pair_Distances",
+                                 "Regional_Method"):
+                if base + f"/csv/{regional_tab}.csv" not in names:
+                    raise AssertionError(label + ": missing regional " + regional_tab)
+                if regional_tab not in workbook_tabs:
+                    raise AssertionError(label + ": regional Excel sheet missing: " + regional_tab)
+            import json, csv
+            from io import StringIO
+            regional = json.loads(archive.read(base + "/combined/combined_maps.json"))
+            if regional["regions_total"] != len(regional["regions"]):
+                raise AssertionError(label + ": incomplete regional export")
+            if regional["regions"]:
+                p = regional["regions"][0].get("regional_profile") or {}
+                if "mean_local_support_by_map" not in p or \
+                   "supporting_residue_fraction_by_map" not in p or \
+                   "intermap_distinct_CA_distances_A" not in p:
+                    raise AssertionError(label + ": incomplete regional profile definitions")
+                if "weakest_mean_support" in p or "relative_to_candidate_median_by_map" in p:
+                    raise AssertionError(label + ": removed combined score has reappeared")
+
             with zipfile.ZipFile(BytesIO(b)) as second:
                 map_pdf = second.read(base + "/pdf_maps/01_anionic.pdf")
                 full_pdf = second.read(base + "/full_report.pdf")
@@ -188,6 +211,8 @@ def main():
                 "() => decisionCombo !== null && decisionCombo.selected_maps.length === 2",
                 timeout=60_000,
             )
+            assert page.locator(".regional-method summary").is_visible()
+            assert page.evaluate("() => decisionCombo.regions.every(x => x.regional_profile && x.regional_profile.mean_local_support_by_map)")
             print("Two-map intersection/co-location completed")
             try:
                 with page.expect_download(timeout=180_000) as dinfo:

@@ -62,3 +62,11 @@ main{grid-template-rows:minmax(420px,61vh) auto}
 .preset-chip[aria-pressed="true"]{color:#623d51;border-color:#916c80;background:#f6eef2;box-shadow:0 0 0 1px #916c8022}
 .preset-chip:focus-visible{outline:2px solid #946f83;outline-offset:2px}
 #isReadyDownload{position:relative;display:block;border:2px solid #805a6e!important;background:#fcf4f7!important;color:#593c50!important;font-weight:750!important;min-height:44px;line-height:24px}
+
+/* Regional Chemistry Profile: compact, readable supplementary interpretation. */
+.regional-method{margin:7px 0 12px;padding:9px 12px;border:1px solid #e8e3e3;border-radius:10px;background:#fcfbf9}
+.regional-method summary{cursor:pointer;color:#644557;font-size:11px;font-weight:650}
+.regional-method p{font-size:11px;line-height:1.55;margin:8px 0 0;max-width:72ch}
+.workPanel table{width:100%;border-collapse:collapse;display:block;overflow-x:auto;font-size:11px}
+.workPanel th,.workPanel td{padding:7px 8px;text-align:left;vertical-align:top;border-bottom:1px solid #eee9eb}
+.workPanel th{font-weight:700;color:#655560}

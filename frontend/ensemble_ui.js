@@ -45,7 +45,7 @@ function ensembleSetup(){
     '</div>'+
     '<div class="section"><h3>Complete export</h3>'+
     '<button class="btn secondary" id="isFullExport" onclick="ensembleExportAll()" disabled>Download all PDFs, images, CSV, Excel and B-factor PDBs (ZIP)</button>'+
-    '<div class="note" style="margin-top:8px">Exports all 11 colored map screenshots for every structure; includes full report, all-residue data, and optional comparison/consensus. Original Excel and current B-factor export stay available.</div></div>'
+    '<div class="note" style="margin-top:8px">Exports all 11 colored map screenshots, full PDF reports and all-residue data. When 2+ channels are selected, every structure also includes Regional Chemistry Profile tables (channel support, supporting residue fraction/count and distinct-residue Cα distances). Original Excel and B-factor exports stay available.</div></div>'
   );
   $("results").insertAdjacentHTML("afterend",'<section id="isSetResults" class="results" style="padding-top:0"></section>');
   ensembleRefresh();

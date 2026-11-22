@@ -19,6 +19,7 @@ from xml.sax.saxutils import escape
 
 from PIL import Image as PILImage
 from ensemble import build_consensus
+from research_workflows import combine_maps
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
 from reportlab.lib import colors
@@ -220,6 +221,74 @@ def structure_tables(name: str, analysis: Mapping[str, Any],
         "Patch_Members": members,
         "Map_Colocation": interactions,
         "Exact_Intersections": intersections,
+        **regional_profile_tables(name, combined),
+    }
+
+
+
+def regional_profile_tables(name: str, combined: Mapping[str, Any] | None) -> dict[str, list[dict[str, Any]]]:
+    """Long-format, numeric selected-map region descriptors, with method provenance.
+
+    The existing 11 individual maps and their Pareto region rankings are intact.
+    No experimental labels, fitted weights, or adsorption predictions enter here.
+    """
+    if not combined:
+        return {}
+    selected = list(combined.get("selected_maps", []))
+    channels, distances = [], []
+    for ordinal, region in enumerate(combined.get("regions", []), 1):
+        profile = region.get("regional_profile") or {}
+        common = {
+            "Structure": name, "RegionOrdinal": ordinal,
+            "SourceMap": region.get("source_map"),
+            "CenterResidueKey": region.get("source_center_key"),
+            "RegionMemberCount": len(region.get("member_keys", [])),
+            "MapsRepresented": region.get("n_represented_maps"),
+            "AllMapsColocated": bool(region.get("all_maps_colocated")),
+            "ExactAllMapOverlap": bool(region.get("has_exact_all_map_seed_overlap")),
+        }
+        means = profile.get("mean_local_support_by_map") or {}
+        fractions = profile.get("supporting_residue_fraction_by_map") or {}
+        counts = profile.get("supporting_residue_count_by_map") or {}
+        for key in selected:
+            channels.append({
+                **common, "Map": key,
+                "MeanLocalSupport_0_1": means.get(key),
+                "SupportingResidueCount": counts.get(key),
+                "SupportingResidueFraction_0_1": fractions.get(key),
+                "MethodVersion": profile.get("method_version"),
+            })
+        for pair, distance in (profile.get("intermap_distinct_CA_distances_A") or {}).items():
+            first, _, second = pair.partition("|")
+            distances.append({
+                **common, "MapA": first, "MapB": second,
+                "MinimumDistinctResidueCA_A": distance,
+                "DistanceAvailable": distance is not None,
+                "MethodVersion": profile.get("method_version"),
+            })
+    method = combined.get("regional_profile_method") or {}
+    method_rows = [
+        {"Item": "MethodVersion", "Value": method.get("method_version")},
+        {"Item": "SelectedMaps", "Value": ";".join(selected)},
+        {"Item": "CalculatedRegions", "Value": len(combined.get("regions", []))},
+        {"Item": "TotalCombinedRegions", "Value": combined.get("regions_total")},
+        {"Item": "RankingUnchanged", "Value": method.get("ranking_unchanged")},
+        {"Item": "UsesExperimentalLabels", "Value": method.get("experimental_labels_used")},
+        {"Item": "UsesFittedWeights", "Value": not method["no_fitted_weights"]
+         if method.get("no_fitted_weights") is not None else None},
+        {"Item": "CrossChannelCoordinatesAvailable",
+         "Value": method.get("regional_proximity_available")},
+        {"Item": "Scope", "Value": "Descriptive surface characterization; no adsorption prediction"},
+    ]
+    method_rows.extend({"Item": k, "Value": v}
+                       for k, v in (method.get("definition") or {}).items())
+    if method.get("inference_warning"):
+        method_rows.append({"Item": "InferenceWarning",
+                            "Value": method.get("inference_warning")})
+    return {
+        "Regional_Channels": channels,
+        "Regional_Pair_Distances": distances,
+        "Regional_Method": method_rows,
     }
 
 
@@ -584,8 +653,50 @@ def report_pdf(structure_name: str, analysis: Mapping[str, Any],
             story.append(atlas_p("Same-residue overlap and proximity between different "
                                "residues are distinct observations, not binding predictions.",
                                "AtlasCaption"))
+            story.append(atlas_h("Regional Chemistry Profile"))
+            story.append(atlas_p(
+                "Mean local support (0-1): average of unchanged per-residue local_score "
+                "over all members in the existing 8 A patch. Supporting fraction: "
+                "positive-support residue count / total region members. "
+                "These are descriptive, per-channel quantities; no new ranking.",
+                "AtlasBody"))
+            story.append(atlas_p(
+                "Nearest cross-channel distinct-residue C-alpha distance (A) is "
+                "a protein-side geometric separation, NOT an atomic contact. "
+                "NA indicates absent distinct pair or unavailable coordinates.",
+                "AtlasCaption"))
             if combined_image is not None:
                 story.append(viewer_figure(combined_image))
+            region_summary = []
+            selected_maps = list(combined.get("selected_maps", []))
+            for region in combined.get("regions", [])[:20]:
+                profile = region.get("regional_profile") or {}
+                mean = profile.get("mean_local_support_by_map") or {}
+                fractions = profile.get("supporting_residue_fraction_by_map") or {}
+                counts = profile.get("supporting_residue_count_by_map") or {}
+                n = len(region.get("member_keys", []))
+                by_channel = "; ".join(
+                    f"{key}: {float(mean[key]):.3f} "
+                    f"({counts.get(key, 0)}/{n}, {100 * float(fractions.get(key, 0)):.0f}%)"
+                    if mean.get(key) is not None else f"{key}: NA"
+                    for key in selected_maps
+                )
+                near = profile.get("min_distinct_intermap_CA_distance_A")
+                region_summary.append([
+                    region.get("source_center_key") or "NA",
+                    f'{region.get("n_represented_maps", 0)}/{len(selected_maps)}',
+                    by_channel, f"{float(near):.2f}" if near is not None else "NA",
+                ])
+            _table(story,
+                   ["Center", "Channels", "Mean local support (supporters)", "Min CA (A)"],
+                   region_summary, [96, 62, 260, 86])
+            story.append(atlas_p(
+                "This preview shows the first 20 regions in their ORIGINAL order. "
+                "All selected-map regions, per-channel values, and distinct-residue "
+                "distances are in Regional_Channels.csv, Regional_Pair_Distances.csv, "
+                "Regional_Method.csv and combined_maps.json in the complete ZIP.",
+                "AtlasCaption"))
+            story.append(atlas_h("Full region membership evidence"))
             for region in combined.get("regions", []):
                 story.append(_p(
                     f'{region.get("source_map")} {region.get("source_center_key")}: '
@@ -735,6 +846,14 @@ def build_export_zip(payload: Mapping[str, Any]) -> bytes:
     structures = payload.get("structures", [])
     if not isinstance(structures, list) or not 1 <= len(structures) <= 20:
         raise ValueError("Export requires one to 20 previously analyzed PDB structures")
+    # Always regenerate complete combined regions from the same frozen analysis.
+    # Client UI may display only 50 or hold stale selected-map annotations.
+    structures = [
+        {**item, "combined_maps": combine_maps(
+            item["analysis"], item["combined_maps"]["selected_maps"], max_regions=None
+        )} if item.get("combined_maps") else dict(item)
+        for item in structures
+    ]
     consensus = payload.get("consensus")
     comparisons = payload.get("comparison") or []
     # Rebuild consensus from the exact per-structure analyses and currently
@@ -881,6 +1000,10 @@ def build_export_zip(payload: Mapping[str, Any]) -> bytes:
             "Every original PDB has 11 full map PDFs, viewer screenshots, "
             "11 map B-factor PDBs, Top-1/3/5 membership PDBs, all-residue CSVs, "
             "an Excel workbook, a Complete Surface Atlas PDF and raw JSON results.\n"
+            "For selected combinations, Regional_Channels, Regional_Pair_Distances "
+            "and Regional_Method CSV/XLSX tables give unchanged channel support, "
+            "supporting residues and direct distinct-residue C-alpha distances. "
+            "All regions remain in combined_maps.json; no new combined score is fitted.\n"
             "Consensus B-factor percentages are across supplied structures only "
             "and must not be read as adsorption probabilities.\n"
             "B-factor fields are display values, not experimental B-factors.\n"

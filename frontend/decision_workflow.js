@@ -100,7 +100,9 @@ function decisionComboPanel(){
     const pr=r.regional_profile||{};
     const ch=pr.mean_local_support_by_map||{};
     const fr=pr.supporting_residue_fraction_by_map||{};
-    const summary=Object.keys(ch).map(k=>k+": "+Number(ch[k]).toFixed(3)+" ("+Math.round((fr[k]||0)*100)+"% residues)").join("; ");
+    const counts=pr.supporting_residue_count_by_map||{};
+    const total=pr.member_count||r.member_keys.length;
+    const summary=Object.keys(ch).map(k=>k+": "+Number(ch[k]).toFixed(3)+" ("+(counts[k]??0)+"/"+total+", "+Math.round((fr[k]||0)*100)+"%)").join("; ");
     const distance=pr.min_distinct_intermap_CA_distance_A==null?"—":Number(pr.min_distinct_intermap_CA_distance_A).toFixed(1)+" Å";
     return '<tr><td>'+esc(r.source_center_key)+'</td><td>'+r.n_represented_maps+'/'+selected.size+'</td>'+
       '<td>'+esc(tag)+'</td><td>'+esc(summary||"Not calculated")+'</td><td>'+esc(distance)+'</td><td><button class="workAction" onclick="decisionHighlightRegion('+i+')">Highlight</button></td></tr>';
@@ -110,7 +112,8 @@ function decisionComboPanel(){
     '<span class="workMetric"><b>'+c.n_exact_overlap+'</b> exactly shared residues</span>'+
     '<span class="workMetric"><b>'+all.length+'</b> fully co-localized candidate patches (shown)</span>'+
     '<details><summary>Exact shared residue list</summary><p>'+esc(c.exact_same_residue_overlap.join(", ")||"None")+'</p></details>'+
-    '<p class="workNote"><b>Regional Chemistry Profile:</b> per-map mean canonical local support (0–1) and percentage of supporting residues, plus minimum distinct-residue Cα distance. Descriptive only; no fitted weights or adsorption probability. Values do not affect the existing patch ranking.</p>'+
+    '<p class="workNote"><b>Regional Chemistry Profile:</b> per-channel mean local support (0–1), supporting residue count / patch members (%), and shortest Cα distance between <em>different</em> residues supporting different maps. These are not binding scores and do not alter patch ranking.</p>'+
+    '<details class="regional-method"><summary>How are these regional descriptors calculated?</summary><p>Mean local support = sum of canonical local_score over patch members divided by number of members. Canonical local_score uses side-chain solvent accessibility, compatible amino acid class and required ionization-state availability. Supporting fraction = positive support residue count / patch members. Minimum Cα separation considers only distinct residues supporting different channels; NA means none available. It is not a chemical bond/contact measurement. Channels can be correlated and no weights, adsorption probabilities or trained parameters are introduced.</p></details>'+
     '<table><thead><tr><th>Center</th><th>Map coverage</th><th>Type</th><th>Local support (fraction)</th><th>Nearest Cα</th><th>Inspect</th></tr></thead><tbody>'+body+'</tbody></table>'+
     '<p>Candidate neighborhoods use the original single-channel patch geometry; the list does not constitute a separately validated ranking.</p></div>';
 }
@@ -220,12 +223,23 @@ async function decisionCompareStructures(){
   }catch(e){$("decisionCompareError").textContent=e.message}
   finally{button.disabled=false}
 }
-function decisionExportReport(){
+async function decisionExportReport(){
   if(!data)return;
+  const exportAnalysis=data,exportSelected=[...selected];
+  let completeCombination=null;
+  if(exportSelected.length>=2){
+    try{
+      const resp=await fetch("/combine",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({analysis:exportAnalysis,selected_maps:exportSelected,max_regions:null})});
+      completeCombination=await resp.json();
+      if(!resp.ok)throw Error(completeCombination.detail||"Regional Chemistry Profile export failed");
+    }catch(e){$("error").textContent="Research JSON export failed: "+String(e.message||e);return}
+  }
+  if(data!==exportAnalysis){$("error").textContent="Protein changed during export; retry.";return}
   const report={scope:"Descriptive structural decision support, not adsorption prediction",
     chemistry_preset:decisionGoal,inputs:data.input,engine_version:data.version,method:data.method,
     protein_properties:data.protein_properties,selected_maps:Array.from(selected),
-    map_combinations:decisionCombo,conformation_comparison:decisionCompare,
+    map_combinations:completeCombination,conformation_comparison:decisionCompare,
     warnings:["No adsorption free energy, unique pose or unfolding prediction",
       "Ionization and covalent reactivity require independent chemical assessment",
       "Ionic strength and temperature are recorded but not explicitly modeled"]};
