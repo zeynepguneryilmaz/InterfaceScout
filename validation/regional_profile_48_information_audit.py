@@ -146,7 +146,8 @@ def main():
  for pid in IDS[args.shard::args.shards]:
   try:
    meta=prepare(pid)
-   source=Path(meta["pdb"]).read_text()
+   source=Path("strict_apo_panel_48")/f"{pid}_prepared.pdb"
+   source=source.read_text()
    a=analyze_all_maps(pdb_text=source,chain=None,pH=7.4,ionic_mM=150,temp_K=298)
    assert a["n_maps"]==11
    for channels in PAIRS:
