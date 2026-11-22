@@ -25,7 +25,7 @@ GT={
 "HDPE":["K1 K7 K31 K61 K66 K91 K98","K37 D38 Y76 K104 H105 H119"],
 "PMMA":["K1 K66 K31 R85 K7","R33 K37 D38 R39 K41 D53 K61 Y76 K91 Y92 E111 H105 H119"]}}
 # Measured, NOT model-selected, residues, from Table 4/5 all five bins.
-ASSAY="K1 E2 K7 E9 R10 H12 D14 H15 Y25 K31 R33 K37 D38 R39 K41 H48 E49 D53 K61 K66 Y73 Y76 D83 R85 E86 K91 Y92 Y97 K98 K104 H105 E111 Y115 H119 D121".split()
+ASSAY="K1 E2 K7 E9 R10 H12 D14 Y25 K31 R33 K37 D38 R39 K41 H48 E49 D53 K61 K66 Y73 Y76 D83 R85 E86 K91 Y92 Y97 K98 K104 H105 E111 Y115 H119 D121".split()
 ASSAYD={int(s[1:]):s for s in ASSAY}
 AA=dict(zip("ACDEFGHIKLMNPQRSTVWY","ALA CYS ASP GLU PHE GLY HIS ILE LYS LEU MET ASN PRO GLN ARG SER THR VAL TRP TYR".split()))
 R3={v:k for k,v in AA.items()}
@@ -176,7 +176,7 @@ def main():
    ("assayed_residue_mapping.csv",mappings),("spatial_null.csv",controls)]:
   save(name,rows)
  (O/"protocol.json").write_text(json.dumps({"experimental_source":DOI,"experimental_tables":{"0.03":"Table 4","1.00":"Table 5"},
-   "raw_decreased_bins":GT,"measured_residues":ASSAYD,
+   "raw_decreased_bins":GT,"measured_residues":ASSAYD,"source_error_note":"Article Table 4 HDPE unchanged/increase bin includes H15; RNase A position 15 is not histidine; this source entry is excluded from assayed-universe mapping, never used as positive.",
    "prespecified_material_map_combinations":CHEM,
    "analysis_pH":7.4,"buffer":"10 mM potassium phosphate pH7.4, 25C",
    "ionic_note":"ionic_mM=10 is a recorded input; the code does not physically model ionic strength",
