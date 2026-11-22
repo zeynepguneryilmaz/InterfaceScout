@@ -7,11 +7,10 @@ from __future__ import annotations
 
 from itertools import combinations
 from math import dist, isfinite
-from statistics import median
 from typing import Any, Mapping, Sequence
 
 
-METHOD_VERSION = "regional-chemistry-descriptive-v1"
+METHOD_VERSION = "regional-chemistry-descriptive-v2"
 
 
 def _local_support(analysis: Mapping[str, Any], name: str) -> dict[str, float]:
@@ -50,13 +49,12 @@ def annotate_regions(
     L_c(r): existing canonical nonnegative local support in [0,1].
     D_c(P): sum(L_c(r) for r in P) / |P|.
     F_c(P): number of L_c(r)>0 divided by |P|.
-    Contrasts are differences from the medians across the already-defined
-    *overlapping candidate patch set*, not from statistically independent draws.
+    Per-map channel support, fraction and minimum inter-channel C-alpha
+    separation remain distinct descriptive fields, never combined into a score.
     """
     names = list(dict.fromkeys(selected_maps))
     channels = {name: _local_support(analysis, name) for name in names}
     coords = _distance_coordinates(analysis)
-    reference_densities = {name: [] for name in names}
     profiles: list[dict[str, Any]] = []
     for region in regions:
         members = list(dict.fromkeys(str(k) for k in region["member_keys"]))
@@ -89,45 +87,23 @@ def annotate_regions(
             "mean_local_support_by_map": {k: round(v, 6) for k, v in density.items()},
             "supporting_residue_fraction_by_map": {k: round(v, 6) for k, v in fraction.items()},
             "supporting_residue_count_by_map": {k: len(v) for k, v in supporting.items()},
-            "weakest_mean_support": round(min(density.values()), 6) if density else None,
             "min_distinct_intermap_CA_distance_A": (
                 round(min(v for v in pairwise.values() if v is not None), 3)
                 if any(v is not None for v in pairwise.values()) else None
             ),
             "intermap_distinct_CA_distances_A": pairwise,
-            "relative_to_candidate_median_by_map": {},
-            "reference": "same-protein overlapping combined candidate patch set",
             "uses_experimental_labels": False,
             "material_specific_binding_prediction": False,
         }
         profiles.append(p)
-        for name in names:
-            reference_densities[name].append(density[name])
-    medians = {
-        name: median(reference_densities[name]) if reference_densities[name] else None
-        for name in names
-    }
     for row, p in zip(regions, profiles):
-        p["relative_to_candidate_median_by_map"] = {
-            name: (
-                round(p["mean_local_support_by_map"][name] - medians[name], 6)
-                if medians[name] is not None else None
-            )
-            for name in names
-        }
         row["regional_profile"] = p
     return {
         "method_version": METHOD_VERSION,
         "definition": {
             "mean_local_support": "mean over all region members of the unchanged canonical map local_score, with absent chemistry support set to zero",
             "supporting_residue_fraction": "fraction of region members with canonical local_score > 0 for each selected map",
-            "weakest_mean_support": "minimum of the per-channel means, descriptive only; NOT used to rerank patches",
             "cross_channel_distance": "minimum C-alpha distance between DISTINCT residues supporting different maps; not interatomic contact or bond length",
-            "regional_contrast": "per-channel region mean minus the median of the overlapping candidate region means",
-        },
-        "reference_candidate_region_count": len(regions),
-        "reference_median_local_support_by_map": {
-            k: round(v, 6) if v is not None else None for k, v in medians.items()
         },
         "regional_proximity_available": bool(coords),
         "ranking_unchanged": True,
@@ -135,7 +111,7 @@ def annotate_regions(
         "experimental_labels_used": False,
         "inference_warning": (
             "Candidate patches overlap and are not independent observations. "
-            "Descriptive support, proximity and contrast are not adsorption affinity, "
+            "Descriptive support and proximity are not adsorption affinity, "
             "unique binding orientation, experimental agreement, or calibrated confidence."
         ),
     }
