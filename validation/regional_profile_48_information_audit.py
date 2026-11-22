@@ -87,8 +87,7 @@ def summary(pid,comb,a):
    "fraction_1":p["supporting_residue_fraction_by_map"][comb[0]],
    "fraction_2":p["supporting_residue_fraction_by_map"][comb[1]],
    "nearest_distinct_intermap_CA_A":p["min_distinct_intermap_CA_distance_A"],
-   "contrast_1":p["relative_to_candidate_median_by_map"][comb[0]],
-   "contrast_2":p["relative_to_candidate_median_by_map"][comb[1]]})
+   "distance_available":p["min_distinct_intermap_CA_distance_A"] is not None})
  return raw,per
 def write_csv(path,rows):
  if not rows:return
