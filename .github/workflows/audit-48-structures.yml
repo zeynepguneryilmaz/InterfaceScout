@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - .github/workflows/audit-48-structures.yml
+      - validation/audit_rcsb_coordinates.py
   workflow_dispatch:
 jobs:
   audit:
