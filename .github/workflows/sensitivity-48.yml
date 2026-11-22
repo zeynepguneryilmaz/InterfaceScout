@@ -1,0 +1,60 @@
+name: InterfaceScout 48 development sensitivity
+on:
+  push:
+    paths:
+      - '.github/workflows/sensitivity-48.yml'
+      - 'validation/sensitivity_48.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sensitivity:
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3]
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned dependencies
+        run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install gemmi==0.7.4 requests pandas
+      - name: Run parameter sensitivity on 12 independently frozen protein assemblies
+        run: python -u validation/sensitivity_48.py --shard ${{ matrix.shard }} --shards 4
+      - name: Store all shard results and provenance, including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sensitivity48-shard-${{ matrix.shard }}
+          path: sensitivity48/
+          retention-days: 90
+          if-no-files-found: error
+  aggregate:
+    needs: sensitivity
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install aggregation dependencies
+        run: python -m pip install numpy pandas
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: sensitivity48-shard-*
+          path: sensitivity48
+          merge-multiple: true
+      - name: Aggregate 48-protein structure-level results
+        run: python -u validation/sensitivity_48.py --aggregate sensitivity48
+      - name: Upload complete sensitivity study
+        uses: actions/upload-artifact@v4
+        with:
+          name: sensitivity48-complete-results
+          path: sensitivity48/
+          retention-days: 90
