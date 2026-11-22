@@ -1,0 +1,24 @@
+name: Smoke test six InterfaceScout development structures
+on:
+  push:
+    paths:
+      - .github/workflows/smoke-six-panel.yml
+  workflow_dispatch:
+jobs:
+  smoke_qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install app and coordinate dependencies
+        run: python -m pip install -r backend/requirements.txt gemmi requests
+      - name: Run all 11 maps on six prepared biological assemblies
+        run: python validation/smoke_six_panel.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: six-panel-full-maps-smoke
+          path: candidate_smoke_results/results.json
