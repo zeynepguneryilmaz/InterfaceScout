@@ -3,7 +3,7 @@ on:
   push:
     paths:
       - .github/workflows/strict-apo-final-48.yml
-      - validation/strict_apo_48_selected_candidates_v1.csv
+      - validation/strict_apo_48_selected_candidates_v2_final.csv
       - validation/strict_apo_residue_48.py
       - validation/strict_apo_compat_48.py
   workflow_dispatch:
