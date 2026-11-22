@@ -1,0 +1,32 @@
+name: RNase A material discrimination benchmark
+on:
+  push:
+    paths:
+      - 'validation/rnase_material_discrimination_20261122.py'
+      - '.github/workflows/rnase-material-discrimination.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned production dependencies
+        run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install scipy==1.16.3
+      - name: Run two PDB same pH two concentration 3 material benchmark
+        run: python -u validation/rnase_material_discrimination_20261122.py
+      - name: Upload raw results, controls, PDB provenance and failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rnase-material-discrimination-20261122
+          path: rnase_cross_condition_results/
+          retention-days: 90
+          if-no-files-found: warn
