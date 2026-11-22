@@ -4,7 +4,7 @@ from pathlib import Path
 from collections import defaultdict
 import gemmi
 
-IDS=["1C5E","1PDB","1A1X","1P32","1STN","2CBA"]
+IDS=["1C5E","1PDB","1A1X","1P32","1STN","2CBA","3T9L","1QYS"]
 STANDARD={"ALA","ARG","ASN","ASP","CYS","GLN","GLU","GLY","HIS","ILE","LEU","LYS","MET","PHE","PRO","SER","THR","TRP","TYR","VAL"}
 SIDE={
  "ALA":"CB","ARG":"CB CG CD NE CZ NH1 NH2","ASN":"CB CG OD1 ND2","ASP":"CB CG OD1 OD2",
@@ -50,7 +50,7 @@ def parse(pid,assembly):
    atoms={a.name for a in r if a.element.name not in ("H","D")}
    required=set(SIDE[r.name].split())
    if required - atoms:miss.append({"residue":str(r.seqid),"name":r.name,"missing":sorted(required-atoms)})
-   if any(a.altloc not in ("\\x00"," ",".","?") for a in r):altloc_count+=1
+   if any(a.altloc not in (chr(0)," ",".","?") for a in r):altloc_count+=1
   results.append({"chain":c.name,"residues":len(residues),"ca_present":ca,
    "missing_sidechain_residues":len(miss),"missing_sidechain_examples":miss[:8],
    "altloc_residues":altloc_count,
