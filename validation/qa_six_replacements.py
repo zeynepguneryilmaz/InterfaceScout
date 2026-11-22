@@ -50,7 +50,7 @@ def parse(pid,assembly):
    atoms={a.name for a in r if a.element.name not in ("H","D")}
    required=set(SIDE[r.name].split())
    if required - atoms:miss.append({"residue":str(r.seqid),"name":r.name,"missing":sorted(required-atoms)})
-   if any(a.altloc and a.altloc!="\\x00" for a in r):altloc_count+=1
+   if any(a.altloc not in ("\\x00"," ",".","?") for a in r):altloc_count+=1
   results.append({"chain":c.name,"residues":len(residues),"ca_present":ca,
    "missing_sidechain_residues":len(miss),"missing_sidechain_examples":miss[:8],
    "altloc_residues":altloc_count,
