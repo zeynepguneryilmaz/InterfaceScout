@@ -1,0 +1,35 @@
+name: Validate selected InterfaceScout 33 PDBs and 4 comparison candidates
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/validate-selected-33-structures.yml'
+      - 'validation/evaluate_selected_33_current.py'
+jobs:
+  current-33:
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5]
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install exact InterfaceScout engine dependencies
+        run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install gemmi==0.7.4
+      - name: Download RCSB coordinate assemblies and run all 11 public maps
+        run: python -u validation/evaluate_selected_33_current.py --shard ${{ matrix.shard }} --shards 6
+      - name: Archive actual PASS/FAIL rows and source coordinate hashes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selected33-shard-${{ matrix.shard }}
+          path: |
+            selected33_engine/shard_${{ matrix.shard }}/selected_structure_results.json
+            selected33_engine/shard_${{ matrix.shard }}/selected_structure_results.csv
+          if-no-files-found: warn
