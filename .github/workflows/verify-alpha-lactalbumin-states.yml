@@ -1,0 +1,31 @@
+name: Verify alpha-lactalbumin single-chain vs multi-copy 11 maps
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/verify-alpha-lactalbumin-states.yml'
+      - 'validation/alpha_lactalbumin_monomer_state_11maps.py'
+jobs:
+  monomer-maps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install InterfaceScout dependencies
+        run: |
+          pip install -r backend/requirements.txt
+          pip install gemmi==0.7.4
+      - name: Run canonical 11 maps for apo and holo single-chain alternatives
+        run: python -u validation/alpha_lactalbumin_monomer_state_11maps.py
+      - name: Archive numerical sensitivity results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: alpha-lactalbumin-apo-holo-monomer-maps
+          path: |
+            alpha_lactalbumin_chain_comparison/comparison.json
+            alpha_lactalbumin_chain_comparison/comparison.csv
+          if-no-files-found: warn
