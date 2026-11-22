@@ -40,15 +40,17 @@ class InfoTests(unittest.TestCase):
   self.assertEqual(u["supporting_residue_fraction_by_map"],v["supporting_residue_fraction_by_map"])
   self.assertEqual(u["min_distinct_intermap_CA_distance_A"],2)
   self.assertEqual(v["min_distinct_intermap_CA_distance_A"],7)
- def test_contrast_is_affine_copy_not_independent(self):
-  coords={f"A:{i}:":[i,0,0] for i in range(1,5)}
-  a=template({"A:1:":.2,"A:3:":.8},{"A:2:":.3,"A:4:":.7},coords)
-  p=rows(["A:1:","A:2:"],["A:3:","A:4:"])
-  annotate_regions(a,["hydrophobic","hbond_acceptor"],p)
-  for c in ["hydrophobic","hbond_acceptor"]:
-   delta_m=p[1]["regional_profile"]["mean_local_support_by_map"][c]-p[0]["regional_profile"]["mean_local_support_by_map"][c]
-   delta_c=p[1]["regional_profile"]["relative_to_candidate_median_by_map"][c]-p[0]["regional_profile"]["relative_to_candidate_median_by_map"][c]
-   self.assertAlmostEqual(delta_m,delta_c)
+ def test_removed_summary_fields_do_not_appear(self):
+  coords={"A:1:":[0,0,0],"A:2:":[1,0,0]}
+  m=template({"A:1:":.8},{"A:2:":.4},coords)
+  p=rows(["A:1:","A:2:"])
+  method=annotate_regions(m,["hydrophobic","hbond_acceptor"],p)
+  profile=p[0]["regional_profile"]
+  self.assertNotIn("weakest_mean_support",profile)
+  self.assertNotIn("relative_to_candidate_median_by_map",profile)
+  self.assertNotIn("regional_contrast",method["definition"])
+  self.assertNotIn("weakest_mean_support",method["definition"])
+
  def test_label_independence(self):
   coords={"A:1:":[0,0,0],"A:2:":[1,0,0]}
   m=template({"A:1:":.7},{"A:2:":.4},coords)
