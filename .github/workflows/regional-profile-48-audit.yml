@@ -1,0 +1,57 @@
+name: Regional chemistry 48-protein information audit
+on:
+  push:
+    paths:
+      - 'validation/regional_profile_48_information_audit.py'
+      - '.github/workflows/regional-profile-48-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  profile:
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3,4,5,6,7]
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned dependencies
+        run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install scipy==1.16.3 gemmi==0.7.4 requests
+      - name: Evaluate six frozen structures and eight predeclared chemistry pairs
+        run: python -u validation/regional_profile_48_information_audit.py --shard ${{ matrix.shard }} --shards 8
+      - name: Retain complete evidence for successes and failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: regional48-shard-${{ matrix.shard }}
+          path: regional48/shard_${{ matrix.shard }}/
+          retention-days: 90
+          if-no-files-found: error
+  aggregate:
+    needs: profile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Dependencies
+        run: python -m pip install numpy==2.2.6 scipy==1.16.3
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: regional48-shard-*
+          path: regional48
+      - name: Verify all 48 and summarize, fail closed if incomplete
+        run: python -u validation/regional_profile_48_information_audit.py --aggregate --shards 8
+      - uses: actions/upload-artifact@v4
+        with:
+          name: regional48-complete-audit
+          path: regional48/
+          retention-days: 90
