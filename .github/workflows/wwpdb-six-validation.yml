@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - .github/workflows/wwpdb-six-validation.yml
+      - validation/wwpdb_six_validation.py
   workflow_dispatch:
 jobs:
   validation:
