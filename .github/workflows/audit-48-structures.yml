@@ -1,0 +1,101 @@
+name: Audit 48 InterfaceScout structure candidates
+on:
+  push:
+    paths:
+      - .github/workflows/audit-48-structures.yml
+  workflow_dispatch:
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      - name: Install packages
+        run: python -m pip install requests
+      - name: Query RCSB metadata and assembly for all 48 entries
+        env:
+          IDS: "1CRN 1R69 1SHG 2PPN 4AKE 1OMP 1TIM 5CSC 1UBQ 1PGA 1BPI 1HEL 1A6M 1HRC 1GFL 1TEN 1BRS 1A3N 1ALD 1GKY 1CDG 1CSE 1A4Y 1TCA 1ATP 1PPB 1HVR 1LDM 1J8U 1CLL 1FNF 1B0L 1PPA 1BTL 1RNH 1E9I 1MSO 1CSP 1DPS 1PLC 1MUP 1RBL 2TRX 1SMD 1HML 1THW 1BEB 1CON"
+        run: |
+          cat > audit.py <<'PY'
+          import csv, os, requests, time, json
+          from collections import defaultdict
+          ids=os.environ['IDS'].split()
+          s=requests.Session()
+          s.headers['User-Agent']='InterfaceScout-48-panel-audit/1.0 academic research'
+          base='https://data.rcsb.org/rest/v1/core'
+          def fetch(path):
+              for attempt in range(4):
+                  try:
+                      r=s.get(base+path,timeout=25)
+                      if r.status_code==404: return None
+                      r.raise_for_status()
+                      return r.json()
+                  except Exception as e:
+                      if attempt==3: return {'_error':str(e)}
+                      time.sleep(1+2*attempt)
+          records=[]; entities=[]; groups=defaultdict(set)
+          for ix,pid in enumerate(ids,1):
+              print(f'{ix}/48 {pid}',flush=True)
+              rec={'pdb':pid,'method':'','resolution_A':'','r_free':'','entry_status':'','assembly_1_type':'','assembly_1_protein_chains':'','assembly_status':'','entity_count':0,'entity_lengths':'','cluster30':'','candidate_gate':'REVIEW'}
+              e=fetch('/entry/'+pid)
+              if not e or '_error' in e:
+                  rec['entry_status']='FAIL_FETCH: '+str(e);records.append(rec);continue
+              rec['entry_status']='FETCHED'
+              rec['method']=';'.join(t.get('method','') for t in e.get('exptl',[]))
+              rr=e.get('rcsb_entry_info',{}).get('resolution_combined',[])
+              rec['resolution_A']=rr[0] if rr else ''
+              refine=e.get('refine',[])
+              rec['r_free']=next((q.get('ls_R_factor_R_free') for q in refine if q.get('ls_R_factor_R_free') is not None),'')
+              a=fetch('/assembly/'+pid+'/1')
+              if a and '_error' not in a:
+                  rec['assembly_status']='FETCHED'
+                  rec['assembly_1_type']=a.get('pdbx_struct_assembly',{}).get('oligomeric_details','')
+                  rec['assembly_1_protein_chains']=a.get('rcsb_assembly_info',{}).get('polymer_entity_instance_count_protein','')
+              else:rec['assembly_status']='UNAVAILABLE'
+              pids=e.get('rcsb_entry_container_identifiers',{}).get('polymer_entity_ids',[])
+              lens=[]; cls=[]
+              for ent in pids:
+                  p=fetch(f'/polymer_entity/{pid}/{ent}')
+                  if not p or '_error' in p: continue
+                  ep=p.get('entity_poly',{})
+                  if 'polypeptide' not in str(ep.get('type','')).lower():continue
+                  length=len(ep.get('pdbx_seq_one_letter_code_can','').replace('\n','').replace(' ',''))
+                  clusters=p.get('rcsb_cluster_membership',[]) or []
+                  cids=[str(c['cluster_id']) for c in clusters if float(c.get('identity',-1)) in (30,0.3) and 'cluster_id' in c]
+                  entities.append({'pdb':pid,'entity_id':ent,'length':length,'cluster30':';'.join(cids),'sequence':ep.get('pdbx_seq_one_letter_code_can','')})
+                  lens.append(str(length));cls+=cids
+                  for cl in cids:groups[cl].add(pid)
+              rec['entity_count']=len(lens);rec['entity_lengths']=';'.join(lens);rec['cluster30']=';'.join(sorted(set(cls)))
+              if rec['method']=='X-RAY DIFFRACTION' and isinstance(rec['resolution_A'],(int,float)):
+                  rec['candidate_gate']='PASS_RESOLUTION' if rec['resolution_A']<=2.5 else ('HISTORICAL_EXCEPTION' if pid in ids[:8] else 'FAIL_RESOLUTION')
+              elif rec['method']:rec['candidate_gate']='REVIEW_METHOD'
+              records.append(rec)
+          collisions={p:set() for p in ids}
+          for cluster,entries in groups.items():
+              if len(entries)>1:
+                  for p in entries: collisions[p].update(entries-{p})
+          for r in records:r['cluster30_panel_collisions']=';'.join(sorted(collisions[r['pdb']]))
+          with open('rcsb_48_entry_audit.csv','w',newline='') as f:
+              w=csv.DictWriter(f,fieldnames=list(records[0]));w.writeheader();w.writerows(records)
+          with open('rcsb_48_entities.csv','w',newline='') as f:
+              w=csv.DictWriter(f,fieldnames=list(entities[0]) if entities else ['pdb','entity_id','length','cluster30','sequence']);w.writeheader();w.writerows(entities)
+          summary={'candidate_count':len(ids),'entries_fetched':sum(r['entry_status']=='FETCHED' for r in records),'assembly_metadata_fetched':sum(r['assembly_status']=='FETCHED' for r in records),'resolution_gate_passed':sum(r['candidate_gate']=='PASS_RESOLUTION' for r in records),'cluster30_collisions':{k:sorted(v) for k,v in collisions.items() if v},'not_certified_as_final':True,'scope':'metadata preaudit; assembly coordinates, chain completeness, structural validation still required'}
+          open('rcsb_48_summary.json','w').write(json.dumps(summary,indent=2))
+          print('SUMMARY',json.dumps(summary,indent=2),flush=True)
+          print('ALL_RECORDS',json.dumps(records),flush=True)
+          if summary['entries_fetched']!=48:
+              raise SystemExit('Not all 48 entries could be audited')
+          PY
+          python audit.py
+      - name: Upload audit results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interface-scout-48-rcsb-audit
+          path: |
+            rcsb_48_entry_audit.csv
+            rcsb_48_entities.csv
+            rcsb_48_summary.json
