@@ -168,6 +168,9 @@ def _shared_response(context: dict, *, pdb_id: Optional[str], pH: float, ionic_m
         "diagnostics": {
             "n_surface_residues": len(context["surface_keys"]),
             "surface_residue_keys": context["surface_keys"],
+            "surface_ca_xyz_A": {str(node["key"]): [float(v) for v in node["coord"]]
+                                 for node in context["ca_nodes"]
+                                 if str(node["key"]) in set(context["surface_keys"])},
         },
         "method_notes": [
             "All single-channel chemistry maps use the same prepared structure and environmental conditions.",
