@@ -55,11 +55,6 @@ def summary(pid,comb,a):
  f={ch:[p["supporting_residue_fraction_by_map"][ch] for p in prof] for ch in comb}
  rho={ch:ranked_corr(s[ch],f[ch]) for ch in comb}
  flip={ch:pairs_discordant(s[ch],f[ch]) for ch in comb}
- # Contrast equals mean_local_support minus constant per channel.
- contrast_same={}
- for ch in comb:
-  c=[p["relative_to_candidate_median_by_map"][ch] for p in prof]
-  contrast_same[ch]= (max(abs((x-y)-(s[ch][i]-s[ch][0])) for i,(x,y) in enumerate(zip(c,[c[0]]*len(c)))) < 0.000004) if c else None
  # Nearby residue pairs: co-located by common patch but pair may be far apart.
  # C-alpha 8A is the existing neighborhood radius, not a newly fitted threshold.
  raw={
@@ -79,8 +74,6 @@ def summary(pid,comb,a):
   "region_variability_support_m2":len(set(s[comb[1]])),
   "region_variability_fraction_m1":len(set(f[comb[0]])),
   "region_variability_fraction_m2":len(set(f[comb[1]])),
-  "contrast_affine_check_m1":contrast_same[comb[0]],
-  "contrast_affine_check_m2":contrast_same[comb[1]],
  }
  per=[]
  for r in rs:
@@ -129,8 +122,6 @@ def main():
    "all_map_pairs":PAIRS,"stats":alld,
    "regions_with_more_than_one_distinct_proximity_value":
      sum(int(r["n_distinct_intermap_distance_values"])>1 for r in rows),
-   "n_contrast_affine_checks_pass":
-     sum(r["contrast_affine_check_m1"]=="True" and r["contrast_affine_check_m2"]=="True" for r in rows),
    "n_intermap_distance_unavailable":sum(not r["min_intermap_CA_A"] for r in rows),
    "no_experimental_labels":True,
    "interpretation":"All fields are deterministic descriptions of existing maps and candidate patches; no independent-information or adsorption prediction claim.",
