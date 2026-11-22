@@ -1,0 +1,28 @@
+name: Replace 1H99 with independently quality-validated protein
+on:
+  push:
+    paths:
+      - .github/workflows/replace-1h99-strict.yml
+      - validation/strict_apo_one_replacement.py
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  replace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install protein-structure validation tools
+        run: python -m pip install gemmi==0.7.4 requests biopython==1.85
+      - name: Search new clean, topology-unique PDB and verify internal residue coverage
+        run: python -u validation/strict_apo_one_replacement.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: strict-replacement-for-1H99
+          path: strict_apo_one_replacement/replacement.json
+          if-no-files-found: warn
