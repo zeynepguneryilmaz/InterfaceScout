@@ -99,3 +99,24 @@ jobs:
             rcsb_48_entry_audit.csv
             rcsb_48_entities.csv
             rcsb_48_summary.json
+
+  coordinate_audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      - name: Install coordinate audit dependencies
+        run: python -m pip install gemmi biopython requests
+      - name: Audit coordinates, assembly 1, and pairwise sequences
+        run: python validation/audit_rcsb_coordinates.py
+      - name: Upload coordinate audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interface-scout-48-coordinate-audit
+          path: audit_results/*.json
