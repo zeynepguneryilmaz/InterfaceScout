@@ -108,7 +108,7 @@ def main():
  args=ap.parse_args()
  if args.aggregate:
   import glob
-  files=sorted(glob.glob("regional48/shard_*/summary.csv"))
+  files=sorted(glob.glob("regional48/regional48-shard-*/summary.csv"))
   assert len(files)==args.shards,("Incomplete shards",files)
   rows=[r for p in files for r in csv.DictReader(open(p))]
   ids={r["pdb_id"] for r in rows}
