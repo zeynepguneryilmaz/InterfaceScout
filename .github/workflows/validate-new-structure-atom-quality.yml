@@ -1,0 +1,34 @@
+name: Atom QA for 10 new selected and comparison PDB structures
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/validate-new-structure-atom-quality.yml'
+      - 'validation/selected_10_new_structures_atom_qa.py'
+jobs:
+  new-structure-atom-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install coordinate parser
+        run: pip install biopython==1.85
+      - name: Download deposited original mmCIF and inspect atom completeness
+        run: python -u validation/selected_10_new_structures_atom_qa.py --shard ${{ matrix.shard }} --shards 2
+      - name: Preserve actual structure atom QA and raw deposited mmCIFs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: new-structures-atom-qa-${{ matrix.shard }}
+          path: |
+            new_structures_atom_qa/shard_${{ matrix.shard }}/atom_quality.json
+            new_structures_atom_qa/shard_${{ matrix.shard }}/atom_quality.csv
+            new_structures_atom_qa/*.cif
+          if-no-files-found: warn
