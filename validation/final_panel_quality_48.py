@@ -8,7 +8,7 @@ import requests, gemmi
 
 ROOT=Path(__file__).resolve().parents[1]
 OUT=Path("final_panel_qa");OUT.mkdir(exist_ok=True)
-manifest=list(csv.DictReader(open(ROOT/"validation"/"development_panel_48_selected_v3.csv", encoding="utf-8")))
+manifest=list(csv.DictReader(open(ROOT/"validation"/"development_panel_48_candidates_v4_REVIEW.csv", encoding="utf-8")))
 IDS=[r["pdb_id"].upper() for r in manifest]
 assert len(IDS)==48 and len(set(IDS))==48
 session=requests.Session()
@@ -33,17 +33,20 @@ def getjson(url):
 def get_validation(pid):
     # current public wwPDB PDB archive validation report
     stem=pid.lower()
-    url=f"https://files.wwpdb.org/pub/pdb/validation_reports/{stem[1:3]}/{stem}/{stem}_validation.xml.gz"
+    url=f"https://files.rcsb.org/pub/pdb/validation_reports/{stem[1:3]}/{stem}/{stem}_validation.xml.gz"
     try:
         raw=download(url)
         if raw[:2]==b"\x1f\x8b":raw=gzip.decompress(raw)
         import xml.etree.ElementTree as ET
         root=ET.fromstring(raw)
         attrs={}
+        entry_metrics={}
         for elem in root.iter():
             tag=elem.tag.split("}")[-1].lower()
             if tag in ("entry","overall","validationreport","experiment"):
                 attrs.setdefault(tag,[]).append(dict(elem.attrib))
+            if tag=="entry" and not entry_metrics:
+                entry_metrics=dict(elem.attrib)
         # extract validated residue outlier counts from modelled subgroup reporting
         counts=defaultdict(int)
         for elem in root.iter():
@@ -58,6 +61,7 @@ def get_validation(pid):
                     except ValueError:pass
         return {"available":True,"source":url,"sha256":hashlib.sha256(raw).hexdigest(),
                 "root":root.tag.split("}")[-1],"summary_attributes":attrs,
+                "metrics":{k:entry_metrics.get(k) for k in ("clashscore","percent-rama-outliers","percent-rota-outliers","percent-RSRZ-outliers","DCC_Rfree","PDB-Rfree")},
                 "residue_outlier_counts":dict(counts)}
     except Exception as e:
         return {"available":False,"source":url,"error":str(e)}
@@ -146,6 +150,12 @@ def main():
             if row["rfree"] is not None and row["rfree"]>0.30:flags.append("RFREE_GT_0.30")
             if row["rfree"] is None:flags.append("RFREE_MISSING")
             if not row["wwpdb"]["available"]:flags.append("WWPDB_REPORT_MISSING")
+            else:
+                m=row["wwpdb"].get("metrics",{})
+                for key,limit,flag in [("clashscore",25,"WWPDB_CLASHSCORE_GT25"),("percent-rama-outliers",2,"WWPDB_RAMA_OUTLIERS_GT2PCT"),("percent-rota-outliers",10,"WWPDB_ROTAMER_OUTLIERS_GT10PCT"),("percent-RSRZ-outliers",10,"WWPDB_RSRZ_OUTLIERS_GT10PCT")]:
+                    try:
+                        if float(m[key])>limit:flags.append(flag)
+                    except (TypeError,ValueError,KeyError):pass
             if not row["cath"]:flags.append("CATH_UNANNOTATED")
             if not row["assembly"]["chains"]:flags.append("NO_PROTEIN_CHAINS")
             for c in row["assembly"]["chains"]:
@@ -158,7 +168,7 @@ def main():
             row["error"]=str(ex);row["flags"]=["FETCH_OR_PARSE_FAILED"]
         result.append(row)
         print(f"QARECORD {i}/48 "+json.dumps({"pdb":pid,"resolution":row.get("resolution"),"rfree":row.get("rfree"),
-            "wwpdb":row.get("wwpdb",{}).get("available"),"cath":[c["cath_superfamily"] for c in row.get("cath",[])],
+            "wwpdb":row.get("wwpdb",{}).get("available"),"wwpdb_metrics":row.get("wwpdb",{}).get("metrics",{}),"cath":[c["cath_superfamily"] for c in row.get("cath",[])],
             "chains":row.get("assembly",{}).get("chains",[]),"flags":row["flags"]},separators=(",",":")),flush=True)
     cls=defaultdict(set)
     for r in result:
@@ -175,7 +185,7 @@ def main():
       "shared_cath_superfamilies":clashes,"cath_source":cath_src,"cath_errors":cath_errors,
       "not_equivalent_to_final_approval":True},indent=2))
     with (OUT/"quality_48.csv").open("w",newline="") as f:
-        w=csv.DictWriter(f,fieldnames=["pdb","resolution_A","rfree","assembly_chains","min_CA_coverage","missing_sidechain_residues","wwpdb_report","cath_superfamilies","shared_cath","flags","error"])
+        w=csv.DictWriter(f,fieldnames=["pdb","resolution_A","rfree","assembly_chains","min_CA_coverage","missing_sidechain_residues","wwpdb_report","clashscore","rama_pct","rota_pct","rsrz_pct","cath_superfamilies","shared_cath","flags","error"])
         w.writeheader()
         for r in result:
             cs=r.get("assembly",{}).get("chains",[])
@@ -184,6 +194,10 @@ def main():
               "assembly_chains":len(cs),"min_CA_coverage":min(cov) if cov else "",
               "missing_sidechain_residues":sum(c["sidechain_missing_residues"] for c in cs),
               "wwpdb_report":r.get("wwpdb",{}).get("available",False),
+              "clashscore":r.get("wwpdb",{}).get("metrics",{}).get("clashscore"),
+              "rama_pct":r.get("wwpdb",{}).get("metrics",{}).get("percent-rama-outliers"),
+              "rota_pct":r.get("wwpdb",{}).get("metrics",{}).get("percent-rota-outliers"),
+              "rsrz_pct":r.get("wwpdb",{}).get("metrics",{}).get("percent-RSRZ-outliers"),
               "cath_superfamilies":";".join(d["cath_superfamily"] for d in r.get("cath",[])),
               "shared_cath":";".join(d["superfamily"] for d in r.get("shared_cath_superfamilies",[])),
               "flags":";".join(r["flags"]),"error":r.get("error","")})
