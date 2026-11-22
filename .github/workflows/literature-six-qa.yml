@@ -1,0 +1,32 @@
+name: Literature six candidate strict holdout QA
+on:
+  push:
+    paths:
+      - 'validation/audit_literature_6_20261122.py'
+      - '.github/workflows/literature-six-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install biopython==1.85 gemmi==0.7.4 requests pandas
+      - name: Audit candidate PDBs against CATH, 48 and original 23
+        run: cd validation && python -u audit_literature_6_20261122.py
+      - name: Upload full audit including exclusions and ambiguity
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: literature-six-holdout-QA-20261122
+          path: validation/literature_candidate_qa_20261122/
+          if-no-files-found: warn
+          retention-days: 90
