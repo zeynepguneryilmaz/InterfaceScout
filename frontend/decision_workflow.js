@@ -97,15 +97,21 @@ function decisionComboPanel(){
   const c=decisionCombo,all=c.regions.filter(function(x){return x.all_maps_colocated});
   const body=c.regions.slice(0,20).map(function(r,i){
     let tag=r.all_maps_colocated?(r.distinct_residue_colocation_only?"Different residues, same patch":"Includes exact intersection"):"Partial overlap";
+    const pr=r.regional_profile||{};
+    const ch=pr.mean_local_support_by_map||{};
+    const fr=pr.supporting_residue_fraction_by_map||{};
+    const summary=Object.keys(ch).map(k=>k+": "+Number(ch[k]).toFixed(3)+" ("+Math.round((fr[k]||0)*100)+"% residues)").join("; ");
+    const distance=pr.min_distinct_intermap_CA_distance_A==null?"—":Number(pr.min_distinct_intermap_CA_distance_A).toFixed(1)+" Å";
     return '<tr><td>'+esc(r.source_center_key)+'</td><td>'+r.n_represented_maps+'/'+selected.size+'</td>'+
-      '<td>'+esc(tag)+'</td><td><button class="workAction" onclick="decisionHighlightRegion('+i+')">Highlight</button></td></tr>';
+      '<td>'+esc(tag)+'</td><td>'+esc(summary||"Not calculated")+'</td><td>'+esc(distance)+'</td><td><button class="workAction" onclick="decisionHighlightRegion('+i+')">Highlight</button></td></tr>';
   }).join("");
   return '<div class="workPanel"><h3>Combined maps — spatial co-localization</h3>'+donorAcceptorNote+
     '<p><b>Exact intersection</b>: same residue supports every selected channel. <b>Co-localization</b>: different residues supporting selected channels within one existing 8 Å patch. Not a combined binding score.</p>'+
     '<span class="workMetric"><b>'+c.n_exact_overlap+'</b> exactly shared residues</span>'+
     '<span class="workMetric"><b>'+all.length+'</b> fully co-localized candidate patches (shown)</span>'+
     '<details><summary>Exact shared residue list</summary><p>'+esc(c.exact_same_residue_overlap.join(", ")||"None")+'</p></details>'+
-    '<table><thead><tr><th>Center</th><th>Map coverage</th><th>Type</th><th>Inspect</th></tr></thead><tbody>'+body+'</tbody></table>'+
+    '<p class="workNote"><b>Regional Chemistry Profile:</b> per-map mean canonical local support (0–1) and percentage of supporting residues, plus minimum distinct-residue Cα distance. Descriptive only; no fitted weights or adsorption probability. Values do not affect the existing patch ranking.</p>'+
+    '<table><thead><tr><th>Center</th><th>Map coverage</th><th>Type</th><th>Local support (fraction)</th><th>Nearest Cα</th><th>Inspect</th></tr></thead><tbody>'+body+'</tbody></table>'+
     '<p>Candidate neighborhoods use the original single-channel patch geometry; the list does not constitute a separately validated ranking.</p></div>';
 }
 function decisionComparePanel(){
