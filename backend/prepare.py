@@ -63,6 +63,26 @@ def prepare_pdb_text(pdb_text: str, chain: str | None = None) -> Tuple[str, dict
                 f"Available: {', '.join(available_chains)}"
             )
 
+    # Reject coarse traces that cannot support side-chain physicochemical maps.
+    # Moderate missing atoms are permitted and remain a separate quality flag.
+    selected_residues = [
+        residue
+        for protein_chain in models[0]
+        if not requested or str(protein_chain.id) in requested
+        for residue in protein_chain
+        if str(residue.id[0]).strip() == "" and "CA" in residue
+    ]
+    ca_only_residues = sum(
+        all(name not in residue for name in ("N", "C", "O"))
+        for residue in selected_residues
+    )
+    if len(selected_residues) >= 20 and ca_only_residues / len(selected_residues) >= 0.80:
+        raise ValueError(
+            "This structure is predominantly a C-alpha-only trace and lacks "
+            "side-chain/backbone atoms required for InterfaceScout's "
+            "physicochemical surface maps. Select a full-atom experimental PDB."
+        )
+
     io = PDBIO()
     io.set_structure(structure)
     out = StringIO()
@@ -80,5 +100,7 @@ def prepare_pdb_text(pdb_text: str, chain: str | None = None) -> Tuple[str, dict
         "selected_chain": selected_label,
         "explicit_hydrogens_removed": True,
         "hetero_residues_removed": True,
+        "ca_only_residues_detected": ca_only_residues,
+        "modeled_residues_screened": len(selected_residues),
     }
     return normalized, report
