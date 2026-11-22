@@ -4,7 +4,7 @@ from pathlib import Path
 from collections import defaultdict
 import gemmi
 
-IDS=["1C5E","1PDB","1A1X","1P32","1STN","2CBA","3T9L","1QYS"]
+IDS=["1C5E","1PDB","1A1X","1P32","1STN","2CBA","3T9L","1QYS","1RWZ","4HK1","1VYM"]
 STANDARD={"ALA","ARG","ASN","ASP","CYS","GLN","GLU","GLY","HIS","ILE","LEU","LYS","MET","PHE","PRO","SER","THR","TRP","TYR","VAL"}
 SIDE={
  "ALA":"CB","ARG":"CB CG CD NE CZ NH1 NH2","ASN":"CB CG OD1 ND2","ASP":"CB CG OD1 OD2",
