@@ -32,16 +32,21 @@ def prepare(pid):
             "PHE","PRO","SER","THR","TRP","TYR","VAL"})
         if cnt:kept.append(c)
     if len(kept)>len(alph):raise RuntimeError("Too many chains to write single-character PDB IDs")
-    for i,c in enumerate(kept):
-        orig=c.name;c.name=alph[i]
+    # Remove nonprotein polymer chains BEFORE renaming. Gemmi chain wrapper
+    # equality/identity is not stable across model iteration, so compare names.
+    selected_source_names={c.name for c in kept}
+    for c in list(model):
+        if c.name not in selected_source_names:
+            model.remove_chain(c.name)
+    for i,c in enumerate(model):
+        if c.name not in selected_source_names:
+            raise RuntimeError("Nonprotein chain survived explicit removal")
+        orig=c.name
+        c.name=alph[i]
         mapping.append({"source_chain":orig,"prepared_chain":c.name,"standard_residues":sum(
             1 for r in c.get_polymer() if r.name in {
             "ALA","ARG","ASN","ASP","CYS","GLN","GLU","GLY","HIS","ILE","LEU","LYS","MET",
             "PHE","PRO","SER","THR","TRP","TYR","VAL"})})
-    # Removes nonprotein chains; renamed selected protein chains are kept
-    for c in list(model):
-        if c not in kept:
-            model.remove_chain(c.name)
     pdb=st.make_pdb_string()
     if not pdb.count("\nATOM"):raise RuntimeError("Empty ATOM PDB conversion")
     out=OUT/f"{pid}_prepared.pdb"
