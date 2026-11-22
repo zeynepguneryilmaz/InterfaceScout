@@ -1,0 +1,32 @@
+name: RNase A exploratory chemistry regional descriptors
+on:
+  push:
+    paths:
+      - 'validation/rnase_composite_region_features_20261122.py'
+      - '.github/workflows/rnase-composite-features.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned production dependencies
+        run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install scipy==1.16.3
+      - name: Run exploratory nonfitted regional feature audit
+        run: python -u validation/rnase_composite_region_features_20261122.py
+      - name: Upload features, all cases, and provenance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rnase-regional-features-20261122
+          path: rnase_feature_audit/
+          retention-days: 90
+          if-no-files-found: warn
