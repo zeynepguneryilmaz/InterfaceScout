@@ -32,22 +32,25 @@ def prepare(pid):
             "PHE","PRO","SER","THR","TRP","TYR","VAL"})
         if cnt:kept.append(c)
     if len(kept)>len(alph):raise RuntimeError("Too many chains to write single-character PDB IDs")
-    # Remove nonprotein polymer chains BEFORE renaming. Gemmi chain wrapper
-    # equality/identity is not stable across model iteration, so compare names.
-    selected_source_names={c.name for c in kept}
-    for c in list(model):
-        if c.name not in selected_source_names:
-            model.remove_chain(c.name)
-    for i,c in enumerate(model):
-        if c.name not in selected_source_names:
-            raise RuntimeError("Nonprotein chain survived explicit removal")
+    # Construct an entirely NEW protein-only model. In-place removal from a
+    # Gemmi Model can leave unrelated DNA or generated chains in some assemblies.
+    clean_structure=gemmi.Structure()
+    clean_structure.name=pid
+    clean_structure.cell=st.cell
+    clean_structure.spacegroup_hm=st.spacegroup_hm
+    clean_model=gemmi.Model(1)
+    for i,c in enumerate(kept):
         orig=c.name
-        c.name=alph[i]
-        mapping.append({"source_chain":orig,"prepared_chain":c.name,"standard_residues":sum(
-            1 for r in c.get_polymer() if r.name in {
+        copied=c.clone()
+        copied.name=alph[i]
+        clean_model.add_chain(copied)
+        mapping.append({"source_chain":orig,"prepared_chain":copied.name,"standard_residues":sum(
+            1 for r in copied.get_polymer() if r.name in {
             "ALA","ARG","ASN","ASP","CYS","GLN","GLU","GLY","HIS","ILE","LEU","LYS","MET",
             "PHE","PRO","SER","THR","TRP","TYR","VAL"})})
-    pdb=st.make_pdb_string()
+    clean_structure.add_model(clean_model)
+    clean_structure.remove_ligands_and_waters()
+    pdb=clean_structure.make_pdb_string()
     if not pdb.count("\nATOM"):raise RuntimeError("Empty ATOM PDB conversion")
     out=OUT/f"{pid}_prepared.pdb"
     out.write_text(pdb,encoding="utf-8")
