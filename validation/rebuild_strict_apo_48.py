@@ -20,7 +20,7 @@ SEED=20261123
 TARGET=48
 DESIRED_PASS_POOL=65
 BATCH=128
-MAX_CANDIDATES=16000
+MAX_CANDIDATES=34000
 MAX_WORKERS=24
 # Predeclared scientific-quality gates (all satisfied; no repair)
 GATES={"max_resolution_A":2.50,"max_rfree":0.280,"max_clashscore":15.0,
@@ -170,12 +170,12 @@ def pick_candidates(mapping,existing_ids):
     for pid,families in mapping.items():
         if pid in existing_ids:continue
         if len(families)>2 or len(families)==0:continue
-        if pid[0] not in "3456789":continue
+        if pid[0] not in "123456789":continue
         key=sorted(families)[0]
         group[key].append(pid)
     families=sorted(group,key=lambda x:hashlib.sha256((str(SEED)+x).encode()).hexdigest())
     candidates=[]
-    for roundno in range(6):
+    for roundno in range(30):
         for fam in families:
             entries=sorted(group[fam],key=lambda x:(x[0] not in "6789",hashlib.sha256((str(SEED)+x).encode()).hexdigest()))
             if roundno<len(entries):
