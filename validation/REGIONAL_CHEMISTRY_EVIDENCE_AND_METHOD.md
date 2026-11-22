@@ -16,20 +16,35 @@ For every existing candidate patch P (residue set) and canonical chemistry chann
 
 - **Mean local support:** D_c(P) = [Σ_(r in P) L_c(r)] / |P|. Unitless; descriptive, not an energy. No learned channel weighting.
 - **Supporting residue fraction:** F_c(P) = |{r in P: L_c(r)>0}| / |P|. Describes fraction of region members, not surface area or binding probability.
-- **Weakest channel support:** B(P) = min_(selected c) D_c(P). **Reported only as a supplemental diagnostic**, never used to reorder patches or select user-facing default regions.
 - **Distinct-residue cross-channel proximity:** for two channels c and d, min ||CA(r)-CA(s)|| over r≠s in P, L_c(r)>0 and L_d(s)>0. Returns NA if no such pair or coordinates unavailable; CA distance is not an atom–atom contact.
-- **Regional contrast:** C_c(P) = D_c(P) − median_{Q in existing combined patch candidates} D_c(Q). **Candidate regions overlap**, so this median is a descriptive spatial reference only, not independent sampling, a z-score, or significance.
 
 Canonical 8 Å neighborhoods use CA distances and radial centroid-based hemisphere filtering, a coarse side-of-protein heuristic. Shared patch membership does NOT imply the two contributing residues are ≤8 Å apart from one another, so their direct pair distance is explicitly recorded. There is no proposed 6 Å or 0.5/0.75 threshold in production diagnostics: any such thresholds in RNase A exploratory tests were descriptive sensitivity checks only.
 
 ## Defensible scope
 
-- These features answer: what chemically compatible and exposed residue classes exist together in an *existing protein-side surface candidate region*, how dense are they, and how do they differ from neighboring candidate regions?
+- These features answer: what chemically compatible and exposed residue classes exist together in an *existing protein-side surface candidate region*, how widespread are they, and how close are the different chemistry-bearing residues?
 - They do NOT answer: will a material bind, which conformation will adsorb, adhesion energy, kinetics, surface-induced unfolding, material-specific affinity, or exact contact residues.
 - pH is applied via fixed residue-class protonation rules; actual residue-specific pKa shifts, local metal surface chemistry, ionic shielding, solvent, glycosylation and protein-protein adsorption are not modeled.
 - Several map channels are chemically correlated or even partly redundant; supporting-channel count must not be translated into number of independent pieces of evidence. Separate channels should remain inspectable.
 - The same static protein structure and pH necessarily produce the same canonical maps regardless of material identity. Only a *user-selected chemistry view* changes.
-- Spatial contrast is not an experimental validation statistic. The published RNase A observations informed creation of regional diagnostics, hence they cannot serve as an independent holdout.
+
+## Completed 48-protein descriptive information audit (2026-11-22)
+
+A full label-free audit evaluated the frozen 48 PDB structures from strict_apo_48_selected_candidates_v2_final.csv, eight prespecified chemistry channel pairs, and 17,353 combined surface region records. All 384 protein-channel comparisons completed successfully (CI 45054941106).
+
+**What was empirically established:** Mean local chemistry support and supporting residue fraction are correlated but not identical: median within-protein Spearman correlations across evaluated channel/region data were 0.7503 and 0.7609 (n=378 evaluable comparisons/channel). Medians for the fraction of non-tied patch pairs ordered oppositely by support versus residue fraction were 0.1963 and 0.1862 (n=380). These overlapping patches are dependent observations. The statistic indicates nonidentical descriptors, not independent physical information.
+
+**What geometry added:** In 379 of 384 protein/channel comparisons, cross-channel nearest distinct-residue C-alpha distances varied across the existing regions. In 284 of 384 comparisons, at least one reported 8 Å center-defined patch had a shortest cross-channel distinct-residue separation larger than 8 Å. Thus patch co-membership alone is not a direct pairwise proximity measurement.
+
+**Remove regional contrast:** subtracting the median channel support from each region is an affine translation, cannot change rank or provide new independent ordering. This mathematical redundancy was checked in all 381 nonempty comparisons in the frozen pre-removal audit.
+
+**Remove weakest-channel scalar:** the minimum of per-channel means is wholly reconstructable from the vector and is likely to be misread as a combined binding score; no evidence justifies default ranking with it.
+
+**Retain:** per-channel local mean support; supporting residue fraction and count; actual minimum C-alpha distance between distinct residues supporting different channels. Preserve exact overlap, spatial co-localization and all canonical rankings separately. No 0.5, 0.75 or other after-the-fact thresholds.
+
+This audit tests descriptive differentiation, not adsorption prediction, nonrandom clustering, conformational stability across different structures, or experimental site recovery.
+
+Raw reproducible CI source and artifact: https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45054941106
 
 ## Test protocol and future evidence
 
