@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - .github/workflows/qa-six-replacements.yml
+      - validation/qa_six_replacements.py
   workflow_dispatch:
 jobs:
   six_qa:
