@@ -1,0 +1,31 @@
+name: Build ligand-free and CATH-topology-unique 48 protein panel
+on:
+  push:
+    paths:
+      - .github/workflows/rebuild-strict-apo-48.yml
+      - validation/rebuild_strict_apo_48.py
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  select:
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned dependencies
+        run: python -m pip install requests gemmi==0.7.4 biopython==1.85
+      - name: Select 48 structurally diverse high-quality protein-only assemblies
+        run: python -u validation/rebuild_strict_apo_48.py
+      - name: Upload audit and selection
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: strict-apo-48-selection
+          path: |
+            strict_apo_panel_48/*.json
+            strict_apo_panel_48/*.csv
+          if-no-files-found: warn
