@@ -1,7 +1,7 @@
 """Audit independent wwPDB validation summary metrics for six selected candidates."""
 import gzip,json,requests,xml.etree.ElementTree as ET,sys
 from pathlib import Path
-IDS=["1C5E","1PDB","1A1X","1STN","2CBA","1RWZ"]
+IDS=["1C5E","1PDB","1A1X","1STN","2CBA","1RWZ","4HK1","1VYM","1GE8","4M6J","7FQ7","2GQV","3T9L"]
 out=Path("wwpdb_six_validation");out.mkdir(exist_ok=True)
 items=[]
 for pid in IDS:
