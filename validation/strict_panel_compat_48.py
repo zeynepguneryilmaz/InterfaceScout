@@ -8,7 +8,7 @@ import gemmi
 ROOT=Path(__file__).resolve().parents[1]
 OUT=Path("strict_panel_48")
 OUT.mkdir(exist_ok=True)
-IDS=[r["pdb_id"].upper() for r in csv.DictReader(open(OUT/"selected_48.csv",encoding="utf-8"))]
+IDS=[r["pdb_id"].upper() for r in csv.DictReader(open(ROOT/"validation"/"strict_48_selected_candidates_v1.csv",encoding="utf-8"))]
 assert len(IDS)==48 and len(set(IDS))==48
 
 def prepare(pid):
