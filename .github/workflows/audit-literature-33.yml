@@ -1,0 +1,36 @@
+name: Literature 33 PDB structural and evidence QA
+on:
+  push:
+    paths:
+      - 'validation/audit_literature_33_20261122.py'
+      - '.github/workflows/audit-literature-33.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3,4,5]
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install scientific audit dependencies
+        run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install biopython gemmi requests
+      - name: Inspect real 33-PDB candidate subset with primary wwPDB coordinates
+        run: python -u validation/audit_literature_33_20261122.py --shard ${{ matrix.shard }} --shards 6
+      - name: Upload source-specific audit results including exceptions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: literature33-shard-${{ matrix.shard }}
+          path: literature33_audit/shard_${{ matrix.shard }}/
+          retention-days: 90
+          if-no-files-found: warn
