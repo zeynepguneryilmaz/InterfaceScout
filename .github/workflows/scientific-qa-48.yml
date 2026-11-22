@@ -3,6 +3,9 @@ on:
   push:
     paths:
       - .github/workflows/scientific-qa-48.yml
+      - validation/final_panel_quality_48.py
+      - validation/final_panel_compat_48.py
+      - validation/development_panel_48_candidates_v4_REVIEW.csv
   workflow_dispatch:
 permissions:
   contents: read
