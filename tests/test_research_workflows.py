@@ -59,6 +59,36 @@ class DecisionWorkflowTests(unittest.TestCase):
         self.assertTrue(any(r["distinct_residue_colocation_only"] for r in out["regions"]))
         self.assertTrue(any(r["all_maps_colocated"] for r in out["regions"]))
 
+    def test_regional_diagnostics_are_descriptive_and_preserve_region_order(self):
+        self.a["diagnostics"]["surface_ca_xyz_A"] = {
+            "A:1:": [0.0, 0.0, 0.0],
+            "A:2:": [3.0, 0.0, 0.0],
+            "A:3:": [6.0, 0.0, 0.0],
+        }
+        out = combine_maps(self.a, ["anionic", "hydrophobic"])
+        self.assertTrue(out["regional_profile_method"]["ranking_unchanged"])
+        self.assertFalse(out["regional_profile_method"]["experimental_labels_used"])
+        p = out["regions"][0]["regional_profile"]
+        self.assertAlmostEqual(p["mean_local_support_by_map"]["anionic"], 0.25)
+        self.assertAlmostEqual(p["mean_local_support_by_map"]["hydrophobic"], 0.4)
+        self.assertAlmostEqual(p["supporting_residue_fraction_by_map"]["anionic"], 0.5)
+        self.assertAlmostEqual(p["supporting_residue_fraction_by_map"]["hydrophobic"], 0.5)
+        self.assertEqual(p["min_distinct_intermap_CA_distance_A"], 3.0)
+        self.assertEqual(p["intermap_distinct_CA_distances_A"]["anionic|hydrophobic"], 3.0)
+        self.assertEqual(out["regions"][0]["source_center_key"], "A:1:")
+
+    def test_descriptors_gracefully_handle_missing_geometry(self):
+        out = combine_maps(self.a, ["anionic", "hydrophobic"])
+        self.assertFalse(out["regional_profile_method"]["regional_proximity_available"])
+        self.assertIsNone(out["regions"][0]["regional_profile"]["min_distinct_intermap_CA_distance_A"])
+
+    def test_local_support_not_fitted_to_experimental_contacts(self):
+        # Experimental/assay labels must not change any derived region feature.
+        before = combine_maps(self.a, ["anionic", "hydrophobic"])
+        self.a["experimental_labels"] = ["A:3:"]
+        after = combine_maps(self.a, ["anionic", "hydrophobic"])
+        self.assertEqual(before, after)
+
     def test_selection_validation(self):
         with self.assertRaises(ValueError):
             combine_maps(self.a, ["anionic"])
