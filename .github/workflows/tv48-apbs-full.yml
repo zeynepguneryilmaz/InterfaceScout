@@ -1,0 +1,79 @@
+name: TV48 full production 11-map + real APBS
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "validation/tv48_apbs_full.py"
+      - ".github/workflows/tv48-apbs-full.yml"
+      - "backend/electrostatics.py"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "validation/tv48_apbs_full.py"
+      - ".github/workflows/tv48-apbs-full.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  compute:
+    name: TV48 shard ${{ matrix.shard }} of 8
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install APBS, PDB2PQR/PROPKA and production requirements
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apbs
+          python -m pip install -r backend/requirements.txt
+          python -m pip install gemmi==0.7.4 pdb2pqr==3.7.1
+          which apbs
+          which pdb2pqr
+      - name: Recalculate canonical 11 maps and real APBS for six frozen TV48 structures
+        run: python -u validation/tv48_apbs_full.py --shard ${{ matrix.shard }} --shards 8
+      - name: Preserve every successful structure and failure report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TV48-APBS-shard-${{ matrix.shard }}
+          path: tv48_apbs_results/
+          if-no-files-found: error
+          retention-days: 90
+
+  aggregate:
+    name: Strict TV48 48-structure evidence gate
+    needs: compute
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Download all per-structure and per-shard evidence
+        uses: actions/download-artifact@v4
+        with:
+          pattern: TV48-APBS-shard-*
+          path: tv48_apbs_results
+          merge-multiple: true
+      - name: Aggregate exactly 48 proteins and 528 maps
+        run: python -u validation/tv48_apbs_full.py --aggregate tv48_apbs_results --shards 8
+      - name: Archive complete evidence, including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TV48-APBS-full-evidence
+          path: tv48_apbs_results/
+          if-no-files-found: error
+          retention-days: 90
