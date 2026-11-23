@@ -53,6 +53,31 @@ class TestElectrostaticsParameters(unittest.TestCase):
         with self.assertRaises(ElectrostaticsError):
             atoms_from_pqr(pqr)
 
+    def test_pqr_optional_chain_and_insertion_codes(self):
+        from physics_surface import read_pqr
+        records=[
+          ("ATOM 1 CA ALA A 12 1 2 3 0.0 1.8", "A:12:"),
+          ("ATOM 1 CA ALA 12 1 2 3 0.0 1.8", ":12:"),
+          ("ATOM 1 CA ALA A 12B 1 2 3 0.0 1.8", "A:12:B"),
+          ("ATOM 1 CA ALA A 12 B 1 2 3 0.0 1.8", "A:12:B"),
+        ]
+        for line,expected in records:
+            with self.subTest(expected=expected):
+                self.assertEqual(read_pqr(line)[0].key,expected)
+
+    def test_opendx_interpolation(self):
+        from physics_surface import read_dx
+        dx=("object 1 class gridpositions counts 2 2 2\\n"
+            "origin 0 0 0\\n"
+            "delta 1 0 0\\n"
+            "delta 0 1 0\\n"
+            "delta 0 0 1\\n"
+            "object 2 class gridconnections counts 2 2 2\\n"
+            "object 3 class array type double rank 0 items 8 data follows\\n"
+            "0 0 0 0 0 0 0 8\\n")
+        grid=read_dx(dx)
+        self.assertAlmostEqual(grid.sample([[0.5,0.5,0.5]])[0],1.0)
+
     def test_optional_does_not_modify_maps(self):
         self.assertFalse(status()["changes_standard_maps"])
 
