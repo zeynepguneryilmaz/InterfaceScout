@@ -1,9 +1,8 @@
 """Canonical InterfaceScout chemistry/SASA core.
 
-This module contains only the shared protein preparation-independent numerical
-kernel used by the public InterfaceScout application and publication
-reproducibility scripts. It implements the current 200-point Shrake-Rupley
-side-chain accessibility calculation and 6/9 A multiscale chemistry mapping.
+This module contains the public protein surface kernel. A single 200-point
+Shrake-Rupley SASA pass supports separate total-residue RSA (geometric gating)
+and side-chain RSA (chemistry). 6/9 A multiscale chemistry maps are preserved.
 No GNM, RIN, APBS, DSSP, material presets, or legacy 5/8 A model are used.
 """
 from __future__ import annotations
@@ -30,6 +29,15 @@ from model_settings import (
 
 APP_VERSION = PUBLIC_VERSION
 PATCH_RADII_A = MULTISCALE_RADII_A
+# Tien et al., PLoS ONE 2013, doi:10.1371/journal.pone.0080635.
+# Theoretical maximum solvent-accessible *whole-residue* area (A²).
+TOTAL_RESIDUE_REF_ASA: Dict[str, float] = {
+    "ALA": 129., "ARG": 274., "ASN": 195., "ASP": 193.,
+    "CYS": 167., "GLN": 225., "GLU": 223., "GLY": 104.,
+    "HIS": 224., "ILE": 197., "LEU": 201., "LYS": 236.,
+    "MET": 224., "PHE": 240., "PRO": 159., "SER": 155.,
+    "THR": 172., "TRP": 285., "TYR": 263., "VAL": 174.,
+}
 
 SIDECHAIN_REF_ASA: Dict[str, float] = {
     "ALA": 69.23, "ARG": 200.35, "ASN": 106.25, "ASP": 102.06,
@@ -240,8 +248,9 @@ def _pdb_text(req: AnalyzeRequest) -> str:
 
 
 def _sidechain_atoms(residue) -> List[Any]:
+    # GLY has no non-backbone heavy-atom side chain; CA is backbone.
     if residue.get_resname().strip().upper() == "GLY":
-        return [residue["CA"]] if "CA" in residue else []
+        return []
     backbone = {"N", "CA", "C", "O", "OXT"}
     return [a for a in residue.get_atoms() if a.get_name().strip().upper() not in backbone and (getattr(a, "element", "") or "").upper() != "H"]
 
@@ -262,15 +271,23 @@ def _surface_residues(pdb_text: str, pH: float) -> List[Dict[str, Any]]:
                 continue
             sc_atoms = _sidechain_atoms(residue)
             sc_sasa = float(sum(float(getattr(a, "sasa", 0.0)) for a in sc_atoms))
-            scrsa_raw = sc_sasa / SIDECHAIN_REF_ASA[rn]
+            scrsa_raw = 0.0 if rn == "GLY" else sc_sasa / SIDECHAIN_REF_ASA[rn]
+            total_sasa = float(sum(
+                float(getattr(a, "sasa", 0.0)) for a in residue.get_atoms()
+                if (getattr(a, "element", "") or "").upper() != "H"
+            ))
+            trsa_raw = total_sasa / TOTAL_RESIDUE_REF_ASA[rn]
             ca = residue["CA"]
             seq = int(residue.id[1]); icode = str(residue.id[2]).strip(); cid = str(chain.id)
             rows.append({
                 "key": f"{cid}:{seq}:{icode}", "res_name": rn, "res_seq": seq, "icode": icode, "chain": cid,
                 "x": float(ca.coord[0]), "y": float(ca.coord[1]), "z": float(ca.coord[2]),
+                "residue_sasa": round(total_sasa, 3),
+                "trsa_raw": round(trsa_raw, 5),
+                "trsa": round(min(max(trsa_raw, 0.0), 1.0), 5),
                 "sidechain_sasa": round(sc_sasa, 3), "scrsa_raw": round(scrsa_raw, 5),
                 "scrsa": round(min(max(scrsa_raw, 0.0), 1.0), 5),
-                "surface_exposed": bool(scrsa_raw >= SC_RSA_THRESHOLD),
+                "surface_exposed": bool(trsa_raw >= SC_RSA_THRESHOLD),
                 "charge_fraction": round(charged_fraction(rn, pH), 5),
                 "charge_descriptor": round(residue_charge_descriptor(rn, pH), 5),
                 "pka": PKA.get(rn),
@@ -367,7 +384,8 @@ def chemistry_map(surface: List[Dict[str, Any]], distances: np.ndarray, key: str
         "top_patches": patch_centers[:10], "patch_centers": patch_centers,
         "residues": members, "repulsive_residues": repulsive,
         "notes": {
-            "primary_score": "L = scRSA x binary membership x required-state availability",
+            "primary_score": "L = scRSA x binary membership x required-state availability (non-GLY side chains)",
+            "surface_gate": "total-residue RSA >= 0.05; GLY included geometrically but zero side-chain chemistry",
             "normalization": "within-map maximum = 100",
             "patch": f"multiscale persistence = 100 x min(normalized {int(inner)} A density, normalized {int(outer)} A density)",
         },
@@ -389,10 +407,14 @@ def analyze(req: AnalyzeRequest) -> Dict[str, Any]:
         "settings": {
             "pH": req.env.pH, "ionic_mM": req.env.ionic, "temperature_K": req.env.temp,
             "sasa_probe_A": SASA_PROBE_A, "sasa_points_per_atom": SASA_POINTS,
-            "scrsa_threshold": SC_RSA_THRESHOLD, "patch_radii_A": list(PATCH_RADII_A),
+            "trsa_threshold": SC_RSA_THRESHOLD,
+            "surface_gate": "total_residue_RSA",
+            "chemistry_accessibility": "sidechain_RSA",
+            "scrsa_threshold": None, "patch_radii_A": list(PATCH_RADII_A),
             "coarse_patch_radius_A": COARSE_PATCH_RADIUS_A,
         },
         "chemistry_list": list(CHEMISTRIES), "chemistries": chemistries,
         "all_residues": rows, "surface_residues": surface,
-        "reference_sidechain_asa": SIDECHAIN_REF_ASA,
+        "reference_sidechain_asa": {k: v for k, v in SIDECHAIN_REF_ASA.items() if k != "GLY"},
+        "reference_total_residue_asa": TOTAL_RESIDUE_REF_ASA,
     }
