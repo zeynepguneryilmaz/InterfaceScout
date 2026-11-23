@@ -45,6 +45,14 @@
 
 The [80-candidate production and structural screening report](ISV_80_FULL_SCREENING_REPORT.md) documents **80/80 successful 11-map engine executions**, 75 deposited principal chains above the preliminary 90% C-alpha coverage screen, and three conservative quality-review strata (10 priority, 67 conditional, 3 special challenge). **All 80 remain in the candidate pool, but no 80-member final ISV manifest is asserted.** The [per-protein triage table](evidence/ISV80_TRIAGE.csv) and [archived raw evidence](evidence/ISV80_COMPLETE_SCREENING_EVIDENCE.zip) provide reproducible provenance. Additional manual structure/side-chain chemical relevance and protein-family independence review is required before final inclusion decisions.
 
+### Current ISV working-panel decision
+
+**Keep all 80 computationally compatible protein structures in the working panel**, without limiting the sample to 50. The [80-structure audit](ISV_80_FULL_SCREENING_REPORT.md) and [80-row versioned decision table](evidence/ISV80_TRIAGE.csv) record 880 successful chemistry maps and scientific caveats for every PDB.
+
+These are **working structures, not 80 formally accepted independent biological validation systems**. Ten are conservative priority candidates, 67 require structural/contextual review, and three (1HC1, 6LQH, 8C50) are segregated structural challenges. Three closely related pairs ([sequence audit](evidence/ISV80_SEQUENCE_SUMMARY.json)) must be clustered by family when appropriate: 4F5S/1AO6, 3V83/1LFG, and 1B09/1SAC. There was no flagged near-sequence ISV-to-TV48 match under the documented prefilter; domain/fold independence remains subject to confirmation.
+
+All 80 can contribute to **descriptive software applicability** where their coordinate caveats are disclosed; no structure should contribute to strict residue-level quantitative conclusions if its missing interface chemistry, assembly or construct mismatch undermines the result.
+
 ## Previous studies — preserved as historical supporting material, not active datasets
 
 The older **eight-structure parameter-development set** is historical methodological provenance only; it is **not an active validation dataset**, and is not part of the current two-dataset work plan.
