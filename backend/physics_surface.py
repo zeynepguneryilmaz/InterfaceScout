@@ -27,10 +27,27 @@ def read_pqr(text):
         xyz=tuple(map(float,w[-5:-2]));q,r=map(float,w[-2:])
         if not all(math.isfinite(x) for x in (*xyz,q,r)) or r<0 or (r==0 and not re.match(r"^(?:[123])?H",w[2].upper())):
             raise PhysicsInputError("Invalid atomic charge/radius")
-        residue=re.fullmatch(r"([+-]?\d+)([A-Za-z]?)",w[-6])
-        if not residue:raise PhysicsInputError("Invalid PQR residue number")
-        chain=w[-7] if len(w)>=11 else ""
-        out.append(PQRAtom(f"{chain}:{int(residue[1])}:{residue[2]}",w[2],xyz,q,r))
+        # PDB2PQR variants can use chain/resseq/icode as one, two or
+        # three whitespace tokens. Never infer chain by token count alone.
+        identity=w[4:-5]
+        if len(identity)==1:
+            chain="";residue_token=identity[0];icode_extra=""
+        elif len(identity)==2:
+            if re.fullmatch(r"[+-]?\\d+[A-Za-z]?",identity[0]):
+                chain="";residue_token=identity[0];icode_extra=identity[1]
+            else:
+                chain=identity[0];residue_token=identity[1];icode_extra=""
+        elif len(identity)==3:
+            chain,residue_token,icode_extra=identity
+        else:
+            raise PhysicsInputError("Unsupported PQR residue fields: "+repr(line[:160]))
+        residue=re.fullmatch(r"([+-]?\\d+)([A-Za-z]?)",residue_token)
+        if not residue or (icode_extra and not re.fullmatch(r"[A-Za-z]",icode_extra)):
+            raise PhysicsInputError("Invalid PQR residue number: "+repr(line[:160]))
+        icode=(residue[2] or icode_extra).strip()
+        if residue[2] and icode_extra and residue[2]!=icode_extra:
+            raise PhysicsInputError("Conflicting PQR insertion codes: "+repr(line[:160]))
+        out.append(PQRAtom(f"{chain}:{int(residue[1])}:{icode}",w[2],xyz,q,r))
     if not out:raise PhysicsInputError("No PQR atoms")
     return out
 
@@ -87,7 +104,7 @@ def charge_by_residue(atoms):
     for a in atoms:charges[a.key]=charges.get(a.key,0)+a.charge
     return charges
 
-def sample_exposed_potentials(atoms,grid,temperature_K,eligible_keys,n_directions=32,probe_radius_A=1.4):
+def sample_exposed_potentials(atoms,grid,temperature_K,eligible_keys,n_directions=96,probe_radius_A=1.4):
     """Sample probe-inflated heavy sidechain atom spheres, excluding sterically occluded points.
 
     Equal angular sampling is not a true area-weighted SES mesh. APBS native units
