@@ -31,6 +31,9 @@ def profile_rows(core_result: Mapping[str, Any]) -> list[dict[str, Any]]:
             "res_seq": int(r["res_seq"]),
             "icode": str(r.get("icode", "")),
             "res_name": rn,
+            "residue_sasa": float(r["residue_sasa"]),
+            "trsa_raw": float(r["trsa_raw"]),
+            "trsa": float(r["trsa"]),
             "sidechain_sasa": float(r["sidechain_sasa"]),
             "scrsa_raw": float(r["scrsa_raw"]),
             "scrsa": float(r["scrsa"]),
@@ -47,6 +50,7 @@ def summarize_profiles(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "n_surface_residues": len(exposed),
         "exposed_fraction": round(len(exposed) / max(len(rows), 1), 4),
         "total_sidechain_sasa_A2": round(sum(r["sidechain_sasa"] for r in rows), 2),
+        "total_residue_sasa_A2": round(sum(r["residue_sasa"] for r in rows), 2),
         "groups": {
             name: {
                 "n_exposed_residues": sum(name in r["groups"] for r in exposed),
