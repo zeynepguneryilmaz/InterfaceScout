@@ -41,6 +41,10 @@
 
 **Current state:** [Initial ISV source-supported candidate shortlist](ISV_CANDIDATE_SCREENING.md) and [candidate screening table](ISV_candidate_screening_v1.csv) have been created: **eight distinct protein candidates and one alternate structure for an existing candidate**. None is finally accepted; the exact experimental residue annotations and PDB/construct matching remain to be audited. No numerical ISV validation metrics should be claimed before the final manifest is frozen and analyzed.
 
+### ISV80 structural-screening results (current)
+
+The [80-candidate production and structural screening report](ISV_80_FULL_SCREENING_REPORT.md) documents **80/80 successful 11-map engine executions**, 75 deposited principal chains above the preliminary 90% C-alpha coverage screen, and three conservative quality-review strata (10 priority, 67 conditional, 3 special challenge). **All 80 remain in the candidate pool, but no 80-member final ISV manifest is asserted.** The [per-protein triage table](evidence/ISV80_TRIAGE.csv) and [archived raw evidence](evidence/ISV80_COMPLETE_SCREENING_EVIDENCE.zip) provide reproducible provenance. Additional manual structure/side-chain chemical relevance and protein-family independence review is required before final inclusion decisions.
+
 ## Previous studies — preserved as historical supporting material, not active datasets
 
 The older **eight-structure parameter-development set** is historical methodological provenance only; it is **not an active validation dataset**, and is not part of the current two-dataset work plan.
