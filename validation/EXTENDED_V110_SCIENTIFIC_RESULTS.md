@@ -1,4 +1,6 @@
 # InterfaceScout v1.1.0 — Extended scientific evaluation
+> **Dataset scope (current plan):** The active datasets are [TV48 technical verification and the planned ISV initial scientific-validation panel](ACTIVE_DATASETS.md). The 48-structure tests in this document are TV48 results. Any nine-condition retrospective literature analyses reported below are **historical exploratory analyses**, **not ISV** and not independent holdouts.
+
 
 **Reproducible source run:** [GitHub Actions 45252414860](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45252414860) — **PASS**, all four protein-panel shards, the experimental-case job, and final aggregation. Source commit `4952f75992a15b7dc32a1dd8f6fbad2160a1f065` · model `2.5.0-dual-accessibility`.
 
