@@ -64,7 +64,7 @@ def _patch_descriptors(patch: dict, geometry: dict) -> dict:
 
     chemistry_fraction = float(len(seeds) / len(members)) if members else 0.0
     patch_coherence = float(center.get("multiscale_persistence", 0.0)) / 100.0
-    access_vals = [float(geometry["scrsa"].get(k, 0.0)) for k in members]
+    access_vals = [float(geometry["trsa"].get(k, 0.0)) for k in members]
     accessibility = float(np.mean(access_vals)) if access_vals else 0.0
     orientation = patch_orientation_coherence(members, geometry)
 
