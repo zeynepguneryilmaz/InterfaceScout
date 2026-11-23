@@ -25,7 +25,7 @@ def read_pqr(text):
         w=line.split()
         if len(w)<10:raise PhysicsInputError("Invalid PQR atom line")
         xyz=tuple(map(float,w[-5:-2]));q,r=map(float,w[-2:])
-        if not all(math.isfinite(x) for x in (*xyz,q,r)) or r<=0:
+        if not all(math.isfinite(x) for x in (*xyz,q,r)) or r<0 or (r==0 and not re.match(r"^(?:[123])?H",w[2].upper())):
             raise PhysicsInputError("Invalid atomic charge/radius")
         residue=re.fullmatch(r"([+-]?\d+)([A-Za-z]?)",w[-6])
         if not residue:raise PhysicsInputError("Invalid PQR residue number")
