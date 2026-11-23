@@ -1,0 +1,54 @@
+name: ISV80 missing surface atoms assembly and cofactors final audit
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'validation/isv80_surface_assembly_audit.py'
+      - '.github/workflows/isv80-surface-assembly.yml'
+permissions:
+  contents: read
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 140
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3,4,5,6,7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install gemmi==0.7.4
+      - run: python -u validation/isv80_surface_assembly_audit.py ${{ matrix.shard }} 8
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: isv80-surface-shard-${{ matrix.shard }}
+          path: isv80_scientific_audit/
+          retention-days: 90
+  collect:
+    needs: scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install gemmi==0.7.4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: isv80-surface-shard-*
+          path: isv80_scientific_audit/
+          merge-multiple: true
+      - run: python -u validation/isv80_surface_assembly_audit.py aggregate
+      - uses: actions/upload-artifact@v4
+        with:
+          name: isv80-surface-assembly-full-evidence
+          path: isv80_scientific_audit/
+          retention-days: 90
