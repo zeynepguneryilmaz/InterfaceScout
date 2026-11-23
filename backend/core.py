@@ -326,10 +326,14 @@ def chemistry_map(surface: List[Dict[str, Any]], distances: np.ndarray, key: str
             return 1.0
         evidence=physical_evidence.get(row["key"])
         if evidence is None:
-            raise ValueError("Missing physical evidence for charged residue "+row["key"])
+            raise ValueError("Missing PDB2PQR evidence for residue "+row["key"])
         phi=evidence.get("fraction_positive")
-        if phi is None or not (0.0 <= float(phi) <= 1.0):
-            raise ValueError("APBS surface potential unavailable for "+row["key"])
+        if phi is None:
+            # Missing solvent-side APBS samples are NOT assigned a fabricated
+            # potential. Retain only PDB2PQR protonation, and report coverage.
+            return 1.0
+        if not (0.0 <= float(phi) <= 1.0):
+            raise ValueError("Invalid APBS potential support for "+row["key"])
         return float(phi) if desired=="positive" else 1.0-float(phi)
     meta = CHEMISTRIES[key]
     fav_defs = meta["favorable"]
