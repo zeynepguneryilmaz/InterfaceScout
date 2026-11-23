@@ -39,6 +39,20 @@ class TestElectrostaticsParameters(unittest.TestCase):
         with self.assertRaises(ElectrostaticsError):
             atoms_from_pqr(pqr.replace("-0.3000","nan"))
 
+    def test_charged_zero_radius_hydrogen_preserved(self):
+        pqr="ATOM     47  HZ1 LYS A   3      52.270   4.898  11.784  0.3300 0.0000\\n"
+        parsed=atoms_from_pqr(pqr)
+        self.assertEqual(len(parsed),1)
+        self.assertAlmostEqual(parsed[0][1],0.33)
+        from physics_surface import read_pqr,charge_by_residue
+        atoms=read_pqr(pqr)
+        self.assertAlmostEqual(charge_by_residue(atoms)["A:3:"],0.33)
+
+    def test_zero_radius_heavy_atom_is_rejected(self):
+        pqr="ATOM     47  NZ  LYS A   3      52.270   4.898  11.784  0.3300 0.0000\\n"
+        with self.assertRaises(ElectrostaticsError):
+            atoms_from_pqr(pqr)
+
     def test_optional_does_not_modify_maps(self):
         self.assertFalse(status()["changes_standard_maps"])
 
