@@ -33,21 +33,16 @@ J Mol Biol. 1973;79(2):351-371.
 DOI: https://doi.org/10.1016/0022-2836(73)90011-9
 
 ## Important methodological caveats
-1. This is an **experimental alternative**, not the default production engine.
-2. Using tRSA >= 0.05 initially is a direct *sensitivity test*, not a
-   validated replacement for the legacy scRSA >= 0.05 criterion.
+1. This dual-accessibility definition is now the **v1.1.0 production model** (`2.5.0-dual-accessibility`); earlier comparison scripts remain historical developmental evidence.
+2. The production threshold **tRSA >= 0.05** is a fixed, sensitivity-tested modeling convention, not an experimentally optimized adsorption-site cutoff.
 3. Tien maximum ASA and the InterfaceScout Shrake-Rupley radii/discretization
    are not identical methodology; absolute normalized values are therefore
    convention-dependent.
 4. A glycine residue may be a geometric patch member but must not receive
    fictitious side-chain chemistry.
-5. Before adoption, evaluate threshold sensitivity, the 48 x 11 map
-   agreement, and an independent literature-based localization benchmark.
+5. Technical sensitivity studies are complete for exploratory model variants; for **final v1.1.0** validation use the frozen 48-structure production re-run and the separate paired literature evaluation. The nine historical literature conditions are not an independent holdout.
 6. Mixed tRSA geometry and scRSA chemistry are distinct descriptors and
    must never be labeled as interchangeable SASA measures.
 
 ## Reproduction
-Run the workflow `.github/workflows/dual-accessibility-48.yml` to
-generate source-SHA-verified per-residue CSVs, map comparisons, per-channel
-results, and protein-cluster confidence intervals.
-The executable is `validation/dual_accessibility_48.py`.
+For final production validation run `.github/workflows/final-v110-48.yml` (48 SHA-matched assemblies, all 11 maps and Pareto ablation) and `.github/workflows/final-v110-literature.yml` (nine evidence conditions, fixed-candidate ablations). The historical exploratory workflow `.github/workflows/dual-accessibility-48.yml` is not the final-production result set.
