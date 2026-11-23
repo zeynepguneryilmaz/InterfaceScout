@@ -7,12 +7,14 @@ was not fitted to experimental adsorption labels.
 """
 from __future__ import annotations
 
-PUBLIC_VERSION = "1.0.0"
-MODEL_VERSION = "2.4.0-selected-parameters"
+PUBLIC_VERSION = "1.1.0"
+MODEL_VERSION = "2.5.0-dual-accessibility"
 
 SASA_PROBE_A = 1.40
 SASA_POINTS = 200
+# Compatibility constant: now gates total-residue RSA, not side-chain RSA.
 SC_RSA_THRESHOLD = 0.05
+TOTAL_RSA_THRESHOLD = SC_RSA_THRESHOLD
 
 MULTISCALE_RADII_A = (6.0, 9.0)
 RADIUS_SELECTION_CANDIDATES_A = (
@@ -34,4 +36,8 @@ PARAMETER_SELECTION = {
     "coarse_patch_radius_A": COARSE_PATCH_RADIUS_A,
     "coarse_patch_radius_basis": "predefined geometric contact-region scale; not fitted to adsorption labels",
     "uses_experimental_adsorption_labels": False,
+    "surface_accessibility_definition": "total_residue_RSA",
+    "chemistry_accessibility_definition": "sidechain_RSA",
+    "glycine_sidechain": "absent",
+    "surface_threshold_note": "0.05 is a documented sensitivity-tested convention, not fitted for adsorption accuracy",
 }
