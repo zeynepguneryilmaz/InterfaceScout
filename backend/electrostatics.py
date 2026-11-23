@@ -75,7 +75,7 @@ def _pqr_atoms(path: Path) -> list[dict[str, Any]]:
         m = re.fullmatch(r"(-?\d+)([A-Za-z]?)", resid)
         if not m:
             raise ElectrostaticsError(f"Cannot parse PQR residue index: {resid}")
-        if not all(math.isfinite(v) for v in (x, y, z, charge, radius)) or radius <= 0:
+        if not all(math.isfinite(v) for v in (x, y, z, charge, radius)) or radius < 0 or (radius == 0 and not atom_name.upper().startswith("H")):
             raise ElectrostaticsError(f"PQR has nonfinite values or invalid radius: atom={atom_name} residue={res_name} charge={charge} radius={radius}; record={line[:180]!r}")
         atoms.append({"name": atom_name, "res_name": res_name, "chain": chain,
                       "seq": int(m.group(1)), "icode": m.group(2),
