@@ -241,12 +241,14 @@ The current 40-PDB technical evaluation establishes successful map generation; t
 
 | Component | Current behavior |
 | --- | --- |
-| Public software version | `1.0.0` |
-| Internal model version | `2.4.0-selected-parameters` |
+| Public software version | `1.1.0` |
+| Internal model version | `2.5.0-dual-accessibility` |
 | pH | Used in chemical scoring; default 7.4 |
 | Ionic strength, temperature | Recorded as metadata only |
 | SASA method | Shrake–Rupley; 1.40 Å probe, 200 sample points per atom |
-| Surface exposure | Side-chain relative accessibility (`scRSA ≥ 0.05`) |
+| Surface exposure | Total-residue relative accessibility (`tRSA ≥ 0.05`), normalized using Tien et al. (2013) maxima |
+| Chemical side-chain support | Non-backbone side-chain SASA / reference ASA (`scRSA`); glycine has no side-chain heavy atoms (`scRSA = 0`) |
+| Patch mean accessibility | Mean geometric `tRSA`, distinct from chemical `scRSA` |
 | Multiscale radii | 6 and 9 Å |
 | Candidate patch neighborhood | 8 Å center-defined scale |
 
