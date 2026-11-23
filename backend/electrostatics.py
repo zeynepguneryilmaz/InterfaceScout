@@ -206,10 +206,18 @@ def compute(prepared_pdb: str, residue_profiles: list[dict[str, Any]], *,
             raise ElectrostaticsError("PDB2PQR did not produce structure.pqr")
         atoms = _pqr_atoms(pqr_path)
         (wd / "potential.in").write_text(_apbs_input(atoms, ionic_mM, temp_K))
-        _run([shutil.which("apbs"), "potential.in"], wd, timeout=600)
+        apbs_log = _run([shutil.which("apbs"), "potential.in"], wd, timeout=600)
         dx_path = wd / "potential.dx"
         if not dx_path.is_file():
-            raise ElectrostaticsError("APBS did not write potential.dx")
+            candidates = sorted(wd.glob("potential*.dx"))
+            if len(candidates) == 1:
+                dx_path = candidates[0]
+            else:
+                produced = ", ".join(sorted(p.name for p in wd.iterdir()))
+                raise ElectrostaticsError(
+                    f"APBS did not write potential.dx (other grids={len(candidates)}). "
+                    f"Produced files: {produced}; APBS log tail: {apbs_log[-2500:]}"
+                )
         grid, origin, spacing = _read_dx(dx_path)
         valid = {str(r["key"]): str(r["res_name"]) for r in residue_profiles}
         grouped: dict[str, list[dict]] = {}
