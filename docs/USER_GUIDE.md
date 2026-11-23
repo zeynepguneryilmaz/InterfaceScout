@@ -1,7 +1,7 @@
 # InterfaceScout | User Guide
 
 **Physicochemical protein-surface mapping · Candidate-region exploration · Structure comparison**  
-**Software:** InterfaceScout 1.0.0 · **Computational model:** `2.4.0-selected-parameters`  
+**Software:** InterfaceScout 1.1.0 · **Computational model:** `2.5.0-dual-accessibility`  
 **Guide edition:** 1.0 · **Updated:** 23 November 2026 · **Language:** English
 
 > **At a glance.** InterfaceScout maps accessible, protein-side physicochemical features, identifies descriptive candidate surface patches, and compares compatible structures. It is a research decision-support tool. It **does not** predict a unique adsorption site or pose, binding free energy, adsorption kinetics, or adsorption-induced conformational changes.
