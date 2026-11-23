@@ -74,7 +74,7 @@ def build_surface_geometry(v1_result: dict, ca_nodes: List[dict]) -> dict:
 
     coords: Dict[str, np.ndarray] = {}
     normals: Dict[str, np.ndarray] = {}
-    scrsa: Dict[str, float] = {}
+    trsa: Dict[str, float] = {}
     meta: Dict[str, dict] = {}
 
     for key, row in surface_rows.items():
@@ -83,7 +83,7 @@ def build_surface_geometry(v1_result: dict, ca_nodes: List[dict]) -> dict:
         coords[key] = coord
         normals[key] = _unit(coord - protein_centroid)
         # Coarse geometric patch accessibility must use tRSA, not scRSA.
-        scrsa[key] = float(row.get("trsa", row.get("trsa_raw", row.get("scrsa", 0.0))) or 0.0)
+        trsa[key] = float(row.get("trsa", row.get("trsa_raw", row.get("scrsa", 0.0))) or 0.0)
         meta[key] = {
             "key": key,
             "chain": node["chain"],
@@ -96,7 +96,7 @@ def build_surface_geometry(v1_result: dict, ca_nodes: List[dict]) -> dict:
         "protein_centroid": protein_centroid,
         "coords": coords,
         "normals": normals,
-        "scrsa": scrsa,
+        "trsa": trsa,
         "meta": meta,
     }
 
