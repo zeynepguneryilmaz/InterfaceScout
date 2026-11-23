@@ -25,8 +25,8 @@ def build_physical_11(*,prepared_protein_pdb,pqr_text,dx_text,pH,temperature_K,
     if dx_text is None:raise ValueError("APBS DX required for physical 11-map model")
     potential=sample_exposed_potentials(atoms,read_dx(dx_text),temperature_K,keys)
     # The biological assembly must match the PQR including chain identifiers.
-    if len(keys&charges)<len(keys)*.95:
-        raise ValueError(f"PQR residue mapping incomplete: {len(keys&charges)}/{len(keys)}")
+    if len(keys&set(charges))<len(keys)*.95:
+        raise ValueError(f"PQR residue mapping incomplete: {len(keys&set(charges))}/{len(keys)}")
     physical={}
     for key in keys:
         if key not in charges:raise ValueError("Missing PQR charge at "+key)
@@ -54,7 +54,7 @@ def build_physical_11(*,prepared_protein_pdb,pqr_text,dx_text,pH,temperature_K,
         "model":MODEL_VERSION,
         "note":"Physically informed candidate-region ranks, not adsorption energies or experimentally validated interfaces.",
         "physics":{"surface_residues":len(keys),"potential_sampled_residues":len(potential),
-                   "charged_residues_mapped":len(keys & charges),
+                   "charged_residues_mapped":len(keys & set(charges)),
                    "external_protonation":"PDB2PQR with PROPKA",
                    "external_potential":"APBS linearized PB",
                    "electrostatic_gate":"Fraction of probe-accessible APBS points of compatible sign for explicit ionic mechanisms",
