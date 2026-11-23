@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1480" height="970" viewBox="0 0 1480 970" role="img" aria-labelledby="title desc">
+<title id="title">InterfaceScout computational method</title>
+<desc id="desc">The 11 maps use dual total-residue and sidechain SASA, multiscale chemistry densities, local candidate surface patches, and four-criterion Pareto ranking.</desc>
+<rect width="1480" height="970" fill="#fff"/>
+<text x="48" y="62" font-family="Inter,Arial,sans-serif" font-size="36" fill="#15273d" font-weight="700" text-anchor="start">How InterfaceScout analyzes each structure</text>
+<text x="48" y="96" font-family="Inter,Arial,sans-serif" font-size="19" fill="#67788a" font-weight="400" text-anchor="start">The same canonical calculation is used in Single protein, Compare two, and Multi-PDB.</text>
+<rect x="45" y="142" width="677" height="333" rx="17" stroke="#d5dde3" stroke-width="1.5" fill="#fff"/><rect x="45" y="142" width="677" height="58" rx="17" fill="#355b72"/><rect x="45" y="177" width="677" height="23" fill="#355b72"/><text x="67" y="179" font-family="Inter,Arial,sans-serif" font-size="22" fill="#ffffff" font-weight="700" text-anchor="start">A  Protein preparation &amp; solvent exposure</text>
+<text x="70" y="230" font-family="Inter,Arial,sans-serif" font-size="22" fill="#243b4d" font-weight="700" text-anchor="start">Prepared protein coordinates</text>
+<circle cx="74" cy="265" r="4" fill="#8a3b59"/><text x="87" y="271" font-family="Inter,Arial,sans-serif" font-size="18" fill="#203244" font-weight="600" text-anchor="start">One structure per calculation</text><text x="87" y="296" font-family="Inter,Arial,sans-serif" font-size="15" fill="#667789" font-weight="400" text-anchor="start">Standard amino acids; selected chain(s)</text>
+<circle cx="74" cy="333" r="4" fill="#8a3b59"/><text x="87" y="339" font-family="Inter,Arial,sans-serif" font-size="18" fill="#203244" font-weight="600" text-anchor="start">Shrake–Rupley SASA</text><text x="87" y="364" font-family="Inter,Arial,sans-serif" font-size="15" fill="#667789" font-weight="400" text-anchor="start">Water probe 1.4 Å · 200 surface points/atom</text>
+<circle cx="74" cy="401" r="4" fill="#8a3b59"/><text x="87" y="407" font-family="Inter,Arial,sans-serif" font-size="18" fill="#203244" font-weight="600" text-anchor="start">Total-residue RSA (tRSA)</text><text x="87" y="432" font-family="Inter,Arial,sans-serif" font-size="15" fill="#667789" font-weight="400" text-anchor="start">Surface geometry gate: tRSA ≥ 0.05</text>
+<text x="484" y="238" font-family="Inter,Arial,sans-serif" font-size="31" fill="#4c755d" font-weight="700" text-anchor="start">tRSA</text>
+<text x="484" y="264" font-family="Inter,Arial,sans-serif" font-size="15" fill="#698270" font-weight="400" text-anchor="start">geometric exposure</text>
+<text x="484" y="323" font-family="Inter,Arial,sans-serif" font-size="31" fill="#8a3b59" font-weight="700" text-anchor="start">scRSA</text>
+<text x="484" y="349" font-family="Inter,Arial,sans-serif" font-size="15" fill="#986077" font-weight="400" text-anchor="start">side-chain chemistry</text>
+<text x="484" y="407" font-family="Inter,Arial,sans-serif" font-size="25" fill="#15273d" font-weight="700" text-anchor="start">GLY</text>
+<text x="484" y="429" font-family="Inter,Arial,sans-serif" font-size="15" fill="#69798a" font-weight="400" text-anchor="start">included in geometry</text>
+<text x="484" y="450" font-family="Inter,Arial,sans-serif" font-size="15" fill="#8a3b59" font-weight="700" text-anchor="start">scRSA = 0</text>
+<rect x="754" y="142" width="681" height="333" rx="17" stroke="#d5dde3" stroke-width="1.5" fill="#fff"/><rect x="754" y="142" width="681" height="58" rx="17" fill="#6a7c59"/><rect x="754" y="177" width="681" height="23" fill="#6a7c59"/><text x="776" y="179" font-family="Inter,Arial,sans-serif" font-size="22" fill="#ffffff" font-weight="700" text-anchor="start">B  Physicochemical surface maps</text>
+<text x="782" y="230" font-family="Inter,Arial,sans-serif" font-size="22" fill="#243b4d" font-weight="700" text-anchor="start">11 canonical chemistry channels</text>
+<circle cx="786" cy="269" r="4" fill="#8a3b59"/><text x="799" y="275" font-family="Inter,Arial,sans-serif" font-size="18" fill="#203244" font-weight="600" text-anchor="start">Anionic · cationic · hydrophobic</text>
+<circle cx="786" cy="312" r="4" fill="#8a3b59"/><text x="799" y="318" font-family="Inter,Arial,sans-serif" font-size="18" fill="#203244" font-weight="600" text-anchor="start">π/aromatic · H-bond donor · acceptor</text>
+<circle cx="786" cy="355" r="4" fill="#8a3b59"/><text x="799" y="361" font-family="Inter,Arial,sans-serif" font-size="18" fill="#203244" font-weight="600" text-anchor="start">Oxide · calcium/phosphate</text>
+<circle cx="786" cy="398" r="4" fill="#8a3b59"/><text x="799" y="404" font-family="Inter,Arial,sans-serif" font-size="18" fill="#203244" font-weight="600" text-anchor="start">Metal coordination · soft-metal/sulfur · phosphate</text>
+<text x="782" y="447" font-family="Inter,Arial,sans-serif" font-size="16" fill="#65778a" font-weight="400" text-anchor="start">Chemistry support uses scRSA and applicable pH state.</text>
+<rect x="45" y="505" width="677" height="325" rx="17" stroke="#d5dde3" stroke-width="1.5" fill="#fff"/><rect x="45" y="505" width="677" height="58" rx="17" fill="#8b3b59"/><rect x="45" y="540" width="677" height="23" fill="#8b3b59"/><text x="67" y="542" font-family="Inter,Arial,sans-serif" font-size="22" fill="#ffffff" font-weight="700" text-anchor="start">C  Neighborhoods &amp; candidate patches</text>
+<text x="72" y="592" font-family="Inter,Arial,sans-serif" font-size="30" fill="#8b3b59" font-weight="700" text-anchor="start">6 Å and 9 Å</text>
+<text x="72" y="623" font-family="Inter,Arial,sans-serif" font-size="17" fill="#566879" font-weight="400" text-anchor="start">Multiscale chemical neighborhoods</text>
+<text x="72" y="676" font-family="Inter,Arial,sans-serif" font-size="30" fill="#8b3b59" font-weight="700" text-anchor="start">8 Å</text>
+<text x="72" y="707" font-family="Inter,Arial,sans-serif" font-size="17" fill="#566879" font-weight="400" text-anchor="start">Local, center-defined coarse patches</text>
+<text x="72" y="760" font-family="Inter,Arial,sans-serif" font-size="16" fill="#657789" font-weight="400" text-anchor="start">Same-face consistency; no docking orientation claim.</text>
+<circle cx="563" cy="666" r="95" fill="none" stroke="#9aaf9f" stroke-width="2.8" stroke-dasharray="7 6"/>
+<circle cx="563" cy="666" r="67" fill="#eef3ef" stroke="#6a8a73" stroke-width="2"/>
+<circle cx="563" cy="666" r="9" fill="#8b3b59"/>
+<circle cx="533" cy="637" r="7" fill="#bc8195"/>
+<circle cx="592" cy="640" r="7" fill="#bc8195"/>
+<circle cx="543" cy="699" r="7" fill="#bc8195"/>
+<path d="M563 666 L533 637 L592 640 Z M563 666 L543 699 L592 640" fill="none" stroke="#8b3b59" stroke-width="2"/>
+<rect x="754" y="505" width="681" height="325" rx="17" stroke="#d5dde3" stroke-width="1.5" fill="#fff"/><rect x="754" y="505" width="681" height="58" rx="17" fill="#355b72"/><rect x="754" y="540" width="681" height="23" fill="#355b72"/><text x="776" y="542" font-family="Inter,Arial,sans-serif" font-size="22" fill="#ffffff" font-weight="700" text-anchor="start">D  Multi-criterion region prioritization</text>
+<text x="781" y="588" font-family="Inter,Arial,sans-serif" font-size="21" fill="#243b4d" font-weight="700" text-anchor="start">Pareto fronts (not a weighted affinity score)</text>
+<circle cx="784" cy="621" r="4" fill="#8a3b59"/><text x="797" y="627" font-family="Inter,Arial,sans-serif" font-size="18" fill="#203244" font-weight="600" text-anchor="start">Chemistry support</text><text x="797" y="652" font-family="Inter,Arial,sans-serif" font-size="15" fill="#667789" font-weight="400" text-anchor="start">Fraction of chemically supported patch residues</text>
+<circle cx="784" cy="683" r="4" fill="#8a3b59"/><text x="797" y="689" font-family="Inter,Arial,sans-serif" font-size="18" fill="#203244" font-weight="600" text-anchor="start">Mean geometric accessibility</text><text x="797" y="714" font-family="Inter,Arial,sans-serif" font-size="15" fill="#667789" font-weight="400" text-anchor="start">Average tRSA over candidate patch members</text>
+<circle cx="784" cy="745" r="4" fill="#8a3b59"/><text x="797" y="751" font-family="Inter,Arial,sans-serif" font-size="18" fill="#203244" font-weight="600" text-anchor="start">Patch &amp; orientation coherence</text><text x="797" y="776" font-family="Inter,Arial,sans-serif" font-size="15" fill="#667789" font-weight="400" text-anchor="start">Multiscale persistence and coarse outward directions</text>
+<rect x="45" y="859" width="1390" height="74" rx="15" fill="#f2f5f3" stroke="#d5ded6"/>
+<text x="71" y="893" font-family="Inter,Arial,sans-serif" font-size="19" fill="#47705d" font-weight="700" text-anchor="start">OUTPUT</text>
+<text x="179" y="893" font-family="Inter,Arial,sans-serif" font-size="18" fill="#25394c" font-weight="500" text-anchor="start">11 separate maps · Pareto-ranked candidate regions · exact overlap and spatial co-localization</text>
+<text x="179" y="916" font-family="Inter,Arial,sans-serif" font-size="16" fill="#657789" font-weight="400" text-anchor="start">Real 3D viewer · per-residue and patch tables · complete ZIP / XLSX / CSV / PDF / PDB / JSON</text>
+</svg>
