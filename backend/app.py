@@ -20,6 +20,7 @@ from model_settings import MODEL_VERSION, PUBLIC_VERSION
 from research_workflows import list_research_goals, compare_results, combine_maps
 from ensemble import analyze_structure_set, build_consensus
 from export_bundle import build_export_zip
+from electrostatics import availability as electrostatics_availability, ElectrostaticsError
 
 BACKEND = Path(__file__).resolve().parent
 ROOT = BACKEND.parent
@@ -35,6 +36,7 @@ class AnalyzeRequest(BaseModel):
     pH: float = Field(7.4, ge=0.0, le=14.0)
     ionic_mM: float = Field(150.0, ge=0.0)
     temp_K: float = Field(298.0, gt=0.0)
+    electrostatics: bool = False
 
 class CompareRequest(BaseModel):
     structure_a: AnalyzeRequest
@@ -60,6 +62,7 @@ class StructureSetRequest(BaseModel):
     pH: float = Field(7.4, ge=0.0, le=14.0)
     ionic_mM: float = Field(150.0, ge=0.0)
     temp_K: float = Field(298.0, gt=0.0)
+    electrostatics: bool = False
     combined_maps: Optional[list[str]] = None
 
 
@@ -105,6 +108,7 @@ def structure_set(req: StructureSetRequest):
         return analyze_structure_set(
             [s.model_dump() for s in req.structures],
             pH=req.pH, ionic_mM=req.ionic_mM, temp_K=req.temp_K,
+            electrostatics=req.electrostatics,
             combined_maps=req.combined_maps,
         )
     except (KeyError, ValueError) as exc:
@@ -224,6 +228,7 @@ def health():
         "version": PUBLIC_VERSION,
         "model_version": MODEL_VERSION,
         "single_pass_all_maps": True,
+        "electrostatics": electrostatics_availability(),
         "material_presets": False,
         "benchmark_fitted_weights": False,
     }
@@ -247,6 +252,7 @@ def analyze(req: AnalyzeRequest):
             pdb_id=req.pdb_id,
             pdb_text=req.pdb_text,
             chain=req.chain,
+            electrostatics=req.electrostatics,
         )
         out["public_version"] = PUBLIC_VERSION
         return out
