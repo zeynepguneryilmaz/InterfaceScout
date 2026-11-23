@@ -1,0 +1,64 @@
+name: Archive and triage ISV 80 candidate screening
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/isv-triage-archive.yml'
+      - 'validation/isv_triage_80.py'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Retrieve 80 actual engine results
+        run: |
+          mkdir -p /tmp/isv80/shards /tmp/isv80/bundle
+          gh run download 45270447667 --repo "${{ github.repository }}" \
+            --pattern 'isv80-qa-shard-*' --dir /tmp/isv80/shards
+          find /tmp/isv80/shards -name 'details_*.json' -exec cp {} /tmp/isv80/bundle/ \;
+          test "$(find /tmp/isv80/bundle -maxdepth 1 -name 'details_*.json' | wc -l)" -eq 8
+      - name: Retrieve independent coordinate and metadata audits
+        run: |
+          gh run download 45270701434 --repo "${{ github.repository }}" \
+            --name isv-68-coordinate-coverage --dir /tmp/isv80/bundle
+          gh run download 45259307414 --repo "${{ github.repository }}" \
+            --name isv-proposed-68-rcsb-metadata-audit --dir /tmp/isv80/bundle
+          gh run download 45268134181 --repo "${{ github.repository }}" \
+            --name biofilm-12-rcsb-record-verification --dir /tmp/isv80/bundle
+          test -f /tmp/isv80/bundle/isv_coordinate_80.csv
+          test -f /tmp/isv80/bundle/isv_rcsb_metadata_68.csv
+          test -f /tmp/isv80/bundle/biofilm_12_rcsb_records.csv
+      - name: Triage 80 with full provenance
+        run: python -u validation/isv_triage_80.py /tmp/isv80/bundle
+      - name: Archive complete screening evidence in the repository
+        run: |
+          mkdir -p validation/evidence
+          cp /tmp/isv80/bundle/ISV80_TRIAGE.csv validation/evidence/ISV80_TRIAGE.csv
+          cp /tmp/isv80/bundle/ISV80_TRIAGE_SUMMARY.json validation/evidence/ISV80_TRIAGE_SUMMARY.json
+          cd /tmp/isv80/bundle
+          zip -q -9 -r "${{ github.workspace }}/validation/evidence/ISV80_COMPLETE_SCREENING_EVIDENCE.zip" .
+          cd "${{ github.workspace }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/evidence/ISV80_*
+          if ! git diff --cached --quiet; then
+            git commit -m "Archive 80 candidate structure and 11-map audit; classify scientific QA tiers"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ISV80-full-audit-merged-and-triaged
+          path: |
+            /tmp/isv80/bundle/ISV80_TRIAGE.csv
+            /tmp/isv80/bundle/ISV80_TRIAGE_SUMMARY.json
+          retention-days: 90
