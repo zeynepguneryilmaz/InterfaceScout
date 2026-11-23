@@ -235,7 +235,7 @@ A protein can be useful in InterfaceScout even when there is **no direct experim
 
 For a fair comparison: select channels by chemistry **before viewing experimental outcomes**; verify species, construct, assay state, numbering and visibility; evaluate **Top-1/3/5 plus selection coverage**; compare with equal-coverage SASA, charge/amino-acid-class, and randomized-patch baselines; and cluster repeated outcomes by underlying protein/publication to avoid pseudoreplication. Report both supported and unsupported examples.
 
-The current 40-PDB technical evaluation establishes successful map generation; the retrospective 43-condition literature panel has **not** established general superiority to SASA or simple residue-chemistry baselines. Do not call all 43 conditions independently experimentally validated adsorption sites.
+The active validation programme comprises **TV48** (a frozen 48-structure technical-verification panel, completed for the tested v1.1.0 engine) and **ISV** (a new initial scientific-validation panel, **not yet selected or validated**). Earlier retrospective literature sets are archived exploratory evidence and must not be described as ISV or independent holdouts. See the [active dataset policy](../validation/ACTIVE_DATASETS.md).
 
 ## 12. Model details and limitations
 
