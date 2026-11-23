@@ -215,6 +215,30 @@ def compute(*,pdb_text,chain,settings):
                   +str(len(sampled))+"/"+str(len(surface_keys)))
             result["apbs"]={"grid":grid,"data_file":"data/potential.dx",
                             "mV_per_kBT_e":round(settings.temperature_K*0.08617333262,6)}
+        physical_view=None
+        if settings.apbs_enabled:
+            from physics_aware_11maps import build_physical_11
+            physical=build_physical_11(
+                prepared_protein_pdb=cleaned,pqr_text=pqr,dx_text=dx.read_text(errors="replace"),
+                pH=settings.pH,temperature_K=settings.temperature_K,
+                baseline_analysis=standard)
+            # Preserve the canonical API schema for rendering, but clearly mark
+            # this as an experimentally unvalidated electrostatics-aware variant.
+            physical_view=dict(standard)
+            physical_view["maps"]=physical["maps"]
+            physical_view["version"]=physical["model"]
+            physical_view["physical_context"]=physical["physics"]
+            physical_view["scope"]={**standard["scope"],
+                "electrostatics_aware_experimental_variant":True}
+            physical_view["method"]={**standard["method"],
+                "electrostatics_aware_variant":True,
+                "potential_gate":"fraction of solvent-side points of compatible potential sign for explicit ionic mechanisms",
+                "ionization_source":"PDB2PQR/PROPKA assigned-state; not a titration ensemble"}
+            result["physics_aware_11map_model"]={
+                "version":physical["model"],"n_maps":len(physical["maps"]),
+                "mapped_surface_residues":physical["physics"]["charged_residues_mapped"],
+                "potential_sampled_residues":physical["physics"]["potential_sampled_residues"],
+                "candidate_regions_are_not_adsorption_predictions":True}
         import csv
         for profile in standard["residue_profiles"]:
             key=profile["key"]
@@ -241,6 +265,9 @@ def compute(*,pdb_text,chain,settings):
         bundle=io.BytesIO()
         with zipfile.ZipFile(bundle,"w",zipfile.ZIP_DEFLATED,compresslevel=6) as z:
             z.writestr("metadata/results.json",json.dumps(result,indent=2))
+            if physical_view is not None:
+                z.writestr("data/physics_aware_11maps.json",json.dumps(physical_view))
+                z.writestr("data/canonical_11maps.json",json.dumps(standard))
             z.writestr("data/prepared.pqr",pqr)
             z.writestr("metadata/pdb2pqr_unfiltered.pqr",original_pqr)
             z.writestr("data/charged_residue_surface.csv",to_csv(per_residue))
@@ -251,4 +278,6 @@ def compute(*,pdb_text,chain,settings):
                 z.writestr("metadata/apbs.in",inp)
                 z.writestr("metadata/apbs.log",apbs_log)
                 z.write(dx,"data/potential.dx")
+        if physical_view is not None:
+            result["physics_aware_view"]=physical_view
         return result,bundle.getvalue()
