@@ -33,7 +33,8 @@ jobs:
         run: |
           command -v apbs
           command -v pdb2pqr || command -v pdb2pqr30
-          python -m py_compile backend/physics_surface.py backend/physics_aware_11maps.py paper_validation/rerun_48_electrostatics.py
+          python -m py_compile backend/physics_surface.py backend/physics_aware_11maps.py backend/optional_electrostatics.py backend/app.py paper_validation/rerun_48_electrostatics.py
+          node --check frontend/optional_electrostatics_ui.js
           python -m unittest discover -s tests -p 'test_optional_electrostatics.py' -v
       - name: Real small-structure APBS/PROPKA run
         run: python paper_validation/rerun_48_electrostatics.py --smoke --out physics_aware_smoke
