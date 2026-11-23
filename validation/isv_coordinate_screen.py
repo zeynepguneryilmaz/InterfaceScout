@@ -9,7 +9,7 @@ import csv,json,urllib.request,time,collections
 from pathlib import Path
 import gemmi
 ROOT=Path(__file__).resolve().parents[1]
-INPUT=ROOT/"validation/ISV_protein_candidate_pool_68_v1.csv"
+INPUT=ROOT/"validation/ISV_protein_candidate_pool_80_v2.csv"
 OUT=Path("isv_coordinate_screen");OUT.mkdir(exist_ok=True)
 def fetch(url):
     for attempt in range(3):
@@ -31,7 +31,7 @@ def scan(entry):
     models=v("pdbx_PDB_model_num")
     if not (len(ents)==len(seq)==len(atoms)==len(chains)==len(models)):
         raise ValueError("atom-site column length mismatch")
-    ids=sorted(set(x for x in ents if x.isdigit()))
+    ids=sorted(set(en for en,chain in by_chain))
     if not ids:raise ValueError("no numeric protein entity labels")
     by_chain=collections.defaultdict(set)
     for en,se,atom,chain,model in zip(ents,seq,atoms,chains,models):
@@ -41,12 +41,13 @@ def scan(entry):
     method=";".join(str(x) for x in methods)
     res_values=[str(x) for x in block.find_values("_refine.ls_d_res_high") if str(x) not in ("?",".")]
     resolution=next((float(x) for x in res_values if x),None)
+    ids=sorted({en for en,_ in by_chain})
     records=[]
     for eid in ids:
         ent=get_entity(pdb,eid)
         ep=ent.get("entity_poly",{})
         if "polypeptide" not in str(ep.get("type","")).lower():continue
-        length=len(str(ep.get("pdbx_seq_one_letter_code_can","")).replace("\\n","").replace(" ",""))
+        length=len(str(ep.get("pdbx_seq_one_letter_code_can","")).replace("\n","").replace(" ",""))
         label=(ent.get("rcsb_polymer_entity") or {}).get("pdbx_description","")
         for (en,chain),observed in by_chain.items():
             if en!=eid:continue
@@ -61,7 +62,7 @@ def scan(entry):
     return records,best,method,resolution
 def main():
     rows=list(csv.DictReader(INPUT.open()))
-    assert len(rows)==68
+    assert len(rows)==80
     out=[];errors=[]
     for r in rows:
         pid=r["proposed_pdb_id"]
@@ -84,10 +85,10 @@ def main():
             errors.append((pid,str(e)))
             print("ISV_CA_ERROR",pid,str(e),flush=True)
         out.append(row)
-    with (OUT/"isv_coordinate_68.csv").open("w",newline="",encoding="utf-8") as f:
+    with (OUT/"isv_coordinate_80.csv").open("w",newline="",encoding="utf-8") as f:
         w=csv.DictWriter(f,fieldnames=out[0].keys());w.writeheader();w.writerows(out)
     counts=dict(collections.Counter(x["coordinate_status"] for x in out))
-    summary={"n_pdb":68,"counts":counts,"errors":errors,
+    summary={"n_pdb":80,"counts":counts,"errors":errors,
       "scope":"Deposited mmCIF model-1 C-alpha coverage relative to deposited polymer construct only. Not full UniProt coverage, experimental quality, sidechain completeness, assembly selection, or acceptance."}
     (OUT/"SUMMARY.json").write_text(json.dumps(summary,indent=2))
     print("ISV_CA_SUMMARY",json.dumps(summary),flush=True)
