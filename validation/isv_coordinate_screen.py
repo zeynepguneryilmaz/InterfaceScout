@@ -56,7 +56,7 @@ def scan(entry):
                 "n_internal_missing_seq_positions":sum(
                     k not in observed for k in range(min(observed),max(observed)+1)) if observed else 0})
     if not records:raise ValueError("no polymer chain CA coordinates")
-    best=max(records,key=lambda r:(r["CA_coverage"] or 0,r["n_observed_CA"]))
+    best=max(records,key=lambda r:(r["n_observed_CA"],r["CA_coverage"] or 0))
     method=(method or "NMR/unknown-see-record")
     return records,best,method,resolution
 def main():
