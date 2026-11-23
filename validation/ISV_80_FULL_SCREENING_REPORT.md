@@ -58,6 +58,22 @@ All **12 / 12** biofilm-related proposed PDB entries completed the production 11
 
 Several entries encode partial constructs; preserve their domain identity rather than describing all maps as full-length proteins. [Biofilm structural source audit](ISV_BIOFILM_SUBPANEL.md).
 
+## Sequence and family-dependence pre-screen (completed)
+
+[Sequence audit workflow](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45272945468) **PASS**: retrieved polymer sequences for **all 128 PDB records (80 ISV + 48 TV48)**, comprising 142 deposited protein entities. A k-mer-prefiltered local sequence-alignment screen evaluated 32 candidate entity pairs and flagged **three strongly similar ISV pairs**:
+
+| Protein/PDB pair | Aligned identity | Coverage of shorter deposited sequence | Policy |
+| --- | ---: | ---: | --- |
+| Bovine albumin **4F5S** / human albumin **1AO6** | **75.8%** | **99.8%** | Retain both as distinct experimental species; cluster by albumin family in group-level statistics |
+| Transferrin **3V83** / lactoferrin **1LFG** | **63.2%** | **96.7%** | Retain both, account for transferrin-family dependence |
+| C-reactive protein **1B09** / serum amyloid P **1SAC** | **52.3%** | **97.5%** | Retain both, account for pentraxin family dependence |
+
+No ISV–TV48 high-sequence-similarity pair met the prespecified flag criteria, but this **does not prove absence of remote/domain-level structural homology**. The 4-mer prefilter is a screening mechanism and could miss distant relationships. Do not treat the full 80-structure panel as 80 independent protein families.
+
+The complete [source entity sequences and alignment audit](evidence/ISV80_SEQUENCE_EVIDENCE.zip), [sequence-pair data](evidence/ISV80_SEQUENCE_PAIRS.csv) and [summary](evidence/ISV80_SEQUENCE_SUMMARY.json) are permanently archived.
+
+**Current use policy:** retain **all 80** as an **ISV computational working panel** because all are executable, with **10 priority, 67 conditionally interpreted and three separately analyzed structural challenges**. Only a verified subset should enter strict residue-level mechanistic comparisons after the remaining quality and family checks; the three special structures must not be silently pooled with soluble globular proteins.
+
 ## What is still needed before final acceptance?
 
 1. **Surface-relevant side-chain completeness:** locate missing atoms per residue and cross-check whether they affect exposed chemical features or ranked patches. Prefer a complete experimental alternative where genuinely missing atoms alter interpretation; do not silently reconstruct.
