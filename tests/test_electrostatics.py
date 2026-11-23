@@ -30,12 +30,12 @@ class ElectrostaticsTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "h.pqr"
             path.write_text(
-                "ATOM 127 HG1 THR A 7 31.255 40.309 14.948 0.4102 0.0000\\n"
+                "ATOM 127 HG1 THR A 7 31.255 40.309 14.948 0.4102 0.0000\n"
             )
             atoms = es._pqr_atoms(path)
             self.assertEqual(atoms[0]["radius"], 0.0)
             path.write_text(
-                "ATOM 128 OG1 THR A 7 31.255 40.309 14.948 -0.4102 0.0000\\n"
+                "ATOM 128 OG1 THR A 7 31.255 40.309 14.948 -0.4102 0.0000\n"
             )
             with self.assertRaisesRegex(es.ElectrostaticsError, "invalid radius"):
                 es._pqr_atoms(path)
