@@ -35,7 +35,7 @@
 
 **Deliverables once selected:** a frozen `ISV_manifest.csv` (PDB, assembly SHA, original experimental reference and evidence coordinates, chain and residue mapping, evidence tier, selection decision), per-protein outputs, reference-method comparisons, data-derived figures and a validated reporting table.
 
-**Current state:** candidate screening can start, but the final initial-validation set has **not been chosen**. No numerical validation metrics for ISV should be claimed before its manifest is frozen and the final model is run.
+**Current state:** [Initial ISV source-supported candidate shortlist](ISV_CANDIDATE_SCREENING.md) and [candidate screening table](ISV_candidate_screening_v1.csv) have been created: **eight distinct protein candidates and one alternate structure for an existing candidate**. None is finally accepted; the exact experimental residue annotations and PDB/construct matching remain to be audited. No numerical ISV validation metrics should be claimed before the final manifest is frozen and analyzed.
 
 ## Previous studies — preserved as historical supporting material, not active datasets
 
