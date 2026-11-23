@@ -32,6 +32,11 @@ def main():
         pdb=item["pdb_id"];record={"pdb":pdb,"status":"FAIL","shard":args.shard}
         try:
             provenance=prepare(pdb)
+            assembly_file=Path("strict_apo_panel_48")/(pdb+"-assembly1.cif")
+            actual_assembly_sha256=hashlib.sha256(assembly_file.read_bytes()).hexdigest()
+            if actual_assembly_sha256!=item["assembly_sha256"]:
+                raise ValueError("Frozen biological assembly checksum mismatch for "+pdb)
+            record["assembly_sha256_verified"]=True
             prepared=Path("strict_apo_panel_48")/(pdb+"_prepared.pdb")
             inputtext=prepared.read_text(encoding="utf-8")
             record["prepared_sha256"]=hashlib.sha256(inputtext.encode()).hexdigest()
