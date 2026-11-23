@@ -1,0 +1,52 @@
+name: Final v1.1.0 literature and fixed-candidate baselines
+on:
+  push:
+    paths:
+      - 'validation/final_v110_literature.py'
+      - '.github/workflows/final-v110-literature.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compute:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install gemmi==0.7.4 pandas requests
+      - run: python -u validation/final_v110_literature.py --shard ${{ matrix.shard }} --shards 3
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-literature-shard-${{ matrix.shard }}
+          path: final_v110_literature/
+          retention-days: 90
+  aggregate:
+    needs: compute
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pandas numpy
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: final-literature-shard-*
+          path: final_v110_literature
+          merge-multiple: true
+      - run: python validation/final_v110_literature.py --aggregate final_v110_literature
+      - uses: actions/upload-artifact@v4
+        with:
+          name: final-v110-literature-baselines-complete
+          path: final_v110_literature/
+          retention-days: 90
