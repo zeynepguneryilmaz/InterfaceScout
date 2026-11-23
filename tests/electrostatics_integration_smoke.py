@@ -29,6 +29,18 @@ if __name__ == "__main__":
     assert result["status"] == "computed"
     assert result["n_matched_residues"] == len(enriched["residue_profiles"])
     assert any(r["sidechain_mean_potential_kT_per_e"] is not None for r in result["residues"])
+    # Retain auditable per-residue evidence from the actual external solvers.
+    output = ROOT / "dist" / "electrostatics"
+    output.mkdir(parents=True, exist_ok=True)
+    report = {
+        "protein": "1UBQ", "status": "PASS", "input": enriched["input"],
+        "canonical_maps_unchanged": True,
+        "n_canonical_maps": enriched["n_maps"],
+        "electrostatics": result,
+    }
+    (output / "1UBQ_APBS_PROPKA_electrostatics.json").write_text(
+        json.dumps(report, indent=2) + "\n", encoding="utf-8"
+    )
     print(json.dumps({"status": "PASS", "protein": "1UBQ", "maps": enriched["n_maps"],
                       "residues": result["n_matched_residues"],
                       "pqr_atoms": result["n_pqr_atoms"]}, indent=2))
