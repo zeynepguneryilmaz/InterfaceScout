@@ -22,6 +22,7 @@ from model_settings import (
 )
 from prepare import prepare_pdb_text
 from protein_properties import profile_rows, summarize_profiles
+from electrostatics import compute as compute_electrostatics
 
 PUBLIC_MAP_SPECS = [
     ("anionic", "anionic", "Anionic surface", "Negatively charged surface chemistry, including exposed anionic or carboxylate-rich groups."),
@@ -194,6 +195,7 @@ def analyze_all_maps(
     pdb_id: Optional[str] = None,
     pdb_text: Optional[str] = None,
     chain: Optional[str] = None,
+    electrostatics: bool = False,
 ) -> Dict[str, Any]:
     """Compute all public chemistry maps in one run."""
     context = _prepare_shared_context(
@@ -212,6 +214,13 @@ def analyze_all_maps(
 
     out = _shared_response(context, pdb_id=pdb_id, pH=pH, ionic_mM=ionic_mM, temp_K=temp_K)
     profiles = profile_rows(context["core_result"])
+    if electrostatics:
+        electro = compute_electrostatics(context["prepared"], profiles, pH=pH,
+                                        ionic_mM=ionic_mM, temp_K=temp_K)
+        out["electrostatics"] = electro
+        out["method"]["electrostatics"] = "APBS/PDB2PQR/PROPKA descriptive layer; canonical maps unchanged"
+    else:
+        out["electrostatics"] = {"status": "not_requested"}
     out.update({
         "residue_profiles": profiles,
         "protein_properties": summarize_profiles(profiles),
