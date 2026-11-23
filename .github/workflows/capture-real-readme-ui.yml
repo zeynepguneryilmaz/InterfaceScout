@@ -39,5 +39,6 @@ jobs:
           git add docs/figures/interfacescout-real-single-protein.png docs/figures/interfacescout-real-compare-two.png docs/figures/interfacescout-real-multi-pdb.png
           if ! git diff --cached --quiet; then
             git commit -m "Add authentic screenshots for all three analysis modes"
-            git push
+            git pull --rebase origin main
+            git push origin HEAD:main
           fi
