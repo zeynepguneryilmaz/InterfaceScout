@@ -261,7 +261,7 @@ def aggregate(path):
     metrics=("top5_hit_8A","top5_recall_8A","top5_direct_hit","top5_direct_recall")
     # Report a condition-level average of the 11 original maps, but do not use
     # 11 channels as independent biological repetitions.
-    # Attach frozen evidence-set labels from the per-condition controls; the\n    # per-channel CSV intentionally stores case/protein/channel/method only.\n    prod_labeled=prod.merge(ctrl[["case","analysis_set"]].drop_duplicates(),on="case",validate="many_to_one")\n    original=prod_labeled.groupby(["case","analysis_set","protein"],as_index=False)[list(metrics)].mean()
+    # Attach frozen evidence-set labels from the per-condition controls.\n    # Per-channel records intentionally omit condition-set metadata.\n    prod_labeled=prod.merge(ctrl[["case","analysis_set"]].drop_duplicates(),on="case",validate="many_to_one")\n    original=prod_labeled.groupby(["case","analysis_set","protein"],as_index=False)[list(metrics)].mean()
     methods=pd.concat([original.assign(method="interfacescout_11map_average"),ctrl],ignore_index=True)
     methods.to_csv(path/"per_condition_independent_baseline_comparison.csv",index=False)
     rng=np.random.default_rng(20261123)
