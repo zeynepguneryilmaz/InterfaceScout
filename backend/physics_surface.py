@@ -33,7 +33,7 @@ def read_pqr(text):
         if len(identity)==1:
             chain="";residue_token=identity[0];icode_extra=""
         elif len(identity)==2:
-            if re.fullmatch(r"[+-]?\\d+[A-Za-z]?",identity[0]):
+            if re.fullmatch(r"[+-]?\d+[A-Za-z]?",identity[0]):
                 chain="";residue_token=identity[0];icode_extra=identity[1]
             else:
                 chain=identity[0];residue_token=identity[1];icode_extra=""
@@ -41,7 +41,7 @@ def read_pqr(text):
             chain,residue_token,icode_extra=identity
         else:
             raise PhysicsInputError("Unsupported PQR residue fields: "+repr(line[:160]))
-        residue=re.fullmatch(r"([+-]?\\d+)([A-Za-z]?)",residue_token)
+        residue=re.fullmatch(r"([+-]?\d+)([A-Za-z]?)",residue_token)
         if not residue or (icode_extra and not re.fullmatch(r"[A-Za-z]",icode_extra)):
             raise PhysicsInputError("Invalid PQR residue number: "+repr(line[:160]))
         icode=(residue[2] or icode_extra).strip()
