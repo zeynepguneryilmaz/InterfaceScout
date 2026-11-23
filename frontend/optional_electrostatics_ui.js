@@ -17,6 +17,7 @@
  <label style="display:block;margin:6px 0;font-size:12px"><input id="esAPBS" type="checkbox" checked> APBS electrostatic potential grid</label>
  <button type="button" class="btn secondary" id="esRun" disabled>Calculate electrostatics + updated maps</button>
  <div id="esOutputs" style="display:none;margin-top:10px">
+ <button type="button" class="btn secondary" id="esShowPotential" style="margin-bottom:7px">View APBS surface potential (3D)</button>
  <div class="row"><button type="button" class="btn secondary" id="esShowPhysical">Show updated 11 maps</button>
  <button type="button" class="btn secondary" id="esShowBaseline">Show original 11 maps</button></div>
  <a id="esDownload" class="btn secondary" style="display:block;text-align:center;text-decoration:none;margin-top:7px"
@@ -61,6 +62,40 @@
        "Showing electrostatics-informed 11 maps (experimental model). These are chemical support regions, not adsorption predictions.":
        "Showing original validated 11-map model. Physics-aware results are preserved separately.";
  }
+ async function showPotential(){
+   if(!latest||!latest.potentialUrl||pdbText!==latest.pdb||
+      (byId("chain").value.trim()||null)!==latest.chain){
+      msg.textContent="Potential not available for the current PDB/chain. Recalculate first.";
+      return;
+   }
+   try{
+      msg.textContent="Loading APBS OpenDX potential and molecular surface…";
+      if(!latest.dxText){
+         const response=await fetch(latest.potentialUrl,{cache:"no-store"});
+         if(!response.ok)throw new Error("OpenDX not available (HTTP "+response.status+")");
+         latest.dxText=await response.text();
+      }
+      if(!viewer||!window.$3Dmol||!$3Dmol.VolumeData||!$3Dmol.Gradient?.RWB)
+         throw new Error("3Dmol OpenDX visualization is unavailable");
+      viewer.clear();
+      viewer.addModel(pdbText,"pdb");
+      viewer.setStyle(chainSelection(),{cartoon:{color:"#cbd5e1"}});
+      const vol=new $3Dmol.VolumeData(latest.dxText,"dx");
+      const surface=viewer.addSurface($3Dmol.SurfaceType.VDW,{
+        opacity:0.92,voldata:vol,
+        volscheme:new $3Dmol.Gradient.RWB(-5,5)
+      },chainSelection());
+      viewer.zoomTo(chainSelection());
+      viewer.render();
+      if(surface && typeof surface.then==="function"){
+         await surface;viewer.render();
+      }
+      byId("legend").style.display="block";
+      byId("legend").innerHTML="<b>APBS electrostatic potential</b><br>Red: negative · White: near zero · Blue: positive<br>Color range: −5 to +5 kBT/e (clipped); physical units, not compatibility score";
+      msg.textContent="Showing APBS surface potential (kBT/e), not an adsorption binding map. Select a chemistry map to return.";
+   }catch(e){msg.textContent="APBS surface visualization failed: "+String(e.message||e);}
+ }
+ byId("esShowPotential").addEventListener("click",showPotential);
  byId("esShowPhysical").addEventListener("click",()=>showModel(latest?.physical));
  byId("esShowBaseline").addEventListener("click",()=>showModel(latest?.source));
  btn.addEventListener("click",async()=>{
@@ -82,7 +117,8 @@
      const result=await r.json();
      if(pdbText!==snap){throw new Error("PDB changed during calculation. Rerun electrostatics.")}
      latest={pdb:snap,chain:payload.chain,source:result.canonical_analysis,
-             physical:result.analysis,result:result.result,url:result.download_url};
+             physical:result.analysis,result:result.result,url:result.download_url,
+             potentialUrl:result.potential_url,dxText:null};
      if(!result.analysis){
         msg.textContent="PQR charge preparation complete. Enable APBS to generate physical 11-map view.";
      }else{
@@ -91,6 +127,7 @@
      byId("esDownload").href=result.download_url;
      byId("esOutputs").style.display="block";
      byId("esShowPhysical").disabled=!result.analysis;
+     byId("esShowPotential").disabled=!result.potential_url;
      byId("esShowBaseline").disabled=!result.canonical_analysis;
      if(result.analysis)showModel(result.analysis);
    }catch(e){msg.textContent="Electrostatics not completed: "+String(e.message||e);}
