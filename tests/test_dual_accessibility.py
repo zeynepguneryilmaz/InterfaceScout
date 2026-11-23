@@ -75,8 +75,8 @@ class DualAccessibilityTests(unittest.TestCase):
         nodes=geometry.extract_ca_nodes(PDB)
         g=geometry.build_surface_geometry(analysis,nodes)
         source={r["key"]:r for r in analysis["surface_residues"]}
-        self.assertEqual(set(source),set(g["scrsa"]))
-        for key,val in g["scrsa"].items():
+        self.assertEqual(set(source),set(g["trsa"]))
+        for key,val in g["trsa"].items():
             self.assertEqual(val,source[key]["trsa"])
 
     def test_glycine_retained_without_chemical_score(self):
