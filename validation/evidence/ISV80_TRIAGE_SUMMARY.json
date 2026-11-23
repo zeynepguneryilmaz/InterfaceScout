@@ -1,0 +1,21 @@
+{
+  "n_total": 80,
+  "engine_pass": 80,
+  "n_maps_executed": 880,
+  "n_nonempty_patch_maps": 871,
+  "observed_ca_coverage_90pct_or_more": 75,
+  "full_core_priority_count": 10,
+  "tier_counts": {
+    "CONDITIONAL_QA_REVIEW": 67,
+    "PRIORITY_STRUCTURAL_QA_CANDIDATE": 10,
+    "SPECIAL_CHALLENGE_CONDITIONAL": 3
+  },
+  "all_candidates_retained_for_review": true,
+  "interpretation": "Every engine-PASS candidate remains potentially usable. Quality tiers are screening priorities only; true final acceptance awaits source/chain/sidechain/biological context and sequence/family matching to TV48.",
+  "origin_runs": {
+    "engine": "45270447667",
+    "coordinates": "45270701434",
+    "metadata_68": "45259307414",
+    "biofilm_12": "45268134181"
+  }
+}
