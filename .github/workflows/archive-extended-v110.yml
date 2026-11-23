@@ -1,0 +1,56 @@
+name: Archive verified InterfaceScout extended scientific evidence
+on:
+  push:
+    paths:
+      - '.github/workflows/archive-extended-v110.yml'
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: write
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Retrieve the previously verified scientific analysis
+        run: |
+          mkdir -p /tmp/interfacescout-extended-verified
+          gh run download 45252414860 --repo "${{ github.repository }}" \
+            --name extended-v110-full-scientific-evidence \
+            --dir /tmp/interfacescout-extended-verified
+          python - <<'PY'
+          import csv,json,pathlib
+          p=pathlib.Path('/tmp/interfacescout-extended-verified')
+          d=json.loads((p/'SUMMARY.json').read_text())
+          assert d['status']=='PASS' and d['n_proteins']==48
+          assert d['n_maps']==528 and d['rank_perturbation_trials']==21000
+          for name in ('all_criterion_correlations.csv','all_rank_stability_trials.csv',
+                       'independent_baselines.csv','case_study_map_combinations.csv',
+                       'independent_baseline_protein_bootstrap.csv','case_study_region_details.csv'):
+              assert (p/name).is_file(),name
+          print('VERIFIED_ARCHIVE_SOURCE',d['model'],d['n_maps'],d['rank_perturbation_trials'])
+          PY
+      - name: Save immutable source-run evidence bundle to repository
+        run: |
+          mkdir -p validation/evidence
+          cp /tmp/interfacescout-extended-verified/SUMMARY.json \
+            validation/evidence/extended_v110_SUMMARY.json
+          cp /tmp/interfacescout-extended-verified/independent_baseline_protein_bootstrap.csv \
+            validation/evidence/extended_v110_protein_bootstrap.csv
+          cp /tmp/interfacescout-extended-verified/case_study_map_combinations.csv \
+            validation/evidence/extended_v110_case_studies.csv
+          cd /tmp/interfacescout-extended-verified
+          zip -q -9 -r "${{ github.workspace }}/validation/evidence/extended_v110_full_evidence.zip" .
+      - name: Commit and attribute archived evidence to exact successful run
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/evidence
+          if ! git diff --cached --quiet; then
+            git commit -m "Archive exact PASS extended v1.1 science data from run 45252414860"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
