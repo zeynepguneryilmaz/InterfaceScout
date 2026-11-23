@@ -1,0 +1,19 @@
+name: ISV76 active selection integrity
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'validation/ISV_active_candidates_76_v3.csv'
+      - 'validation/isv_validate_active_selection.py'
+      - '.github/workflows/isv76-selection-check.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python validation/isv_validate_active_selection.py
