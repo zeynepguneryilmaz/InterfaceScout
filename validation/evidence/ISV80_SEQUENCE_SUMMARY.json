@@ -1,0 +1,18 @@
+{
+  "n_isv": 80,
+  "n_tv48": 48,
+  "n_pdb_records": 128,
+  "n_protein_entities": 142,
+  "fourmer_screened_pairs": 32,
+  "high_similarity_entity_pairs": 3,
+  "isv_ids_with_high_similarity_to_TV48": [],
+  "isv_ids_with_high_similarity_to_ISV": [
+    "1AO6",
+    "1B09",
+    "1LFG",
+    "1SAC",
+    "3V83",
+    "4F5S"
+  ],
+  "interpretation": "High-similarity flags require source/construct/domain context and do not automatically reject proteins. Low 4-mer similarity does not exclude remote structural homology."
+}
