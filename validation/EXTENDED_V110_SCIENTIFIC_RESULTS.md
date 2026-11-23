@@ -2,6 +2,8 @@
 
 **Reproducible source run:** [GitHub Actions 45252414860](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45252414860) — **PASS**, all four protein-panel shards, the experimental-case job, and final aggregation. Source commit `4952f75992a15b7dc32a1dd8f6fbad2160a1f065` · model `2.5.0-dual-accessibility`.
 
+**Permanent result archive:** [Full verified data bundle](evidence/extended_v110_full_evidence.zip) · [Machine-readable summary](evidence/extended_v110_SUMMARY.json) · [Independent-baseline bootstrap](evidence/extended_v110_protein_bootstrap.csv) · [Case-study map combinations](evidence/extended_v110_case_studies.csv). The bundle was sourced from the successful run without recomputation.
+
 **Script:** [extended_v110_science.py](extended_v110_science.py) · [CI workflow](../.github/workflows/extended-v110-science.yml). Download the **extended-v110-full-scientific-evidence** artifact from the successful run for the complete numerical data: all correlations, 21,000 stability trials, source checks, control results, bootstrap intervals, per-region example data, and script-generated summary.
 
 **Scope:** These analyses test *computational descriptor dependence*, *numerical ranking robustness*, *independent candidate construction*, and *descriptive chemical information*. They do not measure experimentally calibrated adsorption probability, adsorption free energy, binding orientation, or a new independent prospective holdout.
