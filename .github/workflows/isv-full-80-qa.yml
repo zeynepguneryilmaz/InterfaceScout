@@ -1,0 +1,53 @@
+name: ISV 80 protein all-map structural screening
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'validation/isv_full_80_qa.py'
+      - '.github/workflows/isv-full-80-qa.yml'
+permissions:
+  contents: read
+jobs:
+  screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install gemmi==0.7.4
+      - run: python -u validation/isv_full_80_qa.py --shard ${{ matrix.shard }}
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: isv80-qa-shard-${{ matrix.shard }}
+          path: |
+            isv_80_full_qa/screen_${{ matrix.shard }}.csv
+            isv_80_full_qa/details_${{ matrix.shard }}.json
+          retention-days: 90
+  aggregate:
+    needs: screen
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: isv80-qa-shard-*
+          path: isv_80_full_qa
+          merge-multiple: true
+      - run: python -u validation/isv_full_80_qa.py --aggregate isv_80_full_qa
+      - uses: actions/upload-artifact@v4
+        with:
+          name: isv80-complete-structural-and-engine-QA
+          path: isv_80_full_qa/
+          retention-days: 90
