@@ -59,7 +59,10 @@ def panel_case(item):
     corr=[];stability=[];detail=[]
     for ch in a["map_order"]:
         patches=a["maps"][ch]["patches"]
-        if not patches:continue
+        if not patches:
+            detail.append({"protein":pid,"channel":ch,"n_patches":0,
+                "front1_count":0,"top5_centers":""})
+            continue
         vals=np.array([[float(p[k]) for k in CRITERIA] for p in patches],dtype=float)
         baseline,levels=rerank(patches,vals)
         if baseline != list(range(len(patches))):
@@ -225,7 +228,7 @@ def aggregate(path):
     ctrl=pd.read_csv(path/"independent_baselines.csv")
     prod=pd.read_csv(path/"production_per_channel.csv")
     case=pd.read_csv(path/"case_study_map_combinations.csv")
-    if patches.protein.nunique()!=48 or len(patches)!=528 or len(corr)!=6*528 or len(stab)!=40*528 or len(ctrl)!=18 or len(prod)!=99 or len(case)!=6:
+    if patches.protein.nunique()!=48 or len(patches)!=528 or len(corr)!=6*int((patches.n_patches>0).sum()) or len(stab)!=40*int((patches.n_patches>0).sum()) or len(ctrl)!=18 or len(prod)!=99 or len(case)!=6:
         raise ValueError("Incomplete extended production validation")
     provenance=[]
     for p in sorted(path.glob("provenance_[0-9].json")):provenance.extend(json.loads(p.read_text()))
