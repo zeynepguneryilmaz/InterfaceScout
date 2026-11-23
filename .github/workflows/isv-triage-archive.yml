@@ -28,12 +28,16 @@ jobs:
           test "$(find /tmp/isv80/bundle -maxdepth 1 -name 'details_*.json' | wc -l)" -eq 8
       - name: Retrieve independent coordinate and metadata audits
         run: |
+          mkdir -p /tmp/isv80/source_coord /tmp/isv80/source_metadata /tmp/isv80/source_biofilm
           gh run download 45270701434 --repo "${{ github.repository }}" \
-            --name isv-68-coordinate-coverage --dir /tmp/isv80/bundle
+            --name isv-68-coordinate-coverage --dir /tmp/isv80/source_coord
           gh run download 45259307414 --repo "${{ github.repository }}" \
-            --name isv-proposed-68-rcsb-metadata-audit --dir /tmp/isv80/bundle
+            --name isv-proposed-68-rcsb-metadata-audit --dir /tmp/isv80/source_metadata
           gh run download 45268134181 --repo "${{ github.repository }}" \
-            --name biofilm-12-rcsb-record-verification --dir /tmp/isv80/bundle
+            --name biofilm-12-rcsb-record-verification --dir /tmp/isv80/source_biofilm
+          cp /tmp/isv80/source_coord/isv_coordinate_80.csv /tmp/isv80/bundle/
+          cp /tmp/isv80/source_metadata/isv_rcsb_metadata_68.csv /tmp/isv80/bundle/
+          cp /tmp/isv80/source_biofilm/biofilm_12_rcsb_records.csv /tmp/isv80/bundle/
           test -f /tmp/isv80/bundle/isv_coordinate_80.csv
           test -f /tmp/isv80/bundle/isv_rcsb_metadata_68.csv
           test -f /tmp/isv80/bundle/biofilm_12_rcsb_records.csv
