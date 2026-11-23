@@ -1,0 +1,170 @@
+{
+  "status": "PASS",
+  "model": "2.5.0-dual-accessibility",
+  "n_proteins": 48,
+  "n_maps": 528,
+  "criterion_pairs": 3150,
+  "criterion_pairs_evaluable": 3126,
+  "rank_perturbation_trials": 21000,
+  "mean_spearman_by_pair": [
+    {
+      "a": "chemistry_support",
+      "b": "mean_accessibility",
+      "mean_per_protein_rho": 0.06802235376333395,
+      "median_per_map_rho": 0.06120148049794703,
+      "n_evaluable_maps": 521
+    },
+    {
+      "a": "chemistry_support",
+      "b": "orientation_coherence",
+      "mean_per_protein_rho": 0.03967250927859393,
+      "median_per_map_rho": 0.02799221426948352,
+      "n_evaluable_maps": 521
+    },
+    {
+      "a": "chemistry_support",
+      "b": "patch_coherence",
+      "mean_per_protein_rho": 0.5292194311208468,
+      "median_per_map_rho": 0.5609726921564101,
+      "n_evaluable_maps": 521
+    },
+    {
+      "a": "mean_accessibility",
+      "b": "orientation_coherence",
+      "mean_per_protein_rho": 0.5865627345727318,
+      "median_per_map_rho": 0.6222910216718266,
+      "n_evaluable_maps": 521
+    },
+    {
+      "a": "mean_accessibility",
+      "b": "patch_coherence",
+      "mean_per_protein_rho": 0.2286085496709711,
+      "median_per_map_rho": 0.2727272727272727,
+      "n_evaluable_maps": 521
+    },
+    {
+      "a": "patch_coherence",
+      "b": "orientation_coherence",
+      "mean_per_protein_rho": 0.1261358733304496,
+      "median_per_map_rho": 0.1396675584235951,
+      "n_evaluable_maps": 521
+    }
+  ],
+  "rank_stability_by_noise": [
+    {
+      "noise_fraction": 0.01,
+      "mean_front1_jaccard": 0.71508238091198,
+      "median_front1_jaccard": 0.7142857142857143,
+      "mean_top5_jaccard": 0.7431999244142101,
+      "mean_top1_retention": 0.9131428571428571
+    },
+    {
+      "noise_fraction": 0.05,
+      "mean_front1_jaccard": 0.6056360297982747,
+      "median_front1_jaccard": 0.6,
+      "mean_top5_jaccard": 0.6386598639455783,
+      "mean_top1_retention": 0.778
+    }
+  ],
+  "baseline_primary": {
+    "geometry_fps": {
+      "top5_hit_8A": 0.5714285714285714,
+      "top5_recall_8A": 0.14199096450578835,
+      "top5_direct_hit": 0.5714285714285714,
+      "top5_direct_recall": 0.09378643679306393
+    },
+    "interfacescout_11map_average": {
+      "top5_hit_8A": 0.5194805194805194,
+      "top5_recall_8A": 0.27723886681856685,
+      "top5_direct_hit": 0.4805194805194805,
+      "top5_direct_recall": 0.21881282303326252
+    },
+    "sasa_only": {
+      "top5_hit_8A": 0.42857142857142855,
+      "top5_recall_8A": 0.19027355623100303,
+      "top5_direct_hit": 0.42857142857142855,
+      "top5_direct_recall": 0.11884498480243162
+    }
+  },
+  "case_studies": [
+    {
+      "case": "hcaii_silica_ph63",
+      "pdb_id": "2CBA",
+      "pH": 6.3,
+      "map_a": "hydrophobic",
+      "map_b": "pi_carbon",
+      "n_exposed": 177,
+      "exact_overlap_residues": 8,
+      "exact_overlap_keys": "A:131:;A:176:;A:192:;A:20:;A:231:;A:245:;A:260:;A:5:",
+      "colocated_regions": 55,
+      "distinct_residue_only_regions": 34,
+      "n_total_regions": 55
+    },
+    {
+      "case": "hcaii_silica_ph63",
+      "pdb_id": "2CBA",
+      "pH": 6.3,
+      "map_a": "cationic",
+      "map_b": "hbond_donor",
+      "n_exposed": 177,
+      "exact_overlap_residues": 73,
+      "exact_overlap_keys": "A:101:;A:103:;A:108:;A:110:;A:114:;A:11:;A:125:;A:128:;A:130:;A:136:;A:137:;A:139:;A:14:;A:152:;A:158:;A:162:;A:165:;A:166:;A:169:;A:173:;A:175:;A:177:;A:178:;A:180:;A:187:;A:188:;A:190:;A:193:;A:199:;A:19:;A:200:;A:205:;A:208:;A:214:;A:217:;A:219:;A:220:;A:221:;A:234:;A:236:;A:238:;A:239:;A:243:;A:249:;A:253:;A:255:;A:259:;A:26:;A:32:;A:34:;A:35:;A:37:;A:40:;A:41:;A:43:;A:48:;A:50:;A:52:;A:53:;A:55:;A:62:;A:67:;A:69:;A:71:;A:72:;A:73:;A:74:;A:75:;A:7:;A:85:;A:87:;A:92:;A:99:",
+      "colocated_regions": 40,
+      "distinct_residue_only_regions": 0,
+      "n_total_regions": 40
+    },
+    {
+      "case": "hcaii_silica_ph63",
+      "pdb_id": "2CBA",
+      "pH": 6.3,
+      "map_a": "anionic",
+      "map_b": "hbond_acceptor",
+      "n_exposed": 177,
+      "exact_overlap_residues": 55,
+      "exact_overlap_keys": "A:108:;A:111:;A:112:;A:113:;A:125:;A:127:;A:133:;A:149:;A:152:;A:154:;A:159:;A:166:;A:168:;A:169:;A:170:;A:172:;A:173:;A:177:;A:182:;A:188:;A:18:;A:193:;A:199:;A:200:;A:208:;A:213:;A:217:;A:219:;A:220:;A:225:;A:227:;A:228:;A:24:;A:252:;A:254:;A:257:;A:259:;A:261:;A:27:;A:35:;A:37:;A:39:;A:43:;A:45:;A:48:;A:50:;A:55:;A:58:;A:73:;A:76:;A:80:;A:87:;A:89:;A:99:;A:9:",
+      "colocated_regions": 38,
+      "distinct_residue_only_regions": 0,
+      "n_total_regions": 38
+    },
+    {
+      "case": "ubiquitin_citrate_au",
+      "pdb_id": "1UBQ",
+      "pH": 7.7,
+      "map_a": "hydrophobic",
+      "map_b": "pi_carbon",
+      "n_exposed": 61,
+      "exact_overlap_residues": 2,
+      "exact_overlap_keys": "A:45:;A:4:",
+      "colocated_regions": 17,
+      "distinct_residue_only_regions": 11,
+      "n_total_regions": 17
+    },
+    {
+      "case": "ubiquitin_citrate_au",
+      "pdb_id": "1UBQ",
+      "pH": 7.7,
+      "map_a": "cationic",
+      "map_b": "hbond_donor",
+      "n_exposed": 61,
+      "exact_overlap_residues": 29,
+      "exact_overlap_keys": "A:12:;A:14:;A:16:;A:18:;A:20:;A:21:;A:22:;A:24:;A:25:;A:2:;A:31:;A:32:;A:34:;A:39:;A:40:;A:49:;A:51:;A:52:;A:55:;A:57:;A:58:;A:59:;A:60:;A:62:;A:64:;A:65:;A:66:;A:7:;A:9:",
+      "colocated_regions": 12,
+      "distinct_residue_only_regions": 0,
+      "n_total_regions": 12
+    },
+    {
+      "case": "ubiquitin_citrate_au",
+      "pdb_id": "1UBQ",
+      "pH": 7.7,
+      "map_a": "anionic",
+      "map_b": "hbond_acceptor",
+      "n_exposed": 61,
+      "exact_overlap_residues": 21,
+      "exact_overlap_keys": "A:11:;A:12:;A:14:;A:20:;A:22:;A:27:;A:29:;A:33:;A:42:;A:48:;A:54:;A:55:;A:57:;A:63:;A:65:;A:66:;A:6:;A:72:;A:74:;A:7:;A:9:",
+      "colocated_regions": 13,
+      "distinct_residue_only_regions": 0,
+      "n_total_regions": 13
+    }
+  ],
+  "limitations": "Descriptive structural robustness. The 9 historical experimental conditions are not an independent holdout. Baselines share geometric exposure/patch-size choices, but independently generate surface centers; no material-specific interaction is modeled."
+}
