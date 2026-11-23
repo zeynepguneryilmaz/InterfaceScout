@@ -1,4 +1,6 @@
 # InterfaceScout v1.1.0 — final-production validation results
+> **Dataset scope (current plan):** The active datasets are [TV48 technical verification and the planned ISV initial scientific-validation panel](ACTIVE_DATASETS.md). The 48-structure tests in this document are TV48 results. Any nine-condition retrospective literature analyses reported below are **historical exploratory analyses**, **not ISV** and not independent holdouts.
+
 
 **Software:** 1.1.0 · **Model:** `2.5.0-dual-accessibility`  
 **Analysis date:** 23 November 2026  
