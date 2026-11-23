@@ -38,6 +38,18 @@ InterfaceScout now separates **geometric exposure** from **chemical side-chain a
 
 **Method reference:** Tien MZ *et al.* (2013), *Maximum Allowed Solvent Accessibilities of Residues in Proteins*, PLOS ONE 8:e80635, [doi:10.1371/journal.pone.0080635](https://doi.org/10.1371/journal.pone.0080635). Technical rationale: [Dual-accessibility method](validation/DUAL_ACCESSIBILITY_LITERATURE_AND_METHOD.md).
 
+## How it works
+
+InterfaceScout supports **three distinct workflows**, not just single-PDB input. Each supplied structure is processed independently through the same 11 chemistry maps; only biologically corresponding residues are eligible for matched-position comparison or descriptive consensus.
+
+![InterfaceScout's three real analysis workflows: Single protein, Compare two and Multi-PDB](docs/figures/interfacescout-workflows.svg)
+
+The underlying method separates **whole-residue tRSA for geometric exposure** from **side-chain scRSA for chemical support**, retains glycine in geometry without fictitious side-chain chemistry, and prioritizes spatially coherent regions using multiple Pareto criteria.
+
+![InterfaceScout computational method: dual SASA accessibility, 11 chemistry maps, multiscale patch construction and Pareto prioritization](docs/figures/interfacescout-method.svg)
+
+**Interface modes:** **Single protein** analyzes one PDB; **Compare two** compares two compatible structures of the *same protein*; **Multi-PDB** analyzes **2–20** supplied structures, each with all 11 maps. The last two modes do not parse MD trajectories or infer conformational populations. For actual UI screenshots (rather than illustrations), see the [real-browser screenshot workflow](.github/workflows/capture-real-readme-ui.yml); screenshots must be captured from running software and are never fabricated.
+
 ## What you can do
 
 | Workflow | Purpose |
