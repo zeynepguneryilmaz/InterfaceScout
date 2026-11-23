@@ -81,7 +81,7 @@ def atoms_from_pqr(pqr):
             charge,radius=map(float,words[-2:])
         except ValueError as e: raise ElectrostaticsError("Invalid PQR charge/radius") from e
         if not all(math.isfinite(x) for x in xyz+[charge,radius]) or radius<=0:
-            raise ElectrostaticsError("Invalid or missing PQR parameters")
+            raise ElectrostaticsError("Invalid or missing PQR parameters in line: "+repr(line[:180]))
         result.append((xyz,charge,radius))
     if not result:raise ElectrostaticsError("No PQR atoms")
     return result
