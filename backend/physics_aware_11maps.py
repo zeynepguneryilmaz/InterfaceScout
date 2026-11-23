@@ -24,6 +24,8 @@ def build_physical_11(*,prepared_protein_pdb,pqr_text,dx_text,pH,temperature_K,
     keys={r["key"] for r in surface}
     if dx_text is None:raise ValueError("APBS DX required for physical 11-map model")
     potential=sample_exposed_potentials(atoms,read_dx(dx_text),temperature_K,keys)
+    if len(potential)/len(keys) < 0.75:
+        raise ValueError("Insufficient APBS solvent-side surface coverage: "+str(len(potential))+"/"+str(len(keys)))
     # The biological assembly must match the PQR including chain identifiers.
     if len(keys&set(charges))<len(keys)*.95:
         raise ValueError(f"PQR residue mapping incomplete: {len(keys&set(charges))}/{len(keys)}")
@@ -55,6 +57,9 @@ def build_physical_11(*,prepared_protein_pdb,pqr_text,dx_text,pH,temperature_K,
         "note":"Physically informed candidate-region ranks, not adsorption energies or experimentally validated interfaces.",
         "physics":{"surface_residues":len(keys),"potential_sampled_residues":len(potential),
                    "charged_residues_mapped":len(keys & set(charges)),
+                   "potential_coverage_fraction":round(len(potential)/len(keys),6),
+                   "potential_missing_residue_keys":sorted(keys-set(potential)),
+                   "missing_APBS_values_policy":"No fabricated values; missing electrostatic sign gates omitted; assigned PDB2PQR protonation retained",
                    "external_protonation":"PDB2PQR with PROPKA",
                    "external_potential":"APBS linearized PB",
                    "electrostatic_gate":"Fraction of probe-accessible APBS points of compatible sign for explicit ionic mechanisms",
