@@ -108,7 +108,13 @@ def check_one(row):
             # verify mapping rather than treating all unmatched as buried.
             profile=key_map.get(key)
             if profile is None:
-                raise ValueError(f"Missing-residue key absent in engine profile {pid} {key}")
+                atom_summary["missing_residue_from_engine_profile"]+=1
+                issue.append({"pdb":pid,"prepared_key":key,"source_chain":chain.name,
+                    "res_name":res.name,"missing_sidechain_heavy_atoms":";".join(missing_side),
+                    "missing_backbone_heavy_atoms":";".join(missing_backbone),
+                    "engine_surface_exposed":"UNRESOLVED_PROFILE_ABSENT",
+                    "engine_trsa":"","engine_scrsa":"","n_top5_maps":0,"top5_maps":""})
+                continue
             is_surface=key in exposed
             maps=[k for k,v in top5_by_map.items() if key in v]
             if missing_side:atom_summary["incomplete_sidechain_residues"]+=1
@@ -133,6 +139,7 @@ def check_one(row):
        "protein_only_sha256":prep["prepared_pdb_sha256"],
        "n_residues":len(profiles),"n_exposed":len(exposed),"n_chains":prep["n_chains"],
        "missing_sidechain_residues":atom_summary["incomplete_sidechain_residues"],
+       "missing_residue_from_engine_profile":atom_summary["missing_residue_from_engine_profile"],
        "exposed_missing_sidechain_residues":atom_summary["exposed_incomplete_sidechain_residues"],
        "top5_missing_sidechain_residues":atom_summary["top5_incomplete_sidechain_residues"],
        "missing_backbone_residues":atom_summary["incomplete_backbone_residues"],
@@ -147,6 +154,7 @@ def check_one(row):
        "n_distinct_removed_components":len(notes),
        "removed_components":notes,"chain_info":chainmeta,
        "warnings":[]}
+    if res["missing_residue_from_engine_profile"]:res["warnings"].append("UNMAPPED_MISSING_ATOM_RESIDUE_REQUIRES_REVIEW")
     if res["exposed_missing_sidechain_residues"]:res["warnings"].append("MISSING_SURFACE_CHEMISTRY_UNCERTAINTY")
     if res["top5_missing_sidechain_residues"]:res["warnings"].append("TOP5_REGION_ATOM_INCOMPLETE")
     if res["n_distinct_removed_components"]:res["warnings"].append("OMITTED_NONSOLVENT_COMPONENTS")
@@ -193,7 +201,7 @@ def aggregate():
         counts["total_top5_missing_sidechain_residues"]+=item["top5_missing_sidechain_residues"]
     allcols=["pdb","protein","category","n_chains","n_residues","n_exposed","missing_sidechain_residues",
       "exposed_missing_sidechain_residues","top5_missing_sidechain_residues","missing_backbone_residues",
-      "top5_missing_backbone_residues","missing_sidechain_fraction_of_exposed",
+      "top5_missing_backbone_residues","missing_residue_from_engine_profile","missing_sidechain_fraction_of_exposed",
       "n_distinct_removed_components","component_names","source_assembly_count","warnings"]
     with (OUT/"ISV80_SURFACE_QA.csv").open("w",newline="") as f:
         w=csv.DictWriter(f,fieldnames=allcols);w.writeheader()
