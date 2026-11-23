@@ -54,13 +54,16 @@ def structure_notes(cif_path,chain_mapping):
     notes=[]
     ligands=collections.Counter()
     per_chain={}
-    for i,chain in enumerate(st[0]):
+    protein_idx=0
+    for chain in st[0]:
         aa=[r for r in chain.get_polymer() if r.name in CANON]
-        if not aa:continue
-        prepared=chain_mapping[i]["prepared_chain"]
-        per_chain[prepared]={"source_chain":chain.name,"protein_residues":len(aa),
-          "sequence_min":min(r.seqid.num for r in aa),
-          "sequence_max":max(r.seqid.num for r in aa)}
+        if aa:
+            prepared=chain_mapping[protein_idx]["prepared_chain"]
+            protein_idx+=1
+            per_chain[prepared]={"source_chain":chain.name,"protein_residues":len(aa),
+              "sequence_min":min(r.seqid.num for r in aa),
+              "sequence_max":max(r.seqid.num for r in aa)}
+        # Count nonstandard components even when represented as separate nonprotein chains.
         for r in chain:
             if r.name in CANON or r.name in IGNORE:continue
             ligands[r.name]+=1
@@ -133,7 +136,6 @@ def check_one(row):
     src=source_info(pid)
     if not src["rcsb_assembly1_reported"]:raise ValueError("Source assembly 1 not listed in RCSB")
     if src["assemblies"][0]["id"]!="1":raise ValueError("Selected assembly unexpectedly non-first")
-    n_modified=sum(x["engine_surface_exposed"] for x in issue)
     res={"pdb":pid,"protein":row["protein_name"],"category":row["category"],
        "model_version":MODEL_VERSION,"assembly_cif_sha256":prep["assembly_cif_sha256"],
        "protein_only_sha256":prep["prepared_pdb_sha256"],
