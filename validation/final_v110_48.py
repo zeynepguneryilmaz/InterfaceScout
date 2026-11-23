@@ -40,7 +40,7 @@ def test(item):
     profiles=data["residue_profiles"]
     names={r["key"] for r in profiles}
     surface={r["key"] for r in profiles if r["surface_exposed"]}
-    if names!=set(r["key"] for r in profiles):raise ValueError("Duplicate residue key")
+    if len(names)!=len(profiles):raise ValueError("Duplicate residue key")
     if surface!=set(data["diagnostics"]["surface_residue_keys"]):raise ValueError("Surface mismatch")
     for r in profiles:
         if r["surface_exposed"]!=(r["trsa_raw"]>=.05):raise ValueError("tRSA gate mismatch")
