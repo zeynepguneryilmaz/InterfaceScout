@@ -75,8 +75,8 @@ def _pqr_atoms(path: Path) -> list[dict[str, Any]]:
         m = re.fullmatch(r"(-?\d+)([A-Za-z]?)", resid)
         if not m:
             raise ElectrostaticsError(f"Cannot parse PQR residue index: {resid}")
-        if not all(math.isfinite(v) for v in (x, y, z, charge, radius)) or radius <= 0:
-            raise ElectrostaticsError("PQR has nonfinite values or invalid radius")
+        if not all(math.isfinite(v) for v in (x, y, z, charge, radius)) or radius < 0 or (radius == 0 and not atom_name.upper().startswith("H")):
+            raise ElectrostaticsError(f"PQR has nonfinite values or invalid radius: atom={atom_name} residue={res_name} charge={charge} radius={radius}; record={line[:180]!r}")
         atoms.append({"name": atom_name, "res_name": res_name, "chain": chain,
                       "seq": int(m.group(1)), "icode": m.group(2),
                       "xyz": (x, y, z), "charge": charge, "radius": radius})
@@ -197,7 +197,7 @@ def compute(prepared_pdb: str, residue_profiles: list[dict[str, Any]], *,
         (wd / "structure.pdb").write_text(prepared_pdb)
         command = [
             shutil.which("pdb2pqr"), "--ff=AMBER", "--keep-chain",
-            "--titration-state-method=propka", f"--with-ph={float(pH):.4f}",
+            "--titration-state-method=propka", "--whitespace", f"--with-ph={float(pH):.4f}",
             "structure.pdb", "structure.pqr",
         ]
         _run(command, wd)
@@ -206,10 +206,18 @@ def compute(prepared_pdb: str, residue_profiles: list[dict[str, Any]], *,
             raise ElectrostaticsError("PDB2PQR did not produce structure.pqr")
         atoms = _pqr_atoms(pqr_path)
         (wd / "potential.in").write_text(_apbs_input(atoms, ionic_mM, temp_K))
-        _run([shutil.which("apbs"), "potential.in"], wd, timeout=600)
+        apbs_log = _run([shutil.which("apbs"), "potential.in"], wd, timeout=600)
         dx_path = wd / "potential.dx"
         if not dx_path.is_file():
-            raise ElectrostaticsError("APBS did not write potential.dx")
+            candidates = sorted(wd.glob("potential*.dx"))
+            if len(candidates) == 1:
+                dx_path = candidates[0]
+            else:
+                produced = ", ".join(sorted(p.name for p in wd.iterdir()))
+                raise ElectrostaticsError(
+                    f"APBS did not write potential.dx (other grids={len(candidates)}). "
+                    f"Produced files: {produced}; APBS log tail: {apbs_log[-2500:]}"
+                )
         grid, origin, spacing = _read_dx(dx_path)
         valid = {str(r["key"]): str(r["res_name"]) for r in residue_profiles}
         grouped: dict[str, list[dict]] = {}

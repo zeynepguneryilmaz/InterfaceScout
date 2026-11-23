@@ -11,6 +11,8 @@ on:
       - 'tests/electrostatics_integration_smoke.py'
       - '.github/workflows/electrostatics.yml'
   workflow_dispatch:
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: read
@@ -36,3 +38,10 @@ jobs:
         run: python -m unittest discover -s tests -p test_electrostatics.py -v
       - name: Verify actual external electrostatics on ubiquitin
         run: python tests/electrostatics_integration_smoke.py
+      - name: Archive 1UBQ real solver evidence
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: InterfaceScout-1UBQ-APBS-PROPKA-evidence
+          path: dist/electrostatics/1UBQ_APBS_PROPKA_electrostatics.json
+          if-no-files-found: error

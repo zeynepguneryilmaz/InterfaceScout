@@ -26,6 +26,20 @@ class ElectrostaticsTests(unittest.TestCase):
             self.assertEqual(atoms[1]["seq"], 2)
             self.assertAlmostEqual(sum(a["charge"] for a in atoms), 0)
 
+    def test_zero_radius_hydrogen_is_valid_but_heavy_atom_is_not(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "h.pqr"
+            path.write_text(
+                "ATOM 127 HG1 THR A 7 31.255 40.309 14.948 0.4102 0.0000\n"
+            )
+            atoms = es._pqr_atoms(path)
+            self.assertEqual(atoms[0]["radius"], 0.0)
+            path.write_text(
+                "ATOM 128 OG1 THR A 7 31.255 40.309 14.948 -0.4102 0.0000\n"
+            )
+            with self.assertRaisesRegex(es.ElectrostaticsError, "invalid radius"):
+                es._pqr_atoms(path)
+
     def test_dx_interpolation(self):
         with tempfile.TemporaryDirectory() as tmp:
             p = Path(tmp) / "sample.dx"
