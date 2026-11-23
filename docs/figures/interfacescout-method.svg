@@ -1,49 +1,54 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="930" viewBox="0 0 1500 930" role="img" aria-labelledby="title desc"><defs><marker id="arr" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#96A6AE"/></marker></defs>
-<title id="title">InterfaceScout computational methodology</title>
-<desc id="desc">A prepared protein structure feeds two complementary solvent accessibility measures: whole-residue tRSA defines geometric surface membership, while side-chain scRSA defines chemical support. Glycine is a geometric member with no side-chain contribution. Eleven physicochemical maps use 6 and 9 angstrom neighborhoods, 8 angstrom patches, and four-criterion Pareto ranking.</desc>
-<rect x="0" y="0" width="1500" height="930" rx="0" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1.5"/>
-<text x="53" y="60" font-family="Inter,Arial,Helvetica,sans-serif" font-size="36" fill="#192C40" font-weight="700" text-anchor="start">From solvent exposure to candidate regions</text>
-<text x="53" y="92" font-family="Inter,Arial,Helvetica,sans-serif" font-size="18" fill="#657789" font-weight="400" text-anchor="start">A separation of surface geometry, chemical support, and region prioritization</text>
-<text x="53" y="142" font-family="Inter,Arial,Helvetica,sans-serif" font-size="14" fill="#8B3D5D" font-weight="750" text-anchor="start">01  ONE PREPARED PROTEIN STRUCTURE</text>
-<rect x="52" y="160" width="1396" height="76" rx="17" fill="#F7F8F8" stroke="#DDE3E6" stroke-width="1.5"/>
-<text x="78" y="194" font-family="Inter,Arial,Helvetica,sans-serif" font-size="23" fill="#1C3144" font-weight="650" text-anchor="start">PDB coordinates</text>
-<text x="78" y="220" font-family="Inter,Arial,Helvetica,sans-serif" font-size="16" fill="#6B7A86" font-weight="400" text-anchor="start">Selected chain(s) · standard protein residues</text>
-<text x="795" y="197" font-family="Inter,Arial,Helvetica,sans-serif" font-size="21" fill="#2E536D" font-weight="650" text-anchor="start">One Shrake–Rupley SASA calculation</text>
-<text x="795" y="220" font-family="Inter,Arial,Helvetica,sans-serif" font-size="16" fill="#667A87" font-weight="400" text-anchor="start">1.4 Å probe · 200 surface points per atom</text>
-<path d="M 750 236 V 267 H 405 V 292" stroke="#96A6AE" stroke-width="2.5" fill="none" marker-end="url(#arr)" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M 750 267 H 1095 V 292" stroke="#96A6AE" stroke-width="2.5" fill="none" marker-end="url(#arr)" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="53" y="285" font-family="Inter,Arial,Helvetica,sans-serif" font-size="14" fill="#8B3D5D" font-weight="750" text-anchor="start">02  TWO COMPLEMENTARY ACCESSIBILITY DESCRIPTORS</text>
-<rect x="52" y="302" width="680" height="235" rx="17" fill="#F3F7F4" stroke="#D7E5DB" stroke-width="1.5"/>
-<rect x="768" y="302" width="680" height="235" rx="17" fill="#F9F3F6" stroke="#ECDCE3" stroke-width="1.5"/>
-<text x="77" y="345" font-family="Inter,Arial,Helvetica,sans-serif" font-size="32" fill="#456E56" font-weight="730" text-anchor="start">tRSA</text>
-<text x="190" y="344" font-family="Inter,Arial,Helvetica,sans-serif" font-size="21" fill="#1F384A" font-weight="650" text-anchor="start">total-residue relative SASA</text>
-<text x="77" y="380" font-family="Inter,Arial,Helvetica,sans-serif" font-size="17" fill="#536B5C" font-weight="400" text-anchor="start">Whole-residue SASA / Tien et al. maximum ASA</text>
-<circle cx="85" cy="422" r="4" fill="#9A5470"/><text x="99" y="428" font-family="Inter,Arial,Helvetica,sans-serif" font-size="18" fill="#203549" font-weight="600" text-anchor="start">Geometric exposure criterion</text><text x="99" y="451" font-family="Inter,Arial,Helvetica,sans-serif" font-size="15" fill="#697A87" font-weight="400" text-anchor="start">Surface residue if tRSA ≥ 0.05</text>
-<circle cx="85" cy="488" r="4" fill="#9A5470"/><text x="99" y="494" font-family="Inter,Arial,Helvetica,sans-serif" font-size="18" fill="#203549" font-weight="600" text-anchor="start">All standard residues can contribute</text><text x="99" y="517" font-family="Inter,Arial,Helvetica,sans-serif" font-size="15" fill="#697A87" font-weight="400" text-anchor="start">GLY remains in the surface geometry</text>
-<text x="792" y="345" font-family="Inter,Arial,Helvetica,sans-serif" font-size="32" fill="#8B3D5D" font-weight="730" text-anchor="start">scRSA</text>
-<text x="930" y="344" font-family="Inter,Arial,Helvetica,sans-serif" font-size="21" fill="#1F384A" font-weight="650" text-anchor="start">side-chain relative SASA</text>
-<text x="792" y="380" font-family="Inter,Arial,Helvetica,sans-serif" font-size="17" fill="#855D6C" font-weight="400" text-anchor="start">Non-backbone heavy-atom SASA / reference ASA</text>
-<circle cx="799" cy="422" r="4" fill="#9A5470"/><text x="813" y="428" font-family="Inter,Arial,Helvetica,sans-serif" font-size="18" fill="#203549" font-weight="600" text-anchor="start">Physicochemical support</text><text x="813" y="451" font-family="Inter,Arial,Helvetica,sans-serif" font-size="15" fill="#697A87" font-weight="400" text-anchor="start">Accessible side chains inform map-specific rules</text>
-<circle cx="799" cy="488" r="4" fill="#9A5470"/><text x="813" y="494" font-family="Inter,Arial,Helvetica,sans-serif" font-size="18" fill="#203549" font-weight="600" text-anchor="start">No artificial GLY side chain</text><text x="813" y="517" font-family="Inter,Arial,Helvetica,sans-serif" font-size="15" fill="#697A87" font-weight="400" text-anchor="start">GLY scRSA = 0; Cα is not counted as side chain</text>
-<path d="M 390 537 V 574 H 750 V 598" stroke="#96A6AE" stroke-width="2.5" fill="none" marker-end="url(#arr)" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M 1110 537 V 574 H 750 V 598" stroke="#96A6AE" stroke-width="2.5" fill="none" marker-end="url(#arr)" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="53" y="596" font-family="Inter,Arial,Helvetica,sans-serif" font-size="14" fill="#8B3D5D" font-weight="750" text-anchor="start">03  MAP CHEMISTRY + LOCAL SPATIAL ORGANIZATION</text>
-<rect x="52" y="611" width="1396" height="127" rx="17" fill="#FFFFFF" stroke="#DCE3E6" stroke-width="1.5"/>
-<rect x="73" y="631" width="408" height="85" rx="11" fill="#F5F7F8" stroke="#E3E8E9" stroke-width="1.5"/>
-<text x="93" y="662" font-family="Inter,Arial,Helvetica,sans-serif" font-size="22" fill="#20364A" font-weight="700" text-anchor="start">11 canonical chemistry maps</text>
-<text x="93" y="693" font-family="Inter,Arial,Helvetica,sans-serif" font-size="16" fill="#647785" font-weight="400" text-anchor="start">Same structure; channel-specific rules</text>
-<path d="M 491 673 H 541" stroke="#96A6AE" stroke-width="2.5" fill="none" marker-end="url(#arr)" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="554" y="631" width="366" height="85" rx="11" fill="#F5F7F8" stroke="#E3E8E9" stroke-width="1.5"/>
-<text x="573" y="662" font-family="Inter,Arial,Helvetica,sans-serif" font-size="21" fill="#20364A" font-weight="700" text-anchor="start">Multiscale neighborhoods</text>
-<text x="573" y="693" font-family="Inter,Arial,Helvetica,sans-serif" font-size="15" fill="#647785" font-weight="400" text-anchor="start">6 Å and 9 Å; local chemistry support</text>
-<path d="M 931 673 H 981" stroke="#96A6AE" stroke-width="2.5" fill="none" marker-end="url(#arr)" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="993" y="631" width="430" height="85" rx="11" fill="#F5F7F8" stroke="#E3E8E9" stroke-width="1.5"/>
-<text x="1012" y="662" font-family="Inter,Arial,Helvetica,sans-serif" font-size="21" fill="#20364A" font-weight="700" text-anchor="start">Coarse surface patches</text>
-<text x="1012" y="693" font-family="Inter,Arial,Helvetica,sans-serif" font-size="15" fill="#647785" font-weight="400" text-anchor="start">8 Å center-defined; same-face consistency</text>
-<path d="M 750 739 V 766" stroke="#96A6AE" stroke-width="2.5" fill="none" marker-end="url(#arr)" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="52" y="782" width="1396" height="119" rx="17" fill="#F2F5F5" stroke="#D9E2E5" stroke-width="1.5"/>
-<text x="76" y="817" font-family="Inter,Arial,Helvetica,sans-serif" font-size="15" fill="#4D715E" font-weight="750" text-anchor="start">04  PARETO PRIORITIZATION</text>
-<text x="76" y="850" font-family="Inter,Arial,Helvetica,sans-serif" font-size="19" fill="#20364A" font-weight="600" text-anchor="start">Chemistry support</text><text x="350" y="850" font-family="Inter,Arial,Helvetica,sans-serif" font-size="19" fill="#20364A" font-weight="600" text-anchor="start">Mean tRSA</text><text x="565" y="850" font-family="Inter,Arial,Helvetica,sans-serif" font-size="19" fill="#20364A" font-weight="600" text-anchor="start">Patch coherence</text><text x="851" y="850" font-family="Inter,Arial,Helvetica,sans-serif" font-size="19" fill="#20364A" font-weight="600" text-anchor="start">Orientation coherence</text>
-<text x="76" y="882" font-family="Inter,Arial,Helvetica,sans-serif" font-size="17" fill="#617484" font-weight="400" text-anchor="start">Non-dominated candidate regions; no fitted combined affinity score</text>
-<text x="1152" y="881" font-family="Inter,Arial,Helvetica,sans-serif" font-size="17" fill="#506F60" font-weight="700" text-anchor="start">11 maps → 3D + tables</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 1015" width="1500" height="1015" role="img" aria-labelledby="methodTitle methodDesc">
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#93A4AE"/></marker></defs>
+<title id="methodTitle">InterfaceScout computational methodology</title>
+<desc id="methodDesc">Prepared protein coordinates are processed with one Shrake-Rupley SASA calculation. Total-residue RSA (tRSA) selects geometrically exposed residues, while side-chain RSA (scRSA) controls chemical support. Glycine retains geometric exposure but no side-chain chemical support. Eleven maps generate coarse surface regions and four-criterion Pareto prioritization.</desc>
+<rect width="1500" height="1015" fill="#fff"/>
+<text x="54" y="67" font-family="Arial,Helvetica,sans-serif" font-size="35" font-weight="700" fill="#172B40">How InterfaceScout constructs candidate regions</text>
+<text x="54" y="104" font-family="Arial,Helvetica,sans-serif" font-size="19" font-weight="400" fill="#667986">Geometry and chemical support are deliberately separate quantities.</text>
+<text x="54" y="158" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="700" fill="#873E5A">01  STRUCTURAL INPUT &amp; SASA</text>
+<rect x="54" y="179" width="1392" height="104" rx="15" fill="#F8FAFA" stroke="#DCE4E7" stroke-width="1.3"/>
+<text x="83" y="222" font-family="Arial,Helvetica,sans-serif" font-size="24" font-weight="700" fill="#223A4D">Prepared protein structure</text>
+<text x="83" y="253" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="400" fill="#607586">Selected chain(s) · standard amino-acid residues</text>
+<text x="803" y="222" font-family="Arial,Helvetica,sans-serif" font-size="23" font-weight="700" fill="#223A4D">Shrake–Rupley calculation</text>
+<text x="803" y="253" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="400" fill="#607586">1.4 Å solvent probe · 200 points per atom</text>
+<path d="M370 284 V308 H390 V336" fill="none" stroke="#93A4AE" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/><path d="M1120 284 V308 H1110 V336" fill="none" stroke="#93A4AE" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="54" y="327" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="700" fill="#873E5A">02  DUAL ACCESSIBILITY DEFINITIONS</text>
+<rect x="54" y="345" width="676" height="247" rx="15" fill="#F3F8F4" stroke="#D7E5DA" stroke-width="1.3"/>
+<rect x="770" y="345" width="676" height="247" rx="15" fill="#FBF5F7" stroke="#E8D8E0" stroke-width="1.3"/>
+<text x="82" y="387" font-family="Arial,Helvetica,sans-serif" font-size="30" font-weight="700" fill="#4A765E">tRSA</text>
+<text x="185" y="385" font-family="Arial,Helvetica,sans-serif" font-size="22" font-weight="700" fill="#223A4D">Geometric surface accessibility</text>
+<text x="82" y="421" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="400" fill="#5C7363">Total-residue SASA / theoretical maximum ASA</text>
+<rect x="82" y="449" width="621" height="66" rx="11" fill="#fff" stroke="#DBE6DE" stroke-width="1.3"/>
+<text x="103" y="476" font-family="Arial,Helvetica,sans-serif" font-size="19" font-weight="700" fill="#254936">Surface gate: tRSA ≥ 0.05</text>
+<text x="103" y="498" font-family="Arial,Helvetica,sans-serif" font-size="15" font-weight="400" fill="#607465">All 20 standard residue types can be considered.</text>
+<text x="82" y="555" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600" fill="#4A765E">GLY remains part of surface geometry.</text>
+<text x="800" y="387" font-family="Arial,Helvetica,sans-serif" font-size="30" font-weight="700" fill="#923F5E">scRSA</text>
+<text x="920" y="385" font-family="Arial,Helvetica,sans-serif" font-size="22" font-weight="700" fill="#223A4D">Side-chain chemical accessibility</text>
+<text x="800" y="421" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="400" fill="#7D6670">Non-backbone heavy-atom SASA / reference ASA</text>
+<rect x="800" y="449" width="618" height="66" rx="11" fill="#fff" stroke="#EADCE2" stroke-width="1.3"/>
+<text x="821" y="476" font-family="Arial,Helvetica,sans-serif" font-size="19" font-weight="700" fill="#71364F">Channel-specific chemical support</text>
+<text x="821" y="498" font-family="Arial,Helvetica,sans-serif" font-size="15" font-weight="400" fill="#866B77">Uses accessible functional side-chain groups.</text>
+<text x="800" y="555" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600" fill="#923F5E">GLY has scRSA = 0; Cα is not a side chain.</text>
+<path d="M392 593 V635 H750 V660" fill="none" stroke="#93A4AE" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/><path d="M1108 593 V635 H750" fill="none" stroke="#93A4AE" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="54" y="651" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="700" fill="#873E5A">03  PHYSICOCHEMICAL MAPS &amp; SPATIAL PATCHES</text>
+<rect x="54" y="670" width="1392" height="158" rx="15" fill="#FFFFFF" stroke="#DCE4E7" stroke-width="1.3"/>
+<rect x="82" y="700" width="382" height="97" rx="11" fill="#F7F9F9" stroke="#E2E8EA" stroke-width="1.3"/>
+<text x="101" y="738" font-family="Arial,Helvetica,sans-serif" font-size="21" font-weight="700" fill="#21394C">11 canonical chemistry maps</text>
+<text x="101" y="769" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="400" fill="#627686">Each map is computed for every structure.</text>
+<path d="M475 748 H520" fill="none" stroke="#93A4AE" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="537" y="700" width="377" height="97" rx="11" fill="#F7F9F9" stroke="#E2E8EA" stroke-width="1.3"/>
+<text x="555" y="738" font-family="Arial,Helvetica,sans-serif" font-size="21" font-weight="700" fill="#21394C">Multiscale neighborhoods</text>
+<text x="555" y="769" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="400" fill="#627686">6 Å and 9 Å · local chemical context</text>
+<path d="M925 748 H970" fill="none" stroke="#93A4AE" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="989" y="700" width="429" height="97" rx="11" fill="#F7F9F9" stroke="#E2E8EA" stroke-width="1.3"/>
+<text x="1007" y="738" font-family="Arial,Helvetica,sans-serif" font-size="21" font-weight="700" fill="#21394C">Surface candidate patches</text>
+<text x="1007" y="769" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="400" fill="#627686">8 Å coarse radius · same-face consistency</text>
+<path d="M750 830 V864" fill="none" stroke="#93A4AE" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="54" y="873" width="1392" height="111" rx="15" fill="#F3F6F6" stroke="#DDE6E6" stroke-width="1.3"/>
+<text x="82" y="913" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="700" fill="#4F7463">04  MULTI-CRITERION PARETO PRIORITIZATION</text>
+<text x="82" y="947" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="600" fill="#253A4C">Chemistry support</text>
+<text x="365" y="947" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="600" fill="#253A4C">Mean geometric tRSA</text>
+<text x="721" y="947" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="600" fill="#253A4C">Patch coherence</text>
+<text x="1007" y="947" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="600" fill="#253A4C">Orientation coherence</text>
+<text x="82" y="974" font-family="Arial,Helvetica,sans-serif" font-size="15" font-weight="400" fill="#627686">Non-dominated candidate regions; no calibrated adsorption-affinity prediction.</text>
 </svg>
