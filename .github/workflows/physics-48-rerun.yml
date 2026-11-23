@@ -46,7 +46,6 @@ jobs:
 
   full-panel:
     needs: smoke
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.full_panel }}
     runs-on: ubuntu-24.04
     timeout-minutes: 110
     strategy:
