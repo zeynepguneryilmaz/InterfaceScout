@@ -171,6 +171,8 @@ def structure_tables(name: str, analysis: Mapping[str, Any],
                 "ResidueKey": r["key"], "ResidueName": r["res_name"],
                 "Chain": r["chain"], "ResidueNumber": r["res_seq"],
                 "InsertionCode": r.get("icode", ""),
+                "TotalResidueSASA_A2": r.get("residue_sasa"),
+                "tRSA_raw": r.get("trsa_raw"),
                 "SidechainSASA_A2": r.get("sidechain_sasa"),
                 "scRSA_raw": r.get("scrsa_raw"),
                 "SurfaceExposed": bool(r.get("surface_exposed")),
@@ -521,10 +523,9 @@ def _atlas_detail(story: list, analysis: Mapping[str, Any], key: str):
     story.append(Spacer(1, 8))
     story.append(atlas_h("All residue-level measurements"))
     _table(story,
-        ["Residue", "Name", "scRSA", "Local score", "Propensity", "Persistence"],
-        [[r.get("key"), r.get("res_name"), r.get("scrsa"),
-          r.get("local_score"), r.get("propensity"),
-          r.get("multiscale_persistence")] for r in m["residues"]],
+        ["Residue", "Name", "tRSA", "scRSA", "Local score", "Persistence"],
+        [[r.get("key"), r.get("res_name"), r.get("trsa"), r.get("scrsa"),
+          r.get("local_score"), r.get("multiscale_persistence")] for r in m["residues"]],
         [99, 58, 79, 88, 98, 107])
     story.append(atlas_p(
         "The complete full-precision data, chemical seeds and original coordinates "
@@ -634,9 +635,9 @@ def report_pdf(structure_name: str, analysis: Mapping[str, Any],
         for key, value in prop.get("groups", {}).items():
             story.append(_p(f"{key}: {value.get('n_exposed_residues')} exposed, "
                             f"{', '.join(value.get('exposed_residues', []))}", True))
-        _table(story, ["Residue", "Type", "Exposed", "Side-chain SASA", "scRSA", "Charge"],
+        _table(story, ["Residue", "Type", "Exposed", "tRSA", "scRSA", "Charge"],
             [[r.get("key"), r.get("res_name"), r.get("surface_exposed"),
-              r.get("sidechain_sasa"), r.get("scrsa_raw"), r.get("charge_descriptor")]
+              r.get("trsa_raw"), r.get("scrsa_raw"), r.get("charge_descriptor")]
              for r in analysis.get("residue_profiles", [])], [106, 58, 67, 109, 81, 102])
         for key in analysis["map_order"]:
             story.append(PageBreak())
