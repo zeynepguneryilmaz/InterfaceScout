@@ -192,6 +192,17 @@ The SASA sampling level and multiscale radii were selected through label-free nu
 
 **Version 1.1.0 changes the geometric accessibility definition and patch prioritization relative to 1.0.0.** Results from earlier versions must be recalculated before they are compared under a common method. Previous retrospective comparisons of the legacy and exploratory dual-accessibility approaches should not be represented as validation of the final 1.1.0 implementation.
 
+## Active validation datasets
+
+InterfaceScout's current scientific validation plan uses **two datasets only**:
+
+| Dataset | Purpose | Status |
+| --- | --- | --- |
+| **TV48 — Technical verification** | A frozen, quality-screened panel of **48 protein structures** for reproducibility, dual-accessibility implementation, 11-map consistency, patch construction, and numerical robustness | Completed for the tested production version |
+| **ISV — Initial scientific validation** | A separately selected, evidence-audited protein panel for interpreting physicochemical maps and candidate-region analyses using credible external structural or experimental evidence | Selection and source/PDB matching pending; **not yet a finalized dataset** |
+
+The historical eight-protein parameter-development panel and nine retrospective literature conditions are **not active validation datasets**. Previous exploratory results remain archived and should not be mistaken for independent ISV evidence. See the [two-dataset plan and selection criteria](validation/ACTIVE_DATASETS.md), [TV48 numerical results](validation/FINAL_V110_RESULTS.md), and [TV48 extended scientific audit](validation/EXTENDED_V110_SCIENTIFIC_RESULTS.md).
+
 ## Testing and reproducibility
 
 After installing the backend dependencies, run from the repository root:
