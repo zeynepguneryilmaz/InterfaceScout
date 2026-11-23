@@ -9,7 +9,7 @@ from collections import defaultdict
 import core
 from coarse_patch import build_coarse_patches
 from geometry import extract_ca_nodes
-from interface_engine import PUBLIC_MAP_SPECS
+from interface_engine import PUBLIC_MAP_SPECS, _residue_rows
 from physics_surface import read_pqr,read_dx,charge_by_residue,sample_exposed_potentials
 
 MODEL_VERSION="2.5.0-physics-context-prototype"
@@ -44,8 +44,11 @@ def build_physical_11(*,prepared_protein_pdb,pqr_text,dx_text,pH,temperature_K,
     for public,internal,label,_ in PUBLIC_MAP_SPECS:
         channel=parent["chemistries"][internal]
         patches=build_coarse_patches(v1_result=parent,chemistry=internal,ca_nodes=nodes)
-        records[public]={"label":label,"n_patches":len(patches),
-                         "patches":patches,
+        records[public]={"key":public,"label":label,"description":next(spec[3] for spec in PUBLIC_MAP_SPECS if spec[0]==public),
+                         "internal_chemistry_key":internal,"n_patches":len(patches),
+                         "n_pareto_primary_patches":sum(int(p["pareto_front"])==1 for p in patches),
+                         "primary_patches":[p for p in patches if int(p["pareto_front"])==1],
+                         "patches":patches,"residues":_residue_rows(channel),
                          "n_chemistry_residues":len(channel["residues"])}
     return {
         "model":MODEL_VERSION,
