@@ -1,0 +1,50 @@
+name: Archive ISV80 verified surface/assembly/cofactor audit
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/isv80-surface-archive.yml'
+permissions:
+  actions: read
+  contents: write
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Retrieve verified 80-protein audit
+        run: |
+          mkdir -p /tmp/isv80surface
+          gh run download 45276540364 --repo "${{ github.repository }}" \
+            --name isv80-surface-assembly-full-evidence --dir /tmp/isv80surface
+          python - <<'PY'
+          import json,csv
+          from pathlib import Path
+          p=Path('/tmp/isv80surface')
+          d=json.loads((p/'SUMMARY.json').read_text())
+          assert d['status']=='PASS' and d['n_proteins']==80
+          assert len(list(csv.DictReader((p/'ISV80_SURFACE_QA.csv').open())))==80
+          assert len(d['focused_five'])==5
+          print('VERIFIED_ISV80_FINAL_AUDIT',d['n_proteins'],
+                d['proteins_with_top5_missing_sidechain'],
+                d['total_top5_missing_sidechain_residues'])
+          PY
+      - name: Archive complete evidence and concise tables
+        run: |
+          mkdir -p validation/evidence
+          cp /tmp/isv80surface/SUMMARY.json validation/evidence/ISV80_SURFACE_ASSEMBLY_SUMMARY.json
+          cp /tmp/isv80surface/ISV80_SURFACE_QA.csv validation/evidence/ISV80_SURFACE_QA.csv
+          cd /tmp/isv80surface
+          zip -q -9 -r "${{ github.workspace }}/validation/evidence/ISV80_SURFACE_ASSEMBLY_COMPLETE.zip" .
+          cd "${{ github.workspace }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/evidence/ISV80_SURFACE_*
+          if ! git diff --cached --quiet; then
+            git commit -m "Archive PASS 80-protein surface-missing-atoms, assembly and cofactor audit"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
