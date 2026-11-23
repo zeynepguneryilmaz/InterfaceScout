@@ -40,6 +40,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - run: python -m pip install gemmi==0.7.4
       - uses: actions/download-artifact@v4
         with:
           pattern: isv80-qa-shard-*
