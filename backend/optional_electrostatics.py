@@ -18,6 +18,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 import numpy as np
 from prepare import prepare_pdb_text
+from physics_surface import read_pqr, read_dx, charge_by_residue, sample_exposed_potentials
 
 class ElectrostaticsError(ValueError):
     pass
@@ -152,6 +153,8 @@ def compute(*,pdb_text,chain,settings):
         pqr=out.read_text(errors="replace")
         atoms=atoms_from_pqr(pqr)
         charge=sum(a[1] for a in atoms)
+        detailed_pqr=read_pqr(pqr)
+        residue_charge=charge_by_residue(detailed_pqr)
         warnings=[]
         if lost: warnings.append("Removed HETATM components (not modeled): "+", ".join(lost))
         if not settings.propka_enabled: warnings.append("PROPKA disabled: pH did not determine protonation")
@@ -162,18 +165,60 @@ def compute(*,pdb_text,chain,settings):
                 "warnings":warnings,"standard_maps_modified":False,
                 "scope":"Protein-only continuum electrostatics; no adsorption energy or site prediction"}
         apbs_log=""
+        per_residue=[]
+        per_patch=[]
+        sampled={}
+        # Canonical maps are read-only references; APBS data are independent descriptors.
+        from interface_engine import analyze_all_maps
+        standard=analyze_all_maps(pdb_text=cleaned,pH=settings.pH,
+             ionic_mM=settings.ionic_mM,temp_K=settings.temperature_K)
+        surface_keys=set(standard["diagnostics"]["surface_residue_keys"])
+        matched=surface_keys & set(residue_charge)
+        if len(matched)<max(15,int(0.7*len(surface_keys))):
+            raise ElectrostaticsError("Protein/PQR residue mapping insufficient: "
+               +str(len(matched))+"/"+str(len(surface_keys)))
         if settings.apbs_enabled:
             inp,grid=input_for_apbs(settings,atoms)
             (root/"potential.in").write_text(inp)
             apbs_log=run([shutil.which("apbs"),"potential.in"],root,300)
             dx=root/"potential.dx"
             if not dx.exists() or dx.stat().st_size<80:raise ElectrostaticsError("APBS potential.dx missing/empty")
+            sampled=sample_exposed_potentials(detailed_pqr,read_dx(dx.read_text(errors="replace")),
+                         settings.temperature_K,surface_keys)
+            if len(sampled)<max(10,int(.25*len(surface_keys))):
+                raise ElectrostaticsError("Insufficient finite solvent-side APBS samples: "
+                  +str(len(sampled))+"/"+str(len(surface_keys)))
             result["apbs"]={"grid":grid,"data_file":"data/potential.dx",
                             "mV_per_kBT_e":round(settings.temperature_K*0.08617333262,6)}
+        import csv
+        for profile in standard["residue_profiles"]:
+            key=profile["key"]
+            per_residue.append({"residue_key":key,"residue_name":profile["res_name"],
+               "surface_exposed":bool(profile["surface_exposed"]),
+               "assigned_PQR_residue_charge_e":residue_charge.get(key),
+               **sampled.get(key,{})})
+        for key in standard["map_order"]:
+            for p in standard["maps"][key]["patches"]:
+                vals=[sampled[k]["potential_mean_mV"] for k in p["members"] if k in sampled]
+                per_patch.append({"map_key":key,"patch_rank":p["display_rank"],
+                     "center_key":p["center_key"],"member_count":len(p["members"]),
+                     "potential_covered_members":len(vals),
+                     "mean_member_potential_mV":float(np.mean(vals)) if vals else None,
+                     "potential_sign":"positive" if vals and np.mean(vals)>0 else ("negative" if vals else "unavailable"),
+                     "unchanged_standard_patch_rank":True})
+        result["regional_surface_coverage"]={"surface_residue_count":len(surface_keys),
+            "PQR_mapped_count":len(matched),"APBS_potential_sampled_count":len(sampled),
+            "method":"PQR heavy sidechain atom probe-expanded solvent-side points; steric masking; equal angular samples; not exact SES"}
+        def to_csv(rows):
+            fields=sorted({k for r in rows for k in r});out=io.StringIO()
+            writer=csv.DictWriter(out,fieldnames=fields);writer.writeheader();writer.writerows(rows)
+            return out.getvalue()
         bundle=io.BytesIO()
         with zipfile.ZipFile(bundle,"w",zipfile.ZIP_DEFLATED,compresslevel=6) as z:
             z.writestr("metadata/results.json",json.dumps(result,indent=2))
             z.writestr("data/prepared.pqr",pqr)
+            z.writestr("data/charged_residue_surface.csv",to_csv(per_residue))
+            z.writestr("data/standard_region_APBS_overlay.csv",to_csv(per_patch))
             z.writestr("metadata/pdb2pqr.log",prep_log)
             z.writestr("metadata/prepared_protein.pdb",cleaned)
             if settings.apbs_enabled:
