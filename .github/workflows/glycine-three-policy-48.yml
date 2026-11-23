@@ -1,0 +1,54 @@
+name: InterfaceScout 48 three-way glycine definition comparison
+on:
+  push:
+    paths:
+      - 'validation/glycine_three_policy_48.py'
+      - '.github/workflows/glycine-three-policy-48.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compute:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install gemmi==0.7.4 pandas requests
+      - run: python -u validation/glycine_three_policy_48.py --shard ${{ matrix.shard }} --shards 4
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: glythree-shard-${{ matrix.shard }}
+          path: glycine_three_policy_48/
+          retention-days: 90
+  aggregate:
+    needs: compute
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install gemmi==0.7.4 pandas requests
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: glythree-shard-*
+          path: glycine_three_policy_48
+          merge-multiple: true
+      - run: python validation/glycine_three_policy_48.py --aggregate glycine_three_policy_48
+      - uses: actions/upload-artifact@v4
+        with:
+          name: glycine-three-policy-48-complete
+          path: glycine_three_policy_48/
+          retention-days: 90
