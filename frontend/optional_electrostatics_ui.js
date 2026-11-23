@@ -24,7 +24,7 @@
  const byId=id=>document.getElementById(id);
  let ready=false,busy=false;
  const btn=byId("esRun"),msg=byId("esMsg");
- function refresh(){btn.disabled=!ready||busy||!window.pdbText;}
+ function refresh(){btn.disabled=!ready||busy||typeof pdbText==='undefined'||!pdbText;}
  async function check(){
    try{
       const r=await fetch("/electrostatics/status");
