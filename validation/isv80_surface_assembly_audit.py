@@ -82,7 +82,7 @@ def check_one(row):
     for ch in model["map_order"]:
         patches=model["maps"][ch]["patches"][:5]
         members=set()
-        for patch in patches:members.update(patch.get("member_keys",[]))
+        for patch in patches:members.update(patch.get("members",[]))
         top5_by_map[ch]=members
         top5_members.update(members)
     # Same chain-remapping order as prepare(): standard-polymer-bearing
