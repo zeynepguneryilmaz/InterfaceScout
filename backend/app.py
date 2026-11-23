@@ -290,6 +290,7 @@ def optional_electrostatics_prepare(req: ElectrostaticsRequest):
     except ValueError as exc:
         raise HTTPException(status_code=400,detail=str(exc)) from exc
     physical=result.pop("physics_aware_view",None)
+    canonical=result.pop("canonical_view",None)
     token=uuid.uuid4().hex
     path=_EXPORT_DIRECTORY/(token+".zip")
     draft=_EXPORT_DIRECTORY/(token+".tmp")
@@ -309,6 +310,7 @@ def optional_electrostatics_prepare(req: ElectrostaticsRequest):
         "status":"complete",
         "result":result,
         "analysis":physical,
+        "canonical_analysis":canonical,
         "download_url":"/electrostatics/download/"+token,
         "filename":"InterfaceScout_PhysicsAware_Electrostatics.zip",
         "expires_in_seconds":_EXPORT_TTL_SECONDS,
