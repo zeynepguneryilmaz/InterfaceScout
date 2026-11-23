@@ -70,6 +70,10 @@ The *Combined Maps* panel displays the values beside each existing patch and inc
 
 These are **chemistry-informed descriptors**, not measured affinities or calibrated material-specific adsorption probabilities. Every run calculates all 11 maps; choosing a view never removes channels from the complete export.
 
+## User guide
+
+For a complete, step-by-step walkthrough of installation, the three analysis workflows, all 11 maps, Regional Chemistry Profile, conformational comparisons, full exports, and scientifically responsible interpretation, see the **[InterfaceScout User Guide (English)](docs/USER_GUIDE.md)**.
+
 ## Get started
 
 ### Requirements
