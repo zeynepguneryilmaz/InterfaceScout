@@ -1,0 +1,26 @@
+name: ISV RCSB metadata verification of proposed 68 structures
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'validation/isv_rcsb_screen.py'
+      - 'validation/ISV_protein_candidate_pool_68_v1.csv'
+      - '.github/workflows/isv-rcsb-screen.yml'
+permissions:
+  contents: read
+jobs:
+  screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -u validation/isv_rcsb_screen.py
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: isv-proposed-68-rcsb-metadata-audit
+          path: isv_rcsb_screen/
+          retention-days: 90
