@@ -207,7 +207,16 @@ def compute(*,pdb_text,chain,settings):
             (root/"potential.in").write_text(inp)
             apbs_log=run([shutil.which("apbs"),"potential.in"],root,300)
             dx=root/"potential.dx"
-            if not dx.exists() or dx.stat().st_size<80:raise ElectrostaticsError("APBS potential.dx missing/empty")
+            if not dx.is_file():
+                # APBS builds differ in whether they suffix the single
+                # processor ID; accept only an unambiguous potential grid.
+                found=sorted(p for p in root.glob("potential*.dx") if p.is_file())
+                if len(found)==1:
+                    dx=found[0]
+            if not dx.exists() or dx.stat().st_size<80:
+                files=", ".join(sorted(p.name for p in root.iterdir()))
+                raise ElectrostaticsError("APBS potential DX missing/empty; output files: "+
+                    files+"; APBS log: "+apbs_log[-2000:])
             sampled=sample_exposed_potentials(detailed_pqr,read_dx(dx.read_text(errors="replace")),
                          settings.temperature_K,surface_keys)
             if len(sampled)<max(10,int(.25*len(surface_keys))):
