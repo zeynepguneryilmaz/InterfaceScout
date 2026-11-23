@@ -278,6 +278,7 @@ def compute(*,pdb_text,chain,settings):
                 z.writestr("metadata/apbs.in",inp)
                 z.writestr("metadata/apbs.log",apbs_log)
                 z.write(dx,"data/potential.dx")
+        result["canonical_view"]=standard
         if physical_view is not None:
             result["physics_aware_view"]=physical_view
         return result,bundle.getvalue()
