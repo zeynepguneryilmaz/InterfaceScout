@@ -116,6 +116,16 @@ The Regional Chemistry Profile is **interpretive rather than predictive**. It do
 
 The descriptors were assessed in a label-free methodological audit covering **48 proteins and eight prespecified map combinations**; see [methodology and evidence](validation/REGIONAL_CHEMISTRY_EVIDENCE_AND_METHOD.md). This audit does not establish material-specific adsorption-site accuracy.
 
+### Optional physics-based electrostatics (experimental)
+
+The **Electrostatics** checkbox in the single-structure interface (or `"electrostatics": true` in the `/analyze`, `/compare`, or `/structure-set` request) runs **PDB2PQR with PROPKA titration-state assignment** followed by **APBS linearized Poisson–Boltzmann** on the same prepared protein. The server must have the `pdb2pqr` and `apbs` executables on its PATH; check `GET /health`. PDB2PQR must include PROPKA support. The standard install does **not** install these external applications.
+
+The extra `electrostatics` response includes matched-residue PQR net atomic charges (e) and mean APBS potential sampled at side-chain heavy-atom coordinates (kT/e). Glycine has no side-chain potential, correctly reported as null. Ion concentration is specified as symmetric monovalent electrolyte (`ionic_mM/1000` mol/L); temperature enters APBS, unlike the canonical scoring model. APBS calculation uses a default dielectric model (solute 2, solvent 78.54); these are assumptions, not fitted adsorption parameters.
+
+**Scientific separation:** all eleven canonical chemistry channels, SASA, patch membership and Pareto ranks remain unchanged. APBS output is a separate, experimental descriptive annotation, *not* a verified adsorption-affinity correction or a replacement for PROPKA-derived residue titration fractions. No fallback is allowed: missing binaries, failed APBS jobs or uncertain residue identity cause an explicit error. The existing TV48 benchmark has **not** been revalidated for an APBS-informed scoring model.
+
+For a local environment, install compatible PDB2PQR (with PROPKA) and APBS distributions, ensure both commands run on PATH, then select the checkbox and analyze a full-atom protein. The external solver is only invoked when explicitly requested. Benchmark computation costs and verify force-field completeness and appropriate solvent conditions for your structure before scientific interpretation.
+
 ## Results and exports
 
 **Download complete results · ZIP** provides the principal reproducible output. Where applicable, each analyzed structure is accompanied by:
