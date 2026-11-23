@@ -9,6 +9,7 @@ import time
 import uuid
 import tempfile
 import threading
+import zipfile
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse, FileResponse
@@ -312,9 +313,27 @@ def optional_electrostatics_prepare(req: ElectrostaticsRequest):
         "analysis":physical,
         "canonical_analysis":canonical,
         "download_url":"/electrostatics/download/"+token,
+        "potential_url":"/electrostatics/potential/"+token if physical is not None else None,
         "filename":"InterfaceScout_PhysicsAware_Electrostatics.zip",
         "expires_in_seconds":_EXPORT_TTL_SECONDS,
     }
+
+@app.get("/electrostatics/potential/{token}")
+def electrostatics_potential_dx(token:str):
+    """Private temporary OpenDX visualization source for the current local run."""
+    with _EXPORT_LOCK:
+        _clean_expired_exports(time.time())
+        entry=_EXPORT_FILES.get(token)
+    if not entry or not entry[0].is_file():
+        raise HTTPException(status_code=404,detail="Potential file expired; recalculate")
+    with zipfile.ZipFile(entry[0]) as archive:
+        if "data/potential.dx" not in archive.namelist():
+            raise HTTPException(status_code=404,detail="APBS potential unavailable")
+        raw=archive.read("data/potential.dx")
+    if len(raw)>100_000_000:
+        raise HTTPException(status_code=413,detail="Potential grid too large for browser")
+    return StreamingResponse(BytesIO(raw),media_type="text/plain",headers={
+        "Cache-Control":"no-store","X-Content-Type-Options":"nosniff"})
 
 @app.get("/electrostatics/download/{token}")
 def download_electrostatics(token:str):
