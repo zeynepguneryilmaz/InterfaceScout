@@ -288,7 +288,53 @@ def build_distances(surface: List[Dict[str, Any]]) -> np.ndarray:
     return np.sqrt(np.sum(delta * delta, axis=2))
 
 
-def chemistry_map(surface: List[Dict[str, Any]], distances: np.ndarray, key: str, pH: float) -> Dict[str, Any]:
+def chemistry_map(surface: List[Dict[str, Any]], distances: np.ndarray, key: str, pH: float,
+                  physical_evidence: Optional[Dict[str, Dict[str, Any]]] = None) -> Dict[str, Any]:
+    """Build original map by default, or an explicitly versioned physical-context variant.
+
+    Electrostatic correction applies ONLY to known charge-mediated mechanisms;
+    neutral hydrogen bonding, hydrophobicity and aromaticity receive no APBS multiplier.
+    Values are surface fractions with compatible potential sign, never fitted energies.
+    """
+    def state_fraction(row, state):
+        if physical_evidence is None or state not in ("protonated", "deprotonated"):
+            return state_availability(row["res_name"],state,pH)
+        evidence=physical_evidence.get(row["key"])
+        if evidence is None or evidence.get("assigned_charge_e") is None:
+            raise ValueError("Missing PDB2PQR assigned charge for "+row["key"])
+        q=float(evidence["assigned_charge_e"])
+        return float(q >= 0.35) if state=="protonated" else float(q <= -0.35)
+
+    def phi_fraction(row, mechanism):
+        if physical_evidence is None or not mechanism:
+            return 1.0
+        # Only explicit ionic/electrostatic interactions, not H-bond/coordination.
+        label=mechanism.lower()
+        charged=("electrostatic" in label or "phosphate-" in label
+                 or "charged-site complementarity" in label
+                 or "carboxylate-ca" in label)
+        if not charged:
+            return 1.0
+        # The material-defined channel denotes complementarity to surface chemistry.
+        if key in ("anionic","phosphate"):
+            desired="positive"
+        elif key=="cationic":
+            desired="negative"
+        elif key=="hydroxyapatite":
+            desired="negative" if row["res_name"] in ("ASP","GLU") else "positive"
+        else:
+            return 1.0
+        evidence=physical_evidence.get(row["key"])
+        if evidence is None:
+            raise ValueError("Missing PDB2PQR evidence for residue "+row["key"])
+        phi=evidence.get("fraction_positive")
+        if phi is None:
+            # Missing solvent-side APBS samples are NOT assigned a fabricated
+            # potential. Retain only PDB2PQR protonation, and report coverage.
+            return 1.0
+        if not (0.0 <= float(phi) <= 1.0):
+            raise ValueError("Invalid APBS potential support for "+row["key"])
+        return float(phi) if desired=="positive" else 1.0-float(phi)
     meta = CHEMISTRIES[key]
     fav_defs = meta["favorable"]
     rep_defs = meta.get("repulsive", {})
@@ -298,9 +344,9 @@ def chemistry_map(surface: List[Dict[str, Any]], distances: np.ndarray, key: str
     for i, row in enumerate(surface):
         rn = row["res_name"]
         if rn in fav_defs:
-            local[i] = row["scrsa"] * state_availability(rn, fav_defs[rn][2], pH)
+            local[i] = row["scrsa"] * state_fraction(row, fav_defs[rn][2]) * phi_fraction(row, fav_defs[rn][1])
         if rn in rep_defs:
-            rep_local[i] = row["scrsa"] * state_availability(rn, rep_defs[rn][2], pH)
+            rep_local[i] = row["scrsa"] * state_fraction(row, rep_defs[rn][2])
 
     prop = normalize_to_100(local)
     rep_prop = normalize_to_100(rep_local)
@@ -341,7 +387,7 @@ def chemistry_map(surface: List[Dict[str, Any]], distances: np.ndarray, key: str
         members.append({
             "key": row["key"], "res_name": rn, "res_seq": row["res_seq"], "icode": row["icode"], "chain": row["chain"],
             "sidechain_sasa": row["sidechain_sasa"], "scrsa_raw": row["scrsa_raw"], "scrsa": row["scrsa"],
-            "state_requirement": state or "none", "state_availability": round(state_availability(rn, state, pH), 5),
+            "state_requirement": state or "none", "state_availability": round(state_fraction(row, state), 5),
             "local_score": round(float(local[i]), 6), "propensity": round(float(prop[i]), 3),
             f"patch_density_{int(inner)}A": round(float(dens_norm[inner][i] * 100.0), 3),
             f"patch_density_{int(outer)}A": round(float(dens_norm[outer][i] * 100.0), 3),
@@ -367,7 +413,7 @@ def chemistry_map(surface: List[Dict[str, Any]], distances: np.ndarray, key: str
         "top_patches": patch_centers[:10], "patch_centers": patch_centers,
         "residues": members, "repulsive_residues": repulsive,
         "notes": {
-            "primary_score": "L = scRSA x binary membership x required-state availability",
+            "primary_score": ("L = scRSA x PROPKA/PQR assigned ionization state x measured fraction of solvent-side APBS points with compatible sign (ionic mechanisms only)" if physical_evidence is not None else "L = scRSA x binary membership x required-state availability"),
             "normalization": "within-map maximum = 100",
             "patch": f"multiscale persistence = 100 x min(normalized {int(inner)} A density, normalized {int(outer)} A density)",
         },

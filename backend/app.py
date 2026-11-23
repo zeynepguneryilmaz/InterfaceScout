@@ -9,6 +9,7 @@ import time
 import uuid
 import tempfile
 import threading
+import zipfile
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse, FileResponse
@@ -20,6 +21,7 @@ from model_settings import MODEL_VERSION, PUBLIC_VERSION
 from research_workflows import list_research_goals, compare_results, combine_maps
 from ensemble import analyze_structure_set, build_consensus
 from export_bundle import build_export_zip
+from optional_electrostatics import ElectrostaticSettings, ElectrostaticsError, compute as compute_optional_electrostatics, status as electrostatics_status
 
 BACKEND = Path(__file__).resolve().parent
 ROOT = BACKEND.parent
@@ -255,6 +257,113 @@ def analyze(req: AnalyzeRequest):
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"InterfaceScout analysis failed: {exc}") from exc
 
+
+
+class ElectrostaticsRequest(BaseModel):
+    pdb_text: str = Field(...,min_length=20,max_length=16_000_000)
+    chain: Optional[str] = None
+    pH: float = Field(7.4,ge=0,le=14)
+    ionic_mM: float = Field(150.0,ge=0,le=1000)
+    temperature_K: float = Field(298.15,ge=273.15,le=373.15)
+    electrolyte: str = Field("NaCl",pattern="^(NaCl|KCl)$")
+    forcefield: str = Field("PARSE",pattern="^(PARSE|AMBER|CHARMM)$")
+    protein_dielectric: float = Field(2.0,ge=1,le=30)
+    solvent_dielectric: float = Field(78.5,ge=20,le=110)
+    apbs_enabled: bool = True
+    propka_enabled: bool = True
+
+@app.get("/electrostatics/status")
+def optional_electrostatics_status():
+    return electrostatics_status()
+
+@app.post("/electrostatics/prepare")
+def optional_electrostatics_prepare(req: ElectrostaticsRequest):
+    """Calculate once, retain evidence ZIP briefly, return viewer-compatible 11 maps."""
+    try:
+        values=req.model_dump()
+        pdb_text=values.pop("pdb_text")
+        chain=values.pop("chain")
+        settings=ElectrostaticSettings(**values)
+        result, archive=compute_optional_electrostatics(
+            pdb_text=pdb_text,chain=chain,settings=settings)
+    except ElectrostaticsError as exc:
+        raise HTTPException(status_code=422,detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400,detail=str(exc)) from exc
+    physical=result.pop("physics_aware_view",None)
+    canonical=result.pop("canonical_view",None)
+    token=uuid.uuid4().hex
+    path=_EXPORT_DIRECTORY/(token+".zip")
+    draft=_EXPORT_DIRECTORY/(token+".tmp")
+    try:
+        draft.write_bytes(archive)
+        os.replace(draft,path)
+    finally:
+        draft.unlink(missing_ok=True)
+    with _EXPORT_LOCK:
+        now=time.time()
+        _clean_expired_exports(now)
+        while len(_EXPORT_FILES)>=_EXPORT_LIMIT:
+            oldest=min(_EXPORT_FILES,key=lambda k:_EXPORT_FILES[k][1])
+            _EXPORT_FILES.pop(oldest)[0].unlink(missing_ok=True)
+        _EXPORT_FILES[token]=(path,now)
+    return {
+        "status":"complete",
+        "result":result,
+        "analysis":physical,
+        "canonical_analysis":canonical,
+        "download_url":"/electrostatics/download/"+token,
+        "potential_url":"/electrostatics/potential/"+token if physical is not None else None,
+        "filename":"InterfaceScout_PhysicsAware_Electrostatics.zip",
+        "expires_in_seconds":_EXPORT_TTL_SECONDS,
+    }
+
+@app.get("/electrostatics/potential/{token}")
+def electrostatics_potential_dx(token:str):
+    """Private temporary OpenDX visualization source for the current local run."""
+    with _EXPORT_LOCK:
+        _clean_expired_exports(time.time())
+        entry=_EXPORT_FILES.get(token)
+    if not entry or not entry[0].is_file():
+        raise HTTPException(status_code=404,detail="Potential file expired; recalculate")
+    with zipfile.ZipFile(entry[0]) as archive:
+        if "data/potential.dx" not in archive.namelist():
+            raise HTTPException(status_code=404,detail="APBS potential unavailable")
+        raw=archive.read("data/potential.dx")
+    if len(raw)>100_000_000:
+        raise HTTPException(status_code=413,detail="Potential grid too large for browser")
+    return StreamingResponse(BytesIO(raw),media_type="text/plain",headers={
+        "Cache-Control":"no-store","X-Content-Type-Options":"nosniff"})
+
+@app.get("/electrostatics/download/{token}")
+def download_electrostatics(token:str):
+    with _EXPORT_LOCK:
+        _clean_expired_exports(time.time())
+        entry=_EXPORT_FILES.get(token)
+    if not entry or not entry[0].is_file():
+        raise HTTPException(status_code=404,detail="Electrostatics result expired; recalculate")
+    return FileResponse(entry[0],media_type="application/zip",
+            filename="InterfaceScout_PhysicsAware_Electrostatics.zip",
+            content_disposition_type="attachment",
+            headers={"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"})
+
+
+@app.post("/electrostatics/export")
+def optional_electrostatics_export(req: ElectrostaticsRequest):
+    """Isolated optional physically parameterized calculation and evidence ZIP."""
+    try:
+        values=req.model_dump()
+        pdb_text=values.pop("pdb_text")
+        chain=values.pop("chain")
+        settings=ElectrostaticSettings(**values)
+        _, archive=compute_optional_electrostatics(pdb_text=pdb_text,chain=chain,settings=settings)
+    except ElectrostaticsError as exc:
+        raise HTTPException(status_code=422,detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400,detail=str(exc)) from exc
+    return StreamingResponse(BytesIO(archive),media_type="application/zip",headers={
+        "Content-Disposition":'attachment; filename="InterfaceScout_Electrostatics_Optional.zip"',
+        "X-Content-Type-Options":"nosniff"})
 
 if FRONTEND.exists():
     app.mount("/", StaticFiles(directory=str(FRONTEND), html=True), name="frontend")
