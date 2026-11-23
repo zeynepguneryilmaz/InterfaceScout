@@ -1,0 +1,30 @@
+name: Verify README SVG layouts and render proof images
+on:
+  push:
+    paths:
+      - 'docs/figures/interfacescout-workflows.svg'
+      - 'docs/figures/interfacescout-method.svg'
+      - 'tools/check_readme_svg_layout.py'
+      - '.github/workflows/readme-svg-layout.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          python -m pip install playwright==1.55.0
+          python -m playwright install chromium
+          python -m playwright install-deps chromium
+      - run: python tools/check_readme_svg_layout.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: InterfaceScout-README-SVG-rendered-layout-proof
+          path: docs/figures/*-layout-proof.png
+          retention-days: 30
