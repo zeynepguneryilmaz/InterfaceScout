@@ -1,0 +1,40 @@
+name: InterfaceScout biology-corrected 35 real-browser 11-map atlases
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/curated-35-full-browser-exports.yml'
+      - 'validation/curated_biological_units_full_browser_exports.py'
+permissions:
+  contents: read
+jobs:
+  curated-11-map-export:
+    name: curated biological units shard ${{ matrix.shard }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 130
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned InterfaceScout backend and structure readers
+        run: |
+          python -m pip install --disable-pip-version-check -r backend/requirements.txt
+          python -m pip install gemmi==0.7.4 playwright==1.55.0
+          python -m playwright install chromium
+          python -m playwright install-deps chromium
+      - name: Run real browser full 11-map exports on selected biological units
+        run: python -u validation/curated_biological_units_full_browser_exports.py --shard ${{ matrix.shard }}
+      - name: Archive real structures, maps, PDFs, screenshots, CSV, XLSX, JSON and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: curated-biological-units-11maps-shard-${{ matrix.shard }}
+          path: curated_biological_units_outputs/shard_${{ matrix.shard }}/
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 30
