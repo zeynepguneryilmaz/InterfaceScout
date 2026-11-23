@@ -1,0 +1,26 @@
+name: Biofilm ISV candidate RCSB audit
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'validation/isv_biofilm_rcsb_screen.py'
+      - 'validation/ISV_protein_candidate_pool_80_v2.csv'
+      - '.github/workflows/isv-biofilm-screen.yml'
+permissions:
+  contents: read
+jobs:
+  biofilm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -u validation/isv_biofilm_rcsb_screen.py
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: biofilm-12-rcsb-record-verification
+          path: isv_biofilm_audit/
+          retention-days: 90
