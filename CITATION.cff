@@ -1,10 +1,10 @@
 cff-version: 1.2.0
-message: "If you use InterfaceScout, please cite the associated publication when bibliographic details become available."
+message: "If you use InterfaceScout in research, please cite this software. Cite associated publications separately when available."
 title: "InterfaceScout"
 type: software
 authors:
   - family-names: "Güner Yılmaz"
     given-names: "Ö. Zeynep"
-version: "1.0.0"
+version: "1.1.0"
 license: MIT
 repository-code: "https://github.com/zeynepguneryilmaz/InterfaceScout"
