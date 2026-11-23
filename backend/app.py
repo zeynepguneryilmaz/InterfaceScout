@@ -20,6 +20,7 @@ from model_settings import MODEL_VERSION, PUBLIC_VERSION
 from research_workflows import list_research_goals, compare_results, combine_maps
 from ensemble import analyze_structure_set, build_consensus
 from export_bundle import build_export_zip
+from optional_electrostatics import ElectrostaticSettings, ElectrostaticsError, compute as compute_optional_electrostatics, status as electrostatics_status
 
 BACKEND = Path(__file__).resolve().parent
 ROOT = BACKEND.parent
@@ -255,6 +256,41 @@ def analyze(req: AnalyzeRequest):
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"InterfaceScout analysis failed: {exc}") from exc
 
+
+
+class ElectrostaticsRequest(BaseModel):
+    pdb_text: str = Field(...,min_length=20,max_length=16_000_000)
+    chain: Optional[str] = None
+    pH: float = Field(7.4,ge=0,le=14)
+    ionic_mM: float = Field(150.0,ge=0,le=1000)
+    temperature_K: float = Field(298.15,ge=273.15,le=373.15)
+    electrolyte: str = Field("NaCl",pattern="^(NaCl|KCl)$")
+    forcefield: str = Field("PARSE",pattern="^(PARSE|AMBER|CHARMM)$")
+    protein_dielectric: float = Field(2.0,ge=1,le=30)
+    solvent_dielectric: float = Field(78.5,ge=20,le=110)
+    apbs_enabled: bool = True
+    propka_enabled: bool = True
+
+@app.get("/electrostatics/status")
+def optional_electrostatics_status():
+    return electrostatics_status()
+
+@app.post("/electrostatics/export")
+def optional_electrostatics_export(req: ElectrostaticsRequest):
+    """Isolated optional physically parameterized calculation and evidence ZIP."""
+    try:
+        values=req.model_dump()
+        pdb_text=values.pop("pdb_text")
+        chain=values.pop("chain")
+        settings=ElectrostaticSettings(**values)
+        _, archive=compute_optional_electrostatics(pdb_text=pdb_text,chain=chain,settings=settings)
+    except ElectrostaticsError as exc:
+        raise HTTPException(status_code=422,detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400,detail=str(exc)) from exc
+    return StreamingResponse(BytesIO(archive),media_type="application/zip",headers={
+        "Content-Disposition":'attachment; filename="InterfaceScout_Electrostatics_Optional.zip"',
+        "X-Content-Type-Options":"nosniff"})
 
 if FRONTEND.exists():
     app.mount("/", StaticFiles(directory=str(FRONTEND), html=True), name="frontend")
