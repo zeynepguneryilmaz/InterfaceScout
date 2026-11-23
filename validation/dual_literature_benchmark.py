@@ -55,8 +55,7 @@ def compute_maps(pdb,pH,rows):
         result[channel]=patches[:5]
     return result
 def labels_for_case(case,rows):
-    eligible=[r for r in rows if case["gt_kind"]=="equivalent_chain_ranges" or
-              r["chain"] in {x.strip() for x in case["chain"].split(",")}]
+    eligible=rows  # Prepared structure already contains only the selected experimental chains; chain IDs may be remapped.
     if case["gt_kind"]=="exact":
         positions=set(case["gt_exact"])
         labels={r["key"] for r in eligible if r["res_seq"] in positions}
