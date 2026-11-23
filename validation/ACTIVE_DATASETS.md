@@ -7,6 +7,12 @@
 | **Dataset 1 — Technical verification (TV48)** | Verify numerical implementation, structure processing, all 11 chemistry maps, dual tRSA/scRSA, glycine handling, patch construction, Pareto ranking, criterion dependence, and stability | **48 frozen, quality-screened protein structures** from [the accepted 48-structure manifest](strict_apo_48_selected_candidates_v2_final.csv) | **Completed for the tested v1.1.0 code:** 48/48 structures, 528 maps, 12,068 residue records, 2,112 objective ablations, 21,000 perturbation trials |
 | **Dataset 2 — Initial scientific validation (ISV)** | Assess how interpretable protein-side surface descriptors and candidate regions are under independently documented structural/experimental evidence, using fair reference methods | **To be selected, checked and frozen**; no final protein list or final sample size is claimed yet | **Not yet constructed or validated** |
 
+## Current definitive ISV selection — 76 active candidates (2026-11-24)
+
+**[Active 76-protein candidate list](ISV_active_candidates_76_v3.csv)** is the sole active Dataset 2 inclusion source. From the earlier 80, **3GHG, 1QJS, 4DN0 and 6LQH have been definitively excluded by user decision**. **1STP is retained** with its recorded biotin-state caveat. See the [explicit selection log](ISV_SELECTION_DECISION_76.md).
+
+The original 80-protein screening CSV and all 80-protein numerical audit files are **historical provenance only**, not the current sample count. **76 active candidates ≠ 76 accepted independent experimental validation cases.** All 76 were executable in the original production 11-map screening; final scientific admission requires the documented structure/chemistry audit.
+
 ## Dataset 1 — Technical verification: TV48
 
 **Frozen structure list:** [strict_apo_48_selected_candidates_v2_final.csv](strict_apo_48_selected_candidates_v2_final.csv)
@@ -43,11 +49,11 @@
 
 ### ISV80 structural-screening results (current)
 
-The [80-candidate production and structural screening report](ISV_80_FULL_SCREENING_REPORT.md) documents **80/80 successful 11-map engine executions**, 75 deposited principal chains above the preliminary 90% C-alpha coverage screen, and three conservative quality-review strata (10 priority, 67 conditional, 3 special challenge). **All 80 remain in the candidate pool, but no 80-member final ISV manifest is asserted.** The [per-protein triage table](evidence/ISV80_TRIAGE.csv) and [archived raw evidence](evidence/ISV80_COMPLETE_SCREENING_EVIDENCE.zip) provide reproducible provenance. Additional manual structure/side-chain chemical relevance and protein-family independence review is required before final inclusion decisions.
+The [80-candidate production and structural screening report](ISV_80_FULL_SCREENING_REPORT.md) documents **80/80 successful 11-map engine executions**, 75 deposited principal chains above the preliminary 90% C-alpha coverage screen, and three conservative quality-review strata (10 priority, 67 conditional, 3 special challenge). **The 80-entry original candidate pool is superseded for active selection by the 76-entry list; no final experimentally validated ISV manifest is asserted.** The [per-protein triage table](evidence/ISV80_TRIAGE.csv) and [archived raw evidence](evidence/ISV80_COMPLETE_SCREENING_EVIDENCE.zip) provide reproducible provenance. Additional manual structure/side-chain chemical relevance and protein-family independence review is required before final inclusion decisions.
 
 ### Current ISV working-panel decision
 
-**Keep all 80 computationally compatible protein structures in the working panel**, without limiting the sample to 50. The [80-structure audit](ISV_80_FULL_SCREENING_REPORT.md) and [80-row versioned decision table](evidence/ISV80_TRIAGE.csv) record 880 successful chemistry maps and scientific caveats for every PDB.
+**The 80 computationally compatible structures were the historical working panel; four have since been excluded, leaving 76 active candidates**, without limiting the sample to 50. The [80-structure audit](ISV_80_FULL_SCREENING_REPORT.md) and [80-row versioned decision table](evidence/ISV80_TRIAGE.csv) record 880 successful chemistry maps and scientific caveats for every PDB.
 
 These are **working structures, not 80 formally accepted independent biological validation systems**. Ten are conservative priority candidates, 67 require structural/contextual review, and three (1HC1, 6LQH, 8C50) are segregated structural challenges. Three closely related pairs ([sequence audit](evidence/ISV80_SEQUENCE_SUMMARY.json)) must be clustered by family when appropriate: 4F5S/1AO6, 3V83/1LFG, and 1B09/1SAC. There was no flagged near-sequence ISV-to-TV48 match under the documented prefilter; domain/fold independence remains subject to confirmation.
 
@@ -61,7 +67,7 @@ All 80 can contribute to **descriptive software applicability** where their coor
 - [Machine-readable complete result](evidence/ISV80_SURFACE_ASSEMBLY_SUMMARY.json)
 - [Archived full residue and RCSB evidence](evidence/ISV80_SURFACE_ASSEMBLY_COMPLETE.zip)
 
-**Decision:** retain all 80 in the computational working panel, but restrict strict mechanistic interpretation for the specified conditions. The biological assembly-1 model and omitted cofactor inventory have been documented; optimal in vivo assembly and energetics were not validated for all 80.
+**Historical audit decision (superseded):** the 80-PDB screen preceded the definitive exclusion of 3GHG, 1QJS, 4DN0 and 6LQH. Use the 76-entry active list for all future analyses. The biological assembly-1 model and omitted cofactor inventory have been documented; optimal in vivo assembly and energetics were not validated for all 80.
 
 ## Previous studies — preserved as historical supporting material, not active datasets
 
