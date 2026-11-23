@@ -7,7 +7,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math,re
 import numpy as np
-from scipy.spatial import cKDTree
 
 class PhysicsInputError(ValueError):pass
 
@@ -95,6 +94,7 @@ def sample_exposed_potentials(atoms,grid,temperature_K,eligible_keys,n_direction
     are kBT/e, positive where the electrostatic potential is positive.
     """
     if n_directions<20:raise PhysicsInputError("Insufficient sampling directions")
+    from scipy.spatial import cKDTree  # optional heavy dependency, only for APBS sampling
     atoms=list(atoms);eligible=set(eligible_keys)
     xyz=np.asarray([a.xyz for a in atoms],float)
     radii=np.asarray([a.radius for a in atoms],float)
