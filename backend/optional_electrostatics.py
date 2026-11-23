@@ -150,12 +150,32 @@ def compute(*,pdb_text,chain,settings):
         prep_log=run(cmd,root,150)
         out=root/"prepared.pqr"
         if not out.exists():raise ElectrostaticsError("PDB2PQR output missing")
-        pqr=out.read_text(errors="replace")
+        original_pqr=out.read_text(errors="replace")
+        # Some PDB2PQR forcefields emit explicit zero-charge, zero-radius
+        # hydrogen placeholders. These do not contribute electrostatic
+        # charge or excluded volume and are excluded from the APBS input.
+        filtered_lines=[]
+        neutral_dummy_count=0
+        for line in original_pqr.splitlines(keepends=True):
+            if line.startswith(("ATOM  ","HETATM")):
+                words=line.split()
+                if len(words)>=10:
+                    q=float(words[-2]);radius=float(words[-1])
+                    if radius==0.0 and q==0.0:
+                        neutral_dummy_count+=1
+                        continue
+                    if radius<=0 or not all(math.isfinite(x) for x in (q,radius)):
+                        raise ElectrostaticsError("Charged or invalid zero-radius atom: "+repr(line[:180]))
+            filtered_lines.append(line)
+        pqr="".join(filtered_lines)
+        out.write_text(pqr,encoding="utf-8")
         atoms=atoms_from_pqr(pqr)
         charge=sum(a[1] for a in atoms)
         detailed_pqr=read_pqr(pqr)
         residue_charge=charge_by_residue(detailed_pqr)
         warnings=[]
+        if neutral_dummy_count:
+            warnings.append(f"Removed {neutral_dummy_count} zero-charge/zero-radius nonphysical PDB2PQR placeholders from the APBS input; original PQR preserved")
         if lost: warnings.append("Removed HETATM components (not modeled): "+", ".join(lost))
         if not settings.propka_enabled: warnings.append("PROPKA disabled: pH did not determine protonation")
         result={"status":"completed","settings":asdict(settings),"preparation":prep,
@@ -217,6 +237,7 @@ def compute(*,pdb_text,chain,settings):
         with zipfile.ZipFile(bundle,"w",zipfile.ZIP_DEFLATED,compresslevel=6) as z:
             z.writestr("metadata/results.json",json.dumps(result,indent=2))
             z.writestr("data/prepared.pqr",pqr)
+            z.writestr("metadata/pdb2pqr_unfiltered.pqr",original_pqr)
             z.writestr("data/charged_residue_surface.csv",to_csv(per_residue))
             z.writestr("data/standard_region_APBS_overlay.csv",to_csv(per_patch))
             z.writestr("metadata/pdb2pqr.log",prep_log)
