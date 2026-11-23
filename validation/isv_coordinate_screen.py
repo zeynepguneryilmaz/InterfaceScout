@@ -31,8 +31,6 @@ def scan(entry):
     models=v("pdbx_PDB_model_num")
     if not (len(ents)==len(seq)==len(atoms)==len(chains)==len(models)):
         raise ValueError("atom-site column length mismatch")
-    ids=sorted(set(en for en,chain in by_chain))
-    if not ids:raise ValueError("no numeric protein entity labels")
     by_chain=collections.defaultdict(set)
     for en,se,atom,chain,model in zip(ents,seq,atoms,chains,models):
         if model=="1" and atom=="CA" and se.isdigit():
@@ -42,6 +40,7 @@ def scan(entry):
     res_values=[str(x) for x in block.find_values("_refine.ls_d_res_high") if str(x) not in ("?",".")]
     resolution=next((float(x) for x in res_values if x),None)
     ids=sorted({en for en,_ in by_chain})
+    if not ids:raise ValueError("No model-1 C-alpha protein entity candidates")
     records=[]
     for eid in ids:
         ent=get_entity(pdb,eid)
