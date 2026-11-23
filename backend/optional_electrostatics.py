@@ -70,6 +70,10 @@ def run(args,cwd,seconds):
     if r.returncode: raise ElectrostaticsError("External calculation failed: "+log[-1500:])
     return log[-10000:]
 
+def _is_hydrogen_atom(name):
+    import re
+    return bool(re.match(r"^(?:[123])?H",str(name).upper()))
+
 def atoms_from_pqr(pqr):
     result=[]
     for line in pqr.splitlines():
@@ -80,7 +84,8 @@ def atoms_from_pqr(pqr):
             xyz=[float(x) for x in words[-5:-2]]
             charge,radius=map(float,words[-2:])
         except ValueError as e: raise ElectrostaticsError("Invalid PQR charge/radius") from e
-        if not all(math.isfinite(x) for x in xyz+[charge,radius]) or radius<=0:
+        atom_name=words[2]
+        if not all(math.isfinite(x) for x in xyz+[charge,radius]) or radius<0 or (radius==0 and not _is_hydrogen_atom(atom_name)):
             raise ElectrostaticsError("Invalid or missing PQR parameters in line: "+repr(line[:180]))
         result.append((xyz,charge,radius))
     if not result:raise ElectrostaticsError("No PQR atoms")
@@ -151,9 +156,9 @@ def compute(*,pdb_text,chain,settings):
         out=root/"prepared.pqr"
         if not out.exists():raise ElectrostaticsError("PDB2PQR output missing")
         original_pqr=out.read_text(errors="replace")
-        # Some PDB2PQR forcefields emit explicit zero-charge, zero-radius
-        # hydrogen placeholders. These do not contribute electrostatic
-        # charge or excluded volume and are excluded from the APBS input.
+        # Some PDB2PQR forcefields use charged zero-radius hydrogens.
+        # These MUST remain in the APBS PQR: partial charges are physical inputs.
+        # Only zero-charge/zero-radius hydrogens can be omitted without loss.
         filtered_lines=[]
         neutral_dummy_count=0
         for line in original_pqr.splitlines(keepends=True):
@@ -161,11 +166,11 @@ def compute(*,pdb_text,chain,settings):
                 words=line.split()
                 if len(words)>=10:
                     q=float(words[-2]);radius=float(words[-1])
-                    if radius==0.0 and q==0.0:
+                    if radius==0.0 and q==0.0 and _is_hydrogen_atom(words[2]):
                         neutral_dummy_count+=1
                         continue
-                    if radius<=0 or not all(math.isfinite(x) for x in (q,radius)):
-                        raise ElectrostaticsError("Charged or invalid zero-radius atom: "+repr(line[:180]))
+                    if radius<0 or (radius==0 and not _is_hydrogen_atom(words[2])) or not all(math.isfinite(x) for x in (q,radius)):
+                        raise ElectrostaticsError("Invalid atomic radius/charge: "+repr(line[:180]))
             filtered_lines.append(line)
         pqr="".join(filtered_lines)
         out.write_text(pqr,encoding="utf-8")
