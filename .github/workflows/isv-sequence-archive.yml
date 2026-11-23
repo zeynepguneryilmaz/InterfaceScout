@@ -1,0 +1,48 @@
+name: Archive verified ISV80 sequence independence evidence
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/isv-sequence-archive.yml'
+permissions:
+  actions: read
+  contents: write
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Retrieve verified ISV80 vs TV48 sequence audit
+        run: |
+          mkdir -p /tmp/isvseq
+          gh run download 45272945468 --repo "${{ github.repository }}" \
+            --name isv80-sequence-vs-tv48-audit --dir /tmp/isvseq
+          python - <<'PY'
+          import json,csv
+          from pathlib import Path
+          p=Path("/tmp/isvseq")
+          s=json.loads((p/"SUMMARY.json").read_text())
+          assert s["n_isv"]==80 and s["n_tv48"]==48
+          assert s["n_pdb_records"]==128 and s["high_similarity_entity_pairs"]==3
+          assert len(list(csv.DictReader((p/"candidate_sequence_similarity.csv").open())))==s["fourmer_screened_pairs"]
+          print("VALIDATED_ISV_SEQUENCE",s)
+          PY
+      - name: Save evidence and commit
+        run: |
+          mkdir -p validation/evidence
+          cp /tmp/isvseq/SUMMARY.json validation/evidence/ISV80_SEQUENCE_SUMMARY.json
+          cp /tmp/isvseq/candidate_sequence_similarity.csv validation/evidence/ISV80_SEQUENCE_PAIRS.csv
+          cd /tmp/isvseq
+          zip -q -9 -r "${{ github.workspace }}/validation/evidence/ISV80_SEQUENCE_EVIDENCE.zip" .
+          cd "${{ github.workspace }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/evidence/ISV80_SEQUENCE*
+          if ! git diff --cached --quiet; then
+            git commit -m "Archive ISV80 sequence similarities, TV48 comparison and original entity sequences"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
