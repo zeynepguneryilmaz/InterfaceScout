@@ -275,6 +275,58 @@ class ElectrostaticsRequest(BaseModel):
 def optional_electrostatics_status():
     return electrostatics_status()
 
+@app.post("/electrostatics/prepare")
+def optional_electrostatics_prepare(req: ElectrostaticsRequest):
+    """Calculate once, retain evidence ZIP briefly, return viewer-compatible 11 maps."""
+    try:
+        values=req.model_dump()
+        pdb_text=values.pop("pdb_text")
+        chain=values.pop("chain")
+        settings=ElectrostaticSettings(**values)
+        result, archive=compute_optional_electrostatics(
+            pdb_text=pdb_text,chain=chain,settings=settings)
+    except ElectrostaticsError as exc:
+        raise HTTPException(status_code=422,detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400,detail=str(exc)) from exc
+    physical=result.pop("physics_aware_view",None)
+    token=uuid.uuid4().hex
+    path=_EXPORT_DIRECTORY/(token+".zip")
+    draft=_EXPORT_DIRECTORY/(token+".tmp")
+    try:
+        draft.write_bytes(archive)
+        os.replace(draft,path)
+    finally:
+        draft.unlink(missing_ok=True)
+    with _EXPORT_LOCK:
+        now=time.time()
+        _clean_expired_exports(now)
+        while len(_EXPORT_FILES)>=_EXPORT_LIMIT:
+            oldest=min(_EXPORT_FILES,key=lambda k:_EXPORT_FILES[k][1])
+            _EXPORT_FILES.pop(oldest)[0].unlink(missing_ok=True)
+        _EXPORT_FILES[token]=(path,now)
+    return {
+        "status":"complete",
+        "result":result,
+        "analysis":physical,
+        "download_url":"/electrostatics/download/"+token,
+        "filename":"InterfaceScout_PhysicsAware_Electrostatics.zip",
+        "expires_in_seconds":_EXPORT_TTL_SECONDS,
+    }
+
+@app.get("/electrostatics/download/{token}")
+def download_electrostatics(token:str):
+    with _EXPORT_LOCK:
+        _clean_expired_exports(time.time())
+        entry=_EXPORT_FILES.get(token)
+    if not entry or not entry[0].is_file():
+        raise HTTPException(status_code=404,detail="Electrostatics result expired; recalculate")
+    return FileResponse(entry[0],media_type="application/zip",
+            filename="InterfaceScout_PhysicsAware_Electrostatics.zip",
+            content_disposition_type="attachment",
+            headers={"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"})
+
+
 @app.post("/electrostatics/export")
 def optional_electrostatics_export(req: ElectrostaticsRequest):
     """Isolated optional physically parameterized calculation and evidence ZIP."""
