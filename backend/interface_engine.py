@@ -101,6 +101,7 @@ def _residue_rows(channel: dict) -> list[dict]:
             "icode": row.get("icode", ""),
             "res_name": row.get("res_name"),
             "scrsa": row.get("scrsa", row.get("scrsa_raw")),
+            "trsa": row.get("trsa", row.get("trsa_raw")),
             "local_score": row.get("local_score"),
             "propensity": row.get("propensity"),
             "multiscale_persistence": row.get("multiscale_persistence"),
@@ -153,10 +154,14 @@ def _shared_response(context: dict, *, pdb_id: Optional[str], pH: float, ionic_m
         },
         "structure_preparation": context["prep_report"],
         "method": {
-            "accessibility_source": "side-chain relative solvent accessibility",
+            "accessibility_source": "dual total-residue RSA for geometry and side-chain RSA for chemical support",
+            "surface_gate": "total_residue_RSA",
+            "total_rsa_threshold": SC_RSA_THRESHOLD,
+            "total_rsa_reference": "Tien et al. 2013 DOI 10.1371/journal.pone.0080635, theoretical maxima",
+            "glycine_policy": "whole-residue RSA for geometry; no side-chain chemistry",
             "sasa_probe_A": SASA_PROBE_A,
             "sasa_points_per_atom": SASA_POINTS,
-            "scrsa_threshold": SC_RSA_THRESHOLD,
+            "scrsa_threshold": None,
             "multiscale_radii_A": list(MULTISCALE_RADII_A),
             "parameter_selection": PARAMETER_SELECTION,
             "patch_radius_A": PATCH_SCALE_A,
@@ -175,6 +180,7 @@ def _shared_response(context: dict, *, pdb_id: Optional[str], pH: float, ionic_m
         "method_notes": [
             "All single-channel chemistry maps use the same prepared structure and environmental conditions.",
             "Experimental interface labels are not inputs to patch construction or ranking.",
+            "The tRSA 0.05 geometric cutoff is a fixed tested convention, not experimentally optimized or proven optimal.",
             "Multi-chemistry composite views are derived overlays of canonical single-channel maps; they do not introduce fitted material weights or constitute a separately validated combined score.",
         ],
     }
