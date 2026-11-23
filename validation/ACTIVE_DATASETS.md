@@ -53,6 +53,16 @@ These are **working structures, not 80 formally accepted independent biological 
 
 All 80 can contribute to **descriptive software applicability** where their coordinate caveats are disclosed; no structure should contribute to strict residue-level quantitative conclusions if its missing interface chemistry, assembly or construct mismatch undermines the result.
 
+### ISV80 targeted chemical/assembly QA (completed)
+
+[Surface chemistry, assembly and cofactor report](ISV80_SURFACE_ASSEMBLY_COFACTOR_RESULTS.md) uses verified production maps and source structure audits for all 80 candidates, including the five previously flagged structures (**3GHG, 1QJS, 1STP, 4DN0 and 6LQH**). All 80 have at least one exposed missing-sidechain residue intersecting some Top-5 candidate region. Results are **structural uncertainty flags**, not quantified map-score effects or proof of unacceptable experimental structures.
+
+- [Per-protein summary table](evidence/ISV80_SURFACE_QA.csv)
+- [Machine-readable complete result](evidence/ISV80_SURFACE_ASSEMBLY_SUMMARY.json)
+- [Archived full residue and RCSB evidence](evidence/ISV80_SURFACE_ASSEMBLY_COMPLETE.zip)
+
+**Decision:** retain all 80 in the computational working panel, but restrict strict mechanistic interpretation for the specified conditions. The biological assembly-1 model and omitted cofactor inventory have been documented; optimal in vivo assembly and energetics were not validated for all 80.
+
 ## Previous studies — preserved as historical supporting material, not active datasets
 
 The older **eight-structure parameter-development set** is historical methodological provenance only; it is **not an active validation dataset**, and is not part of the current two-dataset work plan.
