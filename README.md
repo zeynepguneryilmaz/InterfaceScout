@@ -42,7 +42,7 @@ InterfaceScout now separates **geometric exposure** from **chemical side-chain a
 
 InterfaceScout has **three genuine analysis modes**. Each supplied PDB structure is analyzed individually using the same **11 physicochemical maps**. Structural comparisons and multi-PDB consensus require valid residue correspondence.
 
-![The three implemented InterfaceScout workflows: Single protein, Compare two, and Multi-PDB](docs/figures/interfacescout-workflows.svg)
+![InterfaceScout workflow: three analysis modes and shared computational engine](docs/figures/InterfaceScout_README_Workflows.png)
 
 ### Real application — not a mockup
 
@@ -67,7 +67,7 @@ The following screens are generated automatically from **the running InterfaceSc
 
 The method deliberately separates **whole-residue tRSA for surface geometry** from **side-chain scRSA for chemistry**. Glycine remains part of the surface geometry but receives no fictitious side-chain contribution. The 11 canonical maps support local patch construction followed by four-criterion Pareto prioritization.
 
-![The actual dual-accessibility computation, canonical maps, coarse patches and nonweighted Pareto ranking](docs/figures/interfacescout-method.svg)
+![InterfaceScout methodology: Shrake–Rupley SASA, tRSA/scRSA, 11 maps, surface patches and Pareto prioritization](docs/figures/InterfaceScout_Methodology_Overview.png)
 
 **Interpretation:** Single protein describes one structure; Compare two examines compatible states of the same protein; Multi-PDB accepts **2–20 supplied structures** and computes matched-residue consensus only when appropriate. These workflows do not ingest MD trajectories, infer conformational populations or predict adsorption energetics.
 
