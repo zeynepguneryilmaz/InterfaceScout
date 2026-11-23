@@ -1,4 +1,6 @@
 # InterfaceScout v1.1.0 — production validation and manuscript evidence matrix
+> **Dataset scope (current plan):** The active datasets are [TV48 technical verification and the planned ISV initial scientific-validation panel](ACTIVE_DATASETS.md). The 48-structure tests in this document are TV48 results. Any nine-condition retrospective literature analyses reported below are **historical exploratory analyses**, **not ISV** and not independent holdouts.
+
 
 **Scope:** v1.1.0 / model `2.5.0-dual-accessibility`. This file defines the interpretation of final-production evidence and must be read together with the numerical workflow artifacts. An action that computes but has not successfully aggregated is **not** a completed data package.
 
