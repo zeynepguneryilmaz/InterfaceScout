@@ -11,7 +11,7 @@
 [![Python 3.10–3.12](https://img.shields.io/badge/Python-3.10%E2%80%933.12-628D78.svg)](#requirements)
 [![Version 1.1.0](https://img.shields.io/badge/version-1.1.0-6A3245.svg)](CITATION.cff)
 
-*Explore accessible protein-surface chemistry, compare structural states, and identify regions for experimental or computational investigation.*
+*Explore protein-surface chemistry, compare structural states, and prioritize candidate regions for further experimental or computational investigation.*
 
 </div>
 
