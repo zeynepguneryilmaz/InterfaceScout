@@ -199,7 +199,9 @@ InterfaceScout's current scientific validation plan uses **two datasets only**:
 | Dataset | Purpose | Status |
 | --- | --- | --- |
 | **TV48 — Technical verification** | A frozen, quality-screened panel of **48 protein structures** for reproducibility, dual-accessibility implementation, 11-map consistency, patch construction, and numerical robustness | Completed for the tested production version |
-| **ISV — Initial scientific validation** | A separately selected, evidence-audited protein panel for interpreting physicochemical maps and candidate-region analyses using credible external structural or experimental evidence | Selection and source/PDB matching pending; **not yet a finalized dataset** |
+| **ISV — Initial scientific validation** | **76 active candidate protein structures** for physicochemical mapping and independent structural/scientific evaluation, including biofilm-related proteins | Active list fixed after four exclusions; final evidence-level acceptance still pending |
+
+The **[active 76-protein ISV candidate list](validation/ISV_active_candidates_76_v3.csv)** excludes **3GHG, 1QJS, 4DN0 and 6LQH**, retains **1STP**, and supersedes the archived 80-protein screening candidate list. [Selection decision and rationale](validation/ISV_SELECTION_DECISION_76.md). The 80-structure computation results remain archived as historical quality evidence, not the active ISV sample size.
 
 The historical eight-protein parameter-development panel and nine retrospective literature conditions are **not active validation datasets**. Previous exploratory results remain archived and should not be mistaken for independent ISV evidence. See the [two-dataset plan and selection criteria](validation/ACTIVE_DATASETS.md), [TV48 numerical results](validation/FINAL_V110_RESULTS.md), and [TV48 extended scientific audit](validation/EXTENDED_V110_SCIENTIFIC_RESULTS.md).
 
