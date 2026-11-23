@@ -12,7 +12,13 @@ def res(key, name="LYS", exposure=True, sasa=12.0, scrsa=0.20):
     chain, seq, icode = key.split(":")
     return {
         "key": key, "chain": chain, "res_seq": int(seq), "icode": icode,
-        "res_name": name, "sidechain_sasa": sasa, "scrsa_raw": scrsa,
+        "res_name": name,
+        # Synthetic fixture follows the v1.1.0 dual-accessibility data schema.
+        # Surface membership is controlled by tRSA, not by scRSA.
+        "residue_sasa": 20.0 if exposure else 0.0,
+        "trsa_raw": 0.20 if exposure else 0.0,
+        "trsa": 0.20 if exposure else 0.0,
+        "sidechain_sasa": sasa, "scrsa_raw": scrsa,
         "scrsa": min(scrsa, 1.0), "surface_exposed": exposure,
         "charge_descriptor": 1.0,
     }
