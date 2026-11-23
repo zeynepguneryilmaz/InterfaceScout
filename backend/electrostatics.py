@@ -197,7 +197,7 @@ def compute(prepared_pdb: str, residue_profiles: list[dict[str, Any]], *,
         (wd / "structure.pdb").write_text(prepared_pdb)
         command = [
             shutil.which("pdb2pqr"), "--ff=AMBER", "--keep-chain",
-            "--titration-state-method=propka", f"--with-ph={float(pH):.4f}",
+            "--titration-state-method=propka", "--whitespace", f"--with-ph={float(pH):.4f}",
             "structure.pdb", "structure.pqr",
         ]
         _run(command, wd)
