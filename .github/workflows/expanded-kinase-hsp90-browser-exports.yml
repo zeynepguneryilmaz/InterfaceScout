@@ -1,0 +1,35 @@
+name: InterfaceScout five-structure expansion full-browser 11-map QC
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/expanded-kinase-hsp90-browser-exports.yml'
+      - 'validation/expanded_kinase_hsp90_real_browser_exports.py'
+permissions:
+  contents: read
+jobs:
+  expanded-five-structure-validation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 130
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install requirements and Chromium
+        run: |
+          python -m pip install --disable-pip-version-check -r backend/requirements.txt
+          python -m pip install gemmi==0.7.4 playwright==1.55.0
+          python -m playwright install chromium
+          python -m playwright install-deps chromium
+      - name: Export five biological-unit-correct 11-channel atlases
+        run: python -u validation/expanded_kinase_hsp90_real_browser_exports.py --shard 0
+      - name: Preserve per-PDB results, maps, comparisons, QC and failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: expanded-five-full-browser-11map-exports
+          path: expanded_kinase_hsp90_outputs/shard_0/
+          compression-level: 0
+          if-no-files-found: warn
+          retention-days: 30
