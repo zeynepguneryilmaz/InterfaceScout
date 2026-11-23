@@ -16,6 +16,7 @@ OUT=Path("glycine_three_policy_48");OUT.mkdir(exist_ok=True)
 GLY_REF=104.0
 POLICIES=("ca_proxy","whole_residue","exclude")
 METRICS=("top5_members","centers","top1_members","front1_centers")
+MAP_KEYS={"top5_members":"members","centers":"centers","top1_members":"top1_members","front1_centers":"front1_centers"}
 def run_case(item):
     pid=item["pdb_id"].upper()
     prep.prepare(pid)
@@ -68,7 +69,7 @@ def run_case(item):
                  "surface_jaccard":sens.jacc(leftsurface,rightsurface),
                  "patch_count_a":al["n_patches"],"patch_count_b":bl["n_patches"]}
             for key in METRICS:
-                row[key+"_jaccard"]=sens.jacc(al[key],bl[key])
+                row[key+"_jaccard"]=sens.jacc(al[MAP_KEYS[key]],bl[MAP_KEYS[key]])
             rows.append(row)
     return rows,gly_records,{"protein":pid,"status":"PASS","source_sha256":sourcehash,
        "n_gly":len(base_gly),"n_gly_exposure_changed":sum(x["ca_exposed"]!=x["whole_exposed"] for x in gly_records)}
