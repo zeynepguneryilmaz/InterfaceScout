@@ -43,6 +43,14 @@ def _run(args: list[str], cwd: Path, timeout: int = 240) -> str:
     return (result.stdout or "") + "\n" + (result.stderr or "")
 
 
+_RESIDUE_ALIASES = {
+    "HID": "HIS", "HIE": "HIS", "HIP": "HIS",
+    "HSD": "HIS", "HSE": "HIS", "HSP": "HIS",
+    "ASH": "ASP", "GLH": "GLU", "LYN": "LYS",
+    "CYM": "CYS", "CYX": "CYS", "TYM": "TYR",
+}
+
+
 def _pqr_atoms(path: Path) -> list[dict[str, Any]]:
     """Read whitespace PQR (including optional chain and insertion code)."""
     atoms = []
@@ -207,7 +215,7 @@ def compute(prepared_pdb: str, residue_profiles: list[dict[str, Any]], *,
         grouped: dict[str, list[dict]] = {}
         for atom in atoms:
             key = f'{atom["chain"]}:{atom["seq"]}:{atom["icode"]}'
-            if key in valid and valid[key] == atom["res_name"]:
+            if key in valid and valid[key] == _RESIDUE_ALIASES.get(atom["res_name"], atom["res_name"]):
                 grouped.setdefault(key, []).append(atom)
         if not grouped or len(grouped) < len(valid):
             raise ElectrostaticsError(
