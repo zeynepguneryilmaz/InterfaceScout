@@ -37,6 +37,8 @@
 
 **Expanded structural candidate pool:** [68 interface-relevant proteins and proposed PDB entries](ISV_protein_candidate_pool_68_v1.csv). The linked [RCSB metadata screening script](isv_rcsb_screen.py) checks current source records, experimental methods, polymer entities and resolution. This pool is **preliminary**, not a quality-approved or experimental-label-confirmed 68-protein data set. The earlier eight-candidate evidence-focused shortlist remains a subset of the source investigation, not a separate active dataset.
 
+**Current structural metadata audit:** [68-protein RCSB audit and screening status](ISV_68_RCSB_PRELIMINARY_AUDIT.md). The source records were verified for all 68 proposed PDBs: 55 records had no initial metadata flags, 13 need review. Neither count indicates final per-chain coordinate QA or admission.
+
 **Current state:** [Initial ISV source-supported candidate shortlist](ISV_CANDIDATE_SCREENING.md) and [candidate screening table](ISV_candidate_screening_v1.csv) have been created: **eight distinct protein candidates and one alternate structure for an existing candidate**. None is finally accepted; the exact experimental residue annotations and PDB/construct matching remain to be audited. No numerical ISV validation metrics should be claimed before the final manifest is frozen and analyzed.
 
 ## Previous studies — preserved as historical supporting material, not active datasets
