@@ -9,7 +9,7 @@
 [![Cross-platform tests](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/workflows/publication-ci.yml/badge.svg?branch=main&event=push)](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/workflows/publication-ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-6A3245.svg)](LICENSE)
 [![Python 3.10–3.12](https://img.shields.io/badge/Python-3.10%E2%80%933.12-628D78.svg)](#installation)
-[![Version 1.0.0](https://img.shields.io/badge/version-1.0.0-6A3245.svg)](CITATION.cff)
+[![Version 1.1.0](https://img.shields.io/badge/version-1.1.0-6A3245.svg)](CITATION.cff)
 
 *Explore accessible surface chemistry. Compare structures. Prioritize regions for experimental or computational follow-up.*
 
@@ -24,6 +24,19 @@
 It is designed for researchers investigating **protein–material interfaces**, surface accessibility, biomolecular interactions, and conformational differences. It helps formulate testable hypotheses and choose regions for subsequent experiments or higher-resolution simulations.
 
 > **Scientific scope:** InterfaceScout identifies and compares *protein-side physicochemical candidate regions*. It does **not** predict experimentally observed adsorption sites, binding orientations, adsorption free energies, kinetics, or adsorption-induced conformational change.
+
+### Accessibility model (v1.1.0)
+
+InterfaceScout now separates **geometric exposure** from **chemical side-chain accessibility**:
+
+- **tRSA** (total-residue relative SASA) is total-residue heavy-atom SASA divided by the residue-specific theoretical maximum of Tien *et al.* (2013). The fixed geometric surface gate is tRSA >= 0.05.
+- **scRSA** (side-chain relative SASA) describes exposure of non-backbone heavy atoms and determines chemical support, not surface membership.
+- **Glycine** is represented in geometrical neighborhoods using its total-residue tRSA, with zero side-chain SASA/scRSA. Its Cα atom is no longer treated as an artificial chemical side chain.
+- The 11 maps, patch radii of 6/9 Å and 8 Å coarse-patch scale remain, but patch mean geometric accessibility and Pareto prioritization now use **tRSA** instead of scRSA.
+
+**Version compatibility:** v1.1.0 maps and rankings are not numerically interchangeable with v1.0.0 results. Recalculate earlier structures before comparing them under one method. The 0.05 total-RSA cutoff is a documented, sensitivity-tested modeling convention, **not** a demonstrated optimal adsorption-site threshold. Earlier paired legacy/dual experimental studies predate the final patch-ranking tRSA integration and must not be presented as final-v1.1.0 validation.
+
+**Method reference:** Tien MZ *et al.* (2013), *Maximum Allowed Solvent Accessibilities of Residues in Proteins*, PLOS ONE 8:e80635, [doi:10.1371/journal.pone.0080635](https://doi.org/10.1371/journal.pone.0080635). Technical rationale: [Dual-accessibility method](validation/DUAL_ACCESSIBILITY_LITERATURE_AND_METHOD.md).
 
 ## What you can do
 
