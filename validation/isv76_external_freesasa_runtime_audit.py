@@ -60,22 +60,28 @@ def monitored(cmd,cwd=None,timeout=900):
     a hardware-independent guarantee. No GPU tasks involved.
     """
     started=time.perf_counter()
-    proc=psutil.Popen(cmd,cwd=str(cwd) if cwd else None,
-                      stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
-    peak=0
-    while proc.poll() is None:
-        try:
-            children=proc.children(recursive=True)
-            mem=proc.memory_info().rss+sum(
-                p.memory_info().rss for p in children if p.is_running())
-            peak=max(peak,mem)
-        except (psutil.Error,OSError):pass
-        if time.perf_counter()-started>timeout:
-            proc.kill()
-            proc.communicate()
-            raise TimeoutError("Tool timed out after "+str(timeout)+" seconds")
-        time.sleep(.075)
-    stdout,stderr=proc.communicate()
+    # Output is written to files: a large FreeSASA JSON must not deadlock
+    # in a subprocess PIPE while the parent is sampling process memory.
+    with tempfile.TemporaryFile(mode="w+t", encoding="utf-8") as so, \
+         tempfile.TemporaryFile(mode="w+t", encoding="utf-8") as se:
+        proc=psutil.Popen(cmd,cwd=str(cwd) if cwd else None,
+                          stdout=so,stderr=se,text=True)
+        peak=0
+        while proc.poll() is None:
+            try:
+                children=proc.children(recursive=True)
+                mem=proc.memory_info().rss+sum(
+                    p.memory_info().rss for p in children if p.is_running())
+                peak=max(peak,mem)
+            except (psutil.Error,OSError):pass
+            if time.perf_counter()-started>timeout:
+                proc.kill()
+                proc.wait()
+                raise TimeoutError("Tool timed out after "+str(timeout)+" seconds")
+            time.sleep(.075)
+        proc.wait()
+        so.seek(0);se.seek(0)
+        stdout=so.read();stderr=se.read()
     return {
         "returncode":proc.returncode,
         "wall_seconds":round(time.perf_counter()-started,5),
