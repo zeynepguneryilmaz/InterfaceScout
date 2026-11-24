@@ -14,6 +14,7 @@ import tempfile
 from typing import Any
 
 import numpy as np
+from surface_potential import sample_residue_sas_potential
 
 
 class ElectrostaticsError(ValueError):
@@ -238,6 +239,16 @@ def compute(prepared_pdb: str, residue_profiles: list[dict[str, Any]], *,
                 f"PQR/PDB residue mapping incomplete: {len(grouped)}/{len(valid)}. "
                 "Check chain IDs, insertion codes and modified/missing residues."
             )
+        # The principal potential descriptor is sampled *outside* the
+        # molecule on an area-weighted probe-center accessible shell.
+        # The legacy atom-coordinate estimator remains a separate field
+        # for explicit comparison and never influences the 11 maps.
+        exposed_keys = {
+            str(row["key"]) for row in residue_profiles if row.get("surface_exposed", False)
+        }
+        surface_by_residue, surface_meta = sample_residue_sas_potential(
+            atoms, grid, origin, spacing, exposed_keys
+        )
         backbone = {"N", "CA", "C", "O", "OXT"}
         records = []
         for row in residue_profiles:
@@ -249,9 +260,13 @@ def compute(prepared_pdb: str, residue_profiles: list[dict[str, Any]], *,
             samples = [v for v in samples if v is not None]
             if sidechain and len(samples) != len(sidechain):
                 raise ElectrostaticsError(f"APBS grid excludes side-chain atom(s) at {key}")
+            sas = surface_by_residue.get(key, {})
             records.append({
                 "key": key, "res_name": row["res_name"],
                 "net_atomic_charge_e": round(sum(a["charge"] for a in group), 6),
+                "surface_potential_kT_per_e": sas.get("surface_potential_kT_per_e"),
+                "surface_sampling_area_A2": sas.get("surface_sampling_area_A2"),
+                "surface_potential_samples": sas.get("surface_potential_samples", 0),
                 "sidechain_mean_potential_kT_per_e":
                     round(sum(samples) / len(samples), 6) if samples else None,
                 "sidechain_potential_samples": len(samples),
@@ -262,7 +277,11 @@ def compute(prepared_pdb: str, residue_profiles: list[dict[str, Any]], *,
             "potential_unit": "kT/e", "pH": float(pH),
             "ionic_mM": float(ionic_mM), "temperature_K": float(temp_K),
             "n_pqr_atoms": len(atoms), "n_matched_residues": len(records),
+            "surface_sampling": surface_meta,
+            "n_surface_potential_residues": surface_meta["n_exposed_residues_with_surface_potential"],
             "residues": records,
-            "interpretation": "Side-chain sampled potential and PQR net atomic charge; "
-                              "not affinity, binding energy, or a recalibrated 11-map score.",
+            "interpretation": "Primary surface_potential_kT_per_e is area-weighted APBS potential "
+                              "on a discrete solvent-accessible shell (+0.25 A outside probe-center SAS); "
+                              "sidechain_mean_potential_kT_per_e is a legacy atom-coordinate comparator. "
+                              "Neither is affinity, binding energy, nor a recalibrated canonical map score.",
         }
