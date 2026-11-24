@@ -107,7 +107,19 @@ def process(row):
             rawhtml=posted.text
             m=re.search(r'var\s+timestamp\s*=\s*["\']([0-9a-zA-Z_-]+)["\']',rawhtml)
             if not m:
-                raise RuntimeError("No server job timestamp in upload HTML; no inferred URL")
+                # The form may return an error page or a changed success
+                # template. Persist HTTP content and diagnostic markers rather
+                # than assuming Protein-sol's scientific engine failed.
+                result["response_diagnostics"]={
+                    "title":soup.title.get_text(" ",strip=True)[:250] if soup.title else "",
+                    "form_actions":[x.get("action","") for x in soup.find_all("form")[:5]],
+                    "hrefs":[a.get("href","") for a in soup.find_all("a",href=True)[:15]],
+                    "has_timestamp_word":"timestamp" in rawhtml.lower(),
+                    "has_result_path":"results/patches" in rawhtml.lower(),
+                    "has_error_word":"error" in rawhtml.lower(),
+                    "html_sha256":hashlib.sha256(posted.content).hexdigest()}
+                result["status"]="UPLOAD_RESPONSE_NOT_RECOGNIZED"
+                raise RuntimeError("No expected job timestamp in POST HTML; retained server page for diagnosis")
             jobid=m.group(1)
             if not re.fullmatch(r"[a-zA-Z0-9_-]{8,50}",jobid):
                 raise ValueError("Invalid job token")
@@ -127,6 +139,8 @@ def process(row):
                     result["poll_attempts"].append({"attempt":attempt,
                         "status_code":r.status_code,"bytes":len(r.content),
                         "both_output_labels":valid})
+                    if r.status_code==200 and attempt in (0,3,6):
+                        (d/("poll_response_"+str(attempt)+".html")).write_bytes(r.content)
                     if valid:
                         (d/"results.html").write_bytes(r.content)
                         resolved=True;break
@@ -172,9 +186,17 @@ def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--shard",type=int,required=True)
     ap.add_argument("--shards",type=int,default=4)
+    ap.add_argument("--pdb-ids",nargs="+",default=None,
+                    help="Small diagnostic subset from the 76-member frozen panel")
     a=ap.parse_args()
     if not 0<=a.shard<a.shards:ap.error("Invalid shard")
     selected=[x for i,x in enumerate(MANIFEST) if i%a.shards==a.shard]
+    if a.pdb_ids is not None:
+        valid_ids={x["proposed_pdb_id"] for x in MANIFEST}
+        unknown=set(a.pdb_ids)-valid_ids
+        if unknown:ap.error("Unknown frozen ISV IDs: "+", ".join(sorted(unknown)))
+        selected=[x for x in selected if x["proposed_pdb_id"] in a.pdb_ids]
+        if not selected:ap.error("No matching structures in selected shard")
     summary={"shard":a.shard,"n_selected":len(selected),"case_outcomes":[]}
     for i,row in enumerate(selected):
         if i:
