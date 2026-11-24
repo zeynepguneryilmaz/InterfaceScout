@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths:
       - 'validation/external_methods_full_panel.py'
+      - 'validation/external_methods_preflight.py'
+      - 'validation/ISV_active_candidates_76_v3.csv'
       - '.github/workflows/established-methods-full-panel.yml'
   workflow_dispatch:
 permissions:
