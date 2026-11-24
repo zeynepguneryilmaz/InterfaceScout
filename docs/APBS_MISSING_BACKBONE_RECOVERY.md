@@ -6,7 +6,7 @@ alter the 11 canonical physicochemical maps, patch geometries or Pareto scores.
 ## Trigger
 1. First attempt PDB2PQR/PROPKA on the unchanged normalized input.
 2. On an actual PDB2PQR error, identify **strictly isolated protein residues
-   with exactly one heavy atom, N, and no CA/C/O or side-chain heavy atoms**.
+   with exactly one heavy atom, N, and no CA/C/O or side-chain heavy atoms**, even if absent from the C-alpha-based canonical residue profile.
 3. Permit automatic APBS-only omission if there are at most **four such
    records and at most 1% of original profile residues**. This limit is
    conservative engineering policy, not a fitted physical threshold.
@@ -15,9 +15,7 @@ alter the 11 canonical physicochemical maps, patch geometries or Pareto scores.
    delete other atoms, or modify original PDB or 11 chemistry maps.
 5. Require a perfect PQR residue-ID correspondence for all remaining
    original profile residues. Any additional missing or extra identity fails.
-6. Run real APBS and sample the actual solvent-accessible shell. All original
-   residue rows stay present; omitted residues have `null` charges and
-   potentials and `pqr_mapped=false`. Both the GUI and exported
+6. Run real APBS and sample the actual solvent-accessible shell. All original canonical residue rows stay present. If an omitted fragment had a canonical residue row, its charges and potentials are `null` and `pqr_mapped=false`; fragments absent from the canonical CA-based profile remain listed explicitly in `input_recovery.omitted_residues`. Both the GUI and exported
    Electrostatics_Settings include the explicit affected identifiers and
    the original PDB2PQR error.
 7. Annotate `quality_status=partial_input_recovery`. The solver status is
@@ -40,7 +38,7 @@ alter the 11 canonical physicochemical maps, patch geometries or Pareto scores.
   identity checks.
 - Production integration regression `tests/real_orphan_backbone_recovery.py`
   compares identical original chemistry maps with and without APBS,
-  validates exactly two omitted residue IDs and null potential values,
+  validates exactly two omitted residue IDs and null potential values if a residue profile exists,
   checks source PDB SHA256 is unchanged, and uses 1HEL as the complete
   control.
 - Run via
