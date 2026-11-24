@@ -1,0 +1,28 @@
+name: Protein-sol verify previously submitted result pages
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'validation/protein_sol_completed_job_inspection.py'
+      - '.github/workflows/protein-sol-verify-results.yml'
+permissions:
+  contents: read
+jobs:
+  inspect-results:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install "requests==2.32.3" "beautifulsoup4==4.12.3"
+      - run: python -u validation/protein_sol_completed_job_inspection.py
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Protein-sol-known-results-page-audit
+          path: external_protein_sol_inspect/
+          retention-days: 30
+          if-no-files-found: warn
