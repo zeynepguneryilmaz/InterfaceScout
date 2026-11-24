@@ -123,8 +123,8 @@ def main():
                     "THR":-0.7,"TRP":-0.9,"TYR":-1.3,"VAL":4.2,
                 }
                 scale=hyd/"kyte_doolittle_scale.csv"
-                scale.write_text("residue,propensity\\n"+"".join(
-                    k+","+str(v)+"\\n" for k,v in kd.items()),encoding="utf-8")
+                scale.write_text("residue,propensity\n"+"".join(
+                    k+","+str(v)+"\n" for k,v in kd.items()),encoding="utf-8")
                 ele=d/"electrostatic";ele.mkdir(exist_ok=True)
                 program="/opt/pep-venv/bin"
                 cmds=[
