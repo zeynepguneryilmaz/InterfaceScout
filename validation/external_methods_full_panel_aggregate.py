@@ -48,6 +48,31 @@ for tool in ["p2rank","pep_patch"]:
             d[key+"_wall_s"]=run.get("wall_s")
             d[key+"_sampled_peak_RSS_MiB"]=run.get("peak_RSS_sampled_MiB")
             d[key+"_error_tail"]=(run.get("stderr_tail","") or "")[-500:] if run.get("status")!="PASS" else ""
+        if tool=="p2rank" and d.get("pocket_prediction_status")=="PASS":
+            pred=t/p/"pockets"/(p+".pdb_predictions.csv")
+            if not pred.is_file():
+                d["pocket_data_status"]="MISSING_PREDICTIONS_CSV"
+            else:
+                pred_data=pd.read_csv(pred)
+                pred_data.columns=pred_data.columns.str.strip()
+                d["pocket_data_status"]="PASS"
+                d["pocket_count"]=len(pred_data)
+                d["max_pocket_probability"]=(float(pred_data["probability"].max())
+                    if len(pred_data)>0 else None)
+                d["total_pocket_surface_atoms"]=(int(pred_data["surf_atoms"].sum())
+                    if len(pred_data)>0 else 0)
+        if tool=="pep_patch" and d.get("electrostatic_status")=="PASS":
+            path=t/p/"electrostatic"/"patches.csv"
+            if not path.is_file():
+                d["patch_data_status"]="MISSING_PATCHES_CSV"
+            else:
+                patches=pd.read_csv(path)
+                d["patch_data_status"]="PASS"
+                d["electrostatic_patch_count"]=len(patches)
+                for sign in ("positive","negative"):
+                    subset=patches[patches["type"]==sign]
+                    d["electrostatic_"+sign+"_patch_count"]=len(subset)
+                    d["electrostatic_"+sign+"_total_area_nm2"]=float(subset["area"].sum())
         per.append(d)
     if len(manifest_ids)!=76 or set(manifest_ids)!=expected or len(set(manifest_ids))!=76:
         summary["tools"][tool]={"status":"INCOMPLETE_SHARD_MEMBERSHIP",
@@ -60,7 +85,7 @@ for tool in ["p2rank","pep_patch"]:
            "n_missing":int((df.overall_status=="MISSING_JOB_OUTPUT").sum())}
     for c in df.columns:
         if c.endswith("_status") and c!="overall_status":
-            stats[c+"_counts"]=df[c].value_counts(dropna=False).to_dict()
+            stats[c+"_counts"]={str(k):int(v) for k,v in df[c].value_counts(dropna=False).items()}
         if c.endswith("_wall_s") or c.endswith("_sampled_peak_RSS_MiB"):
             series=pd.to_numeric(df.loc[df[c.replace("_wall_s","_status").replace("_sampled_peak_RSS_MiB","_status")]=="PASS",c],errors="coerce")
             if len(series.dropna()):
