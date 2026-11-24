@@ -208,7 +208,7 @@ def run_apbs(workdir, atoms, ionic, target_grid=0.8, label="baseline"):
     source = source.replace("write pot dx potential", f"write pot dx {stem}")
     input_path = workdir / f"run_{label}.in"
     input_path.write_text(source, encoding="utf-8")
-    _run([apbs, input_path.name], workdir, timeout=780)
+    apbs_log = _run([apbs, input_path.name], workdir, timeout=780)
     # APBS can suffix DX files with the named ELEC calculation, e.g.
     # 'potential_baseline-protein_potential.dx'. Do not accept a stale
     # unrelated potential from another variant in the same work directory.
