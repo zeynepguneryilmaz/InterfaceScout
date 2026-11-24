@@ -106,8 +106,20 @@ def gct_case():
                 old=analyze_all_maps(pdb_text=pdb,pH=7.4,ionic_mM=150.,temp_K=298.)
                 original_keys={x["key"] for x in old["residue_profiles"]}
                 edited_keys={x["key"] for x in new["residue_profiles"]}
-                if original_keys-edited_keys != {f"{c}:{n}:{ic}" for c,n,ic in to_delete}:
-                    raise AssertionError("Removal altered unanticipated identity")
+                expected_removed={f"{c}:{n}:{ic}" for c,n,ic in to_delete}
+                missing_in_original_profiles=expected_removed-original_keys
+                actual_removed=original_keys-edited_keys
+                actual_added=edited_keys-original_keys
+                # The canonical maps may already have skipped N-only
+                # residues without C-alpha coordinates. Removing their N
+                # atoms can then leave all 11 maps bitwise identical.
+                if actual_removed-expected_removed or actual_added:
+                    raise AssertionError(
+                        f"Unexpected original-to-trimmed model identity change: "
+                        f"removed={sorted(actual_removed)} added={sorted(actual_added)}"
+                    )
+                maps_identical=(old["maps"]==new["maps"] and
+                                old["residue_profiles"]==new["residue_profiles"])
                 grid, m=run_grid(wd,atoms,150.,.8,"trimmed")
                 sas,sm=sample_residue_sas_potential(
                     atoms,*grid,{r["key"] for r in new["residue_profiles"] if r["surface_exposed"]}
@@ -122,6 +134,10 @@ def gct_case():
                     "original_residues":len(old["residue_profiles"]),
                     "remaining_residues":len(new["residue_profiles"]),
                     "old_11map_patches":oldcount,"new_11map_patches":newcount,
+                    "canonical_maps_identical_after_N_only_atom_deletion":maps_identical,
+                    "residue_keys_absent_from_original_engine":sorted(missing_in_original_profiles),
+                    "actual_removed_engine_residue_keys":sorted(actual_removed),
+                    "unexpected_new_engine_keys":sorted(actual_added),
                     "n_pqr_atoms_after_deletion":len(atoms),
                     "n_SAS_potentials":len(sas),
                     "apbs_grid":m,
