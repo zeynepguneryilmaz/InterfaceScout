@@ -214,6 +214,20 @@ def structure_tables(name: str, analysis: Mapping[str, Any],
         for section in ("input", "method", "structure_preparation", "scope")
         for k, v in analysis.get(section, {}).items()
     ]
+    electro = analysis.get("electrostatics") or {}
+    electro_tables = {}
+    if electro.get("status") == "computed":
+        electro_tables = {
+            "Electrostatics_Residues": [
+                {"Structure": name, **record}
+                for record in electro.get("residues", [])
+            ],
+            "Electrostatics_Settings": [
+                {"Structure": name, "Parameter": key, "Value": value}
+                for key, value in electro.items()
+                if key != "residues"
+            ],
+        }
     return {
         "Run_Metadata": metadata,
         "Protein_Residues": rows,
@@ -224,6 +238,7 @@ def structure_tables(name: str, analysis: Mapping[str, Any],
         "Map_Colocation": interactions,
         "Exact_Intersections": intersections,
         **regional_profile_tables(name, combined),
+        **electro_tables,
     }
 
 
@@ -908,6 +923,10 @@ def build_export_zip(payload: Mapping[str, Any]) -> bytes:
             z.writestr(f"{base}/original.pdb", pdb_text)
             z.writestr(f"{base}/analysis_complete.json",
                        json.dumps(analysis, ensure_ascii=False, indent=2))
+            electrostatics = analysis.get("electrostatics") or {}
+            if electrostatics.get("status") == "computed":
+                z.writestr(f"{base}/electrostatics/APBS_PROPKA_residue_potentials.json",
+                           json.dumps(electrostatics, ensure_ascii=False, indent=2))
             for i, key in enumerate(MAP_NAMES, start=1):
                 subname = f"{i:02d}_{key}"
                 z.writestr(f"{base}/screenshots/{subname}.png", images[key])
@@ -1008,6 +1027,11 @@ def build_export_zip(payload: Mapping[str, Any]) -> bytes:
             "Consensus B-factor percentages are across supplied structures only "
             "and must not be read as adsorption probabilities.\n"
             "B-factor fields are display values, not experimental B-factors.\n"
+            "When real APBS/PROPKA is enabled, residue potentials and PQR "
+            "charges appear in electrostatics/*.json and "
+            "Electrostatics_Residues/Settings CSV and Excel sheets. "
+            "These are sampled kT/e potentials, not adsorption energies. "
+            "Raw PQR/DX grid files are not retained by the standard solver.\n"
             "No trajectory, GNM, ANM or RINpy analysis is performed.\n"
         ))
     return master.getvalue()
