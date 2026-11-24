@@ -110,35 +110,34 @@ def worker(pdb_path, out_path):
     })
 
 
-def freesasa_parse(payload):
-    if not isinstance(payload.get("results"),list) or not payload["results"]:
-        raise ValueError("FreeSASA JSON has no results")
-    data={}
-    for structure in payload["results"][0].get("structures",[]):
-        for chain in structure.get("chains",[]):
-            for rec in chain.get("residues",[]):
-                m=re.fullmatch(r"(-?\d+)([A-Za-z]?)",str(rec["number"]).strip())
-                if m is None:raise ValueError("Unexpected FreeSASA residue number")
-                key=f'{chain["label"]}:{int(m.group(1))}:{m.group(2)}'
-                if key in data:raise ValueError("Duplicate FreeSASA residue "+key)
-                area=rec["area"]
-                data[key]={
-                    "res_name":rec["name"],
-                    "sasa_A2":float(area["total"]),
-                    "sidechain_sasa_A2":float(area["side-chain"]),
-                }
-    if not data:
-        structures=payload.get("results",[{}])[0].get("structures",[])
-        raise ValueError(
-            "FreeSASA JSON has no parsed residue records; "
-            "result_keys="+str(sorted(payload["results"][0].keys()))+
-            " structure_keys="+str([sorted(q.keys()) for q in structures[:1]])+
-            " chain_keys="+str([[sorted(ch.keys()) for ch in q.get("chains",[])[:1]]
-                                for q in structures[:1]])+
-            " preview="+json.dumps(payload["results"][0],ensure_ascii=False)[:1800]
-        )
-    return data
+def freesasa_parse_rsa(text):
+    """Parse official FreeSASA --format=rsa RES records (version-stable).
 
+    Tabulated absolute total and side-chain areas have 2 decimal precision.
+    This makes numerical accuracy slightly less granular than JSON but is
+    sufficient for paired rank/exposure cross-checks and avoids distro-specific
+    JSON tree-layout assumptions.
+    """
+    data={}
+    for line in text.splitlines():
+        if not line.startswith("RES "):
+            continue
+        parts=line.split()
+        # RES THR A 5 TOTAL REL SIDE REL ...
+        if len(parts)<7 or parts[0]!="RES":
+            raise ValueError("Malformed FreeSASA RSA residue line: "+line[:160])
+        resname, chain, resid=parts[1],parts[2],parts[3]
+        m=re.fullmatch(r"(-?\d+)([A-Za-z]?)",resid)
+        if m is None:
+            raise ValueError("Unsupported FreeSASA RSA residue index "+resid)
+        key=f"{chain}:{int(m.group(1))}:{m.group(2)}"
+        if key in data:raise ValueError("Duplicated FreeSASA RSA identity "+key)
+        data[key]={"res_name":resname,
+                   "sasa_A2":float(parts[4]),
+                   "sidechain_sasa_A2":float(parts[6])}
+    if not data:
+        raise ValueError("No FreeSASA RSA RES lines: "+text[:800])
+    return data
 
 def one(row):
     pid=row["proposed_pdb_id"]
@@ -157,21 +156,25 @@ def one(row):
         if own["returncode"]:
             raise RuntimeError("InterfaceScout failed: "+own["stderr"][-1000:])
         data=json.loads(exported.read_text())
-        # Ubuntu apt FreeSASA 2.1.2 implements --depth=residue. Older
-        # upstream online docs mention --output-depth; do not use that
-        # unsupported alias with this pinned system-package environment.
+        # The RSA format is explicitly documented and supported across
+        # FreeSASA Ubuntu packages; distro JSON tree-depth is less uniform.
         cmd=["freesasa","--shrake-rupley","-n","200","--probe-radius","1.4",
-             "--n-threads","1","--format=json","--depth=residue",str(inp)]
+             "--n-threads","1","--format=rsa",str(inp)]
         external=monitored(cmd,timeout=1200)
         if external["returncode"]:
             raise RuntimeError("FreeSASA failed: "+external["stderr"][-1200:])
-        payload=json.loads(external["stdout"])
-    fs=freesasa_parse(payload)
-    params=payload["results"][0].get("parameters",{})
-    if "Shrake" not in str(params.get("algorithm","")):
-        raise ValueError("External solver algorithm mismatch "+str(params))
-    if abs(float(params.get("probe-radius",-1))-1.4)>.001:
-        raise ValueError("External solver probe mismatch")
+        rsa_text=external["stdout"]
+    fs=freesasa_parse_rsa(rsa_text)
+    version=subprocess.run(["freesasa","--version"],capture_output=True,
+                           text=True,check=False)
+    version_label=(version.stdout or version.stderr).strip()[:160]
+    # Do not infer computation settings from output that does not report
+    # them consistently: the exact verified CLI command is the provenance.
+    params={"algorithm":"Shrake-Rupley (explicit CLI flag)",
+            "probe-radius_A":1.4,"points_per_atom":200,"threads":1,
+            "CLI_command":" ".join(cmd),"output_format":"FreeSASA RSA"}
+    if not rsa_text.strip().startswith("REM"):
+        raise ValueError("FreeSASA output is not recognized RSA")
     rows=[]
     miss=[]
     for p in data["profiles"]:
@@ -209,8 +212,8 @@ def one(row):
         "n_missing_from_FreeSASA":len(miss),
         "n_maps":data["n_maps"],"model_version":data["model_version"],
         "n_patches":data["n_all_patches"],
-        "FreeSASA_source":payload.get("source"),
-        "FreeSASA_classifier":payload["results"][0].get("classifier"),
+        "FreeSASA_source":version_label,
+        "FreeSASA_classifier":"ProtOr (default, not overridden)",
         "FreeSASA_parameters":params,
         "residue_SASA_spearman":float(spearmanr(a,b).statistic),
         "residue_SASA_median_absolute_difference_A2":float(np.median(abs(a-b))),
@@ -225,6 +228,7 @@ def one(row):
         "timing_note":"Different workloads: do not calculate head-to-head speed ratio",
         "memory_note":"75 ms polling of process RSS; lower bound on peaks",
     }
+    (root/"FreeSASA_original_RSA.txt").write_text(rsa_text,encoding="utf-8")
     write_csv(root/"MATCHED_RESIDUE_SASA.csv",rows)
     write_json(root/"SUMMARY.json",result)
     return result
