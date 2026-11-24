@@ -126,7 +126,8 @@ def one_protein(item):
     fields, metas, charges, rows, pqr_checksums = {}, {}, {}, [], {}
     with tempfile.TemporaryDirectory(prefix="TV48_sas_3x3_") as td:
         workdir = Path(td)
-        for ph in PH_VALUES:
+        # Always build the pH 7.4 charge reference before comparing other states.
+        for ph in (7.4, 6.5, 8.5):
             atoms = make_pqr(workdir, pdb, ph)
             pqr_path = workdir / "structure.pqr"
             pqr_checksums[str(ph)] = hashlib.sha256(pqr_path.read_bytes()).hexdigest()
@@ -191,7 +192,7 @@ def one_protein(item):
     for ph in PH_VALUES:
         del charges[ph]["residue_charges"]
 
-    if len(fields) != 9 or len(rows) < 700:
+    if len(fields) != 9 or len(rows) < 9 * 20:
         raise AssertionError(f"Missing factorial conditions or residue results: {pid}")
     ref = fields[REF]
     comparisons = []
@@ -327,7 +328,7 @@ def aggregate(shards):
     charge = pd.concat(charge_rows, ignore_index=True)
     interactions = pd.DataFrame(interaction_rows)
     conditions = pd.DataFrame(condition_rows)
-    if len(conditions)!=432 or len(big)<48000:
+    if len(conditions)!=432 or len(big)<9 * 48 * 20:
         raise ValueError("Missing 9 condition data or too few residue rows")
     if comp.groupby("pdb_id").size().ne(15).any():
         raise ValueError("Incomplete paired comparisons")
