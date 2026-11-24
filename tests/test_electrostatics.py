@@ -8,6 +8,8 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 import electrostatics as es
+import surface_potential as sp
+import numpy as np
 
 
 class ElectrostaticsTests(unittest.TestCase):
@@ -69,6 +71,37 @@ class ElectrostaticsTests(unittest.TestCase):
             self.assertEqual(grid.shape, (2, 2, 2))
             self.assertAlmostEqual(es._interpolate(grid, origin, spacing, (.5, .5, .5)), 3.5)
             self.assertIsNone(es._interpolate(grid, origin, spacing, (-1, 0, 0)))
+
+    def test_sas_surface_sampling_includes_glycine_and_preserves_units(self):
+        # Constant genuine-format grid: area-weighted shell means must
+        # reproduce the constant for GLY as well as another residue.
+        atoms = []
+        for i in range(12):
+            atoms.append({
+                "name": "CA", "radius": 1.5, "xyz": (8.0 * i + 15.0, 20.0, 20.0),
+                "chain": "A", "seq": 1 if i < 6 else 2, "icode": "",
+            })
+        grid = np.full((130, 60, 60), -2.75, dtype=float)
+        values, meta = sp.sample_residue_sas_potential(
+            atoms, grid, np.zeros(3), np.ones(3), {"A:1:", "A:2:"}
+        )
+        self.assertEqual(set(values), {"A:1:", "A:2:"})
+        self.assertAlmostEqual(values["A:1:"]["surface_potential_kT_per_e"], -2.75)
+        self.assertAlmostEqual(values["A:2:"]["surface_potential_kT_per_e"], -2.75)
+        self.assertEqual(meta["n_exposed_residues_without_shell_samples"], 0)
+        self.assertEqual(meta["directions_per_heavy_atom"], 42)
+        self.assertEqual(meta["surface_type"], "approximate SAS shell, not molecular SES")
+
+    def test_sas_grid_out_of_bounds_fails_closed(self):
+        atoms = [{
+            "name": "CA", "radius": 1.5, "xyz": (i * 8., 0., 0.),
+            "chain": "A", "seq": i, "icode": "",
+        } for i in range(10)]
+        with self.assertRaisesRegex(ValueError, "grid excludes"):
+            sp.sample_residue_sas_potential(
+                atoms, np.zeros((3, 3, 3)), np.zeros(3), np.ones(3),
+                {f"A:{i}:" for i in range(10)}
+            )
 
     def test_generated_apbs_settings(self):
         atoms = [{"xyz": (0., 0., 0.)}, {"xyz": (10., 10., 10.)}]
