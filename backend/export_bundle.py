@@ -223,7 +223,8 @@ def structure_tables(name: str, analysis: Mapping[str, Any],
                 for record in electro.get("residues", [])
             ],
             "Electrostatics_Settings": [
-                {"Structure": name, "Parameter": key, "Value": value}
+                {"Structure": name, "Parameter": key,
+                 "Value": json.dumps(value, sort_keys=True) if isinstance(value, (dict, list)) else value}
                 for key, value in electro.items()
                 if key != "residues"
             ],
@@ -1030,7 +1031,10 @@ def build_export_zip(payload: Mapping[str, Any]) -> bytes:
             "When real APBS/PROPKA is enabled, residue potentials and PQR "
             "charges appear in electrostatics/*.json and "
             "Electrostatics_Residues/Settings CSV and Excel sheets. "
-            "These are sampled kT/e potentials, not adsorption energies. "
+            "Primary surface_potential_kT_per_e is sampled on an approximate "
+            "solvent-accessible shell, whereas sidechain_mean_potential_kT_per_e "
+            "is retained only as an atom-coordinate comparison. "
+            "Both are kT/e descriptors, not adsorption energies. "
             "Raw PQR/DX grid files are not retained by the standard solver.\n"
             "No trajectory, GNM, ANM or RINpy analysis is performed.\n"
         ))
