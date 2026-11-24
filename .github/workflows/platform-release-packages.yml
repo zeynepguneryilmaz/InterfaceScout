@@ -4,6 +4,10 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/platform-release-packages.yml'
+      - 'scripts/package_platform_release.py'
+      - 'docs/INSTALL_WINDOWS.md'
+      - 'docs/INSTALL_MACOS.md'
+      - 'docs/INSTALL_LINUX.md'
   workflow_dispatch:
 permissions:
   contents: write
@@ -112,7 +116,7 @@ jobs:
       - name: Publish new release only after all three OS builds pass
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: v1.1.0-platform-20261124
+          TAG: v1.1.0-platform-20261125
         shell: bash
         run: |
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
