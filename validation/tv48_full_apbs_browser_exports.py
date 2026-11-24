@@ -71,6 +71,20 @@ def inspect_zip(path, pid, expected_pdb, expected_residues):
             raise AssertionError("Residue count mismatch")
         if electro["n_matched_residues"] != expected_residues:
             raise AssertionError("PQR/PDB residue identity mismatch")
+        exposed = [r for r in electro["residues"] if r["surface_exposed"]]
+        sas = [r for r in exposed if r["surface_potential_kT_per_e"] is not None]
+        if len(sas) != electro["n_surface_potential_residues"]:
+            raise AssertionError("Primary SAS count inconsistent")
+        if len(sas) < 0.90 * len(exposed):
+            raise AssertionError("Incomplete primary SAS coverage")
+        if "surface_sampling" not in electro:
+            raise AssertionError("Missing SAS method provenance")
+        if not any(r["res_name"] == "GLY" and
+                   r["surface_potential_kT_per_e"] is not None and
+                   r["sidechain_mean_potential_kT_per_e"] is None
+                   for r in electro["residues"]):
+            raise AssertionError("No SAS data for exposed glycine")
+
 
         screenshots, pdfs, bfactor = [], [], []
         for i, key in enumerate(MAP_NAMES, 1):
@@ -110,6 +124,9 @@ def inspect_zip(path, pid, expected_pdb, expected_residues):
                            "Regional_Channels", "Regional_Pair_Distances"}
         if not expected_sheets.issubset(wb.sheetnames):
             raise AssertionError("Required Excel sheets missing: " + str(expected_sheets - set(wb.sheetnames)))
+        first_line = read("csv/Electrostatics_Residues.csv").decode("utf-8").splitlines()[0]
+        if "surface_potential_kT_per_e" not in first_line or "sidechain_mean_potential_kT_per_e" not in first_line:
+            raise AssertionError("Both primary SAS and legacy atom values must export as CSV")
         electro_rows = wb["Electrostatics_Residues"]
         if electro_rows.max_row - 1 != expected_residues:
             raise AssertionError("Electrostatic Excel residue count mismatch")
@@ -121,6 +138,7 @@ def inspect_zip(path, pid, expected_pdb, expected_residues):
             "n_bfactor_pdbs": len(bfactor), "n_residues": expected_residues,
             "n_apbs_residues": electro["n_matched_residues"],
             "n_pqr_atoms": electro["n_pqr_atoms"],
+            "n_surface_sas_potentials": len(sas),
             "n_zip_members": len(names), "electrostatics_status": electro["status"],
             "source_assembly_sha256_verified": True,
             "has_regional_colocation": True,
