@@ -32,9 +32,9 @@ class ElectrostaticsTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "compact.pqr"
             path.write_text(
-                "ATOM 1 CA GLY A1001 1.0 2.0 3.0 0.2 1.7\\n"
-                "ATOM 2 CB ALA A1368 1.5 2.5 3.5 -0.2 1.7\\n"
-                "ATOM 3 CA SER B2080A 1.4 2.4 3.4 0.1 1.7\\n"
+                "ATOM 1 CA GLY A1001 1.0 2.0 3.0 0.2 1.7\n"
+                "ATOM 2 CB ALA A1368 1.5 2.5 3.5 -0.2 1.7\n"
+                "ATOM 3 CA SER B2080A 1.4 2.4 3.4 0.1 1.7\n"
             )
             parsed = es._pqr_atoms(path)
             self.assertEqual(
