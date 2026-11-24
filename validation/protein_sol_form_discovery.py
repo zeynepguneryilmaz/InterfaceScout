@@ -13,8 +13,8 @@ from bs4 import BeautifulSoup
 
 OUT=Path("external_protein_sol")
 OUT.mkdir(exist_ok=True)
-BASE="https://www.protein-sol.manchester.ac.uk"
-paths=["/patches","/examples/patches/1hzh/results"]
+BASE="https://protein-sol.manchester.ac.uk"
+paths=["/patches"]
 result={"service":"Protein-sol Patches","access_method":"public_web",
         "server_resource_usage_unavailable":True,"observations":[]}
 with requests.Session() as s:
