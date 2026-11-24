@@ -1,0 +1,37 @@
+name: Real 1GCT missing-backbone recovery end-to-end
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/electrostatics.py'
+      - 'tests/real_orphan_backbone_recovery.py'
+      - '.github/workflows/real-backbone-recovery.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-backbone:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install actual solvers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apbs
+          python -m pip install -r backend/requirements.txt
+          python -m pip install "pdb2pqr==3.7.1" "gemmi==0.7.4"
+      - name: Unit regression for safe N-only diagnostic
+        run: python -m unittest discover -s tests -p test_electrostatics.py -v
+      - name: Test original 1GCT with exact APBS-only omissions and unchanged 11 maps; 1HEL control
+        run: python -u tests/real_orphan_backbone_recovery.py
+      - name: Archive original PDB fingerprint and explicit omissions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: InterfaceScout-Real-Backbone-Gap-1GCT-1HEL-QA
+          path: dist/electrostatics/backbone_gap_recovery/
+          if-no-files-found: warn
