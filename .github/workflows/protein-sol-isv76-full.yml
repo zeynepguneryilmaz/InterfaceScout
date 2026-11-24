@@ -1,0 +1,63 @@
+name: Protein-sol ISV76 full 76 real server computations
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'validation/protein_sol_ISV76_full_batch.py'
+      - '.github/workflows/protein-sol-isv76-full.yml'
+permissions:
+  contents: read
+jobs:
+  protein-sol-shard:
+    name: Protein-sol 76 shard ${{ matrix.shard }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 110
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        shard: [0, 1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install frozen protein structure preparation and HTTP client
+        run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install "gemmi==0.7.4" "requests==2.32.3" "beautifulsoup4==4.12.3"
+      - name: Submit and verify actual Protein-sol outputs for all shard structures, sequentially
+        run: python -u validation/protein_sol_ISV76_full_batch.py --shard ${{ matrix.shard }} --shards 4
+      - name: Preserve raw potential/NPP PDBs, source hashes and failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Protein-sol-ISV76-shard-${{ matrix.shard }}
+          path: protein_sol_ISV76/
+          if-no-files-found: warn
+          retention-days: 90
+  aggregate:
+    name: Strict 76-case completeness audit
+    needs: protein-sol-shard
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: Protein-sol-ISV76-shard-*
+          path: protein_sol_ISV76
+          merge-multiple: true
+      - name: Verify 76 distinct outcomes and classify scientific outputs
+        run: python validation/protein_sol_ISV76_aggregate.py
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Protein-sol-ISV76-full-audit
+          path: protein_sol_ISV76/
+          if-no-files-found: warn
+          retention-days: 90
