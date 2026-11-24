@@ -109,7 +109,7 @@ def main():
             if tool=="pep_patch":
                 hyd=d/"hydrophobic";hyd.mkdir(exist_ok=True)
                 ele=d/"electrostatic";ele.mkdir(exist_ok=True)
-                program="/opt/pep/bin"
+                program="/opt/pep-venv/bin"
                 cmds=[
                     ("hydrophobic", [program+"/pep_patch_hydrophobic",
                          inp,inp,"--scale","eisenberg","--potential",
@@ -123,7 +123,7 @@ def main():
             elif tool=="surfmap":
                 d2=d/"surfmap_output";d2.mkdir(exist_ok=True)
                 cmds=[
-                    ("kyte_doolittle", ["/opt/surf/bin/surfmap","-pdb",inp,
+                    ("kyte_doolittle", ["/opt/surf-venv/bin/surfmap","-pdb",inp,
                         "-tomap","kyte_doolittle","-d",d2,"--docker"],d,1000)
                 ]
             else:
@@ -150,6 +150,11 @@ def main():
                   "traceback":traceback.format_exc()[-3000:]}
         meta["measurements"].append(item)
         save_json(runroot/(pid+"_result.json"),item)
+    # Pin actual external installation provenance, no fabricated successful
+    # execution when a program or Docker daemon is absent.
+    installlog=Path("/opt/external_setup_status.txt")
+    if installlog.exists():
+        meta["dependency_installation_log"]=installlog.read_text(encoding="utf-8")[-14000:]
     meta["n_pass"]=sum(x["overall_status"]=="PASS" for x in meta["measurements"])
     meta["n_total"]=len(PIDS)
     save_json(runroot/"SUMMARY.json",meta)
