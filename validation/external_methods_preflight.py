@@ -32,7 +32,7 @@ ACTIVE={r["proposed_pdb_id"]:r for r in csv.DictReader(
     (ROOT/"validation/ISV_active_candidates_76_v3.csv").open(encoding="utf-8")
 )}
 PIDS=("1UBQ","2OED","1HEL","1GCT")
-OUT=Path("external_methods_preflight")
+OUT=Path("external_methods_preflight").resolve()
 TOOLS=("pep_patch","surfmap","p2rank")
 
 
