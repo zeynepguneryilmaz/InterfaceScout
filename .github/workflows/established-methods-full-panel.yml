@@ -1,0 +1,57 @@
+name: ISV76 independent P2Rank and PEP-Patch full panel
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'validation/external_methods_full_panel.py'
+      - '.github/workflows/established-methods-full-panel.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  external:
+    name: Full 76 ${{ matrix.tool }} shard ${{ matrix.shard }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        tool: [p2rank, pep_patch]
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install frozen InterfaceScout input builder
+        run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install "gemmi==0.7.4" "psutil==6.1.1"
+          sudo apt-get update
+          sudo apt-get install -y git curl tar
+      - name: Install pinned competitor
+        shell: bash
+        run: |
+          mkdir -p /opt
+          if [ "${{ matrix.tool }}" = "pep_patch" ]; then
+            sudo apt-get install -y apbs
+            python -m venv /opt/pep-venv
+            /opt/pep-venv/bin/pip install --upgrade pip
+            /opt/pep-venv/bin/pip install "numpy<2" "mdtraj" "psutil"
+            /opt/pep-venv/bin/pip install "git+https://github.com/liedllab/surface_analyses.git@162a7c822acdedc9f281a7cc68efe88d8e33928f"
+            /opt/pep-venv/bin/pep_patch_electrostatic --help
+          else
+            sudo apt-get install -y default-jre-headless
+            curl -fLsS --retry 2 -o /tmp/p2rank.tar.gz "https://github.com/rdk/p2rank/releases/download/2.5.1/p2rank_2.5.1.tar.gz"
+            tar -xzf /tmp/p2rank.tar.gz -C /opt
+            test -f /opt/p2rank_2.5.1/prank
+          fi
+      - name: Run actual matched structures and preserve all scientific failures
+        run: python -u validation/external_methods_full_panel.py --tool ${{ matrix.tool }} --shard ${{ matrix.shard }} --shards 16
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: External-Full-${{ matrix.tool }}-shard-${{ matrix.shard }}
+          path: external_methods_full_panel
+          retention-days: 90
+          if-no-files-found: warn
