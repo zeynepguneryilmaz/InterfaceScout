@@ -1,0 +1,125 @@
+name: Publish OS-specific InterfaceScout 1.1.0 release packages
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/platform-release-packages.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: interface-scout-platform-release
+  cancel-in-progress: false
+jobs:
+  build:
+    name: Validate and package ${{ matrix.platform }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows
+            runner: windows-2022
+          - platform: macos
+            runner: macos-15-intel
+          - platform: linux
+            runner: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned application dependencies
+        run: python -m pip install -r backend/requirements.txt
+      - name: Verify current repository panel and scope
+        run: python validation/repository_consistency_check.py
+      - name: Run application unit tests
+        run: python -m unittest discover -s tests -q
+      - name: Check frontend JavaScript parsing
+        shell: bash
+        run: |
+          node --check frontend/decision_workflow.js
+          node --check frontend/ensemble_ui.js
+      - name: Check OS launchers
+        shell: bash
+        run: |
+          case "${{ matrix.platform }}" in
+            windows) cmd.exe /c "call run_local.bat --check" ;;
+            macos) bash run_local.sh --check; bash start.command --check; bash "Create Desktop App.command" --check ;;
+            linux) bash run_local.sh --check; bash start.sh --check; bash "Create Desktop Shortcut.sh" --check ;;
+          esac
+      - name: Build and verify a platform-specific application ZIP
+        run: python scripts/package_platform_release.py --platform ${{ matrix.platform }}
+      - name: Store validated distributable
+        uses: actions/upload-artifact@v4
+        with:
+          name: InterfaceScout-1.1.0-${{ matrix.platform }}
+          path: dist/release/
+          retention-days: 90
+          if-no-files-found: error
+  release:
+    name: Publish all three platform ZIPs together
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download all three successful build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: InterfaceScout-1.1.0-*
+          path: dist/release/
+          merge-multiple: true
+      - name: Verify all three packages and shared exact source SHA
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json,hashlib,pathlib
+          path=pathlib.Path('dist/release')
+          names=['windows','macos','linux']
+          shas=set()
+          for os in names:
+              f=path/f'InterfaceScout-1.1.0-{os}.zip'
+              j=path/(f.name+'.json')
+              s=path/(f.name+'.sha256')
+              assert f.is_file() and j.is_file() and s.is_file(), os
+              meta=json.loads(j.read_text(encoding='utf-8'))
+              checksum=hashlib.sha256(f.read_bytes()).hexdigest()
+              assert checksum==meta['sha256'] and checksum in s.read_text(), os
+              assert meta['platform']==os
+              shas.add(meta['source_commit'])
+              print(os,meta['file_count'],'files',checksum)
+          assert shas=={__import__('os').environ['GITHUB_SHA']}, 'Source commit mismatch'
+          PY
+      - name: Prepare release description
+        shell: bash
+        run: |
+          cat > release-notes.md <<'NOTES'
+          # InterfaceScout 1.1.0 — platform-specific packages
+
+          Three separately verified ZIPs are built from the **same exact source commit**:
+          - **Windows x64:** `InterfaceScout-1.1.0-windows.zip`; extract and start `run_local.bat`.
+          - **macOS (Intel build verified):** `InterfaceScout-1.1.0-macos.zip`; extract and run `bash run_local.sh` in Terminal. Apple Silicon requires separate compatibility verification.
+          - **Linux x64:** `InterfaceScout-1.1.0-linux.zip`; extract and run `bash run_local.sh`.
+
+          This project is a Python-based locally running scientific application, **not a precompiled executable, signed DMG/APP, MSI, DEB or AppImage**. Python 3.10–3.12 is required; initial dependency installation typically requires internet. The local browser interface is at http://localhost:8000. Optional electrostatics requires separately installed PDB2PQR/PROPKA/APBS. Each ZIP is accompanied by a SHA-256 checksum and a machine-readable build manifest.
+
+          Software reports eleven descriptive protein-surface chemistry maps and candidate regions; it does not predict binding affinity, final adsorption pose or experimentally confirmed contacts.
+
+          Download the ZIP for your OS, extract completely, then follow `START_HERE.txt` and the included platform-specific installation guide.
+          NOTES
+      - name: Publish new release only after all three OS builds pass
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: v1.1.0-platform-20261124
+        shell: bash
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $TAG already exists; do not silently replace published assets."
+            exit 1
+          fi
+          gh release create "$TAG" dist/release/InterfaceScout-1.1.0-*.zip dist/release/InterfaceScout-1.1.0-*.zip.sha256 dist/release/InterfaceScout-1.1.0-*.zip.json \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "InterfaceScout 1.1.0 — Windows / macOS / Linux" \
+            --notes-file release-notes.md --latest=false
