@@ -34,6 +34,8 @@ jobs:
         run: |
           node --check frontend/decision_workflow.js
           node --check frontend/ensemble_ui.js
+      - name: Repository scope and dataset consistency
+        run: python validation/repository_consistency_check.py
       - name: Frozen validation checks
         run: python validation/verify_publication.py
       - name: Unix launcher checks
