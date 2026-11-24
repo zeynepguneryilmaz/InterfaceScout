@@ -145,6 +145,9 @@ def run_one(browser, item):
         page.wait_for_function("() => !!document.querySelector('#run') && !document.querySelector('#run').disabled", timeout=60000)
         page.set_input_files("#file", str(pdbfile))
         page.wait_for_function("() => typeof pdbText === 'string' && pdbText.includes('ATOM')")
+        # The local prepared filename is *_prepared.pdb, but preserve the
+        # frozen PDB accession as the exported structure directory name.
+        page.evaluate("(pdbId) => { structureName = pdbId; }", pid)
         page.locator("#electrostatics").check()
         page.locator("#run").click()
         page.wait_for_function("() => data && data.n_maps===11 && data.electrostatics?.status==='computed'",
