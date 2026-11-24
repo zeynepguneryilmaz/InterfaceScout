@@ -53,7 +53,7 @@ jobs:
           path: protein_sol_ISV76
           merge-multiple: true
       - name: Verify 76 distinct outcomes and classify scientific outputs
-        run: python validation/protein_sol_ISV76_aggregate.py
+        run: python -u validation/protein_sol_ISV76_aggregate.py
       - if: always()
         uses: actions/upload-artifact@v4
         with:
