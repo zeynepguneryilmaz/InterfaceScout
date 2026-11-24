@@ -1,0 +1,71 @@
+name: TV48 real APBS PROPKA batch
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'validation/tv48_real_apbs.py'
+      - '.github/workflows/tv48-real-apbs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  batch:
+    name: APBS shard ${{ matrix.shard }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install real APBS and PDB2PQR / PROPKA plus InterfaceScout
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apbs
+          python -m pip install -r backend/requirements.txt
+          python -m pip install "pdb2pqr==3.7.1" "gemmi==0.7.4"
+          which apbs
+          which pdb2pqr
+      - name: Run real solver on frozen TV48 shard
+        run: python -u validation/tv48_real_apbs.py --shard ${{ matrix.shard }} --shards 8
+      - name: Upload complete per-protein and failure records
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tv48-real-apbs-shard-${{ matrix.shard }}
+          path: tv48_apbs/
+          if-no-files-found: warn
+          retention-days: 90
+
+  aggregate:
+    if: always()
+    needs: batch
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Download available shard results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: tv48-real-apbs-shard-*
+          path: tv48_apbs
+          merge-multiple: true
+      - name: Aggregate all 48 passes, failures and numerical metrics
+        run: python -u validation/tv48_real_apbs.py --aggregate --shards 8
+      - name: Preserve final report even if incomplete
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tv48-real-apbs-summary-and-residue-evidence
+          path: tv48_apbs/
+          if-no-files-found: warn
+          retention-days: 90
