@@ -260,9 +260,9 @@ def aggregate(shards):
     residue_long=[]
     for p in mapsok:
         root=OUT/"proteins"/p["pdb_id"]
-        maps=pd.read_csv(root/"canonical_11map_patch_summary.csv")
+        maps=pd.read_csv(root/"canonical_11map_patch_summary.csv",dtype={"pdb_id":"string"})
         maprows.append(maps)
-        df=pd.read_csv(root/"canonical_residue_11map_values.csv")
+        df=pd.read_csv(root/"canonical_residue_11map_values.csv",dtype={"pdb_id":"string","residue_key":"string"})
         if df["residue_key"].duplicated().any():
             raise ValueError("Duplicate 11-map residue keys")
         if len(df)!=int(p["n_residues"]):
@@ -270,10 +270,18 @@ def aggregate(shards):
         residue_long.append(df)
     for p in apsok:
         root=OUT/"proteins"/p["pdb_id"]
-        el=pd.read_csv(root/"real_APBS_SAS_per_residue.csv")
+        el=pd.read_csv(root/"real_APBS_SAS_per_residue.csv",dtype={"pdb_id":"string","key":"string"})
         if len(el)!=int(p["n_residues"]):
             raise ValueError("Real APBS map/residue mismatch")
         electro_rows.append(el)
+    # PDB identifiers are immutable strings: e.g. 1E05 must NOT be
+    # parsed as floating-point scientific notation (100000.0).
+    for tables in (maprows,residue_long,electro_rows):
+        for df in tables:
+            if df["pdb_id"].isna().any():
+                raise ValueError("Missing PDB ID in per-protein data")
+            if any(pid not in selected for pid in df["pdb_id"]):
+                raise ValueError("PDB identifier corrupted by CSV parsing")
     if maprows: pd.concat(maprows,ignore_index=True).to_csv(OUT/"ISV76_ALL_11_MAP_METRICS.csv",index=False)
     if residue_long:pd.concat(residue_long,ignore_index=True).to_csv(OUT/"ISV76_ALL_RESIDUE_11_MAPS.csv",index=False)
     if electro_rows:pd.concat(electro_rows,ignore_index=True).to_csv(OUT/"ISV76_ALL_REAL_SAS_APBS_RESIDUES.csv",index=False)
