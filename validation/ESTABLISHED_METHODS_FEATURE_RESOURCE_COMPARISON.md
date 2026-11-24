@@ -60,3 +60,30 @@ Paired 76-structure FreeSASA 2.x and InterfaceScout runs on the same Linux runne
 - CASTp 3.0: https://pmc.ncbi.nlm.nih.gov/articles/PMC6031066/
 
 **Publication interpretation:** technical interoperability, efficient candidate-region inspection, transparent map combinations and export may be defensible benefits; **superior predictive accuracy or overall speed has not been demonstrated**.
+
+
+## Actual external comparator run: four fixed structures
+
+Date: 2026-11-24. Full traceable attempts:
+- [PEP-Patch / P2Rank / SURFMAP final four-protein preflight](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45451059179)
+- [76-case PEP-Patch and P2Rank sharded run](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45451763460) (status must be verified before reporting complete).
+
+**PEP-Patch** from pinned `liedllab/surface_analyses` source:
+- 1UBQ, 2OED, 1HEL: hydrophobic and electrostatic modes both PASS.
+- 1GCT: both modes FAIL on unchanged source input. Electrostatic: PDB2PQR fails on missing backbone; hydrophobic: isolated original fragment maps to `UNK`, not present in residue propensity CSV.
+- Recorded hydrophobic/electrostatic seconds (1UBQ) 8.277/12.620, (2OED) 5.126/10.247, (1HEL) 7.487/18.995. Sampled peak RSS in MiB: 350.5/608.1, 319.7/504.0, 332.8/820.7.
+- Native electrostatic patch totals: 27, 17, 28 respectively. Charge-specific Top-5 patch residue sets vs InterfaceScout corresponding cationic/anionic Top-5 maps give Jaccard: 1UBQ +0.180/−0.195, 2OED +0.311/−0.422, 1HEL +0.171/−0.000. The sign-specific values are not experimental accuracy metrics.
+- The competitor's own documented **user-specified hydropathy-scale** interface was used with fixed Kyte–Doolittle values, because the default bundled Eisenberg/Crippen atom typing raised `KeyError ('HIS','N')` for common original protein inputs. A PEP-Patch-specific environment PATH was needed to expose PDB2PQR. Neither change alters its implementation.
+- PEP-Patch has native positive/negative *electrostatic* patches and uses APBS/PDB2PQR for potential evaluation; independent electrostatic solver performance has **not** been established.
+
+**P2Rank 2.5.1**: all four initial PDBs PASS; native small-ligand pocket counts are 0 (1UBQ), 0 (2OED), 1 (1HEL), 6 (1GCT). These are **not material adsorption regions**. No shared binding-site-recovery metric is defensible.
+
+**SURFMAP**: pinned source installed, but Docker-mode runs failed due lack of working daemon on hosted GitHub runners. This is environment unavailability; not a negative scientific result about SURFMAP. Running locally requires R/MSMS/APBS dependencies or a Docker-capable computer.
+
+Other tools (Protein-sol patches, ProteinTools, CASTp) expose online workflows, not verified reproducible Linux CLI measurement paths. **No runtime, RAM or numerical accuracy values for those tools have been inferred from papers or webpages.**
+
+### Methodological checks for publication
+- **Different workload:** PEP-Patch computes potential and surface patches, P2Rank computes small-ligand pockets, and InterfaceScout computes 11 protein-side chemistry representations; do not calculate a misleading speedup ratio.
+- **Patch representation:** PEP-Patch patches are connected surface-mesh regions; InterfaceScout patches are 8 Å center-defined residue neighborhoods. Geometric overlaps depend on these definitions, and `Top-5` is a user-facing descriptive choice rather than a calibrated classifier.
+- **Same-module overlap:** APBS/PDB2PQR results share upstream solvers and cannot validate PB solver independence; only real source preparation, sampling, integration, geometry or UI differences are legitimate comparison axes.
+- **Failures** are retained with original source PDB hashes, exact tool command, logs, version and output inventory.
