@@ -1,0 +1,49 @@
+name: Aggregate completed ISV76 external competitor benchmarks
+on:
+  workflow_run:
+    workflows: ["ISV76 independent P2Rank and PEP-Patch full panel"]
+    types: [completed]
+permissions:
+  actions: read
+  contents: read
+jobs:
+  aggregate-all-outcomes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install independent scientific reporting requirements
+        run: python -m pip install "numpy==1.26.4" "pandas==2.2.3"
+      - name: Retrieve all successful and failed external tool artifacts
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+          pattern: External-Full-*
+          path: external_methods_full_panel
+          merge-multiple: true
+      - name: Independently validate completeness and aggregate durations, RSS, native patches and pockets
+        run: python -u validation/external_methods_full_panel_aggregate.py
+      - name: Fetch original fixed ISV76 map results for comparable single-chain overlaps
+        id: maps
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: 45385665397
+          name: ISV76-Final-InterfaceScout-11Map-SAS-APBS-All-Protect
+          path: isv76_final_model
+      - name: Calculate PEP-Patch vs InterfaceScout descriptive charged-region overlaps
+        if: steps.maps.outcome == 'success'
+        run: python -u validation/external_methods_region_overlap.py
+      - name: Archive complete unbiased real result tables, including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ISV76-76-External-PEP-Patch-P2Rank-Metrics
+          path: external_methods_full_panel/final/
+          retention-days: 90
+          if-no-files-found: warn
