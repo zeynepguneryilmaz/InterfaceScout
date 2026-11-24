@@ -32,6 +32,17 @@ with requests.Session() as s:
                 "potential_label":"Potential field PDB" in html,
                 "npp_label":"NPP ratio PDB" in html})
         except Exception as exc:item["error"]=str(exc)
+        if pid=="2OED":
+            jsurl=BASE+"/js/patches/viewStructure.js"
+            try:
+                js=s.get(jsurl,timeout=(15,35))
+                (OUT/"viewStructure.js").write_text(js.text,encoding="utf-8")
+                item["viewer_js_status"]=js.status_code
+                item["viewer_js_bytes"]=len(js.content)
+                item["viewer_references"]=sorted(set(re.findall(
+                    r'[^"\\s]{1,120}\\.(?:pdb|txt|csv|json|gz)',js.text,re.I)))[:50]
+            except Exception as e:
+                item["viewer_js_error"]=str(e)
         results.append(item)
         print("PROTEIN_SOL_RESULT_CHECK "+json.dumps(item,ensure_ascii=False),flush=True)
 (OUT/"RESULTS.json").write_text(json.dumps(results,indent=2),encoding="utf-8")
