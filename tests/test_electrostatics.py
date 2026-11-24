@@ -103,6 +103,41 @@ class ElectrostaticsTests(unittest.TestCase):
                 {f"A:{i}:" for i in range(10)}
             )
 
+    def test_strict_orphan_n_only_apbs_cleanup_preserves_original(self):
+        # Two isolated N-only serines; no CA/C/O atom is synthesized.
+        original = (
+            "ATOM      1  N   SER A  11      10.000  10.000  10.000  1.00 20.00           N\n"
+            "ATOM      2  N   SER E  11      20.000  10.000  10.000  1.00 20.00           N\n"
+            "ATOM      3  N   ALA A  12      11.000  10.000  10.000  1.00 20.00           N\n"
+            "ATOM      4  CA  ALA A  12      12.000  10.000  10.000  1.00 20.00           C\n"
+            "ATOM      5  C   ALA A  12      13.000  10.000  10.000  1.00 20.00           C\n"
+            "ATOM      6  O   ALA A  12      14.000  10.000  10.000  1.00 20.00           O\n"
+        )
+        valid = {"A:11:": "SER", "E:11:": "SER", "A:12:": "ALA"}
+        # 2/3 exceeds the predeclared 1% limit: fail closed.
+        with self.assertRaisesRegex(es.ElectrostaticsError, "cannot safely recover"):
+            es._pdb_orphan_n_only_residues(original, valid)
+        # A realistic larger protein stays below the conservative 1% cap.
+        valid.update({f"A:{i}:": "ALA" for i in range(20, 420)})
+        cleaned, omissions = es._pdb_orphan_n_only_residues(original, valid)
+        self.assertEqual({o["key"] for o in omissions}, {"A:11:", "E:11:"})
+        self.assertEqual(len(omissions), 2)
+        self.assertEqual(sum(x.startswith("ATOM ") for x in cleaned.splitlines()), 4)
+        self.assertIn("SER A  11", original)
+        self.assertNotIn("SER A  11", cleaned)
+        self.assertIn("ALA A  12", cleaned)
+        self.assertEqual(cleaned.count("ALA A  12"), 4)
+
+    def test_partial_backbone_is_never_silently_deleted(self):
+        src = (
+            "ATOM      1  N   SER A  11      10.000  10.000  10.000  1.00 20.00           N\n"
+            "ATOM      2  CA  SER A  11      11.000  10.000  10.000  1.00 20.00           C\n"
+            "ATOM      3  C   SER A  11      12.000  10.000  10.000  1.00 20.00           C\n"
+        )
+        cleaned, dropped = es._pdb_orphan_n_only_residues(src, {"A:11:": "SER"})
+        self.assertEqual(cleaned, src)
+        self.assertEqual(dropped, [])
+
     def test_generated_apbs_settings(self):
         atoms = [{"xyz": (0., 0., 0.)}, {"xyz": (10., 10., 10.)}]
         content = es._apbs_input(atoms, 150, 310)
