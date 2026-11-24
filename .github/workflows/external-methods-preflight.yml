@@ -1,0 +1,73 @@
+name: Real established-methods executability and resource preflight
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'validation/external_methods_preflight.py'
+      - '.github/workflows/external-methods-preflight.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  external:
+    name: External comparator ${{ matrix.tool }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 95
+    strategy:
+      fail-fast: false
+      matrix:
+        tool: [pep_patch, surfmap, p2rank]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install InterfaceScout inputs and monitoring
+        run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install "gemmi==0.7.4" "psutil==6.1.1"
+          sudo apt-get update
+          sudo apt-get install -y git curl tar
+      - name: Install exact competitor distribution and record failures
+        shell: bash
+        run: |
+          set +e
+          mkdir -p /opt
+          {
+            echo "Tool ${{ matrix.tool }} OS Ubuntu 24.04"
+            echo "GitHub Actions CPU information:"
+            lscpu | grep -E 'Model name|CPU\(s\):' | head -3
+            if [ "${{ matrix.tool }}" = "pep_patch" ]; then
+              sudo apt-get install -y apbs
+              python -m venv /opt/pep-venv
+              /opt/pep-venv/bin/python -m pip install --upgrade pip
+              /opt/pep-venv/bin/pip install "numpy<2" "mdtraj" "psutil"
+              /opt/pep-venv/bin/pip install "git+https://github.com/liedllab/surface_analyses.git@162a7c822acdedc9f281a7cc68efe88d8e33928f"
+              /opt/pep-venv/bin/pep_patch_hydrophobic --help
+            elif [ "${{ matrix.tool }}" = "surfmap" ]; then
+              python -m venv /opt/surf-venv
+              /opt/surf-venv/bin/pip install "git+https://github.com/i2bc/SURFMAP.git@0f92837bcb4c88b53a213fec78b5c9a7f7be56ab"
+              /opt/surf-venv/bin/surfmap -v
+              docker info
+              echo "Docker daemon access is required for --docker. Direct local mode needs R/APBS/MSMS."
+            elif [ "${{ matrix.tool }}" = "p2rank" ]; then
+              sudo apt-get install -y default-jre-headless
+              curl -fLsS --retry 2 -o /tmp/p2rank.tar.gz "https://github.com/rdk/p2rank/releases/download/2.5.1/p2rank_2.5.1.tar.gz"
+              tar -xzf /tmp/p2rank.tar.gz -C /opt
+              ls -la /opt/p2rank_2.5.1
+              test -f /opt/p2rank_2.5.1/prank
+              java -version
+            fi
+          } > /opt/external_setup_status.txt 2>&1
+          sed -n '1,80p' /opt/external_setup_status.txt
+      - name: Record real 4-protein competitor runs and failures
+        if: always()
+        run: python -u validation/external_methods_preflight.py --tool ${{ matrix.tool }}
+      - name: Upload provenance, outputs and errors
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: External-Methods-${{ matrix.tool }}-Preflight
+          path: external_methods_preflight/
+          retention-days: 90
+          if-no-files-found: warn
