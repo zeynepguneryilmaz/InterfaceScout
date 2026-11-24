@@ -29,6 +29,19 @@ if __name__ == "__main__":
     assert result["status"] == "computed"
     assert result["n_matched_residues"] == len(enriched["residue_profiles"])
     assert any(r["sidechain_mean_potential_kT_per_e"] is not None for r in result["residues"])
+    surface = [r for r in result["residues"] if r["surface_exposed"]]
+    shell = [r for r in surface if r["surface_potential_kT_per_e"] is not None]
+    assert len(shell) >= 0.90 * len(surface), "Unexpectedly low SAS coverage"
+    assert result["n_surface_potential_residues"] == len(shell)
+    assert result["surface_sampling"]["n_exposed_residues_with_surface_potential"] == len(shell)
+    assert result["surface_sampling"]["surface_type"] == "approximate SAS shell, not molecular SES"
+    assert result["surface_sampling"]["probe_A"] == 1.4
+    assert result["surface_sampling"]["outward_offset_A"] == 0.25
+    gly = [r for r in shell if r["res_name"] == "GLY"]
+    assert gly and all(r["sidechain_mean_potential_kT_per_e"] is None for r in gly), (
+        "Exposed glycine must have SAS potential but no heavy-atom side-chain comparator"
+    )
+
     # Retain auditable per-residue evidence from the actual external solvers.
     output = ROOT / "dist" / "electrostatics"
     output.mkdir(parents=True, exist_ok=True)
