@@ -71,7 +71,15 @@ def _pqr_atoms(path: Path) -> list[dict[str, Any]]:
         if len(prefix) >= 4:
             chain, resid = prefix[2], prefix[3]
         else:
-            chain, resid = "", prefix[2]
+            # PDB2PQR can concatenate a one-character chain ID and a four-
+            # digit residue number, e.g. A1368, instead of separating them
+            # with whitespace. Retain that chain for strict PDB/PQR matching.
+            compact = re.fullmatch(r"([A-Za-z])(-?\d+)([A-Za-z]?)", prefix[2])
+            if compact:
+                chain = compact.group(1)
+                resid = compact.group(2) + compact.group(3)
+            else:
+                chain, resid = "", prefix[2]
         m = re.fullmatch(r"(-?\d+)([A-Za-z]?)", resid)
         if not m:
             raise ElectrostaticsError(f"Cannot parse PQR residue index: {resid}")
