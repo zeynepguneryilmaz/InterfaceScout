@@ -18,8 +18,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "backend"), str(ROOT / "validation")]
-import strict_apo_compat_48 as prep
-from interface_engine import analyze_all_maps
+# Keep aggregation runnable with the Python standard library alone.
+# Import external scientific dependencies only in the computational workers.
 from model_settings import MODEL_VERSION, PUBLIC_VERSION
 
 MANIFEST = list(csv.DictReader(
@@ -42,6 +42,9 @@ def _number(value):
 
 
 def analyze_one(item: dict) -> dict:
+    import strict_apo_compat_48 as prep
+    from interface_engine import analyze_all_maps
+
     pdb_id = item["pdb_id"].upper()
     assembly = prep.prepare(pdb_id)
     cif_path = prep.OUT / f"{pdb_id}-assembly1.cif"
