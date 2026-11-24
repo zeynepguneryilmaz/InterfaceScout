@@ -1,0 +1,76 @@
+name: TV48 full pH x ionic strength real APBS sensitivity
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'validation/tv48_full_ph_ionic_factorial.py'
+      - '.github/workflows/tv48-full-ph-ionic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  factorial:
+    name: pH ionic factorial shard ${{ matrix.shard }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install actual PDB2PQR/PROPKA, APBS, and scipy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apbs
+          python -m pip install -r backend/requirements.txt
+          python -m pip install "pdb2pqr==3.7.1" "gemmi==0.7.4" "pandas==2.2.3" "matplotlib==3.10.1"
+          which apbs
+          which pdb2pqr
+      - name: Verify paired-comparison math before real solves
+        run: python -u validation/tv48_full_ph_ionic_factorial.py --self-test
+      - name: Run four actual frozen-TV48 structures and all nine pH salt conditions
+        run: python -u validation/tv48_full_ph_ionic_factorial.py --shard ${{ matrix.shard }} --shards 12
+      - name: Keep all PQR APBS provenance, residue CSV, and failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TV48-pH-ionic-shard-${{ matrix.shard }}
+          path: tv48_ph_ionic_full/
+          retention-days: 90
+          if-no-files-found: warn
+
+  aggregate:
+    if: always()
+    needs: factorial
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies required by scientific report
+        run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install "gemmi==0.7.4" "pandas==2.2.3" "matplotlib==3.10.1"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: TV48-pH-ionic-shard-*
+          path: tv48_ph_ionic_full
+          merge-multiple: true
+      - name: Strict all-48 all-nine condition completeness and numerical report
+        run: python -u validation/tv48_full_ph_ionic_factorial.py --aggregate --shards 12
+      - name: Preserve full results and failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TV48-Full-3x3-pH-Ionic-APBS-SAS-Results
+          path: tv48_ph_ionic_full/
+          retention-days: 90
+          if-no-files-found: warn
