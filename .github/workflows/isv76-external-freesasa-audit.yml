@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'validation/isv76_external_freesasa_runtime_audit.py'
+      - 'validation/ISV_active_candidates_76_v3.csv'
       - '.github/workflows/isv76-external-freesasa-audit.yml'
   workflow_dispatch:
 permissions:
