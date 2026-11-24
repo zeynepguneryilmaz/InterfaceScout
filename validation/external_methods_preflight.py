@@ -45,7 +45,10 @@ def run(cmd,cwd,timeout):
     cmd=list(map(str,cmd))
     start=time.monotonic()
     with tempfile.TemporaryFile(mode="w+t") as stdout, tempfile.TemporaryFile(mode="w+t") as stderr:
-        p=psutil.Popen(cmd,cwd=str(cwd),stdout=stdout,stderr=stderr)
+        env=dict(os.environ)
+        if any("pep_patch_" in arg for arg in cmd):
+            env["PATH"]="/opt/pep-venv/bin:"+env.get("PATH","")
+        p=psutil.Popen(cmd,cwd=str(cwd),stdout=stdout,stderr=stderr,env=env)
         peak=0
         while p.poll() is None:
             try:
@@ -112,7 +115,7 @@ def main():
                 program="/opt/pep-venv/bin"
                 cmds=[
                     ("hydrophobic", [program+"/pep_patch_hydrophobic",
-                         inp,inp,"--scale","eisenberg","--potential",
+                         inp,inp,"--scale","crippen","--potential",
                          "--patches","--out",hyd/"hydrophobic.npz",
                          "--ply_out",hyd/"hydrophobic.ply"],hyd,500),
                     ("electrostatic", [program+"/pep_patch_electrostatic",
