@@ -1,0 +1,74 @@
+name: ISV76 full real browser 3D PDF atlas exports
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'validation/isv76_full_atlas_browser.py'
+      - '.github/workflows/isv76-full-atlas-browser.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  full-export:
+    name: ISV76 browser Atlas shard ${{ matrix.shard }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install real external solvers application and Chromium
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apbs
+          python -m pip install -r backend/requirements.txt
+          python -m pip install "pdb2pqr==3.7.1" "gemmi==0.7.4" "playwright==1.55.0" "pandas==2.2.3"
+          python -m playwright install --with-deps chromium
+          which apbs
+          which pdb2pqr
+      - name: Execute real 3Dmol browser 11 maps and full ZIP export (1GCT map-only)
+        run: python -u validation/isv76_full_atlas_browser.py --shard ${{ matrix.shard }} --shards 16
+      - name: Preserve full-resolution structure ZIPs source and QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ISV76-Atlas-shard-${{ matrix.shard }}
+          path: isv76_full_3d_atlas/
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 0
+  aggregate:
+    if: always()
+    needs: full-export
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install requirements and Gemmi
+        run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install "gemmi==0.7.4" "playwright==1.55.0"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ISV76-Atlas-shard-*
+          path: isv76_full_3d_atlas
+          merge-multiple: true
+      - name: Verify 76 individual full PDF/3D atlas ZIPs
+        run: python -u validation/isv76_full_atlas_browser.py --aggregate --shards 16
+      - name: Preserve all full-resolution PDF Atlas ZIPs and failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ISV76-Complete-3D-PDF-Atlas-All-76
+          path: isv76_full_3d_atlas/
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 0
