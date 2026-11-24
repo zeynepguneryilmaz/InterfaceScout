@@ -147,8 +147,14 @@ def one(row):
         if own["returncode"]:
             raise RuntimeError("InterfaceScout failed: "+own["stderr"][-1000:])
         data=json.loads(exported.read_text())
+        help_text=subprocess.run(["freesasa","--help"],capture_output=True,
+                                 text=True,check=False).stdout
+        # Debian and upstream FreeSASA versions differ in the displayed
+        # option spelling; choose the one advertised by the installed binary.
+        depth_flag=("--output-depth=residue"
+                    if "--output-depth" in help_text else "--depth=residue")
         cmd=["freesasa","--shrake-rupley","-n","200","--probe-radius","1.4",
-             "--n-threads","1","--format=json","--depth=residue",str(inp)]
+             "--n-threads","1","--format=json",depth_flag,str(inp)]
         external=monitored(cmd,timeout=1200)
         if external["returncode"]:
             raise RuntimeError("FreeSASA failed: "+external["stderr"][-1200:])
