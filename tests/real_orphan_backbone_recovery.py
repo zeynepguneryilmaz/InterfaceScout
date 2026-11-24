@@ -44,11 +44,16 @@ def run(pid):
     if pid=="1GCT":
         assert electro["quality_status"]=="partial_input_recovery"
         assert electro["input_recovery"]["applied"]
-        assert electro["n_unmatched_residues"]==2
         expected={"A:11:","E:11:"}
         assert {x["key"] for x in electro["input_recovery"]["omitted_residues"]}==expected
+        # N-only fragments may be missing from the CA-based canonical map
+        # profile already. They are always reported in recovery provenance.
+        profile_keys={r["key"] for r in maps_only["residue_profiles"]}
+        expected_unmapped=len(expected & profile_keys)
+        assert electro["n_unmatched_residues"]==expected_unmapped
+        assert electro["n_orphan_records_removed_from_apbs_input"]==2
         flagged=[x for x in electro["residues"] if x["key"] in expected]
-        assert len(flagged)==2
+        assert len(flagged)==expected_unmapped
         assert all(x["pqr_mapped"] is False and
                    x["surface_potential_kT_per_e"] is None and
                    x["net_atomic_charge_e"] is None for x in flagged)
@@ -65,6 +70,7 @@ def run(pid):
         "n_input_residues":electro["n_input_residues"],
         "n_mapped_residues":electro["n_matched_residues"],
         "n_unmatched_residues":electro["n_unmatched_residues"],
+        "n_orphan_fragments_removed":electro["n_orphan_records_removed_from_apbs_input"],
         "quality_status":electro["quality_status"],
         "n_sas_potentials":electro["n_surface_potential_residues"],
         "omitted_residue_keys":[r["key"] for r in electro["input_recovery"]["omitted_residues"]],
