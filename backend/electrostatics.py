@@ -191,6 +191,7 @@ def _interpolate(grid: np.ndarray, origin: np.ndarray, spacing: np.ndarray,
 # Never fabricate missing coordinates or modify the original 11-map PDB.
 _ORPHAN_MAX_COUNT = 4
 _ORPHAN_MAX_FRACTION = 0.01
+_CANONICAL_PDB_RESIDUES = set("ALA ARG ASN ASP CYS GLN GLU GLY HIS ILE LEU LYS MET PHE PRO SER THR TRP TYR VAL".split())
 
 
 def _pdb_orphan_n_only_residues(
@@ -214,7 +215,10 @@ def _pdb_orphan_n_only_residues(
         except ValueError:
             continue
         key = f"{chain}:{seq}:{icode}"
-        if key not in valid:
+        # A single-N fragment can be absent from the canonical CA-based
+        # profile. Scan raw ATOM records, not only existing map residues.
+        res_name = line[17:20].strip()
+        if res_name not in _CANONICAL_PDB_RESIDUES:
             continue
         name = line[12:16].strip().upper()
         element = line[76:78].strip().upper() if len(line) >= 78 else ""
@@ -228,10 +232,12 @@ def _pdb_orphan_n_only_residues(
     omitted = []
     for key, entry in by_key.items():
         if (entry["names"] == {"N"} and
-                entry["res_names"] == {valid[key]} and
+                len(entry["res_names"]) == 1 and
+                (key not in valid or entry["res_names"] == {valid[key]}) and
                 len(entry["lines"]) == 1):
             omitted.append({
-                "key": key, "res_name": valid[key],
+                "key": key, "res_name": next(iter(entry["res_names"])),
+                "already_in_canonical_residue_profile": key in valid,
                 "observed_heavy_atoms": ["N"],
                 "missing_backbone_atoms": ["CA", "C", "O"],
                 "reason": "orphan single N atom; C-alpha and carbonyl group absent",
@@ -404,7 +410,8 @@ def compute(prepared_pdb: str, residue_profiles: list[dict[str, Any]], *,
             "n_pqr_atoms": len(atoms),
             "n_matched_residues": len(grouped),
             "n_input_residues": len(records),
-            "n_unmatched_residues": len(omitted),
+            "n_unmatched_residues": len(set(valid) & omitted_keys),
+            "n_orphan_records_removed_from_apbs_input": len(omitted),
             "quality_status": "partial_input_recovery" if omitted else "complete",
             "input_recovery": {
                 "applied": bool(omitted),
