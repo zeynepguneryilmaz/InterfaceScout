@@ -1,0 +1,68 @@
+name: ISV76 external FreeSASA SASA and fair resource audit
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'validation/isv76_external_freesasa_runtime_audit.py'
+      - '.github/workflows/isv76-external-freesasa-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    name: FreeSASA independent structure shard ${{ matrix.shard }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install independent FreeSASA binary and source engine requirements
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y freesasa
+          python -m pip install -r backend/requirements.txt
+          python -m pip install "gemmi==0.7.4" "psutil==6.1.1" "pandas==2.2.3"
+          which freesasa
+          freesasa --version
+      - name: Independent SASA, correctness, runtime and sampled-RSS comparison
+        run: python -u validation/isv76_external_freesasa_runtime_audit.py --shard ${{ matrix.shard }} --shards 16
+      - name: Retain per-protein evidence and errors
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ISV76-External-FreeSASA-shard-${{ matrix.shard }}
+          path: isv76_external_freesasa_audit
+          retention-days: 90
+          if-no-files-found: warn
+  aggregate:
+    if: always()
+    needs: audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install "gemmi==0.7.4" "psutil==6.1.1" "pandas==2.2.3"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ISV76-External-FreeSASA-shard-*
+          path: isv76_external_freesasa_audit
+          merge-multiple: true
+      - name: Validate all outcomes, do not fill missing measurements
+        run: python -u validation/isv76_external_freesasa_runtime_audit.py --aggregate --shards 16
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ISV76-External-FreeSASA-Full-Evidence
+          path: isv76_external_freesasa_audit
+          retention-days: 90
