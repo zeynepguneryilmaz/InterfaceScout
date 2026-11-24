@@ -85,6 +85,20 @@ def analyze_one(item: dict) -> dict:
     ]
     if not sidechain_values or not exposed_values:
         raise AssertionError(f"No sampled side-chain potentials on surface for {pdb_id}")
+    # New primary potential descriptor samples the actual APBS grid on a
+    # deterministic solvent-facing shell, never at PQR atomic centers.
+    sas_values = [
+        row["surface_potential_kT_per_e"] for row in electro["residues"]
+        if row["surface_exposed"] and row["surface_potential_kT_per_e"] is not None
+    ]
+    shell_meta = electro["surface_sampling"]
+    if len(sas_values) != electro["n_surface_potential_residues"]:
+        raise AssertionError(f"SAS count mismatch for {pdb_id}")
+    if shell_meta["n_exposed_residues_with_surface_potential"] != len(sas_values):
+        raise AssertionError(f"SAS metadata/count mismatch for {pdb_id}")
+    if len(sas_values) < 0.90 * sum(r["surface_exposed"] for r in electro["residues"]):
+        raise AssertionError(f"Insufficient SAS coverage for {pdb_id}")
+
 
     meta = {
         "pdb_id": pdb_id,
@@ -99,11 +113,13 @@ def analyze_one(item: dict) -> dict:
         "n_surface_residues": sum(bool(x["surface_exposed"]) for x in profiles),
         "n_pqr_atoms": electro["n_pqr_atoms"],
         "n_potential_residues": len(sidechain_values),
-        "n_surface_potential_residues": len(exposed_values),
-        "mean_surface_potential_kT_per_e": _number(statistics.mean(exposed_values)),
-        "mean_abs_surface_potential_kT_per_e": _number(statistics.mean(abs(v) for v in exposed_values)),
-        "min_surface_potential_kT_per_e": _number(min(exposed_values)),
-        "max_surface_potential_kT_per_e": _number(max(exposed_values)),
+        "n_surface_potential_residues": len(sas_values),
+        "n_surface_sidechain_atom_potential_residues": len(exposed_values),
+        "mean_surface_potential_kT_per_e": _number(statistics.mean(sas_values)),
+        "mean_abs_surface_potential_kT_per_e": _number(statistics.mean(abs(v) for v in sas_values)),
+        "min_surface_potential_kT_per_e": _number(min(sas_values)),
+        "max_surface_potential_kT_per_e": _number(max(sas_values)),
+        "mean_abs_legacy_atom_potential_kT_per_e": _number(statistics.mean(abs(v) for v in exposed_values)),
         "sum_pqr_residue_charge_e": _number(sum(x["net_atomic_charge_e"] for x in electro["residues"])),
         "canonical_unchanged": True,
         "conditions": {"pH": 7.4, "ionic_mM": 150.0, "temperature_K": 298.0},
@@ -158,7 +174,7 @@ def aggregate(shards: int) -> None:
     passed = [x for x in records if x["status"] == "PASS"]
     failed = [x for x in records if x["status"] != "PASS"]
     summary = {
-        "purpose": "Real external-solver APBS/PROPKA/PDB2PQR on frozen TV48",
+        "purpose": "Real external-solver APBS/PROPKA/PDB2PQR SAS primary potential on frozen TV48",
         "software_version": PUBLIC_VERSION, "model_version": MODEL_VERSION,
         "conditions": {"pH": 7.4, "ionic_mM": 150.0, "temperature_K": 298.0},
         "n_expected": 48, "n_attempted": len(records),
@@ -179,6 +195,8 @@ def aggregate(shards: int) -> None:
             "mean_surface_potential_kT_per_e",
             "mean_abs_surface_potential_kT_per_e",
             "min_surface_potential_kT_per_e", "max_surface_potential_kT_per_e",
+            "mean_abs_legacy_atom_potential_kT_per_e",
+            "n_surface_sidechain_atom_potential_residues",
             "sum_pqr_residue_charge_e", "canonical_unchanged", "error_type", "error"]
     with (OUT / "ALL_48_RESULTS.csv").open("w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=cols, extrasaction="ignore")
