@@ -47,9 +47,18 @@ def run(pid, row, modes, per_task_timeout):
                     x["path"].endswith(".txt") and x["bytes"]>100]
                 maps=[x for x in files if x["path"].lower().endswith((".png",".pdf"))
                     and x["bytes"]>100]
+                found_features={feature:{
+                    "matrix":any(feature in x["path"].lower() for x in matrices),
+                    "map":any(feature in x["path"].lower() for x in maps)}
+                    for feature in FEATURES} if mode=="all" else {}
                 info.update(output_inventory=files,
-                    n_matrices=len(matrices),n_maps=len(maps))
-                info["status"]="PASS" if result.returncode==0 and matrices and maps else "INVALID_OR_MISSING_SCIENTIFIC_OUTPUT"
+                    n_matrices=len(matrices),n_maps=len(maps),
+                    feature_outputs=found_features)
+                # 'all' requests FOUR independent feature projections. One
+                # output image or one matrix is not a valid four-map PASS.
+                complete=(all(v["matrix"] and v["map"] for v in found_features.values())
+                    if mode=="all" else bool(matrices and maps))
+                info["status"]="PASS" if result.returncode==0 and complete else "INVALID_OR_MISSING_SCIENTIFIC_OUTPUT"
             except subprocess.TimeoutExpired as exc:
                 info.update(status="TIMEOUT",wall_s=round(time.perf_counter()-t0,3),
                     error=str(exc))
