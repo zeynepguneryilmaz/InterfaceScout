@@ -50,6 +50,9 @@ def main():
         "frontend/logo.png","backend/dependency_check.py",
         f"docs/INSTALL_{a.platform.upper() if a.platform != 'macos' else 'MACOS'}.md",
     }
+    if a.platform=="windows":
+        required.update({"assets/InterfaceScout.ico",
+                         "launchers/create_windows_shortcut.ps1"})
     missing=sorted(required-set(included))
     if missing:raise SystemExit("Missing required package files: "+", ".join(missing))
     prefix="InterfaceScout-"+VERSION
