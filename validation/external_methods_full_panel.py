@@ -19,16 +19,27 @@ def main():
     ap.add_argument("--tool",choices=("p2rank","pep_patch"),required=True)
     ap.add_argument("--shard",type=int,required=True)
     ap.add_argument("--shards",type=int,default=16)
+    ap.add_argument("--retry-pdbs",nargs="*",default=None,
+                    help="Repeat only explicitly identified failed structures")
     args=ap.parse_args()
     assert 0<=args.shard<args.shards
     ids=list(compare.ACTIVE)
     assert len(ids)==76 and len(set(ids))==76
-    compare.PIDS=tuple(pid for i,pid in enumerate(ids) if i%args.shards==args.shard)
+    if args.retry_pdbs is not None:
+        assert args.shards == 1 and args.shard == 0, "Retry mode needs one shard"
+        unknown=set(args.retry_pdbs)-set(ids)
+        if unknown: raise ValueError("Unknown ISV PDB IDs: "+repr(sorted(unknown)))
+        compare.PIDS=tuple(dict.fromkeys(args.retry_pdbs))
+        if not compare.PIDS: raise ValueError("Retry set is empty")
+    else:
+        compare.PIDS=tuple(pid for i,pid in enumerate(ids) if i%args.shards==args.shard)
     compare.OUT=Path("external_methods_full_panel").resolve()
     original_run=compare.run
     def bounded_run(cmd,cwd,timeout):
-        # A 240s method limit is explicit, not a fake zero or an omitted case.
-        return original_run(cmd,cwd,min(timeout,240))
+        # Large assemblies require more than 240 seconds for APBS-based PEP-Patch.
+        # Record a real timeout if the bounded 900-second repeat still fails.
+        limit = 900 if args.retry_pdbs is not None else 240
+        return original_run(cmd,cwd,min(timeout,limit))
     compare.run=bounded_run
     sys.argv=[str(Path(__file__).resolve()),"--tool",args.tool]
     try:
