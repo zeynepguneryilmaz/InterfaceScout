@@ -26,6 +26,22 @@ class ElectrostaticsTests(unittest.TestCase):
             self.assertEqual(atoms[1]["seq"], 2)
             self.assertAlmostEqual(sum(a["charge"] for a in atoms), 0)
 
+    def test_pqr_packed_chain_and_four_digit_residue_index(self):
+        # PDB2PQR emits compact A1001 / A1368-style residue tokens when
+        # the chain and four-digit number occupy adjacent PQR columns.
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "compact.pqr"
+            path.write_text(
+                "ATOM 1 CA GLY A1001 1.0 2.0 3.0 0.2 1.7\\n"
+                "ATOM 2 CB ALA A1368 1.5 2.5 3.5 -0.2 1.7\\n"
+                "ATOM 3 CA SER B2080A 1.4 2.4 3.4 0.1 1.7\\n"
+            )
+            parsed = es._pqr_atoms(path)
+            self.assertEqual(
+                [(a["chain"], a["seq"], a["icode"]) for a in parsed],
+                [("A", 1001, ""), ("A", 1368, ""), ("B", 2080, "A")],
+            )
+
     def test_zero_radius_hydrogen_is_valid_but_heavy_atom_is_not(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "h.pqr"
