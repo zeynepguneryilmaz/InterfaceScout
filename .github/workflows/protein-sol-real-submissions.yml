@@ -1,0 +1,39 @@
+name: Real Protein-sol Patches public structure submissions
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'validation/protein_sol_real_submission.py'
+      - '.github/workflows/protein-sol-real-submissions.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  protein-sol:
+    name: Protein-sol real ${{ matrix.pdb }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        pdb: [2OED, 1HEL, 7KWI, 1GCT, 1HC1]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install structure preparation and HTTP parser
+        run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install "gemmi==0.7.4" "requests==2.32.3" "beautifulsoup4==4.12.3"
+      - name: Submit public PDB to provider and retain real server response
+        run: python -u validation/protein_sol_real_submission.py --pdb ${{ matrix.pdb }}
+      - name: Retain all successful and failed responses, without invented metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Protein-sol-Real-${{ matrix.pdb }}
+          path: external_protein_sol_real/
+          retention-days: 90
+          if-no-files-found: warn
