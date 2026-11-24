@@ -5,7 +5,7 @@
 | Dataset | Purpose | Membership | Status |
 | --- | --- | --- | --- |
 | **Dataset 1 — Technical verification (TV48)** | Verify numerical implementation, structure processing, all 11 chemistry maps, dual tRSA/scRSA, glycine handling, patch construction, Pareto ranking, criterion dependence, and stability | **48 frozen, quality-screened protein structures** from [the accepted 48-structure manifest](strict_apo_48_selected_candidates_v2_final.csv) | **Completed for the tested v1.1.0 code:** 48/48 structures, 528 maps, 12,068 residue records, 2,112 objective ablations, 21,000 perturbation trials |
-| **Dataset 2 — Initial scientific validation (ISV)** | Assess how interpretable protein-side surface descriptors and candidate regions are under independently documented structural/experimental evidence, using fair reference methods | **To be selected, checked and frozen**; no final protein list or final sample size is claimed yet | **Not yet constructed or validated** |
+| **Dataset 2 — Initial scientific validation (ISV)** | Assess how interpretable protein-side surface descriptors and candidate regions are under independently documented structural/experimental evidence, using fair reference methods | **76 active, fixed structural candidates** in [ISV_active_candidates_76_v3.csv](ISV_active_candidates_76_v3.csv); not 76 experimentally accepted independent systems | **Structural/computational panel selected; final experimental evidence-level acceptance pending** |
 
 ## Current definitive ISV selection — 76 active candidates (2026-11-24)
 
@@ -28,7 +28,7 @@ The original 80-protein screening CSV and all 80-protein numerical audit files a
 
 ## Dataset 2 — Initial scientific validation: ISV
 
-**Selection and prospective audit rules (before interpreting outcomes):**
+**Scientific evidence acceptance rules (for the already selected structural candidate panel):**
 
 1. Specify the actual objective: interpretation of map-localized physicochemical regions and surface-region analysis, **not** an adsorption-energy, adsorption-pose or kinetic prediction contest.
 2. Require original publication support for each experimental localization assertion, with the cited figure/table/supplement, evidence resolution and all relevant conditions. A signal that only measures total adsorption cannot be labeled a residue-resolved ground truth.
@@ -39,15 +39,15 @@ The original 80-protein screening CSV and all 80-protein numerical audit files a
 7. Prespecify baselines and statistical unit. Use comparable region/residue coverage for geometry- and accessibility-based methods, report Top-k recovery and spatial overlap with uncertainty clustered by protein/source, and separately describe any broad evidence regions.
 8. Record both positive and negative cases, uncertainty and failure modes. Absence of evidence is not evidence of a true negative interface.
 
-**Deliverables once selected:** a frozen `ISV_manifest.csv` (PDB, assembly SHA, original experimental reference and evidence coordinates, chain and residue mapping, evidence tier, selection decision), per-protein outputs, reference-method comparisons, data-derived figures and a validated reporting table.
+**Still required for evidence-level acceptance:** a source-audited annotation manifest (PDB, assembly SHA, original experimental reference and evidence coordinates, chain and residue mapping, evidence tier), per-protein outputs, appropriately scoped external comparisons, and a validated reporting table. The structural membership manifest is already fixed at [76 candidates](ISV_active_candidates_76_v3.csv).
 
 **Expanded ISV candidate pool:** [80 proposed protein/PDB entries](ISV_protein_candidate_pool_80_v2.csv), including **12 biofilm-related candidates** spanning surface adhesins, extracellular matrix proteins, polysaccharide-processing enzymes, intracellular regulators and challenging amyloid/membrane assemblies. These are provisional candidates, **not 80 accepted structures**. The original [68-candidate RCSB record audit](ISV_68_RCSB_PRELIMINARY_AUDIT.md) remains historical screening provenance; [biofilm structure checks](isv_biofilm_rcsb_screen.py) are separate. The old eight-candidate evidence-focused shortlist is not an additional active dataset.
 
 **Current structural metadata audit:** [68-protein RCSB audit and screening status](ISV_68_RCSB_PRELIMINARY_AUDIT.md). The source records were verified for all 68 proposed PDBs: 55 records had no initial metadata flags, 13 need review. Neither count indicates final per-chain coordinate QA or admission.
 
-**Current state:** [Initial ISV source-supported candidate shortlist](ISV_CANDIDATE_SCREENING.md) and [candidate screening table](ISV_candidate_screening_v1.csv) have been created: **eight distinct protein candidates and one alternate structure for an existing candidate**. None is finally accepted; the exact experimental residue annotations and PDB/construct matching remain to be audited. No numerical ISV validation metrics should be claimed before the final manifest is frozen and analyzed.
+**Archived preliminary selection state:** [Initial ISV source-supported candidate shortlist](ISV_CANDIDATE_SCREENING.md) and [candidate screening table](ISV_candidate_screening_v1.csv) have been created: **eight distinct protein candidates and one alternate structure for an existing candidate**. This is an earlier evidence-focused shortlist, not the fixed current 76-structure computational panel. Exact experimental residue annotations and PDB/construct matching remain under audit; no experimental-region performance should be attributed to all 76 candidates.
 
-### ISV80 structural-screening results (current)
+### ISV80 structural-screening results (historical)
 
 The [80-candidate production and structural screening report](ISV_80_FULL_SCREENING_REPORT.md) documents **80/80 successful 11-map engine executions**, 75 deposited principal chains above the preliminary 90% C-alpha coverage screen, and three conservative quality-review strata (10 priority, 67 conditional, 3 special challenge). **The 80-entry original candidate pool is superseded for active selection by the 76-entry list; no final experimentally validated ISV manifest is asserted.** The [per-protein triage table](evidence/ISV80_TRIAGE.csv) and [archived raw evidence](evidence/ISV80_COMPLETE_SCREENING_EVIDENCE.zip) provide reproducible provenance. Additional manual structure/side-chain chemical relevance and protein-family independence review is required before final inclusion decisions.
 
@@ -55,9 +55,9 @@ The [80-candidate production and structural screening report](ISV_80_FULL_SCREEN
 
 **The 80 computationally compatible structures were the historical working panel; four have since been excluded, leaving 76 active candidates**, without limiting the sample to 50. The [80-structure audit](ISV_80_FULL_SCREENING_REPORT.md) and [80-row versioned decision table](evidence/ISV80_TRIAGE.csv) record 880 successful chemistry maps and scientific caveats for every PDB.
 
-These are **working structures, not 80 formally accepted independent biological validation systems**. Ten are conservative priority candidates, 67 require structural/contextual review, and three (1HC1, 6LQH, 8C50) are segregated structural challenges. Three closely related pairs ([sequence audit](evidence/ISV80_SEQUENCE_SUMMARY.json)) must be clustered by family when appropriate: 4F5S/1AO6, 3V83/1LFG, and 1B09/1SAC. There was no flagged near-sequence ISV-to-TV48 match under the documented prefilter; domain/fold independence remains subject to confirmation.
+These are **working structures, not 80 formally accepted independent biological validation systems**. **Historical 80-record triage** comprised ten priority, 67 conditional-review and three special challenge entries (1HC1, 6LQH, 8C50); this division must not be used as counts within the current 76 because 6LQH was excluded. Three closely related pairs ([sequence audit](evidence/ISV80_SEQUENCE_SUMMARY.json)) must be clustered by family when appropriate: 4F5S/1AO6, 3V83/1LFG, and 1B09/1SAC. There was no flagged near-sequence ISV-to-TV48 match under the documented prefilter; domain/fold independence remains subject to confirmation.
 
-All 80 can contribute to **descriptive software applicability** where their coordinate caveats are disclosed; no structure should contribute to strict residue-level quantitative conclusions if its missing interface chemistry, assembly or construct mismatch undermines the result.
+All 80 remain archived historical computational records. **Only the 76 active entries** may contribute to the current ISV structural-applicability summary, with coordinate caveats disclosed. No structure should contribute to strict experimental-region quantitative conclusions if missing chemistry, assembly, or construct mismatch undermines interpretation.
 
 ### ISV80 targeted chemical/assembly QA (completed)
 
