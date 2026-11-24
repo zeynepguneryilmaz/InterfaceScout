@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Literal
 from io import BytesIO
 import os
 import time
@@ -36,7 +36,7 @@ class AnalyzeRequest(BaseModel):
     pH: float = Field(7.4, ge=0.0, le=14.0)
     ionic_mM: float = Field(150.0, ge=0.0)
     temp_K: float = Field(298.0, gt=0.0)
-    electrostatics: bool = False
+    electrostatics: Literal[True] = True
 
 class CompareRequest(BaseModel):
     structure_a: AnalyzeRequest
@@ -62,7 +62,7 @@ class StructureSetRequest(BaseModel):
     pH: float = Field(7.4, ge=0.0, le=14.0)
     ionic_mM: float = Field(150.0, ge=0.0)
     temp_K: float = Field(298.0, gt=0.0)
-    electrostatics: bool = False
+    electrostatics: Literal[True] = True
     combined_maps: Optional[list[str]] = None
 
 
