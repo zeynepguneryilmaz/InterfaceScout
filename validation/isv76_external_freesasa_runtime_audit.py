@@ -127,6 +127,16 @@ def freesasa_parse(payload):
                     "sasa_A2":float(area["total"]),
                     "sidechain_sasa_A2":float(area["side-chain"]),
                 }
+    if not data:
+        structures=payload.get("results",[{}])[0].get("structures",[])
+        raise ValueError(
+            "FreeSASA JSON has no parsed residue records; "
+            "result_keys="+str(sorted(payload["results"][0].keys()))+
+            " structure_keys="+str([sorted(q.keys()) for q in structures[:1]])+
+            " chain_keys="+str([[sorted(ch.keys()) for ch in q.get("chains",[])[:1]]
+                                for q in structures[:1]])+
+            " preview="+json.dumps(payload["results"][0],ensure_ascii=False)[:1800]
+        )
     return data
 
 
