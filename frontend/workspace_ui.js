@@ -14,7 +14,7 @@
   head.className="workspace-top";
   head.innerHTML='<div class="workspace-eyebrow">INTERFACESCOUT · WORKSPACE</div>'+
     '<h2 class="workspace-title">Explore what matters.</h2>'+
-    '<p class="workspace-subtitle">Choose a workflow. Your 11 chemistry maps are always calculated together.</p>'+
+    '<p class="workspace-subtitle">Choose a workflow. Your 11 chemistry maps and electrostatic potential are always calculated together.</p>'+
     '<nav class="workspace-modes" aria-label="Analysis workflow">'+
     '<button class="workspace-mode" type="button" data-workspace-target="single" aria-pressed="true">Single protein</button>'+
     '<button class="workspace-mode" type="button" data-workspace-target="compare" aria-pressed="false">Compare two</button>'+
@@ -53,7 +53,7 @@
   if(row){
     const advanced=document.createElement("details");
     advanced.className="workspace-settings";
-    advanced.innerHTML="<summary>Advanced conditions · recorded as metadata</summary>";
+    advanced.innerHTML="<summary>Advanced solution conditions · APBS</summary>";
     const ionic=row.querySelectorAll(".field")[1];
     const temp=$("temp")?.closest(".field");
     if(ionic)advanced.appendChild(ionic);
