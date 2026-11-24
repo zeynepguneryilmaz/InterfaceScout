@@ -111,11 +111,25 @@ def main():
             cmds=[]
             if tool=="pep_patch":
                 hyd=d/"hydrophobic";hyd.mkdir(exist_ok=True)
+                # PEP-Patch bundled Crippen/Eisenberg AMBER lookup does not
+                # include generic HIS backbone N for these inputs. Run its
+                # documented user-provided hydropathy-scale functionality,
+                # with one fixed, conventional Kyte-Doolittle value per aa.
+                kd={
+                    "ALA":1.8,"ARG":-4.5,"ASN":-3.5,"ASP":-3.5,
+                    "CYS":2.5,"GLN":-3.5,"GLU":-3.5,"GLY":-0.4,
+                    "HIS":-3.2,"ILE":4.5,"LEU":3.8,"LYS":-3.9,
+                    "MET":1.9,"PHE":2.8,"PRO":-1.6,"SER":-0.8,
+                    "THR":-0.7,"TRP":-0.9,"TYR":-1.3,"VAL":4.2,
+                }
+                scale=hyd/"kyte_doolittle_scale.csv"
+                scale.write_text("residue,propensity\\n"+"".join(
+                    k+","+str(v)+"\\n" for k,v in kd.items()),encoding="utf-8")
                 ele=d/"electrostatic";ele.mkdir(exist_ok=True)
                 program="/opt/pep-venv/bin"
                 cmds=[
                     ("hydrophobic", [program+"/pep_patch_hydrophobic",
-                         inp,inp,"--scale","crippen","--potential",
+                         inp,inp,"--scale",scale,"--potential",
                          "--patches","--out",hyd/"hydrophobic.npz",
                          "--ply_out",hyd/"hydrophobic.ply"],hyd,500),
                     ("electrostatic", [program+"/pep_patch_electrostatic",
