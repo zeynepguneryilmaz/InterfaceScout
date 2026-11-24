@@ -31,6 +31,19 @@ jobs:
           python -m pip install "gemmi==0.7.4" "psutil==6.1.1" "pandas==2.2.3"
           which freesasa
           freesasa --version
+      - name: Confirm active panel and independent FreeSASA executable
+        run: |
+          python - <<'PY'
+          import csv
+          from pathlib import Path
+          with Path("validation/ISV_active_candidates_76_v3.csv").open(encoding="utf-8", newline="") as f:
+              rows = list(csv.DictReader(f))
+          ids = [r["proposed_pdb_id"] for r in rows]
+          assert len(ids) == len(set(ids)) == 76, "ISV76 manifest mismatch"
+          print("FreeSASA preflight: 76 unique structures")
+          PY
+          freesasa --help > /tmp/freesasa-help.txt 2>&1 || true
+          grep -q -- '--format' /tmp/freesasa-help.txt
       - name: Independent SASA, correctness, runtime and sampled-RSS comparison
         run: python -u validation/isv76_external_freesasa_runtime_audit.py --shard ${{ matrix.shard }} --shards 16
       - name: Retain per-protein evidence and errors
