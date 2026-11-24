@@ -1,11 +1,7 @@
 name: Real established-methods executability and resource preflight
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'validation/external_methods_preflight.py'
-      - '.github/workflows/external-methods-preflight.yml'
   workflow_dispatch:
+
 permissions:
   contents: read
 jobs:
