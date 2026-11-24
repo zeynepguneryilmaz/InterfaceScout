@@ -68,7 +68,8 @@ def main():
           "all_failed_cases_retained":True,
           "science_scope":"P2Rank predicts small-molecule pockets; PEP-Patch measures electrostatic/hydrophobic patches; neither predicts material adsorption affinity",
           "resources":"75-ms sampled lower-bound RSS; wall-clock for respective tasks",
-          "per_tool_time_limit_s":240,
+          "per_tool_time_limit_s":900 if args.retry_pdbs is not None else 240,
+          "retry_mode":args.retry_pdbs is not None,
           "source_comparator_script":"validation/external_methods_preflight.py",
         }
         (d/f"FULL_SHARD_{args.shard}.json").write_text(
