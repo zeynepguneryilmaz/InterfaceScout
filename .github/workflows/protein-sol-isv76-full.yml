@@ -1,4 +1,5 @@
 name: Protein-sol ISV76 full 76 real server computations
+run-name: Protein-sol ISV76 76-structure full server run (${{ github.sha }})
 on:
   workflow_dispatch:
   push:
@@ -29,6 +30,17 @@ jobs:
         run: |
           python -m pip install -r backend/requirements.txt
           python -m pip install "gemmi==0.7.4" "requests==2.32.3" "beautifulsoup4==4.12.3"
+      - name: Validate frozen 76-structure manifest before remote submissions
+        run: |
+          python - <<'PY'
+          import csv
+          from pathlib import Path
+          p = Path("validation/ISV_active_candidates_76_v3.csv")
+          rows = list(csv.DictReader(p.open(encoding="utf-8", newline="")))
+          ids = [r["proposed_pdb_id"] for r in rows]
+          assert len(ids) == 76 and len(set(ids)) == 76, "Expected 76 unique active protein structures"
+          print("Validated 76 unique Protein-sol inputs")
+          PY
       - name: Submit and verify actual Protein-sol outputs for all shard structures, sequentially
         run: python -u validation/protein_sol_ISV76_full_batch.py --shard ${{ matrix.shard }} --shards 4
       - name: Preserve raw potential/NPP PDBs, source hashes and failures
