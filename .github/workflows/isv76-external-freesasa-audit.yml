@@ -44,6 +44,13 @@ jobs:
           PY
           freesasa --help > /tmp/freesasa-help.txt 2>&1 || true
           grep -q -- '--format' /tmp/freesasa-help.txt
+      - name: Verify FreeSASA command compatibility and record tool version
+        run: |
+          freesasa --version
+          freesasa --help > /tmp/freesasa-help.txt 2>&1 || true
+          grep -q -- '--shrake-rupley' /tmp/freesasa-help.txt
+          grep -q -- '--probe-radius' /tmp/freesasa-help.txt
+          grep -q -- '--format' /tmp/freesasa-help.txt
       - name: Independent SASA, correctness, runtime and sampled-RSS comparison
         run: python -u validation/isv76_external_freesasa_runtime_audit.py --shard ${{ matrix.shard }} --shards 16
       - name: Retain per-protein evidence and errors
