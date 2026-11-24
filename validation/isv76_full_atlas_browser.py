@@ -64,7 +64,7 @@ def inspect_zip(path, pid, expected_pdb, expected_residues):
             raise AssertionError("Exported original PDB differs from analyzed prepared PDB")
         analysis = json.loads(read("analysis_complete.json"))
         expect_apbs = pid != "1GCT"
-        electro = json.loads(read("electrostatics/APBS_PROPKA_residue_potentials.json")) if expect_apbs else {"status":"not_requested","residues":[],"n_matched_residues":0,"n_pqr_atoms":0}
+        electro = json.loads(read("electrostatics/APBS_PROPKA_residue_potentials.json")) if expect_apbs else {"status":"not_requested"}
 
         if analysis.get("n_maps") != 11 or list(analysis["map_order"]) != list(MAP_NAMES):
             raise AssertionError("Missing or reordered canonical maps")
@@ -72,9 +72,9 @@ def inspect_zip(path, pid, expected_pdb, expected_residues):
             raise AssertionError("Unexpected APBS state in full browser export")
         if len(analysis["residue_profiles"]) != expected_residues:
             raise AssertionError("Residue count mismatch")
-        if expect_apbs and electro["n_matched_residues"] != expected_residues:
+        if expect_apbs and electro.get("n_matched_residues",0) != expected_residues:
             raise AssertionError("PQR/PDB residue identity mismatch")
-        exposed = [r for r in electro["residues"] if r["surface_exposed"]]
+        exposed = [r for r in electro.get("residues",[]) if r["surface_exposed"]]
         sas = [r for r in exposed if r["surface_potential_kT_per_e"] is not None]
         if expect_apbs and len(sas) != electro["n_surface_potential_residues"]:
             raise AssertionError("Primary SAS count inconsistent")
@@ -85,7 +85,7 @@ def inspect_zip(path, pid, expected_pdb, expected_residues):
         if expect_apbs and not any(r["res_name"] == "GLY" and
                    r["surface_potential_kT_per_e"] is not None and
                    r["sidechain_mean_potential_kT_per_e"] is None
-                   for r in electro["residues"]):
+                   for r in electro.get("residues",[])):
             raise AssertionError("No SAS data for exposed glycine")
 
 
@@ -143,8 +143,8 @@ def inspect_zip(path, pid, expected_pdb, expected_residues):
             "zip_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
             "n_maps": 11, "n_screenshots": len(screenshots), "n_map_pdfs": len(pdfs),
             "n_bfactor_pdbs": len(bfactor), "n_residues": expected_residues,
-            "n_apbs_residues": electro["n_matched_residues"],
-            "n_pqr_atoms": electro["n_pqr_atoms"],
+            "n_apbs_residues": electro.get("n_matched_residues",0),
+            "n_pqr_atoms": electro.get("n_pqr_atoms",0),
             "n_surface_sas_potentials": len(sas),
             "n_zip_members": len(names), "electrostatics_status": electro["status"],
             "source_assembly_sha256_verified": True,
@@ -176,7 +176,7 @@ def run_one(browser, item):
             page.locator("#electrostatics").check()
         page.locator("#run").click()
         page.wait_for_function("(expected) => data && data.n_maps===11 && data.electrostatics?.status===expected",
-                               "computed" if pid != "1GCT" else "not_requested",timeout=480000)
+                               arg=("computed" if pid != "1GCT" else "not_requested"),timeout=480000)
         if page.evaluate("() => document.querySelector('#error').textContent") and not page.evaluate("() => data"):
             raise AssertionError("Analysis returned an error")
         if pid != "1GCT" and not page.evaluate("() => data.electrostatics.n_matched_residues === data.residue_profiles.length"):
