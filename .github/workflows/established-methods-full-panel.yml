@@ -48,6 +48,17 @@ jobs:
             tar -xzf /tmp/p2rank.tar.gz -C /opt
             test -f /opt/p2rank_2.5.1/prank
           fi
+      - name: Validate frozen 76-protein comparison panel
+        run: |
+          python - <<'PY'
+          import csv
+          from pathlib import Path
+          with Path("validation/ISV_active_candidates_76_v3.csv").open(encoding="utf-8", newline="") as f:
+              rows = list(csv.DictReader(f))
+          ids = [r["proposed_pdb_id"] for r in rows]
+          assert len(ids) == len(set(ids)) == 76, "ISV76 manifest mismatch"
+          print("P2Rank/PEP-Patch preflight: 76 unique structures")
+          PY
       - name: Run actual matched structures and preserve all scientific failures
         run: python -u validation/external_methods_full_panel.py --tool ${{ matrix.tool }} --shard ${{ matrix.shard }} --shards 16
       - if: always()
