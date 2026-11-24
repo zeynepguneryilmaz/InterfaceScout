@@ -209,9 +209,22 @@ def run_apbs(workdir, atoms, ionic, target_grid=0.8, label="baseline"):
     input_path = workdir / f"run_{label}.in"
     input_path.write_text(source, encoding="utf-8")
     _run([apbs, input_path.name], workdir, timeout=780)
-    dx = workdir / (stem + ".dx")
-    if not dx.is_file():
-        raise RuntimeError("APBS output missing " + dx.name)
+    # APBS can suffix DX files with the named ELEC calculation, e.g.
+    # 'potential_baseline-protein_potential.dx'. Do not accept a stale
+    # unrelated potential from another variant in the same work directory.
+    expected = workdir / (stem + ".dx")
+    matches = [expected] if expected.is_file() else sorted(
+        candidate for candidate in workdir.glob(stem + "-*.dx")
+        if candidate.is_file()
+    )
+    if len(matches) != 1:
+        available = sorted(path.name for path in workdir.glob("*.dx"))
+        raise RuntimeError(
+            f"APBS DX selection failed for {stem}: found {len(matches)} valid "
+            f"candidate(s). Available DX files: {available}; "
+            f"APBS log tail: {apbs_log[-1200:]}"
+        )
+    dx = matches[0]
     result = _read_dx(dx)
     dx.unlink()
     return result, {"grid_dims": dims, "effective_spacing_A": effective,
@@ -369,6 +382,14 @@ def run_shard(kind, shard, shards):
             {"mode": kind, "pdb_id": pid, "status": state,
              "error": result.get("error", "")[:250]}), flush=True)
     write_json(OUT / f"{kind}_shard_{shard}.json", report)
+    # Fail the individual CI shard while retaining diagnostics and artifacts.
+    # The aggregate will additionally report exact missing/failed proteins.
+    nfail = sum(entry["status"] != "PASS" for entry in report)
+    print("APBS_SAS_SHARD " + json.dumps(
+        {"kind": kind, "shard": shard, "attempted": len(report), "failed": nfail}
+    ), flush=True)
+    if nfail:
+        raise SystemExit(f"{nfail}/{len(report)} {kind} cases failed; see shard artifacts")
 
 
 def aggregate(shards):
