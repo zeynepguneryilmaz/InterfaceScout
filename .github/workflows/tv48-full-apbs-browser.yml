@@ -1,0 +1,77 @@
+name: TV48 complete real-browser APBS atlas export
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tv48-full-apbs-browser.yml'
+      - 'validation/tv48_full_apbs_browser_exports.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  full-export:
+    name: Full Atlas shard ${{ matrix.shard }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install real external solvers and application
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apbs
+          python -m pip install -r backend/requirements.txt
+          python -m pip install "pdb2pqr==3.7.1" "gemmi==0.7.4" "playwright==1.55.0"
+          python -m playwright install --with-deps chromium
+          which apbs
+          which pdb2pqr
+      - name: Execute genuine 3Dmol full-export UI on 6 frozen TV48 PDBs with APBS
+        run: python -u validation/tv48_full_apbs_browser_exports.py --shard ${{ matrix.shard }} --shards 8
+      - name: Upload complete individual ZIPs, evidence, and error records
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TV48-Complete-APBS-Atlas-shard-${{ matrix.shard }}
+          path: tv48_full_exports/
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 0
+
+  aggregate:
+    if: always()
+    needs: full-export
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install "gemmi==0.7.4" "playwright==1.55.0"
+      - name: Collect shard artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: TV48-Complete-APBS-Atlas-shard-*
+          path: tv48_full_exports
+          merge-multiple: true
+      - name: Validate 48 complete packages and report exact coverage
+        run: python -u validation/tv48_full_apbs_browser_exports.py --aggregate --shards 8
+      - name: Upload final complete manifest and all 48 structure ZIPs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TV48-Complete-APBS-Atlas-All-48
+          path: tv48_full_exports/
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 0
