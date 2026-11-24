@@ -57,7 +57,18 @@ def run(cmd,cwd,timeout):
                     c.memory_info().rss for c in children if c.is_running()))
             except (psutil.Error,OSError):pass
             if time.monotonic()-start>timeout:
-                p.kill();p.wait()
+                # APBS/PDB2PQR may spawn children. Killing only the parent
+                # strands numerical processes and contaminates later cases.
+                try:
+                    descendants=p.children(recursive=True)
+                except psutil.Error:
+                    descendants=[]
+                for child in reversed(descendants):
+                    try: child.kill()
+                    except psutil.Error: pass
+                try: p.kill()
+                except psutil.Error: pass
+                psutil.wait_procs([p,*descendants],timeout=12)
                 stdout.seek(0);stderr.seek(0)
                 return {"status":"TIMEOUT","returncode":-9,"wall_s":round(time.monotonic()-start,3),
                         "peak_RSS_sampled_MiB":round(peak/1048576,3),
