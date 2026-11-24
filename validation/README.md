@@ -5,11 +5,11 @@
 The current InterfaceScout v1.1.0 scientific work is organized around **only two active datasets**. See **[Active datasets and acceptance rules](ACTIVE_DATASETS.md)**.
 
 1. **TV48 — Technical verification:** the frozen panel of **48 accepted protein structures**; evaluates implementation and consistency of all 11 maps, tRSA/scRSA handling, patch construction, numerical stability and Pareto descriptor behavior. [Manifest](strict_apo_48_selected_candidates_v2_final.csv) · [Final numerical verification](FINAL_V110_RESULTS.md) · [Extended technical audit](EXTENDED_V110_SCIENTIFIC_RESULTS.md).
-2. **ISV — Initial scientific validation:** a **new, source-audited, independent initial-validation panel**, still to be selected and frozen. Protein identities, count, experimental labels and performance metrics must not be represented as final until source and PDB matching checks are completed.
+2. **ISV76 — Initial scientific validation candidates:** a fixed active list of **76 distinct PDB structures**, selected from an 80-entry historical structural screen after four exclusions. The active [ISV76 manifest](ISV_active_candidates_76_v3.csv) establishes *structural panel membership*, not 76 accepted independent experimental systems. All 76 have completed 11-map computational analysis, whereas experimental region/construct mapping and source-level acceptance remain pending. See the [selection decision](ISV_SELECTION_DECISION_76.md).
 
 ### Historical analyses (archived, not active datasets)
 
-The earlier eight-protein parameter-development study and nine-condition retrospective literature analysis are preserved solely as methodological provenance and prior exploratory work. They are **not current validation datasets**, and the previous nine conditions are **not** the ISV panel.
+The earlier eight-protein parameter-development study, nine-condition retrospective literature analysis, and original 80-structure screen are preserved as methodological provenance and historical work. They are **not current validation datasets**, and the previous nine conditions are **not** the ISV panel.
 
 ---
 
