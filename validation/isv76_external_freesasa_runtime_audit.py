@@ -111,30 +111,39 @@ def worker(pdb_path, out_path):
 
 
 def freesasa_parse_rsa(text):
-    """Parse official FreeSASA --format=rsa RES records (version-stable).
+    """NACCESS/FreeSASA RSA uses fixed columns, NOT whitespace tokens.
 
-    Tabulated absolute total and side-chain areas have 2 decimal precision.
-    This makes numerical accuracy slightly less granular than JSON but is
-    sufficient for paired rank/exposure cross-checks and avoids distro-specific
-    JSON tree-layout assumptions.
+    Column 9 is chain, columns 10-13 residue number, column 14 insertion;
+    blanks are meaningful. Total absolute SASA is columns 16-22 and
+    side-chain absolute SASA columns 29-35. A blank chain caused earlier
+    split()-based code to mistake a SASA value for a residue number.
     """
     data={}
     for line in text.splitlines():
         if not line.startswith("RES "):
             continue
-        parts=line.split()
-        # RES THR A 5 TOTAL REL SIDE REL ...
-        if len(parts)<7 or parts[0]!="RES":
-            raise ValueError("Malformed FreeSASA RSA residue line: "+line[:160])
-        resname, chain, resid=parts[1],parts[2],parts[3]
+        if len(line)<35:
+            raise ValueError("Short fixed-column FreeSASA RSA line: "+repr(line))
+        resname=line[4:7].strip()
+        chain=line[8].strip()
+        resid=line[9:13].strip()+line[13].strip()
         m=re.fullmatch(r"(-?\d+)([A-Za-z]?)",resid)
         if m is None:
-            raise ValueError("Unsupported FreeSASA RSA residue index "+resid)
+            raise ValueError("Unsupported FreeSASA RSA residue index: "+
+                             repr(resid)+" in "+repr(line[:55]))
         key=f"{chain}:{int(m.group(1))}:{m.group(2)}"
         if key in data:raise ValueError("Duplicated FreeSASA RSA identity "+key)
+        try:
+            total=float(line[15:22].strip())
+            sidechain=float(line[28:35].strip())
+        except ValueError as exc:
+            raise ValueError("Malformed FreeSASA RSA absolute area: "+
+                             repr(line[:55])) from exc
+        if not all(math.isfinite(z) and z>=0 for z in (total,sidechain)):
+            raise ValueError("Invalid FreeSASA RSA SASA for "+key)
         data[key]={"res_name":resname,
-                   "sasa_A2":float(parts[4]),
-                   "sidechain_sasa_A2":float(parts[6])}
+                   "sasa_A2":total,
+                   "sidechain_sasa_A2":sidechain}
     if not data:
         raise ValueError("No FreeSASA RSA RES lines: "+text[:800])
     return data
