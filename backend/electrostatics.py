@@ -187,6 +187,82 @@ def _interpolate(grid: np.ndarray, origin: np.ndarray, spacing: np.ndarray,
     return float(value)
 
 
+# Some archival PDBs include isolated amino-acid records with only an N atom.
+# Never fabricate missing coordinates or modify the original 11-map PDB.
+_ORPHAN_MAX_COUNT = 4
+_ORPHAN_MAX_FRACTION = 0.01
+
+
+def _pdb_orphan_n_only_residues(
+    prepared_pdb: str, valid: dict[str, str]
+) -> tuple[str, list[dict[str, Any]]]:
+    """Prepare an APBS-only candidate excluding strictly single-N fragments.
+
+    Detection alone never changes input. Caller may retry this candidate only
+    if PDB2PQR fails on the unchanged original. Any residue retaining a CA,
+    C, O, side-chain atom, or more than one heavy atom is not auto-removed.
+    """
+    by_key: dict[str, dict[str, Any]] = {}
+    lines = prepared_pdb.splitlines(keepends=True)
+    for line in lines:
+        if not line.startswith("ATOM  ") or len(line) < 27:
+            continue
+        try:
+            chain = line[21].strip()
+            seq = int(line[22:26].strip())
+            icode = line[26].strip()
+        except ValueError:
+            continue
+        key = f"{chain}:{seq}:{icode}"
+        if key not in valid:
+            continue
+        name = line[12:16].strip().upper()
+        element = line[76:78].strip().upper() if len(line) >= 78 else ""
+        if element in ("H", "D") or (not element and name.startswith(("H", "D"))):
+            continue
+        entry = by_key.setdefault(key, {"names": set(), "res_names": set(), "lines": []})
+        entry["names"].add(name)
+        entry["res_names"].add(line[17:20].strip())
+        entry["lines"].append(line)
+
+    omitted = []
+    for key, entry in by_key.items():
+        if (entry["names"] == {"N"} and
+                entry["res_names"] == {valid[key]} and
+                len(entry["lines"]) == 1):
+            omitted.append({
+                "key": key, "res_name": valid[key],
+                "observed_heavy_atoms": ["N"],
+                "missing_backbone_atoms": ["CA", "C", "O"],
+                "reason": "orphan single N atom; C-alpha and carbonyl group absent",
+            })
+    omitted.sort(key=lambda x: x["key"])
+    if not omitted:
+        return prepared_pdb, []
+    if (len(omitted) > _ORPHAN_MAX_COUNT or
+            len(omitted) / max(len(valid), 1) > _ORPHAN_MAX_FRACTION):
+        raise ElectrostaticsError(
+            "PDB2PQR cannot safely recover this structure automatically: "
+            f"{len(omitted)} N-only fragments among {len(valid)} residues "
+            f"(maximum {_ORPHAN_MAX_COUNT} and {_ORPHAN_MAX_FRACTION:.0%}). "
+            "Use a better experimental structure or independently validated remodeling."
+        )
+    excluded_keys = {v["key"] for v in omitted}
+    remaining = []
+    for line in lines:
+        if line.startswith("ATOM  ") and len(line) >= 27:
+            try:
+                key = f"{line[21].strip()}:{int(line[22:26].strip())}:{line[26].strip()}"
+            except ValueError:
+                key = None
+            if key in excluded_keys:
+                continue
+        remaining.append(line)
+    if sum(line.startswith("ATOM  ") for line in remaining) < 4:
+        raise ElectrostaticsError("APBS recovery would leave too few protein atoms")
+    return "".join(remaining), omitted
+
+
 def compute(prepared_pdb: str, residue_profiles: list[dict[str, Any]], *,
             pH: float, ionic_mM: float, temp_K: float) -> dict[str, Any]:
     """Run external programs and project APBS potential onto side-chain atoms.
@@ -201,15 +277,41 @@ def compute(prepared_pdb: str, residue_profiles: list[dict[str, Any]], *,
             f"Electrostatics requested but missing executable(s): {missing}. "
             "Install APBS and PDB2PQR with PROPKA support, then retry."
         )
+    valid = {str(r["key"]): str(r["res_name"]) for r in residue_profiles}
     with tempfile.TemporaryDirectory(prefix="interfacescout_apbs_") as directory:
         wd = Path(directory)
-        (wd / "structure.pdb").write_text(prepared_pdb)
+        pdb_path = wd / "structure.pdb"
+        pdb_path.write_text(prepared_pdb)
         command = [
             shutil.which("pdb2pqr"), "--ff=AMBER", "--keep-chain",
             "--titration-state-method=propka", "--whitespace", f"--with-ph={float(pH):.4f}",
             "structure.pdb", "structure.pqr",
         ]
-        _run(command, wd)
+        omitted = []
+        original_pqr_failure = None
+        try:
+            _run(command, wd)
+        except ElectrostaticsError as original_exc:
+            original_pqr_failure = str(original_exc)
+            cleaned, omitted = _pdb_orphan_n_only_residues(prepared_pdb, valid)
+            if not omitted:
+                raise ElectrostaticsError(
+                    original_pqr_failure
+                    + " No safely removable single-N fragment found; "
+                      "automatic backbone reconstruction is not performed."
+                ) from original_exc
+            pdb_path.write_text(cleaned)
+            (wd / "structure.pqr").unlink(missing_ok=True)
+            try:
+                _run(command, wd)
+            except ElectrostaticsError as retry_exc:
+                raise ElectrostaticsError(
+                    "Original PDB2PQR failed; APBS-only omission of "
+                    f"{[x['key'] for x in omitted]} also failed. "
+                    "Original maps remain unchanged. "
+                    f"Original: {original_pqr_failure[-500:]}; "
+                    f"retry: {str(retry_exc)[-500:]}"
+                ) from retry_exc
         pqr_path = wd / "structure.pqr"
         if not pqr_path.is_file():
             raise ElectrostaticsError("PDB2PQR did not produce structure.pqr")
@@ -228,23 +330,28 @@ def compute(prepared_pdb: str, residue_profiles: list[dict[str, Any]], *,
                     f"Produced files: {produced}; APBS log tail: {apbs_log[-2500:]}"
                 )
         grid, origin, spacing = _read_dx(dx_path)
-        valid = {str(r["key"]): str(r["res_name"]) for r in residue_profiles}
         grouped: dict[str, list[dict]] = {}
         for atom in atoms:
             key = f'{atom["chain"]}:{atom["seq"]}:{atom["icode"]}'
             if key in valid and valid[key] == _RESIDUE_ALIASES.get(atom["res_name"], atom["res_name"]):
                 grouped.setdefault(key, []).append(atom)
-        if not grouped or len(grouped) < len(valid):
+        omitted_keys = {x["key"] for x in omitted}
+        expected_keys = set(valid) - omitted_keys
+        if not grouped or set(grouped) != expected_keys:
+            extra = sorted(set(grouped) - expected_keys)
+            missing = sorted(expected_keys - set(grouped))
             raise ElectrostaticsError(
-                f"PQR/PDB residue mapping incomplete: {len(grouped)}/{len(valid)}. "
-                "Check chain IDs, insertion codes and modified/missing residues."
+                f"PQR/PDB residue mapping incomplete: {len(grouped)}/{len(valid)}; "
+                f"missing expected={missing[:12]}, extra={extra[:12]}. "
+                "Only explicitly recorded N-only fragments may be absent."
             )
         # The principal potential descriptor is sampled *outside* the
         # molecule on an area-weighted probe-center accessible shell.
         # The legacy atom-coordinate estimator remains a separate field
         # for explicit comparison and never influences the 11 maps.
         exposed_keys = {
-            str(row["key"]) for row in residue_profiles if row.get("surface_exposed", False)
+            str(row["key"]) for row in residue_profiles
+            if row.get("surface_exposed", False) and str(row["key"]) in grouped
         }
         surface_by_residue, surface_meta = sample_residue_sas_potential(
             atoms, grid, origin, spacing, exposed_keys
@@ -253,7 +360,23 @@ def compute(prepared_pdb: str, residue_profiles: list[dict[str, Any]], *,
         records = []
         for row in residue_profiles:
             key = str(row["key"])
-            group = grouped[key]
+            group = grouped.get(key)
+            if group is None:
+                if key not in omitted_keys:
+                    raise ElectrostaticsError(f"Unaccounted PQR mapping gap: {key}")
+                records.append({
+                    "key": key, "res_name": row["res_name"],
+                    "net_atomic_charge_e": None,
+                    "surface_potential_kT_per_e": None,
+                    "surface_sampling_area_A2": None,
+                    "surface_potential_samples": 0,
+                    "sidechain_mean_potential_kT_per_e": None,
+                    "sidechain_potential_samples": 0,
+                    "surface_exposed": bool(row.get("surface_exposed", False)),
+                    "pqr_mapped": False,
+                    "pqr_omission_reason": "missing backbone (orphan N-only residue)",
+                })
+                continue
             sidechain = [a for a in group if a["name"].upper() not in backbone
                          and not a["name"].upper().startswith("H")]
             samples = [_interpolate(grid, origin, spacing, a["xyz"]) for a in sidechain]
@@ -271,12 +394,30 @@ def compute(prepared_pdb: str, residue_profiles: list[dict[str, Any]], *,
                     round(sum(samples) / len(samples), 6) if samples else None,
                 "sidechain_potential_samples": len(samples),
                 "surface_exposed": bool(row.get("surface_exposed", False)),
+                "pqr_mapped": True,
+                "pqr_omission_reason": None,
             })
         return {
             "status": "computed", "method": "PDB2PQR PROPKA protonation + APBS linearized Poisson-Boltzmann",
             "potential_unit": "kT/e", "pH": float(pH),
             "ionic_mM": float(ionic_mM), "temperature_K": float(temp_K),
-            "n_pqr_atoms": len(atoms), "n_matched_residues": len(records),
+            "n_pqr_atoms": len(atoms),
+            "n_matched_residues": len(grouped),
+            "n_input_residues": len(records),
+            "n_unmatched_residues": len(omitted),
+            "quality_status": "partial_input_recovery" if omitted else "complete",
+            "input_recovery": {
+                "applied": bool(omitted),
+                "policy": "APBS-only removal of strictly single-N orphan records after original PDB2PQR failure; no coordinates synthesized",
+                "omitted_residues": omitted,
+                "n_omitted": len(omitted),
+                "original_PDB2PQR_failure": original_pqr_failure[-700:] if omitted else None,
+                "canonical_maps_unchanged": True,
+                "caveat": ("Real APBS is computed on a minimally altered PQR; "
+                           "omitted residues have undefined potentials, and "
+                           "nearby electrostatic values may be uncertain.")
+                          if omitted else None,
+            },
             "surface_sampling": surface_meta,
             "n_surface_potential_residues": surface_meta["n_exposed_residues_with_surface_potential"],
             "residues": records,
