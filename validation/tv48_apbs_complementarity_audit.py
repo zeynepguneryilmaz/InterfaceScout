@@ -93,12 +93,16 @@ def analyze(item):
          "surface_exposed": True,
          "trsa_raw": prof["trsa_raw"], "scrsa_raw": prof["scrsa_raw"],
          "net_atomic_charge_e": potentials[key]["net_atomic_charge_e"],
-         "APBS_potential_kT_per_e": potentials[key]["sidechain_mean_potential_kT_per_e"]}
+         "APBS_potential_kT_per_e": potentials[key]["surface_potential_kT_per_e"]}
         for key, prof in profile.items()
-        if prof["surface_exposed"] and potentials[key]["sidechain_mean_potential_kT_per_e"] is not None
+        if prof["surface_exposed"] and potentials[key]["surface_potential_kT_per_e"] is not None
     ]
     if len(valid) < 30:
-        raise ValueError("Fewer than 30 exposed side-chain potentials")
+        raise ValueError("Fewer than 30 exposed SAS surface potentials")
+    if len(valid) != electro["n_surface_potential_residues"]:
+        raise ValueError("Primary surface potential metadata mismatch")
+    if len(valid) < 0.90 * sum(r["surface_exposed"] for r in profile.values()):
+        raise ValueError("SAS surface potential coverage below 90%")
     values = np.asarray([float(x["APBS_potential_kT_per_e"]) for x in valid])
     charges = np.asarray([float(x["net_atomic_charge_e"]) for x in valid])
     keys = {r["key"] for r in valid}
@@ -126,7 +130,7 @@ def analyze(item):
         "software": PUBLIC_VERSION, "model": MODEL_VERSION,
         "canonical_maps_unchanged": True, "n_maps": 11,
         "n_residues": len(profile), "n_surface_residues": sum(r["surface_exposed"] for r in profile.values()),
-        "n_exposed_APBS_sidechains": n, "n_exposed_without_sidechain_potential":
+        "n_exposed_APBS_SAS_residues": n, "n_exposed_without_SAS_potential":
             sum(r["surface_exposed"] for r in profile.values()) - n,
         "n_PQR_atoms": electro["n_pqr_atoms"],
         "APBS_mean_surface_kT_per_e": round(grand, 7),
@@ -155,7 +159,7 @@ def analyze(item):
         overlap_ratio = len(h) / expected if expected > 0 else None
         fronts = sum(int(p.get("pareto_front", 0)) == 1 for p in patches)
         maps.append({
-            "pdb_id": pid, "channel": ch, "n_exposed_APBS_sidechains": n,
+            "pdb_id": pid, "channel": ch, "n_exposed_APBS_SAS_residues": n,
             "n_map_favorable_APBS_residues": int(sum(x > 0 for x in local)),
             "n_patches": len(patches), "n_pareto_front1_patches": fronts,
             "n_top5_unique_exposed_members": len(top5),
@@ -191,7 +195,7 @@ def analyze(item):
 
 
 MAP_FIELDS = [
-    "pdb_id", "channel", "n_exposed_APBS_sidechains",
+    "pdb_id", "channel", "n_exposed_APBS_SAS_residues",
     "n_map_favorable_APBS_residues", "n_patches", "n_pareto_front1_patches",
     "n_top5_unique_exposed_members", "n_top1_unique_exposed_members",
     "n_absolute_APBS_hotspot_residues", "n_top5_hotspot_overlap",
@@ -218,7 +222,7 @@ JOINED_FIELDS = [
 META_FIELDS = [
     "pdb_id", "status", "assembly_sha256", "prepared_sha256", "software", "model",
     "canonical_maps_unchanged", "n_maps", "n_residues", "n_surface_residues",
-    "n_exposed_APBS_sidechains", "n_exposed_without_sidechain_potential",
+    "n_exposed_APBS_SAS_residues", "n_exposed_without_SAS_potential",
     "n_PQR_atoms", "APBS_mean_surface_kT_per_e",
     "APBS_mean_absolute_surface_kT_per_e", "APBS_min_surface_kT_per_e",
     "APBS_max_surface_kT_per_e", "APBS_charge_vs_potential_spearman",
@@ -280,7 +284,7 @@ def aggregate(shards):
         raise ValueError("Incorrect 528-map coverage")
     if maps.groupby("pdb_id").channel.nunique().ne(11).any():
         raise ValueError("At least one protein lacks one or more maps")
-    if len(residues) != int(m.n_exposed_APBS_sidechains.sum()):
+    if len(residues) != int(m.n_exposed_APBS_SAS_residues.sum()):
         raise ValueError("Residue/sample denominator mismatch")
     if len(joined) != 11 * len(residues):
         raise ValueError("Channel-by-residue matrix incomplete")
@@ -338,14 +342,14 @@ def aggregate(shards):
         plt.close()
     plt.figure(figsize=(7.2, 4.8))
     plt.hist(m.APBS_mean_absolute_surface_kT_per_e, bins=12)
-    plt.xlabel("Protein mean |APBS side-chain potential| (kT/e)")
+    plt.xlabel("Protein mean |APBS SAS-shell potential| (kT/e)")
     plt.ylabel("Proteins (n=48)")
     plt.title("TV48: absolute surface electrostatic potential")
     save("01_TV48_mean_absolute_potential_distribution")
 
     fig, ax = plt.subplots(figsize=(8, 5))
-    ax.scatter(m.n_exposed_APBS_sidechains, m.APBS_mean_absolute_surface_kT_per_e)
-    ax.set_xlabel("Exposed residues with APBS side-chain potential")
+    ax.scatter(m.n_exposed_APBS_SAS_residues, m.APBS_mean_absolute_surface_kT_per_e)
+    ax.set_xlabel("Exposed residues with APBS SAS-shell potential")
     ax.set_ylabel("Mean |potential| (kT/e)")
     ax.set_title("TV48: protein size vs APBS potential magnitude")
     save("02_TV48_surface_residue_count_vs_potential")
@@ -357,7 +361,7 @@ def aggregate(shards):
               ordered.APBS_max_surface_kT_per_e, lw=1)
     ax.scatter(ordered.APBS_mean_surface_kT_per_e, y, s=12)
     ax.set_yticks(y, ordered.pdb_id)
-    ax.set_xlabel("Side-chain APBS potential (kT/e): min—max and protein mean")
+    ax.set_xlabel("SAS-shell APBS potential (kT/e): min—max and protein mean")
     ax.set_title("TV48: per-protein surface potential range")
     save("03_TV48_min_mean_max_potential")
 
@@ -401,7 +405,7 @@ def aggregate(shards):
         "n_canonical_map_instances": len(maps),
         "n_protein_residues": int(m.n_residues.sum()),
         "n_surface_residues": int(m.n_surface_residues.sum()),
-        "n_exposed_sidechain_APBS_residues": len(residues),
+        "n_exposed_SAS_APBS_residues": len(residues),
         "n_map_by_residue_APBS_observations": len(joined),
         "canonical_map_invariance": bool(m.canonical_maps_unchanged.all()),
         "number_of_evaluable_signed_channel_correlations":
@@ -415,7 +419,7 @@ def aggregate(shards):
         "scope": [
             "48 distinct protein structures, not 12,068 independent experiments",
             "Protein-level bootstrap resamples proteins, not residues or 11 correlated channels",
-            "APBS values are potential at side-chain heavy atoms, not binding free energy",
+            "Primary APBS values are sampled on an approximate SAS shell, not binding free energy",
             "Top-decile hotspot and uniform-label enrichment are descriptive, not measured contact validation",
             "In-sample AA-type residual variance indicates within-type structural/contextual variation",
             "APBS is an optional annotation; no Pareto reranking or model calibration was done",
