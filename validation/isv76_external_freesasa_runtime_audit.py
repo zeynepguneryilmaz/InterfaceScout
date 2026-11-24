@@ -148,7 +148,7 @@ def one(row):
             raise RuntimeError("InterfaceScout failed: "+own["stderr"][-1000:])
         data=json.loads(exported.read_text())
         cmd=["freesasa","--shrake-rupley","-n","200","--probe-radius","1.4",
-             "--n-threads","1","--format=json","--output-depth=residue",str(inp)]
+             "--n-threads","1","--format=json","--depth=residue",str(inp)]
         external=monitored(cmd,timeout=1200)
         if external["returncode"]:
             raise RuntimeError("FreeSASA failed: "+external["stderr"][-1200:])
