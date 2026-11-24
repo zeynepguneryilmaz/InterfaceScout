@@ -2,13 +2,7 @@ name: Protein-sol ISV76 full 76 real server computations
 run-name: Protein-sol ISV76 76-structure full server run (${{ github.sha }})
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'validation/protein_sol_ISV76_full_batch.py'
-      - 'validation/protein_sol_ISV76_aggregate.py'
-      - 'validation/ISV_active_candidates_76_v3.csv'
-      - '.github/workflows/protein-sol-isv76-full.yml'
+
 permissions:
   contents: read
 jobs:
