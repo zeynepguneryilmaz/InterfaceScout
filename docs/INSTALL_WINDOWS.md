@@ -1,6 +1,6 @@
 # Windows installation and launch
 
-InterfaceScout 1.0 uses Python **3.10–3.12**. Extract the repository source ZIP or a verified Windows Release ZIP completely into a normal directory (not a temporary ZIP preview).
+InterfaceScout 1.1.0 uses Python **3.10–3.12**. Extract the repository source ZIP or a verified Windows Release ZIP completely into a normal directory (not a temporary ZIP preview).
 
 ## First-time setup
 
