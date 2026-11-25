@@ -9,11 +9,15 @@
 [![Cross-platform tests](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/workflows/publication-ci.yml/badge.svg?branch=main&event=push)](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/workflows/publication-ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-6A3245.svg)](LICENSE)
 [![Python 3.10–3.12](https://img.shields.io/badge/Python-3.10%E2%80%933.12-628D78.svg)](#requirements)
-[![Version 1.1.0](https://img.shields.io/badge/version-1.1.0-6A3245.svg)](CITATION.cff)
+[![Version 1.1.0](https://img.shields.io/badge/version-1.1.0-6A3245.svg)](https://github.com/zeynepguneryilmaz/InterfaceScout/releases/tag/v1.1.0-npbe-platform-20261125)
 
 *Explore protein-surface chemistry, compare structural states, and prioritize candidate regions for further experimental or computational investigation.*
 
 </div>
+
+## Download
+
+**[InterfaceScout v1.1.0](https://github.com/zeynepguneryilmaz/InterfaceScout/releases/tag/v1.1.0-npbe-platform-20261125)** is the publication release (model 2.5.0-dual-accessibility), with separate Windows, macOS Intel and Linux ZIPs, SHA-256 checksums and build manifests. The packages are built from [source commit 636bc5a](https://github.com/zeynepguneryilmaz/InterfaceScout/tree/636bc5abfd72798965465ccb7bf79deb0ed2f951). Python 3.10–3.12 is required; optional electrostatics requires separately installed external tools. See the [installation guides](docs/) and [research evidence index](validation/PUBLICATION_EVIDENCE.md).
 
 ## Overview
 
@@ -116,15 +120,17 @@ The Regional Chemistry Profile is **interpretive rather than predictive**. It do
 
 The descriptors were assessed in a label-free methodological audit covering **48 proteins and eight prespecified map combinations**; see [methodology and evidence](validation/REGIONAL_CHEMISTRY_EVIDENCE_AND_METHOD.md). This audit does not establish material-specific adsorption-site accuracy.
 
-### Optional physics-based electrostatics (experimental)
+### Optional continuum electrostatics
 
-The **Electrostatics** checkbox in the single-structure interface (or `"electrostatics": true` in the `/analyze`, `/compare`, or `/structure-set` request) runs **PDB2PQR with PROPKA titration-state assignment** followed by **APBS linearized Poisson–Boltzmann** on the same prepared protein. The server must have the `pdb2pqr` and `apbs` executables on its PATH; check `GET /health`. PDB2PQR must include PROPKA support. The standard install does **not** install these external applications.
+The **Electrostatics** checkbox in the single-structure interface (or `"electrostatics": true` in the `/analyze`, `/compare`, or `/structure-set` request) runs **PDB2PQR with PROPKA titration-state assignment** followed by **APBS nonlinear Poisson–Boltzmann (NPBE)** by default on the same prepared protein. The server must have the `pdb2pqr` and `apbs` executables on its PATH; check `GET /health`. PDB2PQR must include PROPKA support. The external applications are installed separately. Advanced solver modes are `npbe`, `lpbe` and `both` (NPBE primary with LPBE comparison).
 
-**Real external-solver verification:** TV48 (48/48 structures, 528 unchanged canonical maps) passed the [real APBS/PDB2PQR/PROPKA test](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45358105738), followed by [48 individual full ZIP exports](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45365672340). The independent [SAS surface sampling and pilot grid/pH/salt sensitivity study](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45371354598) passed on 48 TV48 structures, prior to its integration into the regular API. **The production-integrated SAS path must be validated separately**; historical output files are not automatically upgraded.
+**Numerical verification:** [paired LPBE/NPBE calculations on 76 structures](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45653251591), [8C50 grid sensitivity](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45657476304), [real-solver API regression](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45657475939) and [paired solver performance](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45663636698) characterize the optional electrostatic layer. Diagnostic flags identify numerical warnings, sampling coverage and grid limitations.
 
-The optional electrostatics response now includes **primary, area-weighted `surface_potential_kT_per_e` values** from a deterministic approximate solvent-accessible probe-center shell (1.4 Å probe, +0.25 Å outward displacement, 42 Fibonacci directions per PQR heavy atom), with `surface_sampling_area_A2` and `surface_potential_samples`. An exposed glycine can have a surface potential even though it has no heavy side chain. The older `sidechain_mean_potential_kT_per_e` field remains a **separate atom-coordinate comparator**, not the primary surface result. Neither is a material adsorption energy or a fitted affinity. Surface sampling depends on SciPy (pinned in backend requirements). The method approximates SAS, not an analytic SES, and APBS grid refinement on capped grids requires explicit caution. ZIP/Excel/CSV include both fields and provenance.\n\nThe extra `electrostatics` response includes matched-residue PQR net atomic charges (e) and mean APBS potential sampled at side-chain heavy-atom coordinates (kT/e). Glycine has no side-chain potential, correctly reported as null. Ion concentration is specified as symmetric monovalent electrolyte (`ionic_mM/1000` mol/L); temperature enters APBS, unlike the canonical scoring model. APBS calculation uses a default dielectric model (solute 2, solvent 78.54); these are assumptions, not fitted adsorption parameters.
+The optional electrostatics response now includes **primary, area-weighted `surface_potential_kT_per_e` values** from a deterministic approximate solvent-accessible probe-center shell (1.4 Å probe, +0.25 Å outward displacement, 42 Fibonacci directions per PQR heavy atom), with `surface_sampling_area_A2` and `surface_potential_samples`. An exposed glycine can have a surface potential even though it has no heavy side chain. The older `sidechain_mean_potential_kT_per_e` field remains a **separate atom-coordinate comparator**, not the primary surface result. Neither is a material adsorption energy or a fitted affinity. Surface sampling depends on SciPy (pinned in backend requirements). The method approximates SAS, not an analytic SES, and APBS grid refinement on capped grids requires explicit caution. ZIP/Excel/CSV include both fields and provenance.
 
-**Scientific separation:** all eleven canonical chemistry channels, SASA, patch membership and Pareto ranks remain unchanged. APBS output is a separate, experimental descriptive annotation, *not* a verified adsorption-affinity correction or a replacement for PROPKA-derived residue titration fractions. No fallback is allowed: missing binaries, failed APBS jobs or uncertain residue identity cause an explicit error. The existing TV48 benchmark has **not** been revalidated for an APBS-informed scoring model.
+The extra `electrostatics` response includes matched-residue PQR net atomic charges (e) and mean APBS potential sampled at side-chain heavy-atom coordinates (kT/e). Glycine has no side-chain potential, correctly reported as null. Ion concentration is specified as symmetric monovalent electrolyte (`ionic_mM/1000` mol/L); temperature enters APBS, unlike the canonical scoring model. APBS calculation uses a default dielectric model (solute 2, solvent 78.54); these are assumptions, not fitted adsorption parameters.
+
+**Scientific separation:** the eleven canonical chemistry channels, SASA, patch membership and Pareto ranks are independent of the optional PB annotation. Electrostatic calculation failures are reported explicitly; canonical maps remain available. In paired mode, the primary and secondary solver outputs retain their identities and numerical diagnostics.
 
 For a local environment, install compatible PDB2PQR (with PROPKA) and APBS distributions, ensure both commands run on PATH, then select the checkbox and analyze a full-atom protein. The external solver is only invoked when explicitly requested. Benchmark computation costs and verify force-field completeness and appropriate solvent conditions for your structure before scientific interpretation.
 
@@ -202,20 +208,20 @@ Surface maps and ranks are model-derived quantities. Closely related channels ma
 
 The SASA sampling level and multiscale radii were selected through label-free numerical and structural-consistency analyses. The coarse patch radius is a predefined geometric scale, not a fitted adsorption-contact radius. See [validation](validation/README.md), [parameter settings](validation/parameter_selection.json), and the [dual-accessibility method](validation/DUAL_ACCESSIBILITY_LITERATURE_AND_METHOD.md).
 
-**Version 1.1.0 changes the geometric accessibility definition and patch prioritization relative to 1.0.0.** Results from earlier versions must be recalculated before they are compared under a common method. Previous retrospective comparisons of the legacy and exploratory dual-accessibility approaches should not be represented as validation of the final 1.1.0 implementation.
+The publication model uses total-residue RSA for geometric eligibility and side-chain RSA for local chemical support.
 
 ## Active validation datasets
 
-InterfaceScout's current scientific validation plan uses **two datasets only**:
+The publication study uses two principal structural panels:
 
 | Dataset | Purpose | Status |
 | --- | --- | --- |
 | **TV48 — Technical verification** | A frozen, quality-screened panel of **48 protein structures** for reproducibility, dual-accessibility implementation, 11-map consistency, patch construction, and numerical robustness | Completed for the tested production version |
-| **ISV — Initial scientific validation** | **76 active candidate protein structures** for physicochemical mapping and independent structural/scientific evaluation, including biofilm-related proteins | Active list fixed after four exclusions; final evidence-level acceptance still pending |
+| **ISV76 — Application panel** | **76 protein structures** for physicochemical mapping and independent structural/scientific evaluation, including biofilm-related proteins | 836 canonical maps; 64,592 candidate regions |
 
 The **[active 76-protein ISV candidate list](validation/ISV_active_candidates_76_v3.csv)** excludes **3GHG, 1QJS, 4DN0 and 6LQH**, retains **1STP**, and supersedes the archived 80-protein screening candidate list. [Selection decision and rationale](validation/ISV_SELECTION_DECISION_76.md). The 80-structure computation results remain archived as historical quality evidence, not the active ISV sample size.
 
-The historical eight-protein parameter-development panel and nine retrospective literature conditions are **not active validation datasets**. Previous exploratory results remain archived and should not be mistaken for independent ISV evidence. See the [two-dataset plan and selection criteria](validation/ACTIVE_DATASETS.md), [TV48 numerical results](validation/FINAL_V110_RESULTS.md), and [TV48 extended scientific audit](validation/EXTENDED_V110_SCIENTIFIC_RESULTS.md).
+Additional numerical perturbation studies and literature-associated case analyses are documented in the [publication evidence index](validation/PUBLICATION_EVIDENCE.md).
 
 ## Testing and reproducibility
 
@@ -227,7 +233,7 @@ python -m unittest discover -s tests -v
 python validation/verify_publication.py
 ```
 
-The [cross-platform test workflow](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/workflows/publication-ci.yml) covers supported Python environments. Browser-based rendering, export checks, and additional validation scripts are documented in the repository. A source commit or pending CI run should not be confused with a verified packaged release.
+The [cross-platform test workflow](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/workflows/publication-ci.yml) covers supported Python environments. Browser-based rendering, export checks, and additional validation scripts are documented in the repository. The [publication release builds](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45664039001) passed platform-specific packaging and integrity checks.
 
 See the [examples index](examples/README.md) for example inputs and the user guide for reporting recommendations.
 

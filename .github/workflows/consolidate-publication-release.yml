@@ -1,0 +1,67 @@
+name: Consolidate publication release
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/consolidate-publication-release.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  consolidate:
+    runs-on: ubuntu-24.04
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+    steps:
+      - name: Verify active release before consolidating
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/$REPO/releases/tags/v1.1.0-npbe-platform-20261125" > current.json
+          python - <<'PY'
+          import json
+          r=json.load(open('current.json'))
+          assert r['target_commitish']=='636bc5abfd72798965465ccb7bf79deb0ed2f951'
+          assert not r['draft'] and not r['prerelease']
+          a={x['name']:x for x in r['assets']}
+          for os in ['windows','macos','linux']:
+              n=f'InterfaceScout-1.1.0-{os}.zip'
+              for f in [n,n+'.json',n+'.sha256']:
+                  assert a[f]['size']>0
+          PY
+          mkdir packages
+          gh release download 'v1.1.0-npbe-platform-20261125' --repo "$REPO" --dir packages
+          (cd packages && for f in *.sha256; do sha256sum -c "$f"; done)
+          python - <<'PY'
+          import json,glob
+          for f in glob.glob('packages/*.zip.json'):
+              assert json.load(open(f))['source_commit']=='636bc5abfd72798965465ccb7bf79deb0ed2f951'
+          PY
+      - name: Consolidate visible releases, preserving historical Git tags
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > notes.md <<'NOTES'
+          # InterfaceScout v1.1.0
+
+          Physicochemical protein-surface mapping and candidate-region analysis. Scientific model: **2.5.0-dual-accessibility**.
+
+          Download the ZIP for your operating system: Windows x64, macOS Intel, or Linux x64. Extract it and follow START_HERE.txt. Python 3.10–3.12 is required; optional electrostatics requires PDB2PQR/PROPKA and APBS. The application runs locally in a browser.
+
+          Eleven descriptive chemistry maps, region prioritization, chemical overlap and structural comparison are available. Optional NPBE electrostatics includes explicit LPBE/paired modes and numerical diagnostics. The maps support interfacial research planning.
+
+          All three packages use source commit `636bc5abfd72798965465ccb7bf79deb0ed2f951` and have accompanying SHA-256 checksums and build manifests. Apple Silicon and native signed installers are outside the verified package scope.
+
+          [Research evidence](https://github.com/zeynepguneryilmaz/InterfaceScout/blob/main/validation/PUBLICATION_EVIDENCE.md) · [Platform tests](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45661100267)
+          NOTES
+          gh release edit 'v1.1.0-npbe-platform-20261125' --repo "$REPO" --title 'InterfaceScout v1.1.0' --notes-file notes.md --latest
+          if gh release view 'v1.1.0-platform-20261125' --repo "$REPO" >/dev/null 2>&1; then
+            gh release delete 'v1.1.0-platform-20261125' --repo "$REPO" --yes
+          fi
+          gh api "repos/$REPO/releases?per_page=100" > releases.json
+          python - <<'PY'
+          import json
+          r=json.load(open('releases.json'))
+          assert len([x for x in r if not x['draft']])==1
+          assert any(x['tag_name']=='v1.1.0-npbe-platform-20261125' for x in r)
+          PY

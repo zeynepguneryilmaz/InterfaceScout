@@ -36,7 +36,7 @@ candidate_id,protein_name,proposed_pdb_id,category,priority,interface_relevance,
 "ISV-P037","Catalase","1DGF","model_enzyme","high","NP immobilization and polymer binding","tetramer/heme and species match","NO","PROPOSED_AWAITING_RCSB_AND_COORDINATE_QA","NOT_REQUIRED_OR_NOT_AUDITED"
 "ISV-P038","Horseradish peroxidase","1HCH","model_enzyme","high","nanoparticle enzyme immobilization","heme/calcium/glycosylation","NO","PROPOSED_AWAITING_RCSB_AND_COORDINATE_QA","NOT_REQUIRED_OR_NOT_AUDITED"
 "ISV-P039","Bovine pancreatic trypsin (PDB polymer entity: trypsinogen)","1S0Q","model_enzyme","high","surface immobilization protease","complexed inhibitor and autoproteolysis","NO","PROPOSED_AWAITING_RCSB_AND_COORDINATE_QA","NOT_REQUIRED_OR_NOT_AUDITED"
-"ISV-P040","Alpha chymotrypsin","1GCT","model_enzyme","high","immobilization protease","multiple processed chains","NO","PROPOSED_AWAITING_RCSB_AND_COORDINATE_QA","NOT_REQUIRED_OR_NOT_AUDITED"
+"ISV-P040","Gamma-chymotrypsin","1GCT","model_enzyme","high","immobilization protease","multiple processed chains","NO","PROPOSED_AWAITING_RCSB_AND_COORDINATE_QA","NOT_REQUIRED_OR_NOT_AUDITED"
 "ISV-P041","Papain","9PAP","model_enzyme","high","protease immobilization","active site oxidation and inhibitor state","NO","PROPOSED_AWAITING_RCSB_AND_COORDINATE_QA","NOT_REQUIRED_OR_NOT_AUDITED"
 "ISV-P042","Proteinase K","5B1E","model_enzyme","high","AuNP enzyme model","cofactor and ligand treatment","NO","PROPOSED_AWAITING_RCSB_AND_COORDINATE_QA","NOT_REQUIRED_OR_NOT_AUDITED"
 "ISV-P043","Lipase B Candida antarctica","1TCA","model_enzyme","high","classic immobilized biocatalyst","glycosylation and open/closed state","NO","PROPOSED_AWAITING_RCSB_AND_COORDINATE_QA","NOT_REQUIRED_OR_NOT_AUDITED"
