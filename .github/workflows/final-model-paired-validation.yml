@@ -1,0 +1,77 @@
+name: Final model 48 sensitivity and 76 paired PB
+on:
+  push:
+    branches: [validation/final-model-48-paired-pb76]
+    paths:
+      - '.github/workflows/final-model-paired-validation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  sensitivity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install gemmi==0.7.4 pandas requests
+      - uses: actions/download-artifact@v4
+        with:
+          name: final-v110-48-complete
+          run-id: 45244648958
+          github-token: ${{ github.token }}
+          path: reference48
+      - run: python -u validation/final_model_paired_validation.py sens ${{ matrix.shard }} 16 reference48 sensitivity48
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+          OMP_NUM_THREADS: '1'
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-sensitivity48-${{ matrix.shard }}
+          path: sensitivity48/
+          retention-days: 90
+  paired:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y apbs
+          python -m pip install -r backend/requirements.txt
+          python -m pip install pdb2pqr==3.7.1 gemmi==0.7.4 pandas requests
+          apbs --version
+          pdb2pqr --version
+      - uses: actions/download-artifact@v4
+        with:
+          name: ISV76-Final-InterfaceScout-11Map-SAS-APBS-All-Protect
+          run-id: 45385665397
+          github-token: ${{ github.token }}
+          path: reference76
+      - run: python -u validation/final_model_paired_validation.py pb ${{ matrix.shard }} 16 reference76 paired76
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+          OMP_NUM_THREADS: '1'
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-paired76-${{ matrix.shard }}
+          path: paired76/
+          retention-days: 90
