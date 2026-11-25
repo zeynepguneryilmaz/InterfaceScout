@@ -1,0 +1,37 @@
+name: 76 paired APBS solver performance
+on:
+  push:
+    branches: [validation/region-definition-robustness48]
+    paths: ['.github/workflows/paired-pb-performance.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  measure:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y apbs time
+          dpkg-query -W apbs time
+          lscpu
+      - uses: actions/download-artifact@v4
+        with:
+          name: final-paired76-${{ matrix.shard }}
+          run-id: 45653251591
+          github-token: ${{ github.token }}
+          path: paired
+      - run: python -u validation/paired_pb_performance.py paired performance
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pb-performance-${{ matrix.shard }}
+          path: performance/
+          retention-days: 90
