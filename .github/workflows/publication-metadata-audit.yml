@@ -1,0 +1,25 @@
+name: Publication metadata and frozen ligand audit
+on:
+  push:
+    branches: [validation/final-model-48-paired-pb76]
+    paths: ['.github/workflows/publication-metadata-audit.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install requests gemmi==0.7.4
+      - run: python -u validation/publication_metadata_audit.py
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: publication-metadata-124
+          path: publication_metadata/
+          retention-days: 90
