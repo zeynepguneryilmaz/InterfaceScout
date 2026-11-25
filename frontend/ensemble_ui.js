@@ -111,7 +111,7 @@ async function ensembleAnalyzeSet(){
   ensembleBusy=true;ensembleRefresh();ensembleMessage("",true);
   ensembleMessage("Calculating 11 maps per PDB and matched-residue consensus...");
   const body={structures:ensembleInputs,pH:+$("pH").value,ionic_mM:+$("ionic").value,
-    temp_K:+$("temp").value,combined_maps:selected.size>=2?[...selected]:null};
+    temp_K:+$("temp").value,electrostatics:$("electrostatics").checked,pb_solver:$("pbSolver").value,combined_maps:selected.size>=2?[...selected]:null};
   try{
     const res=await fetch("/structure-set",{method:"POST",headers:{"Content-Type":"application/json"},
       body:JSON.stringify(body)});

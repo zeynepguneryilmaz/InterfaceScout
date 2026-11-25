@@ -6,6 +6,8 @@ electrostatics is a separate, explicitly requested, residue-matched layer.
 from __future__ import annotations
 
 import math
+import hashlib
+import time
 from pathlib import Path
 import re
 import shutil
@@ -27,6 +29,7 @@ def availability() -> dict[str, Any]:
         "apbs": shutil.which("apbs") is not None,
         "propka_via_pdb2pqr": True,
         "policy": "Requested electrostatics fail explicitly; no approximate substitute",
+        "default_solver": "npbe", "solver_modes": ["npbe", "lpbe", "both"],
     }
 
 
@@ -95,7 +98,10 @@ def _pqr_atoms(path: Path) -> list[dict[str, Any]]:
 
 
 def _apbs_input(atoms: list[dict[str, Any]], ionic_mM: float,
-                temp_K: float) -> str:
+                temp_K: float, solver: str = "lpbe") -> str:
+    # Keep the helper default for archived LPBE audit scripts. Production compute passes its solver explicitly.
+    if solver not in ("lpbe", "npbe"):
+        raise ElectrostaticsError("Unsupported PB solver")
     coords = np.asarray([a["xyz"] for a in atoms], dtype=float)
     low, high = coords.min(axis=0), coords.max(axis=0)
     span = np.maximum(high - low, 1.0)
@@ -118,7 +124,7 @@ def _apbs_input(atoms: list[dict[str, Any]], ionic_mM: float,
         f"    cglen {' '.join(f'{v:.4f}' for v in coarse)}\n"
         f"    fglen {' '.join(f'{v:.4f}' for v in fine)}\n"
         "    cgcent mol 1\n    fgcent mol 1\n    mol 1\n"
-        "    lpbe\n    bcfl sdh\n    pdie 2.0\n    sdie 78.54\n"
+        f"    {solver}\n    bcfl sdh\n    pdie 2.0\n    sdie 78.54\n"
         "    chgm spl2\n    srfm smol\n    srad 1.4\n    swin 0.3\n"
         "    sdens 10.0\n"
         + salt_lines
@@ -270,12 +276,14 @@ def _pdb_orphan_n_only_residues(
 
 
 def compute(prepared_pdb: str, residue_profiles: list[dict[str, Any]], *,
-            pH: float, ionic_mM: float, temp_K: float) -> dict[str, Any]:
+            pH: float, ionic_mM: float, temp_K: float, solver: str = "npbe") -> dict[str, Any]:
     """Run external programs and project APBS potential onto side-chain atoms.
 
     APBS writes potentials in kT/e. Surface-sidechain mean is descriptive, not
     adsorption free energy. Unmatched structures cause an explicit failure.
     """
+    if solver not in ("npbe", "lpbe", "both"):
+        raise ElectrostaticsError("Unsupported PB solver mode")
     tools = availability()
     if not tools["pdb2pqr"] or not tools["apbs"]:
         missing = ", ".join(n for n in ("pdb2pqr", "apbs") if not tools[n])
@@ -322,114 +330,215 @@ def compute(prepared_pdb: str, residue_profiles: list[dict[str, Any]], *,
         if not pqr_path.is_file():
             raise ElectrostaticsError("PDB2PQR did not produce structure.pqr")
         atoms = _pqr_atoms(pqr_path)
-        (wd / "potential.in").write_text(_apbs_input(atoms, ionic_mM, temp_K))
-        apbs_log = _run([shutil.which("apbs"), "potential.in"], wd, timeout=600)
-        dx_path = wd / "potential.dx"
-        if not dx_path.is_file():
-            candidates = sorted(wd.glob("potential*.dx"))
-            if len(candidates) == 1:
-                dx_path = candidates[0]
-            else:
-                produced = ", ".join(sorted(p.name for p in wd.iterdir()))
-                raise ElectrostaticsError(
-                    f"APBS did not write potential.dx (other grids={len(candidates)}). "
-                    f"Produced files: {produced}; APBS log tail: {apbs_log[-2500:]}"
-                )
-        grid, origin, spacing = _read_dx(dx_path)
-        grouped: dict[str, list[dict]] = {}
-        for atom in atoms:
-            key = f'{atom["chain"]}:{atom["seq"]}:{atom["icode"]}'
-            if key in valid and valid[key] == _RESIDUE_ALIASES.get(atom["res_name"], atom["res_name"]):
-                grouped.setdefault(key, []).append(atom)
-        omitted_keys = {x["key"] for x in omitted}
-        expected_keys = set(valid) - omitted_keys
-        if not grouped or set(grouped) != expected_keys:
-            extra = sorted(set(grouped) - expected_keys)
-            missing = sorted(expected_keys - set(grouped))
+        pqr_sha = hashlib.sha256(pqr_path.read_bytes()).hexdigest()
+        primary = "npbe" if solver == "both" else solver
+        result = _solve_prepared(wd, atoms, residue_profiles, valid, omitted,
+                                 original_pqr_failure, pH, ionic_mM, temp_K, primary, pqr_sha)
+        result["requested_solver"] = solver
+        if solver == "both":
+            try:
+                other = _solve_prepared(wd, atoms, residue_profiles, valid, omitted,
+                                        original_pqr_failure, pH, ionic_mM, temp_K, "lpbe", pqr_sha)
+                result["comparison"] = _paired_comparison(result, other)
+            except (ElectrostaticsError, ValueError) as exc:
+                result["comparison"] = {"status": "unavailable", "secondary_solver": "lpbe",
+                                        "reason": str(exc), "fallback_used": False}
+        return result
+
+
+def _quality_assessment(log: str, *, solver: str, surface_meta: dict, records: list,
+                        omitted: list, spacing: np.ndarray) -> dict[str, Any]:
+    """Auditable numerical flags; not a claim of independent physical validation."""
+    flags = []
+    evidence = []
+    # APBS can exit zero even when nonlinear overflow or focus warnings are emitted.
+    # Do not flag generic asc_getToken EOF messages, common in successful APBS runs.
+    for line in log.splitlines():
+        if re.search(r"trapped exp overflows|exponential overflow|convergence not guaranteed|focusFillBound.*warning|failed to converge|did not converge|non.?finite|numerical divergence", line, re.I):
+            evidence.append(line.strip()[:400])
+    if evidence:
+        flags.append("solver_diagnostic_review")
+    total = int(surface_meta.get("n_exposed_residues_requested", 0))
+    n = int(surface_meta.get("n_exposed_residues_with_surface_potential", 0))
+    coverage = n / total if total else 0.
+    if not total or coverage < .90:
+        flags.append("low_surface_coverage")
+    if omitted:
+        flags.append("partial_input_recovery")
+    if max(spacing) > .8001:
+        flags.append("grid_spacing_above_target")
+    values = [float(r["surface_potential_kT_per_e"]) for r in records
+              if r.get("surface_potential_kT_per_e") is not None]
+    if not values or not all(math.isfinite(v) for v in values):
+        raise ElectrostaticsError("No finite solvent-accessible residue potentials")
+    high = sum(abs(v) > 10 for v in values)
+    if high:
+        flags.append("high_absolute_potential")
+        if solver == "lpbe":
+            flags.append("review_linearization_applicability")
+    return {"status": "review_recommended" if flags else "checks_passed",
+            "flags": flags, "solver_log_evidence": evidence[:50],
+            "surface_residue_coverage_fraction": coverage,
+            "n_abs_potential_gt10": high, "abs_potential_review_threshold_kT_per_e": 10,
+            "threshold_is_review_flag_not_validity_cutoff": True,
+            "scope": "Output and numerical diagnostics only; independent grid convergence is not certified."}
+
+
+def _paired_comparison(primary: dict, other: dict) -> dict[str, Any]:
+    from scipy.stats import spearmanr
+    if primary["pqr_sha256"] != other["pqr_sha256"] or primary["grid"] != other["grid"]:
+        raise ElectrostaticsError("Paired PB inputs or grids differ")
+    x = {r["key"]: r for r in primary["residues"]}
+    y = {r["key"]: r for r in other["residues"]}
+    if x.keys() != y.keys():
+        raise ElectrostaticsError("Paired PB residue keys differ")
+    a, b = [], []
+    for key, r in x.items():
+        q = y[key]
+        if (r["surface_potential_samples"] != q["surface_potential_samples"] or
+                r["surface_sampling_area_A2"] != q["surface_sampling_area_A2"]):
+            raise ElectrostaticsError("Paired PB shell sampling differs")
+        v, u = r["surface_potential_kT_per_e"], q["surface_potential_kT_per_e"]
+        if (v is None) != (u is None):
+            raise ElectrostaticsError("Paired PB potential availability differs")
+        r["lpbe_surface_potential_kT_per_e"] = u
+        r["lpbe_sidechain_mean_potential_kT_per_e"] = q["sidechain_mean_potential_kT_per_e"]
+        r["npbe_minus_lpbe_kT_per_e"] = None if v is None else v - u
+        if v is not None:
+            a.append(v); b.append(u)
+    if not a:
+        raise ElectrostaticsError("No paired solvent-accessible potentials")
+    a, b = np.asarray(a), np.asarray(b)
+    rho = float(spearmanr(a, b).statistic) if len(a) > 1 and np.ptp(a) and np.ptp(b) else float("nan")
+    return {"status": "computed", "primary_solver": "npbe", "secondary_solver": "lpbe",
+            "same_pqr_grid_shell": True, "n_paired": len(a),
+            "spearman": rho if math.isfinite(rho) else None,
+            "median_abs_difference_kT_per_e": float(np.median(abs(a-b))),
+            "p95_abs_difference_kT_per_e": float(np.quantile(abs(a-b), .95)),
+            "sign_disagreement_fraction": float(np.mean(np.sign(a) != np.sign(b))),
+            "lpbe_quality": other["quality"], "lpbe_elapsed_seconds": other["solver_elapsed_seconds"],
+            "fallback_used": False}
+
+
+def _solve_prepared(wd, atoms, residue_profiles, valid, omitted, original_pqr_failure,
+                    pH, ionic_mM, temp_K, solver, pqr_sha):
+    for previous in wd.glob("potential*.dx"):
+        previous.unlink()
+    (wd / "potential.in").write_text(_apbs_input(atoms, ionic_mM, temp_K, solver=solver))
+    started = time.monotonic()
+    apbs_log = _run([shutil.which("apbs"), "potential.in"], wd, timeout=2400)
+    elapsed = time.monotonic() - started
+    dx_path = wd / "potential.dx"
+    if not dx_path.is_file():
+        candidates = sorted(wd.glob("potential*.dx"))
+        if len(candidates) == 1:
+            dx_path = candidates[0]
+        else:
+            produced = ", ".join(sorted(p.name for p in wd.iterdir()))
             raise ElectrostaticsError(
-                f"PQR/PDB residue mapping incomplete: {len(grouped)}/{len(valid)}; "
-                f"missing expected={missing[:12]}, extra={extra[:12]}. "
-                "Only explicitly recorded N-only fragments may be absent."
+                f"APBS did not write potential.dx (other grids={len(candidates)}). "
+                f"Produced files: {produced}; APBS log tail: {apbs_log[-2500:]}"
             )
-        # The principal potential descriptor is sampled *outside* the
-        # molecule on an area-weighted probe-center accessible shell.
-        # The legacy atom-coordinate estimator remains a separate field
-        # for explicit comparison and never influences the 11 maps.
-        exposed_keys = {
-            str(row["key"]) for row in residue_profiles
-            if row.get("surface_exposed", False) and str(row["key"]) in grouped
-        }
-        surface_by_residue, surface_meta = sample_residue_sas_potential(
-            atoms, grid, origin, spacing, exposed_keys
+    grid, origin, spacing = _read_dx(dx_path)
+    grouped: dict[str, list[dict]] = {}
+    for atom in atoms:
+        key = f'{atom["chain"]}:{atom["seq"]}:{atom["icode"]}'
+        if key in valid and valid[key] == _RESIDUE_ALIASES.get(atom["res_name"], atom["res_name"]):
+            grouped.setdefault(key, []).append(atom)
+    omitted_keys = {x["key"] for x in omitted}
+    expected_keys = set(valid) - omitted_keys
+    if not grouped or set(grouped) != expected_keys:
+        extra = sorted(set(grouped) - expected_keys)
+        missing = sorted(expected_keys - set(grouped))
+        raise ElectrostaticsError(
+            f"PQR/PDB residue mapping incomplete: {len(grouped)}/{len(valid)}; "
+            f"missing expected={missing[:12]}, extra={extra[:12]}. "
+            "Only explicitly recorded N-only fragments may be absent."
         )
-        backbone = {"N", "CA", "C", "O", "OXT"}
-        records = []
-        for row in residue_profiles:
-            key = str(row["key"])
-            group = grouped.get(key)
-            if group is None:
-                if key not in omitted_keys:
-                    raise ElectrostaticsError(f"Unaccounted PQR mapping gap: {key}")
-                records.append({
-                    "key": key, "res_name": row["res_name"],
-                    "net_atomic_charge_e": None,
-                    "surface_potential_kT_per_e": None,
-                    "surface_sampling_area_A2": None,
-                    "surface_potential_samples": 0,
-                    "sidechain_mean_potential_kT_per_e": None,
-                    "sidechain_potential_samples": 0,
-                    "surface_exposed": bool(row.get("surface_exposed", False)),
-                    "pqr_mapped": False,
-                    "pqr_omission_reason": "missing backbone (orphan N-only residue)",
-                })
-                continue
-            sidechain = [a for a in group if a["name"].upper() not in backbone
-                         and not a["name"].upper().startswith("H")]
-            samples = [_interpolate(grid, origin, spacing, a["xyz"]) for a in sidechain]
-            samples = [v for v in samples if v is not None]
-            if sidechain and len(samples) != len(sidechain):
-                raise ElectrostaticsError(f"APBS grid excludes side-chain atom(s) at {key}")
-            sas = surface_by_residue.get(key, {})
+    # The principal potential descriptor is sampled *outside* the
+    # molecule on an area-weighted probe-center accessible shell.
+    # The legacy atom-coordinate estimator remains a separate field
+    # for explicit comparison and never influences the 11 maps.
+    exposed_keys = {
+        str(row["key"]) for row in residue_profiles
+        if row.get("surface_exposed", False) and str(row["key"]) in grouped
+    }
+    surface_by_residue, surface_meta = sample_residue_sas_potential(
+        atoms, grid, origin, spacing, exposed_keys
+    )
+    backbone = {"N", "CA", "C", "O", "OXT"}
+    records = []
+    for row in residue_profiles:
+        key = str(row["key"])
+        group = grouped.get(key)
+        if group is None:
+            if key not in omitted_keys:
+                raise ElectrostaticsError(f"Unaccounted PQR mapping gap: {key}")
             records.append({
                 "key": key, "res_name": row["res_name"],
-                "net_atomic_charge_e": round(sum(a["charge"] for a in group), 6),
-                "surface_potential_kT_per_e": sas.get("surface_potential_kT_per_e"),
-                "surface_sampling_area_A2": sas.get("surface_sampling_area_A2"),
-                "surface_potential_samples": sas.get("surface_potential_samples", 0),
-                "sidechain_mean_potential_kT_per_e":
-                    round(sum(samples) / len(samples), 6) if samples else None,
-                "sidechain_potential_samples": len(samples),
+                "net_atomic_charge_e": None,
+                "surface_potential_kT_per_e": None,
+                "surface_sampling_area_A2": None,
+                "surface_potential_samples": 0,
+                "sidechain_mean_potential_kT_per_e": None,
+                "sidechain_potential_samples": 0,
                 "surface_exposed": bool(row.get("surface_exposed", False)),
-                "pqr_mapped": True,
-                "pqr_omission_reason": None,
+                "pqr_mapped": False,
+                "pqr_omission_reason": "missing backbone (orphan N-only residue)",
             })
-        return {
-            "status": "computed", "method": "PDB2PQR PROPKA protonation + APBS linearized Poisson-Boltzmann",
-            "potential_unit": "kT/e", "pH": float(pH),
-            "ionic_mM": float(ionic_mM), "temperature_K": float(temp_K),
-            "n_pqr_atoms": len(atoms),
-            "n_matched_residues": len(grouped),
-            "n_input_residues": len(records),
-            "n_unmatched_residues": len(set(valid) & omitted_keys),
-            "n_orphan_records_removed_from_apbs_input": len(omitted),
-            "quality_status": "partial_input_recovery" if omitted else "complete",
-            "input_recovery": {
-                "applied": bool(omitted),
-                "policy": "APBS-only removal of strictly single-N orphan records after original PDB2PQR failure; no coordinates synthesized",
-                "omitted_residues": omitted,
-                "n_omitted": len(omitted),
-                "original_PDB2PQR_failure": original_pqr_failure[-700:] if omitted else None,
-                "canonical_maps_unchanged": True,
-                "caveat": ("Real APBS is computed on a minimally altered PQR; "
-                           "omitted residues have undefined potentials, and "
-                           "nearby electrostatic values may be uncertain.")
-                          if omitted else None,
-            },
-            "surface_sampling": surface_meta,
-            "n_surface_potential_residues": surface_meta["n_exposed_residues_with_surface_potential"],
-            "residues": records,
-            "interpretation": "Primary surface_potential_kT_per_e is area-weighted APBS potential "
-                              "on a discrete solvent-accessible shell (+0.25 A outside probe-center SAS); "
-                              "sidechain_mean_potential_kT_per_e is a legacy atom-coordinate comparator. "
-                              "Neither is affinity, binding energy, nor a recalibrated canonical map score.",
-        }
+            continue
+        sidechain = [a for a in group if a["name"].upper() not in backbone
+                     and not a["name"].upper().startswith("H")]
+        samples = [_interpolate(grid, origin, spacing, a["xyz"]) for a in sidechain]
+        samples = [v for v in samples if v is not None]
+        if sidechain and len(samples) != len(sidechain):
+            raise ElectrostaticsError(f"APBS grid excludes side-chain atom(s) at {key}")
+        sas = surface_by_residue.get(key, {})
+        records.append({
+            "key": key, "res_name": row["res_name"],
+            "net_atomic_charge_e": round(sum(a["charge"] for a in group), 6),
+            "surface_potential_kT_per_e": sas.get("surface_potential_kT_per_e"),
+            "surface_sampling_area_A2": sas.get("surface_sampling_area_A2"),
+            "surface_potential_samples": sas.get("surface_potential_samples", 0),
+            "sidechain_mean_potential_kT_per_e":
+                round(sum(samples) / len(samples), 6) if samples else None,
+            "sidechain_potential_samples": len(samples),
+            "surface_exposed": bool(row.get("surface_exposed", False)),
+            "pqr_mapped": True,
+            "pqr_omission_reason": None,
+        })
+    quality = _quality_assessment(apbs_log, solver=solver, surface_meta=surface_meta,
+                                  records=records, omitted=omitted, spacing=spacing)
+    return {
+        "status": "computed", "method": "PDB2PQR PROPKA protonation + APBS " + ("nonlinear" if solver == "npbe" else "linearized") + " Poisson-Boltzmann",
+        "solver": solver, "pqr_sha256": pqr_sha, "solver_elapsed_seconds": elapsed,
+        "grid": {"shape": list(grid.shape), "origin_A": origin.tolist(), "spacing_A": spacing.tolist()},
+        "quality": quality, "fallback_used": False,
+        "potential_unit": "kT/e", "pH": float(pH),
+        "ionic_mM": float(ionic_mM), "temperature_K": float(temp_K),
+        "n_pqr_atoms": len(atoms),
+        "n_matched_residues": len(grouped),
+        "n_input_residues": len(records),
+        "n_unmatched_residues": len(set(valid) & omitted_keys),
+        "n_orphan_records_removed_from_apbs_input": len(omitted),
+        "quality_status": "partial_input_recovery" if omitted else "complete",
+        "input_recovery": {
+            "applied": bool(omitted),
+            "policy": "APBS-only removal of strictly single-N orphan records after original PDB2PQR failure; no coordinates synthesized",
+            "omitted_residues": omitted,
+            "n_omitted": len(omitted),
+            "original_PDB2PQR_failure": original_pqr_failure[-700:] if omitted else None,
+            "canonical_maps_unchanged": True,
+            "caveat": ("Real APBS is computed on a minimally altered PQR; "
+                       "omitted residues have undefined potentials, and "
+                       "nearby electrostatic values may be uncertain.")
+                      if omitted else None,
+        },
+        "surface_sampling": surface_meta,
+        "n_surface_potential_residues": surface_meta["n_exposed_residues_with_surface_potential"],
+        "residues": records,
+        "interpretation": "Primary surface_potential_kT_per_e is area-weighted APBS potential "
+                          "on a discrete solvent-accessible shell (+0.25 A outside probe-center SAS); "
+                          "sidechain_mean_potential_kT_per_e is a legacy atom-coordinate comparator. "
+                          "Neither is affinity, binding energy, nor a recalibrated canonical map score.",
+    }

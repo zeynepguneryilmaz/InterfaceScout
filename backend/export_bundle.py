@@ -216,7 +216,7 @@ def structure_tables(name: str, analysis: Mapping[str, Any],
     ]
     electro = analysis.get("electrostatics") or {}
     electro_tables = {}
-    if electro.get("status") == "computed":
+    if electro.get("status") in ("computed", "unavailable"):
         electro_tables = {
             "Electrostatics_Residues": [
                 {"Structure": name, **record}
@@ -614,6 +614,13 @@ def report_pdf(structure_name: str, analysis: Mapping[str, Any],
              ["Selected chain(s)", conditions.get("chain", "ALL")]],
             [260, 244]))
         story.append(Spacer(1, 10))
+        electro = analysis.get("electrostatics", {})
+        if electro.get("status") in ("computed", "unavailable"):
+            quality = electro.get("quality", {})
+            story.append(atlas_p(f"APBS solver: {electro.get('solver', electro.get('requested_solver', 'legacy'))}. "
+                                f"Status: {electro.get('status')}; numerical quality: {quality.get('status', 'not recorded')}. "
+                                f"Flags: {', '.join(quality.get('flags', [])) or 'none recorded'}. "
+                                "Full numerical and solver diagnostics are included in the accompanying data tables.", "AtlasCaption"))
         story.append(atlas_h("Eleven physicochemical surface maps"))
         story.append(atlas_table(
             ["Channel", "Ranked regions", "Pareto front 1"],
@@ -925,7 +932,7 @@ def build_export_zip(payload: Mapping[str, Any]) -> bytes:
             z.writestr(f"{base}/analysis_complete.json",
                        json.dumps(analysis, ensure_ascii=False, indent=2))
             electrostatics = analysis.get("electrostatics") or {}
-            if electrostatics.get("status") == "computed":
+            if electrostatics.get("status") in ("computed", "unavailable"):
                 z.writestr(f"{base}/electrostatics/APBS_PROPKA_residue_potentials.json",
                            json.dumps(electrostatics, ensure_ascii=False, indent=2))
             for i, key in enumerate(MAP_NAMES, start=1):

@@ -19,6 +19,7 @@ def analyze_structure_set(
     temp_K: float = 298.0,
     combined_maps: list[str] | None = None,
     electrostatics: bool = False,
+    pb_solver: str = "npbe",
 ) -> dict[str, Any]:
     if not 1 <= len(structures) <= 20:
         raise ValueError("Provide between 1 and 20 PDB structures")
@@ -35,7 +36,7 @@ def analyze_structure_set(
                 pdb_text=spec.get("pdb_text"),
                 chain=spec.get("chain"),
                 pH=pH, ionic_mM=ionic_mM, temp_K=temp_K,
-                electrostatics=electrostatics,
+                electrostatics=electrostatics, pb_solver=pb_solver,
             )
             combined = (
                 combine_maps(analysis, combined_maps, max_regions=None)
