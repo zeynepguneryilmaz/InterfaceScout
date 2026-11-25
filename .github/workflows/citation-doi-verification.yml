@@ -1,0 +1,44 @@
+name: Verify original structure article DOIs
+on:
+  push:
+    branches: [validation/final-model-48-paired-pb76]
+    paths: ['.github/workflows/citation-doi-verification.yml']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: publication-metadata-124
+          run-id: 45653441261
+          github-token: ${{ github.token }}
+          path: original
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install requests
+      - run: |
+          python - <<'PY'
+          from pathlib import Path
+          import requests, json, concurrent.futures, time
+          p=Path('doi_checks');p.mkdir()
+          extras={'1A6M':'10.1016/S0006-3495(99)77056-6','1CEL':'10.1126/science.8036495','1HEL':'10.1016/S0021-9258(19)50095-3','1KCW':'10.1007/s007750050018','1LPE':'10.1126/science.2063194','1STP':'10.1126/science.2911722','1TEN':'10.1126/science.1279805','3R62':'10.1107/S0907444911015423','3MX7':'10.1107/S1399004714004854','4LE4':'10.1016/j.bbrc.2013.07.051','6NZS':'10.1021/acs.jafc.9b01290','7KWI':'10.1016/j.jbc.2026.113533'}
+          def check(f):
+              pid=f.name[:4];c=json.loads(f.read_text()).get('rcsb_primary_citation',{})
+              doi=extras.get(pid) or c.get('pdbx_database_id_DOI')
+              if not doi:return
+              try:
+                  r=requests.get('https://api.crossref.org/works/'+doi,timeout=15);r.raise_for_status()
+                  (p/(pid+'.json')).write_text(json.dumps(r.json()['message'],indent=2))
+              except Exception as e:(p/(pid+'_error.txt')).write_text(str(e))
+          with concurrent.futures.ThreadPoolExecutor(max_workers=8) as e:list(e.map(check,Path('original').rglob('*_entry.json')))
+          print('Successful DOI checks:',len(list(p.glob('*.json'))))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: citation-doi-verification
+          path: doi_checks/
