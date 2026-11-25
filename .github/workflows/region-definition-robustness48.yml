@@ -1,0 +1,41 @@
+name: 48 structure region definition robustness
+on:
+  push:
+    branches: [validation/region-definition-robustness48]
+    paths: ['.github/workflows/region-definition-robustness48.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  robustness:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install gemmi==0.7.4 pandas requests
+      - uses: actions/download-artifact@v4
+        with:
+          name: final-v110-48-complete
+          run-id: 45244648958
+          github-token: ${{ github.token }}
+          path: reference48
+      - run: python -u validation/region_definition_robustness48.py ${{ matrix.shard }} 16 reference48 robustness
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+          OMP_NUM_THREADS: '1'
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: region-robustness48-${{ matrix.shard }}
+          path: robustness/
+          retention-days: 90
