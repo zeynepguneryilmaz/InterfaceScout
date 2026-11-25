@@ -1,0 +1,44 @@
+name: 8C50 frozen PQR grid convergence
+on:
+  push:
+    branches: [feature/npbe-default-qc]
+    paths: ['.github/workflows/8c50-grid-convergence.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  convergence:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        config: [archived, bbox_h08, bbox_h06, bbox_h05, expanded_h06, shifted_h06]
+        solver: [npbe, lpbe]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y apbs
+          python -m pip install -r backend/requirements.txt
+          command -v apbs
+      - uses: actions/download-artifact@v4
+        with:
+          name: final-paired76-10
+          run-id: 45653251591
+          github-token: ${{ github.token }}
+          path: archived
+      - run: python -u validation/grid_convergence_8c50.py ${{ matrix.config }} ${{ matrix.solver }} archived grid_result
+        env:
+          OMP_NUM_THREADS: '1'
+          OPENBLAS_NUM_THREADS: '1'
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: grid-8c50-${{ matrix.config }}-${{ matrix.solver }}
+          path: grid_result/
+          retention-days: 90

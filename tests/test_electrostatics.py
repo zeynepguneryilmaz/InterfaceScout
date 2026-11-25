@@ -142,6 +142,8 @@ class ElectrostaticsTests(unittest.TestCase):
         atoms = [{"xyz": (0., 0., 0.)}, {"xyz": (10., 10., 10.)}]
         content = es._apbs_input(atoms, 150, 310)
         self.assertIn("lpbe", content)
+        self.assertIn("    npbe\n", es._apbs_input(atoms, 150, 310, solver="npbe"))
+        self.assertNotIn("    lpbe\n", es._apbs_input(atoms, 150, 310, solver="npbe"))
         self.assertIn("ion charge 1 conc 0.15", content)
         self.assertIn("ion charge -1 conc 0.15", content)
         self.assertIn("temp 310.0000", content)

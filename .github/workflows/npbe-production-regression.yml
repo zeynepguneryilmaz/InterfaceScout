@@ -1,0 +1,34 @@
+name: NPBE production regression
+on:
+  push:
+    branches: [feature/npbe-default-qc]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y apbs
+          python -m pip install -r backend/requirements.txt
+          python -m pip install pdb2pqr==3.7.1
+          command -v apbs
+          command -v pdb2pqr
+      - run: python -m compileall -q backend tests
+      - run: python -m unittest discover -s tests -p test_electrostatics.py -v
+      - run: python tests/npbe_production_regression.py
+        env:
+          OMP_NUM_THREADS: '1'
+          OPENBLAS_NUM_THREADS: '1'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: NPBE-production-regression-evidence
+          path: dist/npbe_regression/

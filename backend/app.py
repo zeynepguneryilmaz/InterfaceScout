@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Literal
 from io import BytesIO
 import os
 import time
@@ -37,6 +37,7 @@ class AnalyzeRequest(BaseModel):
     ionic_mM: float = Field(150.0, ge=0.0)
     temp_K: float = Field(298.0, gt=0.0)
     electrostatics: bool = False
+    pb_solver: Literal["npbe", "lpbe", "both"] = "npbe"
 
 class CompareRequest(BaseModel):
     structure_a: AnalyzeRequest
@@ -63,6 +64,7 @@ class StructureSetRequest(BaseModel):
     ionic_mM: float = Field(150.0, ge=0.0)
     temp_K: float = Field(298.0, gt=0.0)
     electrostatics: bool = False
+    pb_solver: Literal["npbe", "lpbe", "both"] = "npbe"
     combined_maps: Optional[list[str]] = None
 
 
@@ -108,7 +110,7 @@ def structure_set(req: StructureSetRequest):
         return analyze_structure_set(
             [s.model_dump() for s in req.structures],
             pH=req.pH, ionic_mM=req.ionic_mM, temp_K=req.temp_K,
-            electrostatics=req.electrostatics,
+            electrostatics=req.electrostatics, pb_solver=req.pb_solver,
             combined_maps=req.combined_maps,
         )
     except (KeyError, ValueError) as exc:
@@ -252,7 +254,7 @@ def analyze(req: AnalyzeRequest):
             pdb_id=req.pdb_id,
             pdb_text=req.pdb_text,
             chain=req.chain,
-            electrostatics=req.electrostatics,
+            electrostatics=req.electrostatics, pb_solver=req.pb_solver,
         )
         out["public_version"] = PUBLIC_VERSION
         return out

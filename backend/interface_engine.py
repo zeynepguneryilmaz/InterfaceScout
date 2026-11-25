@@ -196,6 +196,7 @@ def analyze_all_maps(
     pdb_text: Optional[str] = None,
     chain: Optional[str] = None,
     electrostatics: bool = False,
+    pb_solver: str = "npbe",
 ) -> Dict[str, Any]:
     """Compute all public chemistry maps in one run."""
     context = _prepare_shared_context(
@@ -215,8 +216,15 @@ def analyze_all_maps(
     out = _shared_response(context, pdb_id=pdb_id, pH=pH, ionic_mM=ionic_mM, temp_K=temp_K)
     profiles = profile_rows(context["core_result"])
     if electrostatics:
-        electro = compute_electrostatics(context["prepared"], profiles, pH=pH,
-                                        ionic_mM=ionic_mM, temp_K=temp_K)
+        if pb_solver not in ("npbe", "lpbe", "both"):
+            raise ValueError("Unsupported PB solver mode")
+        try:
+            electro = compute_electrostatics(context["prepared"], profiles, pH=pH,
+                                            ionic_mM=ionic_mM, temp_K=temp_K, solver=pb_solver)
+        except (ValueError, OSError) as exc:
+            electro = {"status": "unavailable", "requested_solver": pb_solver,
+                       "reason": str(exc), "fallback_used": False,
+                       "quality": {"status": "unavailable", "flags": ["electrostatics_failed"]}}
         out["electrostatics"] = electro
         out["method"]["electrostatics"] = "APBS/PDB2PQR/PROPKA descriptive layer; canonical maps unchanged"
     else:
