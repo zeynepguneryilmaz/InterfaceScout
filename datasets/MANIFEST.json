@@ -1,0 +1,720 @@
+[
+  {
+    "group": "TV48",
+    "archive": "TV48_results.zip",
+    "run_id": 45244648958,
+    "run_url": "https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45244648958",
+    "source_sha": "fbb85c8bfd882786da18d739c9706176e7d19c3b",
+    "run_conclusion": "success",
+    "artifacts": [
+      {
+        "id": 14853701689,
+        "name": "final-v110-48-complete",
+        "size_in_bytes": 316335
+      }
+    ],
+    "file_count": 25,
+    "archive_bytes": 325198,
+    "sha256": "efb2fd32a283cbe35058a889a79f11e4c51476f55c2c2a52f3fe724a26cb87a5"
+  },
+  {
+    "group": "TV48",
+    "archive": "TV48_extended_verification.zip",
+    "run_id": 45252414860,
+    "run_url": "https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45252414860",
+    "source_sha": "4952f75992a15b7dc32a1dd8f6fbad2160a1f065",
+    "run_conclusion": "success",
+    "artifacts": [
+      {
+        "id": 14855757959,
+        "name": "extended-v110-full-scientific-evidence",
+        "size_in_bytes": 322369
+      }
+    ],
+    "file_count": 34,
+    "archive_bytes": 330387,
+    "sha256": "6372cd1fca5049cccdebfbd1f1220275c8ee1a96412a4883aa2391819321f225"
+  },
+  {
+    "group": "TV48",
+    "archive": "TV48_numerical_sensitivity.zip",
+    "run_id": 45636665184,
+    "run_url": "https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45636665184",
+    "source_sha": "ef9d5ab168fabb69fa2db1088520c8ad51115e01",
+    "run_conclusion": "failure",
+    "artifacts": [
+      {
+        "id": 15032579414,
+        "name": "final-sensitivity48-0",
+        "size_in_bytes": 14166
+      },
+      {
+        "id": 15033417822,
+        "name": "final-sensitivity48-1",
+        "size_in_bytes": 14208
+      },
+      {
+        "id": 15033535869,
+        "name": "final-sensitivity48-10",
+        "size_in_bytes": 14534
+      },
+      {
+        "id": 15034460664,
+        "name": "final-sensitivity48-11",
+        "size_in_bytes": 13131
+      },
+      {
+        "id": 15033786408,
+        "name": "final-sensitivity48-12",
+        "size_in_bytes": 14525
+      },
+      {
+        "id": 15033003034,
+        "name": "final-sensitivity48-13",
+        "size_in_bytes": 14381
+      },
+      {
+        "id": 15033037643,
+        "name": "final-sensitivity48-14",
+        "size_in_bytes": 13780
+      },
+      {
+        "id": 15034760345,
+        "name": "final-sensitivity48-15",
+        "size_in_bytes": 14209
+      },
+      {
+        "id": 15034785000,
+        "name": "final-sensitivity48-2",
+        "size_in_bytes": 13082
+      },
+      {
+        "id": 15034170568,
+        "name": "final-sensitivity48-3",
+        "size_in_bytes": 13027
+      },
+      {
+        "id": 15032534696,
+        "name": "final-sensitivity48-4",
+        "size_in_bytes": 14238
+      },
+      {
+        "id": 15033008151,
+        "name": "final-sensitivity48-5",
+        "size_in_bytes": 12892
+      },
+      {
+        "id": 15034210866,
+        "name": "final-sensitivity48-6",
+        "size_in_bytes": 14552
+      },
+      {
+        "id": 15033217174,
+        "name": "final-sensitivity48-7",
+        "size_in_bytes": 14019
+      },
+      {
+        "id": 15032982679,
+        "name": "final-sensitivity48-8",
+        "size_in_bytes": 14948
+      },
+      {
+        "id": 15033820535,
+        "name": "final-sensitivity48-9",
+        "size_in_bytes": 14239
+      }
+    ],
+    "file_count": 32,
+    "archive_bytes": 229105,
+    "sha256": "cd3f8f82b921b78efee8f649db7ea357e8c0de3e6739aa05a9b91da7b474a183"
+  },
+  {
+    "group": "TV48",
+    "archive": "TV48_region_robustness.zip",
+    "run_id": 45663104217,
+    "run_url": "https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45663104217",
+    "source_sha": "76f1bf818d89db230cea2bc97575bc43f5893b3d",
+    "run_conclusion": "success",
+    "artifacts": [
+      {
+        "id": 15046507005,
+        "name": "region-robustness48-0",
+        "size_in_bytes": 8675
+      },
+      {
+        "id": 15045163520,
+        "name": "region-robustness48-1",
+        "size_in_bytes": 9047
+      },
+      {
+        "id": 15046701420,
+        "name": "region-robustness48-10",
+        "size_in_bytes": 8855
+      },
+      {
+        "id": 15044983859,
+        "name": "region-robustness48-11",
+        "size_in_bytes": 8184
+      },
+      {
+        "id": 15045178390,
+        "name": "region-robustness48-12",
+        "size_in_bytes": 8947
+      },
+      {
+        "id": 15046686699,
+        "name": "region-robustness48-13",
+        "size_in_bytes": 8492
+      },
+      {
+        "id": 15044649092,
+        "name": "region-robustness48-14",
+        "size_in_bytes": 8483
+      },
+      {
+        "id": 15045717927,
+        "name": "region-robustness48-15",
+        "size_in_bytes": 8613
+      },
+      {
+        "id": 15045178389,
+        "name": "region-robustness48-2",
+        "size_in_bytes": 8110
+      },
+      {
+        "id": 15047050078,
+        "name": "region-robustness48-3",
+        "size_in_bytes": 7701
+      },
+      {
+        "id": 15046950666,
+        "name": "region-robustness48-4",
+        "size_in_bytes": 8488
+      },
+      {
+        "id": 15046421693,
+        "name": "region-robustness48-5",
+        "size_in_bytes": 8334
+      },
+      {
+        "id": 15045123611,
+        "name": "region-robustness48-6",
+        "size_in_bytes": 8998
+      },
+      {
+        "id": 15044838412,
+        "name": "region-robustness48-7",
+        "size_in_bytes": 8559
+      },
+      {
+        "id": 15045108591,
+        "name": "region-robustness48-8",
+        "size_in_bytes": 9232
+      },
+      {
+        "id": 15046656459,
+        "name": "region-robustness48-9",
+        "size_in_bytes": 8225
+      }
+    ],
+    "file_count": 32,
+    "archive_bytes": 140338,
+    "sha256": "18aade9a14ef4ff904f000a149b5be3e019561abec7e0fa68e46088c56d36954"
+  },
+  {
+    "group": "ISV76",
+    "archive": "ISV76_results.zip",
+    "run_id": 45385665397,
+    "run_url": "https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45385665397",
+    "source_sha": "6353763a2159579e2f856273a32b241d33ef37f2",
+    "run_conclusion": "failure",
+    "artifacts": [
+      {
+        "id": 14916477927,
+        "name": "ISV76-Final-InterfaceScout-11Map-SAS-APBS-All-Protect",
+        "size_in_bytes": 28850970
+      }
+    ],
+    "file_count": 557,
+    "archive_bytes": 29342770,
+    "sha256": "afb1ef85c4c1d59ccbcf6b05c5da8bfad69154f5daf5ae8e70999ab81f81e693"
+  },
+  {
+    "group": "ISV76",
+    "archive": "ISV76_FreeSASA.zip",
+    "run_id": 45445684505,
+    "run_url": "https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45445684505",
+    "source_sha": "526beb9c068f0aa763a6ffbd2deb8c9b934fdbef",
+    "run_conclusion": "success",
+    "artifacts": [
+      {
+        "id": 14944119379,
+        "name": "ISV76-External-FreeSASA-Full-Evidence",
+        "size_in_bytes": 2034824
+      }
+    ],
+    "file_count": 247,
+    "archive_bytes": 2102555,
+    "sha256": "f431cb4d3771a518e0a6342f429d13618ea9d4ed603c9e29635daaf61d357184"
+  },
+  {
+    "group": "ISV76",
+    "archive": "ISV76_PEP_Patch.zip",
+    "run_id": 45451763460,
+    "run_url": "https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45451763460",
+    "source_sha": "1751f3e75be4a834ca5c325ee3a9678cac4aa1be",
+    "run_conclusion": "failure",
+    "artifacts": [
+      {
+        "id": 14948359793,
+        "name": "External-Full-pep_patch-shard-0",
+        "size_in_bytes": 436914
+      },
+      {
+        "id": 14949014540,
+        "name": "External-Full-pep_patch-shard-1",
+        "size_in_bytes": 2850494
+      },
+      {
+        "id": 14949711509,
+        "name": "External-Full-pep_patch-shard-10",
+        "size_in_bytes": 656547
+      },
+      {
+        "id": 14947939120,
+        "name": "External-Full-pep_patch-shard-11",
+        "size_in_bytes": 1006113
+      },
+      {
+        "id": 14949685411,
+        "name": "External-Full-pep_patch-shard-12",
+        "size_in_bytes": 299905
+      },
+      {
+        "id": 14948284863,
+        "name": "External-Full-pep_patch-shard-13",
+        "size_in_bytes": 927105
+      },
+      {
+        "id": 14949407806,
+        "name": "External-Full-pep_patch-shard-14",
+        "size_in_bytes": 1542399
+      },
+      {
+        "id": 14949446243,
+        "name": "External-Full-pep_patch-shard-15",
+        "size_in_bytes": 298430
+      },
+      {
+        "id": 14950030252,
+        "name": "External-Full-pep_patch-shard-2",
+        "size_in_bytes": 1125745
+      },
+      {
+        "id": 14950990429,
+        "name": "External-Full-pep_patch-shard-3",
+        "size_in_bytes": 886657
+      },
+      {
+        "id": 14951190916,
+        "name": "External-Full-pep_patch-shard-4",
+        "size_in_bytes": 933393
+      },
+      {
+        "id": 14950165167,
+        "name": "External-Full-pep_patch-shard-5",
+        "size_in_bytes": 812833
+      },
+      {
+        "id": 14950640020,
+        "name": "External-Full-pep_patch-shard-6",
+        "size_in_bytes": 557804
+      },
+      {
+        "id": 14949826089,
+        "name": "External-Full-pep_patch-shard-7",
+        "size_in_bytes": 699181
+      },
+      {
+        "id": 14950041074,
+        "name": "External-Full-pep_patch-shard-8",
+        "size_in_bytes": 1944703
+      },
+      {
+        "id": 14949676783,
+        "name": "External-Full-pep_patch-shard-9",
+        "size_in_bytes": 892362
+      }
+    ],
+    "file_count": 637,
+    "archive_bytes": 16067666,
+    "sha256": "e9bc5273f4a7fd37916e23f33bd2c44ac47e23d15fc5b30f4f8b6950a11a64ca"
+  },
+  {
+    "group": "ISV76",
+    "archive": "ISV76_external_aggregate.zip",
+    "run_id": 45490436050,
+    "run_url": "https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45490436050",
+    "source_sha": "4c0943afbd3e8506c32925c82fcf4b33efc95209",
+    "run_conclusion": "success",
+    "artifacts": [
+      {
+        "id": 14967217825,
+        "name": "ISV76-76-External-PEP-Patch-P2Rank-Metrics",
+        "size_in_bytes": 21856
+      }
+    ],
+    "file_count": 5,
+    "archive_bytes": 23841,
+    "sha256": "dd7f0cc044bfc77b1cdbea92f624a9e976d4dc0febed1f90a199d78e03c41d54"
+  },
+  {
+    "group": "ISV76",
+    "archive": "ISV76_Protein_sol_server_audit.zip",
+    "run_id": 45484412581,
+    "run_url": "https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45484412581",
+    "source_sha": "62257a3486e221025c3a263949e9776cd1e8a61c",
+    "run_conclusion": "failure",
+    "artifacts": [
+      {
+        "id": 14969592492,
+        "name": "Protein-sol-ISV76-full-audit",
+        "size_in_bytes": 9816785
+      }
+    ],
+    "file_count": 318,
+    "archive_bytes": 9943447,
+    "sha256": "40bb82f9752fa8788684b127f69a6acee05c76233344def6b1f3f108231c2a94"
+  },
+  {
+    "group": "ISV76",
+    "archive": "ISV76_Protein_sol_result_page_audit.zip",
+    "run_id": 45461880631,
+    "run_url": "https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45461880631",
+    "source_sha": "c9001a6fb8cf16ea810a16a1195e4081dce9111b",
+    "run_conclusion": "success",
+    "artifacts": [
+      {
+        "id": 14953051877,
+        "name": "Protein-sol-known-results-page-audit",
+        "size_in_bytes": 7730
+      }
+    ],
+    "file_count": 4,
+    "archive_bytes": 8637,
+    "sha256": "41ae90861d666b66a23b70ef538aa2e6ad3893f3f6278f715d1451273e6e8e1b"
+  },
+  {
+    "group": "ISV76",
+    "archive": "ISV76_Protein_sol_server_diagnostic.zip",
+    "run_id": 45484437867,
+    "run_url": "https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45484437867",
+    "source_sha": "429d4a76a2f4626f8aed77b518eb72aa80e30576",
+    "run_conclusion": "success",
+    "artifacts": [
+      {
+        "id": 14963122697,
+        "name": "Protein-sol-2-structure-actual-server-diagnostic",
+        "size_in_bytes": 99004
+      }
+    ],
+    "file_count": 15,
+    "archive_bytes": 102543,
+    "sha256": "202c725d4737bda2ada25102a9dff6ec551175a63fc07964cf5b173c6aab6631"
+  },
+  {
+    "group": "ISV76",
+    "archive": "ISV76_paired_PB.zip",
+    "run_id": 45653251591,
+    "run_url": "https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45653251591",
+    "source_sha": "22a5e2177de5604c55934fee2e789f8867b30f9d",
+    "run_conclusion": "success",
+    "artifacts": [
+      {
+        "id": 15040148959,
+        "name": "final-paired76-0",
+        "size_in_bytes": 746869
+      },
+      {
+        "id": 15042226232,
+        "name": "final-paired76-1",
+        "size_in_bytes": 4746649
+      },
+      {
+        "id": 15040958866,
+        "name": "final-paired76-10",
+        "size_in_bytes": 1106248
+      },
+      {
+        "id": 15041882730,
+        "name": "final-paired76-11",
+        "size_in_bytes": 1642895
+      },
+      {
+        "id": 15039889247,
+        "name": "final-paired76-12",
+        "size_in_bytes": 518129
+      },
+      {
+        "id": 15040183904,
+        "name": "final-paired76-13",
+        "size_in_bytes": 1541871
+      },
+      {
+        "id": 15041044143,
+        "name": "final-paired76-14",
+        "size_in_bytes": 2567648
+      },
+      {
+        "id": 15042110606,
+        "name": "final-paired76-15",
+        "size_in_bytes": 520254
+      },
+      {
+        "id": 15041204134,
+        "name": "final-paired76-2",
+        "size_in_bytes": 1863677
+      },
+      {
+        "id": 15040009366,
+        "name": "final-paired76-3",
+        "size_in_bytes": 1467177
+      },
+      {
+        "id": 15040049275,
+        "name": "final-paired76-4",
+        "size_in_bytes": 1529209
+      },
+      {
+        "id": 15042175696,
+        "name": "final-paired76-5",
+        "size_in_bytes": 1543554
+      },
+      {
+        "id": 15042017373,
+        "name": "final-paired76-6",
+        "size_in_bytes": 944479
+      },
+      {
+        "id": 15040239056,
+        "name": "final-paired76-7",
+        "size_in_bytes": 1149487
+      },
+      {
+        "id": 15041329040,
+        "name": "final-paired76-8",
+        "size_in_bytes": 3275540
+      },
+      {
+        "id": 15040469091,
+        "name": "final-paired76-9",
+        "size_in_bytes": 1473711
+      }
+    ],
+    "file_count": 1021,
+    "archive_bytes": 26932028,
+    "sha256": "8dd8981c57344ce670f892b08076b7635ef745a34950370039a89e738f3fe6e1"
+  },
+  {
+    "group": "ISV76",
+    "archive": "ISV76_PB_grid_8C50.zip",
+    "run_id": 45657476304,
+    "run_url": "https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45657476304",
+    "source_sha": "636bc5abfd72798965465ccb7bf79deb0ed2f951",
+    "run_conclusion": "success",
+    "artifacts": [
+      {
+        "id": 15044116755,
+        "name": "grid-8c50-archived-lpbe",
+        "size_in_bytes": 274189
+      },
+      {
+        "id": 15044366364,
+        "name": "grid-8c50-archived-npbe",
+        "size_in_bytes": 277546
+      },
+      {
+        "id": 15043481825,
+        "name": "grid-8c50-bbox_h05-lpbe",
+        "size_in_bytes": 282114
+      },
+      {
+        "id": 15043512114,
+        "name": "grid-8c50-bbox_h05-npbe",
+        "size_in_bytes": 284464
+      },
+      {
+        "id": 15042334652,
+        "name": "grid-8c50-bbox_h06-lpbe",
+        "size_in_bytes": 282111
+      },
+      {
+        "id": 15043053241,
+        "name": "grid-8c50-bbox_h06-npbe",
+        "size_in_bytes": 284595
+      },
+      {
+        "id": 15042812986,
+        "name": "grid-8c50-bbox_h08-lpbe",
+        "size_in_bytes": 282031
+      },
+      {
+        "id": 15043097757,
+        "name": "grid-8c50-bbox_h08-npbe",
+        "size_in_bytes": 284333
+      },
+      {
+        "id": 15042873119,
+        "name": "grid-8c50-expanded_h06-lpbe",
+        "size_in_bytes": 280987
+      },
+      {
+        "id": 15042423897,
+        "name": "grid-8c50-expanded_h06-npbe",
+        "size_in_bytes": 280562
+      },
+      {
+        "id": 15043152689,
+        "name": "grid-8c50-shifted_h06-lpbe",
+        "size_in_bytes": 282165
+      },
+      {
+        "id": 15042563274,
+        "name": "grid-8c50-shifted_h06-npbe",
+        "size_in_bytes": 284320
+      }
+    ],
+    "file_count": 72,
+    "archive_bytes": 3416528,
+    "sha256": "8609608fb3ef7d0399ad1341f308b6559b3d4ae75645a1cc7f12dc1c35d30e84"
+  },
+  {
+    "group": "ISV76",
+    "archive": "ISV76_PB_performance.zip",
+    "run_id": 45663636698,
+    "run_url": "https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45663636698",
+    "source_sha": "e016a7022e6b68118f29eee90e73c9d485fb25bf",
+    "run_conclusion": "success",
+    "artifacts": [
+      {
+        "id": 15045149797,
+        "name": "pb-performance-0",
+        "size_in_bytes": 432571
+      },
+      {
+        "id": 15046417287,
+        "name": "pb-performance-1",
+        "size_in_bytes": 2762354
+      },
+      {
+        "id": 15046836528,
+        "name": "pb-performance-10",
+        "size_in_bytes": 651759
+      },
+      {
+        "id": 15044884280,
+        "name": "pb-performance-11",
+        "size_in_bytes": 957566
+      },
+      {
+        "id": 15045847318,
+        "name": "pb-performance-12",
+        "size_in_bytes": 298526
+      },
+      {
+        "id": 15045468911,
+        "name": "pb-performance-13",
+        "size_in_bytes": 898203
+      },
+      {
+        "id": 15046987350,
+        "name": "pb-performance-14",
+        "size_in_bytes": 1492966
+      },
+      {
+        "id": 15046107393,
+        "name": "pb-performance-15",
+        "size_in_bytes": 297229
+      },
+      {
+        "id": 15045169445,
+        "name": "pb-performance-2",
+        "size_in_bytes": 1081562
+      },
+      {
+        "id": 15044944009,
+        "name": "pb-performance-3",
+        "size_in_bytes": 857922
+      },
+      {
+        "id": 15044679864,
+        "name": "pb-performance-4",
+        "size_in_bytes": 897028
+      },
+      {
+        "id": 15045214371,
+        "name": "pb-performance-5",
+        "size_in_bytes": 909106
+      },
+      {
+        "id": 15045259184,
+        "name": "pb-performance-6",
+        "size_in_bytes": 542543
+      },
+      {
+        "id": 15044819353,
+        "name": "pb-performance-7",
+        "size_in_bytes": 681352
+      },
+      {
+        "id": 15045663936,
+        "name": "pb-performance-8",
+        "size_in_bytes": 1934802
+      },
+      {
+        "id": 15046556991,
+        "name": "pb-performance-9",
+        "size_in_bytes": 863400
+      }
+    ],
+    "file_count": 548,
+    "archive_bytes": 15696454,
+    "sha256": "022259650c7394b91aead8f915b1cf4aafbae104380d349e923138e950919b91"
+  },
+  {
+    "group": "ISV76",
+    "archive": "PB_solver_regression.zip",
+    "run_id": 45657475939,
+    "run_url": "https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45657475939",
+    "source_sha": "636bc5abfd72798965465ccb7bf79deb0ed2f951",
+    "run_conclusion": "success",
+    "artifacts": [
+      {
+        "id": 15043342664,
+        "name": "NPBE-production-regression-evidence",
+        "size_in_bytes": 12701
+      }
+    ],
+    "file_count": 1,
+    "archive_bytes": 13319,
+    "sha256": "04303ee2cbd3fc0b1a4c82d98df77c9194bf51fc16e69e690d634ccbd8bdae5c"
+  },
+  {
+    "group": "case_studies",
+    "archive": "retrospective_literature_baselines.zip",
+    "run_id": 45244597881,
+    "run_url": "https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45244597881",
+    "source_sha": "35128b9d8b50d8a2959f88df4ad518070277bcdc",
+    "run_conclusion": "success",
+    "artifacts": [
+      {
+        "id": 14853596483,
+        "name": "final-v110-literature-baselines-complete",
+        "size_in_bytes": 20568
+      }
+    ],
+    "file_count": 18,
+    "archive_bytes": 23143,
+    "sha256": "299cc53ee6de64236c1ff8b6e3d521328378448a2b6f0f8f8a890c78354f9031"
+  }
+]
