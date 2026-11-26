@@ -2,7 +2,9 @@ name: Consolidate research folders
 on:
   push:
     branches: [main]
-    paths: ['.github/workflows/research-reorganization.yml']
+    paths:
+      - '.github/workflows/research-reorganization.yml'
+      - 'tools/reorganize_research.py'
 permissions:
   contents: write
 jobs:
