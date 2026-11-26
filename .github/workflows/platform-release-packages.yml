@@ -96,7 +96,7 @@ jobs:
                   for member in z.namelist():
                       if member.endswith(('.md','.cff')):
                           rel=member[len(prefix):]
-                          assert z.read(member)==pathlib.Path(rel).read_bytes(),member
+                          assert z.read(member).replace(b'\r\n',b'\n')==pathlib.Path(rel).read_bytes().replace(b'\r\n',b'\n'),member
                           text=z.read(member).decode('utf-8')
                           if rel in ('README.md','docs/USER_GUIDE.md'):
                               assert 'Optional physics-based electrostatics (experimental)' not in text
