@@ -1,16 +1,8 @@
-name: Publish OS-specific InterfaceScout 1.1.0 release packages
+name: Validate OS-specific InterfaceScout packages
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/platform-release-packages.yml'
-      - 'scripts/package_platform_release.py'
-      - 'docs/INSTALL_WINDOWS.md'
-      - 'docs/INSTALL_MACOS.md'
-      - 'docs/INSTALL_LINUX.md'
   workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 concurrency:
   group: interface-scout-platform-release
   cancel-in-progress: false
@@ -62,68 +54,3 @@ jobs:
           path: dist/release/
           retention-days: 90
           if-no-files-found: error
-  release:
-    name: Publish all three platform ZIPs together
-    needs: build
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-      - name: Download all three successful build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: InterfaceScout-1.1.0-*
-          path: dist/release/
-          merge-multiple: true
-      - name: Verify all three packages and shared exact source SHA
-        shell: bash
-        run: |
-          python - <<'PY'
-          import json,hashlib,pathlib
-          path=pathlib.Path('dist/release')
-          names=['windows','macos','linux']
-          shas=set()
-          for os in names:
-              f=path/f'InterfaceScout-1.1.0-{os}.zip'
-              j=path/(f.name+'.json')
-              s=path/(f.name+'.sha256')
-              assert f.is_file() and j.is_file() and s.is_file(), os
-              meta=json.loads(j.read_text(encoding='utf-8'))
-              checksum=hashlib.sha256(f.read_bytes()).hexdigest()
-              assert checksum==meta['sha256'] and checksum in s.read_text(), os
-              assert meta['platform']==os
-              shas.add(meta['source_commit'])
-              print(os,meta['file_count'],'files',checksum)
-          assert shas=={__import__('os').environ['GITHUB_SHA']}, 'Source commit mismatch'
-          PY
-      - name: Prepare release description
-        shell: bash
-        run: |
-          cat > release-notes.md <<'NOTES'
-          # InterfaceScout 1.1.0 — platform-specific packages
-
-          Three separately verified ZIPs are built from the **same exact source commit**:
-          - **Windows x64:** `InterfaceScout-1.1.0-windows.zip`; extract and start `run_local.bat`.
-          - **macOS (Intel build verified):** `InterfaceScout-1.1.0-macos.zip`; extract and run `bash run_local.sh` in Terminal. Apple Silicon requires separate compatibility verification.
-          - **Linux x64:** `InterfaceScout-1.1.0-linux.zip`; extract and run `bash run_local.sh`.
-
-          This project is a Python-based locally running scientific application, **not a precompiled executable, signed DMG/APP, MSI, DEB or AppImage**. Python 3.10–3.12 is required; initial dependency installation typically requires internet. The local browser interface is at http://localhost:8000. Optional electrostatics requires separately installed PDB2PQR/PROPKA/APBS. Each ZIP is accompanied by a SHA-256 checksum and a machine-readable build manifest.
-
-          Software reports eleven descriptive protein-surface chemistry maps and candidate regions; it does not predict binding affinity, final adsorption pose or experimentally confirmed contacts.
-
-          Download the ZIP for your OS, extract completely, then follow `START_HERE.txt` and the included platform-specific installation guide.
-          NOTES
-      - name: Publish new release only after all three OS builds pass
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: v1.1.0-platform-20261125
-        shell: bash
-        run: |
-          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo "Release $TAG already exists; do not silently replace published assets."
-            exit 1
-          fi
-          gh release create "$TAG" dist/release/InterfaceScout-1.1.0-*.zip dist/release/InterfaceScout-1.1.0-*.zip.sha256 dist/release/InterfaceScout-1.1.0-*.zip.json \
-            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-            --title "InterfaceScout 1.1.0 — Windows / macOS / Linux" \
-            --notes-file release-notes.md --latest=false
