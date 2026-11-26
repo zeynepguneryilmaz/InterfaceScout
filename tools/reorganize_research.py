@@ -45,6 +45,8 @@ for p in paths:
 assert Path('datasets/TV48/protein_manifest.csv').read_bytes()==Path('validation/strict_apo_48_selected_candidates_v2_final.csv').read_bytes()
 assert Path('datasets/ISV76/protein_manifest.csv').read_bytes()==Path('validation/ISV_active_candidates_76_v3.csv').read_bytes()
 original_manifest=json.loads(Path('datasets/MANIFEST.json').read_text())
+# Compare actual checkout bytes before and after moving; Git text filters may normalize CSV line endings.
+original_data_hashes={p:hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in mapping if p.endswith(('.zip','.pdb','.png','.csv'))}
 old_text={p:Path(p).read_text(encoding='utf-8') for p in paths if p.endswith(('.md','.py','.yml','.yaml','.cff','.txt','.json')) and not p.startswith(('frontend/vendor/','licenses/'))}
 for old,new in mapping.items():
     if old in ('validation/README.md','datasets/README.md','datasets/TV48/README.md','datasets/ISV76/README.md','validation/repository_consistency_check.py','validation/strict_apo_48_selected_candidates_v2_final.csv','validation/ISV_active_candidates_76_v3.csv'):
@@ -171,6 +173,6 @@ for p in paths:
     if p.endswith(('.zip','.pdb','.png','.csv')) and p not in ('validation/strict_apo_48_selected_candidates_v2_final.csv','validation/ISV_active_candidates_76_v3.csv'):
         q=mapping[p]
         assert Path(q).exists(),q
-        assert git('hash-object',q)==git('rev-parse',old_head+':'+p),(p,q)
+        assert hashlib.sha256(Path(q).read_bytes()).hexdigest()==original_data_hashes[p],(p,q,'checkout bytes changed')
 subprocess.run(['python','research/verify_datasets.py'],check=True)
 print('REORGANIZATION_VERIFIED',len(mapping),'paths')
