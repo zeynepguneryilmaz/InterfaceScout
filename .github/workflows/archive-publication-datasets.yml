@@ -1,0 +1,105 @@
+name: Archive publication research datasets
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/archive-publication-datasets.yml'
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: write
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Archive exact source-run artifacts with checksums
+        shell: bash
+        run: |
+          python - <<'PY'
+          import fnmatch, hashlib, json, pathlib, shutil, subprocess, tempfile, zipfile, os
+          repo=os.environ['GITHUB_REPOSITORY']
+          root=pathlib.Path('datasets')
+          root.mkdir(exist_ok=True)
+          specs=[
+            ('TV48','TV48_results.zip',45244648958,'final-v110-48-complete',1),
+            ('TV48','TV48_extended_verification.zip',45252414860,'extended-v110-full-scientific-evidence',1),
+            ('TV48','TV48_numerical_sensitivity.zip',45636665184,'final-sensitivity48-*',16),
+            ('TV48','TV48_region_robustness.zip',45663104217,'region-robustness48-*',16),
+            ('ISV76','ISV76_results.zip',45385665397,'ISV76-Final-InterfaceScout-11Map-SAS-APBS-All-Protect',1),
+            ('ISV76','ISV76_FreeSASA.zip',45445684505,'ISV76-External-FreeSASA-Full-Evidence',1),
+            ('ISV76','ISV76_PEP_Patch.zip',45451763460,'External-Full-pep_patch-shard-*',16),
+            ('ISV76','ISV76_external_aggregate.zip',45490436050,'ISV76-76-External-PEP-Patch-P2Rank-Metrics',1),
+            ('ISV76','ISV76_Protein_sol_server_audit.zip',45484412581,'Protein-sol-ISV76-full-audit',1),
+            ('ISV76','ISV76_Protein_sol_result_page_audit.zip',45461880631,'Protein-sol-known-results-page-audit',1),
+            ('ISV76','ISV76_Protein_sol_server_diagnostic.zip',45484437867,'Protein-sol-2-structure-actual-server-diagnostic',1),
+            ('ISV76','ISV76_paired_PB.zip',45653251591,'final-paired76-*',16),
+            ('ISV76','ISV76_PB_grid_8C50.zip',45657476304,'grid-8c50-*',12),
+            ('ISV76','ISV76_PB_performance.zip',45663636698,'pb-performance-*',16),
+            ('ISV76','PB_solver_regression.zip',45657475939,'NPBE-production-regression-evidence',1),
+            ('case_studies','retrospective_literature_baselines.zip',45244597881,'final-v110-literature-baselines-complete',1),
+          ]
+          def gh(*args):
+              return subprocess.check_output(['gh',*args],text=True)
+          manifest=[]
+          with tempfile.TemporaryDirectory() as temp:
+              work=pathlib.Path(temp)
+              for group,name,run,pattern,expected in specs:
+                  dest=root/group
+                  dest.mkdir(exist_ok=True)
+                  api=json.loads(gh('api',f'repos/{repo}/actions/runs/{run}/artifacts?per_page=100'))
+                  hits=sorted([a for a in api['artifacts'] if fnmatch.fnmatchcase(a['name'],pattern)],key=lambda a:a['name'])
+                  assert len(hits)==expected,(run,pattern,len(hits),expected)
+                  assert all(not a['expired'] for a in hits),(run,pattern,'expired')
+                  meta=json.loads(gh('api',f'repos/{repo}/actions/runs/{run}'))
+                  raw=work/name
+                  raw.mkdir()
+                  inventory=[]
+                  for a in hits:
+                      d=raw/a['name']
+                      d.mkdir()
+                      subprocess.run(['gh','run','download',str(run),'--repo',repo,'--name',a['name'],'--dir',str(d)],check=True)
+                      files=sorted(f for f in d.rglob('*') if f.is_file())
+                      assert files,(run,a['name'],'empty artifact')
+                      inventory.extend({'path':str(f.relative_to(raw)),'bytes':f.stat().st_size,'sha256':hashlib.sha256(f.read_bytes()).hexdigest()} for f in files)
+                  record={'group':group,'archive':name,'run_id':run,'run_url':meta['html_url'],'source_sha':meta['head_sha'],'run_conclusion':meta['conclusion'],'artifacts':[{'id':a['id'],'name':a['name'],'size_in_bytes':a['size_in_bytes']} for a in hits],'files':inventory}
+                  (raw/'SOURCE_MANIFEST.json').write_text(json.dumps(record,indent=2)+'\n')
+                  target=dest/name
+                  with zipfile.ZipFile(target,'w',zipfile.ZIP_DEFLATED,compresslevel=6) as z:
+                      for f in sorted(raw.rglob('*')):
+                          if f.is_file(): z.write(f,f.relative_to(raw))
+                  with zipfile.ZipFile(target) as z: assert z.testzip() is None
+                  assert target.stat().st_size<95_000_000,(name,'repository size limit')
+                  manifest.append({k:v for k,v in record.items() if k!='files'} | {'file_count':len(inventory),'archive_bytes':target.stat().st_size,'sha256':hashlib.sha256(target.read_bytes()).hexdigest()})
+                  shutil.rmtree(raw)
+          shutil.copyfile('validation/strict_apo_48_selected_candidates_v2_final.csv',root/'TV48/protein_manifest.csv')
+          shutil.copyfile('validation/ISV_active_candidates_76_v3.csv',root/'ISV76/protein_manifest.csv')
+          (root/'MANIFEST.json').write_text(json.dumps(manifest,indent=2)+'\n')
+          lines=['# InterfaceScout research datasets','','Version 1.1.0; model `2.5.0-dual-accessibility`. These packages preserve actual source-run outputs, not new calculations. Each ZIP contains its source-run metadata and file-level SHA-256 inventory. The repository software release is unchanged.','',
+          'TV48 is the 48-structure technical verification panel; ISV76 is the 76-structure application panel. Retrospective experimental cases are separate and do not constitute an independent 76-case experimental benchmark.','',
+          'The Protein-sol archive preserves the actual server audit, including incomplete/failed cases; the external aggregate also retains historical P2Rank metrics, which are not a manuscript comparator. The original ISV76 APBS records and the later paired solver outputs are distinct. Large browser/PDF atlases are not bundled.','',
+          'Use the exact source commits recorded in each ZIP for reproduction. See [publication evidence](../validation/PUBLICATION_EVIDENCE.md), [active datasets](../validation/ACTIVE_DATASETS.md), and the [validation scripts](../validation).','',
+          '| Package | Source run | Files | SHA-256 |','|---|---|---:|---|']
+          for m in manifest:
+              rel=m['group']+'/'+m['archive']
+              lines.append(f"| [{rel}]({rel}) | [{m['run_id']}]({m['run_url']}) | {m['file_count']} | `{m['sha256']}` |")
+          (root/'README.md').write_text('\n'.join(lines)+'\n')
+          for group,description in [('TV48','48-structure technical verification, parameter sensitivity and region definition robustness.'),('ISV76','76-structure application panel, canonical outputs, external comparison and electrostatics.'),('case_studies','Retrospective experimental case comparisons; distinct from the 76-structure application panel.')]:
+              rows=['# '+group,'',description,'','See the [dataset index](../README.md) and [source manifest](../MANIFEST.json).','']
+              rows.extend('- ['+m['archive']+']('+m['archive']+')' for m in manifest if m['group']==group)
+              (root/group/'README.md').write_text('\n'.join(rows)+'\n')
+          print('VERIFIED_ARCHIVES',len(manifest))
+          PY
+      - name: Commit research datasets without changing the software release
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add datasets
+          if ! git diff --cached --quiet; then
+            git commit -m "Archive source-verified InterfaceScout TV48 and ISV76 research datasets"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
