@@ -44,6 +44,6 @@ def check():
     for path in ("datasets/TV48/protein_manifest.csv", "datasets/ISV76/protein_manifest.csv"):
         source = "validation/strict_apo_48_selected_candidates_v2_final.csv" if "TV48" in path else "validation/ISV_active_candidates_76_v3.csv"
         assert (ROOT/path).read_bytes() == (ROOT/source).read_bytes(), "Data package manifest differs: "+path
-    print("REPOSITORY_CONSISTENCY_PASS TV48=48 ISV76=76 retired workflows disabled; evidence acceptance still pending")
+    print("REPOSITORY_CONSISTENCY_PASS TV48=48 ISV76=76 retired workflows disabled; publication panel manifests verified")
 
 if __name__=="__main__":check()

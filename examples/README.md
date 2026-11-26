@@ -10,4 +10,4 @@ Use these compact examples to learn the application before analyzing your own st
 
 The two B-factor PDBs are visualization examples, not complete current-model analysis exports. Their B-factor values are map descriptors rather than experimental crystallographic displacement parameters.
 
-For complete research outputs and frozen structure manifests, use the [TV48 and ISV76 datasets](../datasets/README.md). For the historical literature comparison, see the [benchmark note](benchmark/README.md). The [user guide](../docs/USER_GUIDE.md) describes complete ZIP, PDF, Excel, CSV, JSON and visualization exports.
+For complete research outputs and frozen structure manifests, use the [TV48 and ISV76 datasets](https://github.com/zeynepguneryilmaz/InterfaceScout/blob/main/datasets/README.md). For the historical literature comparison, see the [benchmark note](benchmark/README.md). The [user guide](../docs/USER_GUIDE.md) describes complete ZIP, PDF, Excel, CSV, JSON and visualization exports.

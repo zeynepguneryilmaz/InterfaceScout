@@ -4,7 +4,7 @@
 **Software:** InterfaceScout 1.1.0 · **Computational model:** `2.5.0-dual-accessibility`  
 **Guide edition:** 1.0 · **Updated:** 23 November 2026 · **Language:** English
 
-> **At a glance.** InterfaceScout maps accessible, protein-side physicochemical features, identifies descriptive candidate surface patches, and compares compatible structures. It is a research decision-support tool. It **does not** predict a unique adsorption site or pose, binding free energy, adsorption kinetics, or adsorption-induced conformational changes.
+> **At a glance.** InterfaceScout maps accessible protein-side physicochemical features, prioritizes candidate regions and compares compatible structures to support experimental and computational research planning.
 
 **Source code:** [InterfaceScout on GitHub](https://github.com/zeynepguneryilmaz/InterfaceScout) · **Citation:** [CITATION.cff](../CITATION.cff) · **Examples:** [Examples index](../examples/README.md)
 
@@ -103,6 +103,7 @@ The workspace has three workflows:
 - **Solution pH:** used by the current chemistry scoring.
 - **Advanced conditions:** ionic strength and temperature are recorded for the canonical chemistry maps and used as physical inputs when optional continuum electrostatics is enabled.
 - **Electrostatics:** enable the optional PDB2PQR/PROPKA and APBS calculation when the external executables are available on PATH. NPBE is the default; LPBE and paired mode (`both`) are alternatives. The primary residue-associated surface potential is an area-weighted approximate solvent-accessible-shell value; the side-chain atom-coordinate potential is a separate descriptor. Canonical map values and ranks remain unchanged. See the [method overview](../README.md#optional-continuum-electrostatics).
+  - The approximate solvent-accessible probe-center shell uses a 1.4 Å probe, +0.25 Å outward displacement and 42 Fibonacci directions per PQR heavy atom. Area-weighted potentials are in kT/e; surface sampling area and sample counts accompany the results. Glycine may have a shell potential; its side-chain potential is undefined. APBS uses a symmetric monovalent electrolyte (ionic_mM/1000 mol/L), solute dielectric 2 and solvent dielectric 78.54. Numerical flags and grid resolution should be checked before interpretation. Paired mode retains NPBE as primary and LPBE as the comparator.
 - **Analyze:** performs one full 11-channel calculation.
 
 ### Inspecting the 3D viewer
@@ -236,7 +237,7 @@ A protein can be useful in InterfaceScout even when there is **no direct experim
 
 For a fair comparison: select channels by chemistry **before viewing experimental outcomes**; verify species, construct, assay state, numbering and visibility; evaluate **Top-1/3/5 plus selection coverage**; compare with equal-coverage SASA, charge/amino-acid-class, and randomized-patch baselines; and cluster repeated outcomes by underlying protein/publication to avoid pseudoreplication. Report both supported and unsupported examples.
 
-The publication study uses **TV48** (48 structures for technical verification) and **ISV76** (76 structures for application and surface-chemistry analysis). Literature-associated examples illustrate interpretation of the maps in real research contexts. Download the [research datasets](../datasets/README.md) and consult their [provenance index](../validation/PUBLICATION_EVIDENCE.md).
+The publication study uses **TV48** (48 structures for technical verification) and **ISV76** (76 structures for application and surface-chemistry analysis). Literature-associated examples illustrate interpretation of the maps in real research contexts. Download the [research datasets](https://github.com/zeynepguneryilmaz/InterfaceScout/blob/main/datasets/README.md) and consult their [provenance index](https://github.com/zeynepguneryilmaz/InterfaceScout/blob/main/validation/PUBLICATION_EVIDENCE.md).
 
 ## 12. Model details and limitations
 
@@ -280,7 +281,7 @@ python -m unittest discover -s tests -v
 python validation/verify_publication.py
 ```
 
-Run these commands from a full repository checkout. Technical checks and publication validation are described in the [validation folder](../validation/README.md). When citing InterfaceScout, use the citation metadata in [CITATION.cff](../CITATION.cff); cite the underlying experimental source separately when discussing literature comparisons. For reproducible problems open a [GitHub Issue](https://github.com/zeynepguneryilmaz/InterfaceScout/issues) with the OS, Python version, minimal shareable structure, and steps; **never** publish confidential/unreleased structural data in a public issue.
+Run these commands from a full repository checkout. Technical checks and publication validation are described in the [validation folder](https://github.com/zeynepguneryilmaz/InterfaceScout/blob/main/validation/README.md). When citing InterfaceScout, use the citation metadata in [CITATION.cff](../CITATION.cff); cite the underlying experimental source separately when discussing literature comparisons. For reproducible problems open a [GitHub Issue](https://github.com/zeynepguneryilmaz/InterfaceScout/issues) with the OS, Python version, minimal shareable structure, and steps; **never** publish confidential/unreleased structural data in a public issue.
 
 **Documentation note.** This guide describes InterfaceScout as implemented in the main-branch source and public README for the v1.1.0 publication model. The worked-example observations are illustrative retrospective research findings, **not** a training set or a built-in automated experimental validation feature. If code or model behavior changes, review this guide alongside the software release and model version.
 

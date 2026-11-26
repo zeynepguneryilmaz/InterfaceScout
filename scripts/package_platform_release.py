@@ -31,7 +31,8 @@ def allow(path:str,platform:str)->bool:
     if path in set().union(*OS_LAUNCHERS.values()):
         return path in OS_LAUNCHERS[platform]
     if not p.parts or p.parts[0] not in KEEP_TOP:return False
-    if p.parts[0] in {"assets","launchers"} and platform != "windows":return False
+    if p.parts[0]=="launchers" and platform != "windows":return False
+    if p.parts[0]=="assets" and platform != "windows" and p.suffix.lower()==".ico":return False
     if len(p.parts)>1 and p.parts[1] in {".venv","__pycache__"}:return False
     if any(x in {".venv","__pycache__","node_modules",".DS_Store"} for x in p.parts):return False
     if p.suffix.lower() in EXCLUDE_SUFFIXES:return False
@@ -78,8 +79,9 @@ Optional desktop shortcut:
 { {'windows':'Create Desktop Shortcut.bat','macos':'bash "Create Desktop App.command"','linux':'bash "Create Desktop Shortcut.sh"'}[a.platform] }
 
 Unzip fully before starting; do not run launchers from within a ZIP.
-Optional APBS/PDB2PQR/PROPKA electrostatics requires separate installation
-and is not enabled by default. Original eleven chemical channels work without it.
+Optional continuum electrostatics (NPBE default; LPBE and paired modes)
+requires separately installed PDB2PQR/PROPKA and APBS. The eleven
+physicochemical maps are available independently.
 Please see docs/INSTALL_{a.platform.upper() if a.platform != 'macos' else 'MACOS'}.md.
 """
     with zipfile.ZipFile(archive,"w",compression=zipfile.ZIP_DEFLATED,compresslevel=8) as z:
@@ -97,6 +99,12 @@ Please see docs/INSTALL_{a.platform.upper() if a.platform != 'macos' else 'MACOS
         members=set(z.namelist())
         for rel in required:
             assert prefix+"/"+rel in members, "Required member absent: "+rel
+        for rel in included:
+            if rel.endswith((".md",".cff")):
+                assert z.read(prefix+"/"+rel)==(ROOT/rel).read_bytes(), rel
+        readme=z.read(prefix+"/README.md").decode("utf-8")
+        assert "Optional continuum electrostatics" in readme and "NPBE" in readme
+        assert "Optional physics-based electrostatics (experimental)" not in readme
         for plat,launchers in OS_LAUNCHERS.items():
             if plat!=a.platform:
                 for rel in launchers-OS_LAUNCHERS[a.platform]:

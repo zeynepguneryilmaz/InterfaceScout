@@ -1,8 +1,11 @@
-name: Validate OS-specific InterfaceScout packages
+name: Refresh the verified publication release
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/platform-release-packages.yml']
 permissions:
-  contents: read
+  contents: write
 concurrency:
   group: interface-scout-platform-release
   cancel-in-progress: false
@@ -54,3 +57,93 @@ jobs:
           path: dist/release/
           retention-days: 90
           if-no-files-found: error
+
+  publish:
+    name: Verify and refresh the existing release
+    needs: build
+    runs-on: ubuntu-24.04
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: v1.1.0-npbe-platform-20261125
+      PREVIOUS: 636bc5abfd72798965465ccb7bf79deb0ed2f951
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: InterfaceScout-1.1.0-*
+          path: dist/release/
+          merge-multiple: true
+      - name: Validate all distribution contents and exact common source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib,json,os,re,pathlib,zipfile
+          d=pathlib.Path('dist/release')
+          assert len(list(d.glob('*')))==9
+          for platform in ('windows','macos','linux'):
+              n=f'InterfaceScout-1.1.0-{platform}.zip'
+              p=d/n
+              meta=json.loads((d/(n+'.json')).read_text())
+              sha=hashlib.sha256(p.read_bytes()).hexdigest()
+              assert meta['sha256']==sha and sha in (d/(n+'.sha256')).read_text()
+              assert meta['source_commit']==os.environ['GITHUB_SHA']
+              with zipfile.ZipFile(p) as z:
+                  assert z.testzip() is None
+                  prefix='InterfaceScout-1.1.0/'
+                  for member in z.namelist():
+                      if member.endswith(('.md','.cff')):
+                          rel=member[len(prefix):]
+                          assert z.read(member)==pathlib.Path(rel).read_bytes(),member
+                          text=z.read(member).decode('utf-8')
+                          if rel in ('README.md','docs/USER_GUIDE.md'):
+                              assert 'Optional physics-based electrostatics (experimental)' not in text
+                              assert 'NPBE' in text and 'LPBE' in text
+                  assert prefix+'licenses/3Dmol.js-LICENSE.txt' in z.namelist()
+                  assert prefix+'licenses/Apache-2.0.txt' in z.namelist()
+              print(platform,sha,meta['source_commit'])
+          PY
+      - name: Preserve the previous release assets for recovery
+        run: |
+          mkdir previous
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir previous
+          (cd previous && for f in *.sha256; do sha256sum -c "$f"; done)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: previous-publication-release-assets
+          path: previous/
+          retention-days: 90
+      - name: Refresh the existing release and verify published assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          old=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq .object.sha)
+          test "$old" = "$PREVIOUS"
+          # Prevent any unrelated application change during the documentation refresh.
+          git diff --quiet "$PREVIOUS" "$GITHUB_SHA" -- backend frontend run_local.bat run_local.sh start.bat start.sh start.command
+          gh release upload "$TAG" dist/release/* --clobber --repo "$GITHUB_REPOSITORY"
+          mkdir downloaded
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir downloaded
+          for f in dist/release/*; do cmp "$f" "downloaded/$(basename "$f")"; done
+          # Keep the manuscript's existing release URL. Record both source commits.
+          gh api --method PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/$TAG" -f sha="$GITHUB_SHA" -F force=true >/dev/null
+          cat > notes.md <<NOTES
+          Physicochemical protein-surface mapping and candidate-region analysis (model 2.5.0-dual-accessibility).
+
+          Download the ZIP for Windows x64, macOS Intel or Linux x64. Extract and follow START_HERE.txt. Python 3.10–3.12 is required; the optional continuum electrostatics module uses PDB2PQR/PROPKA and APBS (NPBE default, LPBE and paired modes).
+
+          The three packages were rebuilt and verified from source commit \`$GITHUB_SHA\` to synchronize the documentation and third-party licenses. The original publication application source is preserved at \`$PREVIOUS\`; the computational engine and browser interface are unchanged. Each ZIP has a SHA-256 checksum and build manifest.
+
+          [Research datasets](https://github.com/$GITHUB_REPOSITORY/tree/main/datasets) · [User guide](https://github.com/$GITHUB_REPOSITORY/blob/main/docs/USER_GUIDE.md)
+          NOTES
+          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "InterfaceScout v1.1.0" --notes-file notes.md --latest
+          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq .object.sha)" = "$GITHUB_SHA"
+          gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" > releases.json
+          python - <<'PY'
+          import json,os
+          r=[x for x in json.load(open('releases.json')) if not x['draft']]
+          assert len(r)==1 and r[0]['tag_name']==os.environ['TAG'] and len(r[0]['assets'])==9
+          print("PUBLICATION_RELEASE_REFRESH_VERIFIED")
+          PY
