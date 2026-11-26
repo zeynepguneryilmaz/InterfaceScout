@@ -60,7 +60,7 @@ def doc_links(text,old,new):
         pathname,sep,anchor=dest.partition('#')
         absolute=posixpath.normpath(posixpath.join(posixpath.dirname(old),pathname))
         mapped=mapping.get(absolute,absolute)
-        if absolute.endswith('/') or (not Path(mapped).exists() and any(x.startswith(absolute+'/') for x in mapping)):
+        if absolute in ('validation','datasets','examples') or (not Path(mapped).exists() and any(x.startswith(absolute+'/') for x in mapping)):
             descendants={posixpath.dirname(v) for k,v in mapping.items() if k.startswith(absolute.rstrip('/')+'/')}
             if absolute in ('validation','datasets'): mapped=INDEX
             elif absolute=='examples': mapped=P+'/examples/README.md'
@@ -80,17 +80,21 @@ for old,s in old_text.items():
     if not Path(new).is_file() or old in ('validation/README.md','datasets/README.md','datasets/TV48/README.md','datasets/ISV76/README.md','validation/repository_consistency_check.py'): continue
     if old.endswith('.md'):
         s=doc_links(s,old,new)
-        if not new.startswith(('research/method_verification/source_records/','research/protein_surface_analysis/source_records/')):
-            s=root_paths(s)
+        # Markdown link targets are already transformed exactly once.
+        s=s.replace('python validation/verify_publication.py','python research/verify_datasets.py') if old in ('README.md','docs/USER_GUIDE.md') else s
         Path(new).write_text(s,encoding='utf-8')
     elif new.startswith(('research/method_verification/source_scripts/','research/protein_surface_analysis/source_scripts/','research/method_verification/source_workflows/','research/protein_surface_analysis/source_workflows/')): continue
     elif old.startswith(('tests/','tools/','scripts/','.github/workflows/')) and old.endswith(('.py','.yml','.yaml')):
-        if old=='.github/workflows/research-reorganization.yml': continue
+        if old=='.github/workflows/research-reorganization.yml' or old=='tools/reorganize_research.py': continue
         s=root_paths(s)
+        if old=='tests/test_publication_smoke.py':
+            s=s.replace('ROOT / "examples" / "1CRN"','ROOT / "research" / "protein_surface_analysis" / "examples" / "1CRN"')
         if old in ('tools/build_release_archives.py','scripts/package_platform_release.py'):
             s=s.replace('"examples",','').replace(',"examples"','')
         if old=='.github/workflows/platform-release.yml':
             s=s.replace('"InterfaceScout/examples/README.md", ','')
+        if old=='.github/workflows/platform-release-packages.yml':
+            s=s.replace('python validation/repository_consistency_check.py','python research/verify_datasets.py')
         if old=='.github/workflows/consolidate-publication-release.yml':
             s=s.replace('validation/PUBLICATION_EVIDENCE.md','research/PUBLICATION_EVIDENCE.md')
         Path(new).write_text(s,encoding='utf-8')
@@ -124,6 +128,7 @@ for f in [Path('README.md'),Path('docs/USER_GUIDE.md'),Path(P+'/examples/README.
     s=s.replace('research/method_verification/historical_literature/verify_publication.py','research/verify_datasets.py')
     s=s.replace('The frozen historical parameter and benchmark check is separate from the archived publication data. ','')
     s=s.replace('The frozen historical parameter and benchmark check','The research archive integrity check')
+    s=s.replace('python validation/verify_publication.py','python research/verify_datasets.py')
     f.write_text(s)
 # New archive checker; retains meaningful assertions rather than exact README phrasing.
 Path('research/verify_datasets.py').write_text('''"""Validate the two research panels and all permanent numerical archives."""
