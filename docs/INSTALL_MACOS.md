@@ -1,6 +1,6 @@
 # macOS installation and launch
 
-Python **3.10–3.12** is required.
+Python **3.10–3.12** is required. The v1.1.0 macOS release was verified on Intel macOS; Apple Silicon compatibility has not been separately verified.
 
 ```bash
 bash run_local.sh

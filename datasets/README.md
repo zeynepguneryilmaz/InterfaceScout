@@ -6,7 +6,7 @@ TV48 is the 48-structure technical verification panel; ISV76 is the 76-structure
 
 The Protein-sol archive preserves the actual server audit, including incomplete/failed cases; the external aggregate also retains historical P2Rank metrics, which are not a manuscript comparator. The original ISV76 APBS records and the later paired solver outputs are distinct. Large browser/PDF atlases are not bundled.
 
-Use the exact source commits recorded in each ZIP for reproduction. See [publication evidence](../validation/PUBLICATION_EVIDENCE.md), [active datasets](../validation/ACTIVE_DATASETS.md), and the [validation scripts](../validation).
+Use the exact source commits recorded in each ZIP for reproduction. Each panel's local protein manifest is a byte-identical snapshot of its authoritative validation manifest, retained with the dataset for reproducibility. Run conclusions (including partial/failed aggregate or external-server jobs) are explicitly recorded in [MANIFEST.json](MANIFEST.json). See [publication evidence](../validation/PUBLICATION_EVIDENCE.md), [active datasets](../validation/ACTIVE_DATASETS.md), and the [validation scripts](../validation).
 
 | Package | Source run | Files | SHA-256 |
 |---|---|---:|---|

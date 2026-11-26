@@ -10,7 +10,7 @@ Double-click `run_local.bat` or run it in Command Prompt:
 run_local.bat
 ```
 
-The script creates `backend\.venv` if it does not already exist, checks pinned dependencies, and installs only if they are missing or incompatible. A verified Windows release package may include **offline wheels for Python 3.10, 3.11, and 3.12 (Windows x64)**; the standard GitHub repository source ZIP does **not** include them. If a matching wheelhouse is included, installation uses `--no-index`; otherwise the launcher obtains dependencies using pip. If installation fails, the command window stays open and explains where to look. For subsequent runs, use `start.bat`, which does not contact PyPI.
+The script creates `backend\.venv` if it does not already exist, checks pinned dependencies, and installs only if they are missing or incompatible. The v1.1.0 Windows x64 release requires initial online dependency installation unless you separately supply an approved compatible wheelhouse; the standard GitHub repository source ZIP does **not** include them. If a matching wheelhouse is included, installation uses `--no-index`; otherwise the launcher obtains dependencies using pip. If installation fails, the command window stays open and explains where to look. For subsequent runs, use `start.bat`, which does not contact PyPI.
 
 ## CERTIFICATE_VERIFY_FAILED or self-signed certificate
 

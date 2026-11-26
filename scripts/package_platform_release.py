@@ -18,7 +18,7 @@ VERSION="1.1.0"
 COMMON_ROOT={
     "README.md","LICENSE","CITATION.cff","THIRD_PARTY_NOTICES.md",
 }
-KEEP_TOP={"backend","frontend","assets","launchers","docs","examples"}
+KEEP_TOP={"backend","frontend","assets","launchers","docs","examples","licenses"}
 OS_LAUNCHERS={
     "windows":{"run_local.bat","start.bat","Create Desktop Shortcut.bat"},
     "macos":{"run_local.sh","start.command","Create Desktop App.command"},
@@ -31,6 +31,7 @@ def allow(path:str,platform:str)->bool:
     if path in set().union(*OS_LAUNCHERS.values()):
         return path in OS_LAUNCHERS[platform]
     if not p.parts or p.parts[0] not in KEEP_TOP:return False
+    if p.parts[0] in {"assets","launchers"} and platform != "windows":return False
     if len(p.parts)>1 and p.parts[1] in {".venv","__pycache__"}:return False
     if any(x in {".venv","__pycache__","node_modules",".DS_Store"} for x in p.parts):return False
     if p.suffix.lower() in EXCLUDE_SUFFIXES:return False
@@ -47,6 +48,7 @@ def main():
     included=sorted({f for f in files if f and allow(f,a.platform)})
     required=COMMON_ROOT | OS_LAUNCHERS[a.platform] | {
         "backend/app.py","backend/requirements.txt","frontend/index.html",
+        "licenses/3Dmol.js-LICENSE.txt","licenses/Apache-2.0.txt",
         "frontend/logo.png","backend/dependency_check.py",
         f"docs/INSTALL_{a.platform.upper() if a.platform != 'macos' else 'MACOS'}.md",
     }

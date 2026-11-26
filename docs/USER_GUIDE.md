@@ -101,7 +101,8 @@ The workspace has three workflows:
 - **Load a local PDB file:** upload a `.pdb` with protein `ATOM` records.
 - **Chain (optional):** single chain `A`, or several chains such as `A,B`; inspect the structure before excluding a chain.
 - **Solution pH:** used by the current chemistry scoring.
-- **Advanced conditions:** ionic strength and temperature are **recorded metadata only**. Changing them does **not** calculate electrostatic screening or temperature-dependent conformational behavior.
+- **Advanced conditions:** ionic strength and temperature are recorded for the canonical chemistry maps and used as physical inputs when optional continuum electrostatics is enabled.
+- **Electrostatics:** enable the optional PDB2PQR/PROPKA and APBS calculation when the external executables are available on PATH. NPBE is the default; LPBE and paired mode (`both`) are alternatives. The primary residue-associated surface potential is an area-weighted approximate solvent-accessible-shell value; the side-chain atom-coordinate potential is a separate descriptor. Canonical map values and ranks remain unchanged. See the [method overview](../README.md#optional-continuum-electrostatics).
 - **Analyze:** performs one full 11-channel calculation.
 
 ### Inspecting the 3D viewer
@@ -130,7 +131,7 @@ All 11 maps are computed on every run. A channel describes a **protein-side surf
 
 **Quick Views** provide one-click *descriptive* combinations: **All 11 maps**, **Hydrophobic + aromatic**, **Positive + donor**, and **Negative + acceptor**. Quick Views do not learn material preferences or supply predicted binding poses.
 
-**Nonindependence matters.** In the current 40-structure technical audit, the Top-5 residue sets for `cationic` and `hbond_donor` were identical in all 40 structures. Therefore 11 labeled maps must **not** be described as 11 independent sources of biological evidence. Check overlap and complementarity before using a multi-channel finding as corroboration.
+**Nonindependence matters.** The `cationic` and `hbond_donor` channels can share residue chemistry and therefore produce identical Top-5 residue sets under a given condition. Therefore 11 labeled maps must **not** be described as 11 independent sources of biological evidence. Check overlap and complementarity before using a multi-channel finding as corroboration.
 
 ## 6. Combining maps and Regional Chemistry Profile
 
@@ -235,7 +236,7 @@ A protein can be useful in InterfaceScout even when there is **no direct experim
 
 For a fair comparison: select channels by chemistry **before viewing experimental outcomes**; verify species, construct, assay state, numbering and visibility; evaluate **Top-1/3/5 plus selection coverage**; compare with equal-coverage SASA, charge/amino-acid-class, and randomized-patch baselines; and cluster repeated outcomes by underlying protein/publication to avoid pseudoreplication. Report both supported and unsupported examples.
 
-The active validation programme comprises **TV48** (a frozen 48-structure technical-verification panel, completed for the tested v1.1.0 engine) and **ISV** (a new initial scientific-validation panel, **not yet selected or validated**). Earlier retrospective literature sets are archived exploratory evidence and must not be described as ISV or independent holdouts. See the [active dataset policy](../validation/ACTIVE_DATASETS.md).
+The publication study uses **TV48** (48 structures for technical verification) and **ISV76** (76 structures for application and surface-chemistry analysis). Literature-associated examples illustrate interpretation of the maps in real research contexts. Download the [research datasets](../datasets/README.md) and consult their [provenance index](../validation/PUBLICATION_EVIDENCE.md).
 
 ## 12. Model details and limitations
 
@@ -244,7 +245,7 @@ The active validation programme comprises **TV48** (a frozen 48-structure techni
 | Public software version | `1.1.0` |
 | Internal model version | `2.5.0-dual-accessibility` |
 | pH | Used in chemical scoring; default 7.4 |
-| Ionic strength, temperature | Recorded as metadata only |
+| Ionic strength, temperature | Canonical-map metadata; optional APBS inputs |
 | SASA method | Shrake–Rupley; 1.40 Å probe, 200 sample points per atom |
 | Surface exposure | Total-residue relative accessibility (`tRSA ≥ 0.05`), normalized using Tien et al. (2013) maxima |
 | Chemical side-chain support | Non-backbone side-chain SASA / reference ASA (`scRSA`); glycine has no side-chain heavy atoms (`scRSA = 0`) |
@@ -279,9 +280,9 @@ python -m unittest discover -s tests -v
 python validation/verify_publication.py
 ```
 
-Technical checks and publication validation are described in the [validation folder](../validation/README.md). When citing InterfaceScout, use the citation metadata in [CITATION.cff](../CITATION.cff); cite the underlying experimental source separately when discussing literature comparisons. For reproducible problems open a [GitHub Issue](https://github.com/zeynepguneryilmaz/InterfaceScout/issues) with the OS, Python version, minimal shareable structure, and steps; **never** publish confidential/unreleased structural data in a public issue.
+Run these commands from a full repository checkout. Technical checks and publication validation are described in the [validation folder](../validation/README.md). When citing InterfaceScout, use the citation metadata in [CITATION.cff](../CITATION.cff); cite the underlying experimental source separately when discussing literature comparisons. For reproducible problems open a [GitHub Issue](https://github.com/zeynepguneryilmaz/InterfaceScout/issues) with the OS, Python version, minimal shareable structure, and steps; **never** publish confidential/unreleased structural data in a public issue.
 
-**Documentation note.** This guide describes InterfaceScout as implemented in the main-branch source and public README on 23 November 2026. The worked-example observations are illustrative retrospective research findings, **not** a training set or a built-in automated experimental validation feature. If code or model behavior changes, review this guide alongside the software release and model version.
+**Documentation note.** This guide describes InterfaceScout as implemented in the main-branch source and public README for the v1.1.0 publication model. The worked-example observations are illustrative retrospective research findings, **not** a training set or a built-in automated experimental validation feature. If code or model behavior changes, review this guide alongside the software release and model version.
 
 ---
 

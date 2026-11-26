@@ -1,6 +1,6 @@
 # InterfaceScout — Active validation datasets
 
-**Active scientific plan (v1.1.0): exactly two datasets.** This is the authoritative index for current validation and manuscript planning.
+**Current publication panels (v1.1.0): TV48 and ISV76.** ISV76 is a fixed structural application panel; selected literature-associated examples illustrate interpretation. The selection and evidence-acceptance records below preserve the original research provenance. See the [persistent research data packages](../datasets/README.md).
 
 | Dataset | Purpose | Membership | Status |
 | --- | --- | --- | --- |

@@ -17,8 +17,8 @@ IGNORED_DIRS = {".git", ".venv", "venv", "__pycache__", ".pytest_cache",
                 ".mypy_cache", ".idea", ".vscode", ".tox", "dist", "build"}
 IGNORED_FILES = {".DS_Store", "startup_log.txt"}
 # Distributable application files only. Keep tests and packaging tools in GitHub.
-COMMON = ("backend", "frontend", "docs", "examples", "validation",
-          "README.md", "LICENSE", "CITATION.cff")
+COMMON = ("backend", "frontend", "docs", "examples", "licenses",
+          "README.md", "LICENSE", "CITATION.cff", "THIRD_PARTY_NOTICES.md")
 LAUNCHERS = {
     "Windows": ("run_local.bat", "start.bat", "assets/InterfaceScout.ico", "Create Desktop Shortcut.bat", "launchers/create_windows_shortcut.ps1"),
     "macOS": ("run_local.sh", "start.command", "Create Desktop App.command"),

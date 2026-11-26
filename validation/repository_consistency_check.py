@@ -26,8 +26,8 @@ def check():
                    ("validation/ACTIVE_DATASETS.md",active),
                    ("validation/README.md",validation)]:
         assert "76" in s and "48" in s, path+" does not describe both active panels"
-    assert "76 active candidate" in readme, "README current candidate status changed"
-    assert "not 76 accepted" in validation, "Validation README scientific caveat missing"
+    assert "ISV76" in readme and "datasets/README.md" in readme, "README must identify the application panel and data index"
+    assert "not 76 accepted independent experimental cases" in validation, "Validation README scientific scope missing"
     assert "76 active" in active, "Authoritative active ISV membership missing"
     for path in [".github/workflows/surfmap-isv76-native.yml",
                  ".github/workflows/pep-patch-1gct-repair-diagnostic.yml",
@@ -41,6 +41,9 @@ def check():
         assert "workflow_dispatch:" in trigger and "  push:" not in trigger, "Unintended automatic benchmark: "+path
     assert "1.1.0" in read("CITATION.cff")
     assert "1.1.0" in readme
+    for path in ("datasets/TV48/protein_manifest.csv", "datasets/ISV76/protein_manifest.csv"):
+        source = "validation/strict_apo_48_selected_candidates_v2_final.csv" if "TV48" in path else "validation/ISV_active_candidates_76_v3.csv"
+        assert (ROOT/path).read_bytes() == (ROOT/source).read_bytes(), "Data package manifest differs: "+path
     print("REPOSITORY_CONSISTENCY_PASS TV48=48 ISV76=76 retired workflows disabled; evidence acceptance still pending")
 
 if __name__=="__main__":check()
