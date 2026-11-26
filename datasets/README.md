@@ -26,3 +26,7 @@ Use the exact source commits recorded in each ZIP for reproduction. Each panel's
 | [ISV76/ISV76_PB_performance.zip](ISV76/ISV76_PB_performance.zip) | [45663636698](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45663636698) | 548 | `022259650c7394b91aead8f915b1cf4aafbae104380d349e923138e950919b91` |
 | [ISV76/PB_solver_regression.zip](ISV76/PB_solver_regression.zip) | [45657475939](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45657475939) | 1 | `04303ee2cbd3fc0b1a4c82d98df77c9194bf51fc16e69e690d634ccbd8bdae5c` |
 | [case_studies/retrospective_literature_baselines.zip](case_studies/retrospective_literature_baselines.zip) | [45244597881](https://github.com/zeynepguneryilmaz/InterfaceScout/actions/runs/45244597881) | 18 | `299cc53ee6de64236c1ff8b6e3d521328378448a2b6f0f8f8a890c78354f9031` |
+
+## Submission verification
+
+[Verification records](submission_verification/README.md) document the paired PB raw-data audit, DOI metadata and aggregate identifier correction.
