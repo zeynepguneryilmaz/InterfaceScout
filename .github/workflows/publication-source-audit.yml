@@ -1,0 +1,24 @@
+name: Publication source-data and DOI audit
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publication-source-audit.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install numpy scipy
+      - run: python tools/publication_source_audit.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: publication-source-audit
+          path: audit/
